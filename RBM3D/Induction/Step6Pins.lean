@@ -75,13 +75,6 @@ def STExp2U (E s t : ℕ → ℝ) : Prop :=
     (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ 2 *
         ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n (p.1 : ℝ)))
 
-/-- The statement `STExp2U` written with `STExpErr` and `STExpTarget`. -/
-theorem STExp2U_iff (E s t : ℕ → ℝ) :
-    STExp2U sz E s t ↔
-      Prec sz (U := fun n => TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
-        (fun n p _ => ‖STExpErr sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
-        (fun n p _ => STExpTarget sz n (p.1 : ℝ)) := Iff.rfl
-
 /-- **The endpoint `u = t`** of `STExp2U` is `(Eq:Gtlp_exp)` at time `t` (`1_2:1396`: "Hence the estimate `(Eq:Gtlp_exp)`
 holds at time `t`"), the conclusion `STExp2` of `lem:main_ind` (consumer: `Induction/Defs.lean:304`). -/
 theorem STExp2_of_STExp2U {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STExp2U sz E s t) : STExp2 sz E t := by
@@ -143,14 +136,6 @@ def STStep6IV (d : ℕ) : Prop := STStep6R d STReg5IV
 (`ST_step6_compose`, §7b); the general case needs the split of `ℕ` into the patterns of nonempty stages.  Registry class: **owed**
 (S6-13). -/
 def STStep6 (d : ℕ) : Prop := STStep6R d STAny
-
-/-- The general pin implies each regime (`STAny` is `True`): the regime pins are consequences of `STStep6`; the converse (the four regimes glued by
-intermediate times, `6:93-97`) is the assembly ticket S6-13. -/
-theorem ST_step6R_of_any {d : ℕ} (h : STStep6 d) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) :
-    STStep6R d R := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c, hc, hc', H⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-  exact ⟨c, hc, hc', fun 𝔠 sz z hflow s t hs0 hst htT _ => H 𝔠 sz z hflow s t hs0 hst htT trivial⟩
 
 end RBM.Gauss.Sizes
 
@@ -403,22 +388,6 @@ def STExpIntConcl (Q : Finset (Fin 2)) (P : (Fin 2 → Bool) → Prop) (E s t : 
       (fun n p _ => ‖zeroModeSet d (sz.L n) Q (fun b => STExpErr sz n (E n) (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
       (fun n p _ => F n p + STExpTarget sz n (p.1 : ℝ))
 
-/-- The integrated estimate for `𝒬_u f_u`, `σ₁ ≠ σ₂` (regime (i): `(int_K-L+QE)` `6:109-116`, `lem_+Q` `3_5:1285`, `(sum_res_2)` `3_5:1659`):
-for every mollifier family `ϑ` (eventually `STMollifierProps`) satisfying the `𝒬`-Duhamel identities and every deterministic control `F` of
-the initial term `𝒰_{s,u} 𝒬_s f_s`. -/
-def STExpIntQConcl (E s t : ℕ → ℝ) : Prop :=
-  ∀ (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ),
-    (∀ᶠ n in atTop, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) → STExpDuhEqQ sz E s t ϑ →
-    ∀ F : ∀ n, STIdx2P sz STSigMixed s t n → ℝ, (∀ n p, 0 ≤ F n p) →
-      Prec sz (U := STIdx2P sz STSigMixed s t)
-        (fun n p _ => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) p.2.1.1 (s n) (p.1 : ℝ)
-          (STQop (d := d) (ϑ n) (s n) (fun b => STExpErr sz n (E n) (s n) p.2.1.1 b)) p.2.2‖)
-        (fun n p _ => F n p) →
-      Prec sz (U := STIdx2P sz STSigMixed s t)
-        (fun n p _ => ‖STQop (d := d) (ϑ n) (p.1 : ℝ)
-          (fun b => STExpErr sz n (E n) (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
-        (fun n p _ => F n p + STExpTarget sz n (p.1 : ℝ))
-
 /-- **Regime (iii)** `1-t ≥ ilambda²`, all `σ`, no `Q` (`6:94-96`: `(sum_res_Ndecay)` with `n = 2`, `∫_s^u ((1-v)/(1-u))² (1-v)⁻¹
 (W^{-d}B_{v,0})^{11/5} dv ≲ (1-u)^{-2-1/5} W^{-11d/5}`, no `log`: `x^{-6/5}`, `x^{-3/2}`); conditional on the Duhamel identity and the drift
 bounds of the window.  Consumer: `ST_step6_caseIII_of_pins`.  Registry class: **owed** (S6-08). -/
@@ -442,33 +411,6 @@ def STExpIntII (d : ℕ) : Prop :=
   STIngR6 d STReg5II (fun sz E s t =>
     STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
       STExpIntConcl sz (Finset.univ : Finset (Fin 2)) STSigMixed E s t ∧ STExpIntConcl sz ∅ STSigSame E s t)
-
-/-- **Regime (i)** `ilambda²/L² ≤ 1-t ≤ 1-s ≤ ilambda²`: `σ₁ = σ₂`: plain Duhamel with `(sum_res_2_NAL)` `3_5:1649` (the drift tensors
-decay: `STExpDriftDecayConcl`); `σ₁ ≠ σ₂`: the `𝒬`-form with `lem_+Q` (the merged `stQopNorm_holds`), `(sum_res_2)` and the Ward
-bounds `(eq:boundELKQ1)`, `(eq:boundcommutator)`; the `u`-integral `∫ x_v⁻¹ dv ≤ 2 log L`.  Consumer: `ST_step6_caseI_of_pins`.  Registry class: **owed** (S6-09). -/
-def STExpIntI (d : ℕ) : Prop :=
-  STIngR6 d STReg5I (fun sz E s t =>
-    STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t → STExpDriftDecayConcl sz E s t → STExpWardIConcl sz E s t →
-      STExpIntConcl sz ∅ STSigSame E s t ∧ STExpIntQConcl sz E s t)
-
-/-- **The initial term of regime (i)** (`6:97`, `6:117`): `𝒰_{s,u} f_s ≺ (W^{-d}B_{u,0})² ((ilambda² W^d)^{-1/5} + W^{-d}B_{u,0})` for `σ₁ = σ₂`
-(`(sum_res_2_NAL)`: `((ilambda² + 1-s)/(ilambda² + 1-u))^{1} ≤ 2` since `1-s ≤ ilambda²`; `(Eq:Gtlp_exp+IND)` gives `‖f_s‖_∞`, `(Eq:Gdecay+IND)`
-the decay `(deccA0)` of `f_s` through `≺ → 𝔼`), and `𝒰_{s,u} 𝒬_s f_s ≺` the same for `σ₁ ≠ σ₂` (`(sum_res_2)`: ratio `≤ 4`, `lem_+Q`).
-`L^∞`-only (`(sum_res_Ndecay)`) would lose `((1-s)/(1-t))² = (W^{-d}B_{t,0})^{-2𝔠_d}`, a power of `W` (report (a)). -/
-def STExpIniIConcl (E s t : ℕ → ℝ) : Prop :=
-  Prec sz (U := STIdx2P sz STSigSame s t)
-    (fun n p _ => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) p.2.1.1 (s n) (p.1 : ℝ)
-      (fun b => STExpErr sz n (E n) (s n) p.2.1.1 b) p.2.2‖)
-    (fun n p _ => STExpTarget sz n (p.1 : ℝ)) ∧
-  ∀ (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ),
-    (∀ᶠ n in atTop, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) →
-    Prec sz (U := STIdx2P sz STSigMixed s t)
-      (fun n p _ => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) p.2.1.1 (s n) (p.1 : ℝ)
-        (STQop (d := d) (ϑ n) (s n) (fun b => STExpErr sz n (E n) (s n) p.2.1.1 b)) p.2.2‖)
-      (fun n p _ => STExpTarget sz n (p.1 : ℝ))
-
-/-- **The initial term of regime (i)**: the pin.  Consumer: `ST_step6_caseI_of_pins`.  Registry class: **owed** (S6-11). -/
-def STExpIniI (d : ℕ) : Prop := STIngR6 d STReg5I (fun sz E s t => STExpIniIConcl sz E s t)
 
 end RBM.Gauss.Sizes
 
@@ -495,240 +437,10 @@ Every deterministic hypothesis (flow, time ranges, regime, `(con_st_ind)` for ev
 hypothesis of an instance is a stochastic premise (`(a)`, `(b)`, `(d)` at `s`, the conclusions of Steps 2-5) or the premise of another gate's pin
 (`LWtermEXP`, `LWAvgLaw`).  `(ilambda² W^d)^{-1/5} ≠ 0` at each data (`inst_G_pos_*`). -/
 
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
-
-/-- The result of applying a Step-6 pin `STIngR6` at the data `(sz, z, s, t)`: the constant `𝔠_d`, then the stochastic premises, then the
-conclusion. -/
-def InstIng6Concl (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (sz : Sizes 3)
-    (z : ℕ → ℂ) (s t : ℕ → ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STLK sz (STflowE z) s → STDecay sz (STflowE z) s → STExp2 sz (STflowE z) s →
-      STStep2Core sz (STflowE z) s t → STLmaxU sz (STflowE z) s t → STLKU sz (STflowE z) s t →
-      STGdecayW sz (STflowE z) s t 0 → Concl sz (STflowE z) s t)
-
-/-- The common shape of the instances: the constant `𝔠_d` of the pin, then deterministic data with the regime `R` and `(con_st_ind)`. -/
-theorem inst_ing6 (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR6 3 R Concl)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) :
-    InstIng6Concl Concl sz z s t := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num)
-  exact ⟨𝔠d, h0, h1, fun hLK hDec hExp hS2 hLmax hLKU hS5 =>
-    H (1 / 6) sz z hflow s t hs0 hst ht hR hLK hDec hExp (hcon 𝔠d h0) hS2 hLmax hLKU hS5⟩
-
-/-- Data of regime (i) (and of the window `STDriftHi`): `(szB, zB, 7/8, 15/16)`. -/
-theorem inst_ing6_I (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR6 3 R Concl)
-    (hR : R szB (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    InstIng6Concl Concl szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6 R Concl h szB zB flow_zB (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) hR
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Data of regime (ii): `(szB, zB, 15/16, 31/32)`. -/
-theorem inst_ing6_II (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR6 3 R Concl)
-    (hR : R szB (fun _ => 15 / 16) (fun _ => 31 / 32)) :
-    InstIng6Concl Concl szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_ing6 R Concl h szB zB flow_zB (fun _ => 15 / 16) (fun _ => 31 / 32) (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) hR
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Data of regime (iii) and of the general statement: `(sz0, z0, 0, 1/16)`. -/
-theorem inst_ing6_III (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR6 3 R Concl)
-    (hR : R sz0 sInst tInst) :
-    InstIng6Concl Concl sz0 z0 sInst tInst :=
-  inst_ing6 R Concl h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht hR sz0_con
-
-/-- Data of regime (iv): `(szG, zB, 5/8, 3/4)`. -/
-theorem inst_ing6_IV (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR6 3 R Concl)
-    (hR : R szG (fun _ => 5 / 8) (fun _ => 3 / 4)) :
-    InstIng6Concl Concl szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_ing6 R Concl h szG zB flow_zG (fun _ => 5 / 8) (fun _ => 3 / 4) (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) hR
-    (fun _ h𝔠 => conStInd_const szG szG_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
 /-! ### The four regime pins and the general pin -/
-
-theorem inst_step6I (h : STStep6I 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ h szB_reg5I
-
-theorem inst_step6II (h : STStep6II 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_ing6_II STReg5II _ h szB_reg5II
-
-theorem inst_step6III (h : STStep6III 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) sz0 z0 sInst tInst :=
-  inst_ing6_III STReg5III _ h sz0_reg5III
-
-theorem inst_step6IV (h : STStep6IV 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_ing6_IV STReg5IV _ h szG_reg4
-
-/-- `STStep6` (general) at the data of regime (iii): the regime predicate `STAny` is `True`. -/
-theorem inst_step6 (h : STStep6 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) sz0 z0 sInst tInst :=
-  inst_ing6_III STAny _ h trivial
-
-/-- `STStep6` at the data of regime (i): `STAny` again. -/
-theorem inst_step6_atI (h : STStep6 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STAny _ h trivial
-
-end RBM.Gauss.Step6Inst
-
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
 
 /-! ### The ingredient pins, one instance per regime of their window -/
 
-/-- `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)` at the data of regime (iv). -/
-theorem inst_expDriftLo (h : STExpDriftLo 3) :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpDriftLoConcl sz E s t) szG zB
-      (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_ing6_IV STReg5IV _ h szG_reg4
-
-/-- `(deccA0)` of the expected drift at the data of regime (i). -/
-theorem inst_expDriftDecay (h : STExpDriftDecay 3) :
-    InstIng6Concl (fun sz E s t => STExpDriftDecayConcl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ h szB_reg5I
-
-/-- The Ward terms of regime (i). -/
-theorem inst_expWardI (h : STExpWardI 3) :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl sz E s t) szB zB
-      (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ h szB_reg5I
-
-/-- The Ward decomposition of regime (ii). -/
-theorem inst_expWardII (h : STExpWardII 3) :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIIConcl sz E s t) szB zB
-      (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_ing6_II STReg5II _ h szB_reg5II
-
-/-- The initial term of regime (i). -/
-theorem inst_expIniI (h : STExpIniI 3) :
-    InstIng6Concl (fun sz E s t => STExpIniIConcl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ h szB_reg5I
-
-/-- The integrated estimates, one per regime. -/
-theorem inst_expIntI (h : STExpIntI 3) :
-    InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
-      STExpDriftDecayConcl sz E s t → STExpWardIConcl sz E s t →
-      STExpIntConcl sz ∅ STSigSame E s t ∧ STExpIntQConcl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ h szB_reg5I
-theorem inst_expIntII (h : STExpIntII 3) :
-    InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
-      STExpIntConcl sz (Finset.univ : Finset (Fin 2)) STSigMixed E s t ∧ STExpIntConcl sz ∅ STSigSame E s t) szB zB
-      (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_ing6_II STReg5II _ h szB_reg5II
-theorem inst_expIntIII (h : STExpIntIII 3) :
-    InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
-      STExpIntConcl sz ∅ STSigAll E s t) sz0 z0 sInst tInst :=
-  inst_ing6_III STReg5III _ h sz0_reg5III
-theorem inst_expIntIV (h : STExpIntIV 3) :
-    InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftLoConcl sz E s t →
-      STExpIntConcl sz ∅ STSigAll E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_ing6_IV STReg5IV _ h szG_reg4
-
-end RBM.Gauss.Step6Inst
-
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
-
 /-! ### The deterministic pins at concrete data (`sz0`, `n = 0`: `L = 4`, `W = 32`, `ilambda = 1/64`, `E = 1/2`) -/
 
-/-- `lem:improve_exp_aver` at `(sz0, z0, u ≡ 1/16)`: the premise `LWAvgLaw` (`(Gt_avgbound_flow)`) stays a hypothesis. -/
-theorem inst_improveExpAver (h : STImproveExpAver 3) (hA : LWAvgLaw sz0 (STflowE z0) tInst)
-    (hK : STLK sz0 (STflowE z0) tInst) : STExpAvgAt sz0 (STflowE z0) tInst :=
-  h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0
-    tInst (fun n => by simp only [tInst]; norm_num) sz0_ht hA hK
-
-/-- The expected hierarchy at `d = 3`, `sz0`, `n = 0`, `E = 1/2`, the loop `((+,-), (0, e₁))`: the instance of the pin. -/
-theorem inst_expHier (h : STExpHier 3) :
-    ContinuousOn (fun u => sz0.STExpErr 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ContinuousOn (fun u => sz0.STExpDrift 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt (fun v => sz0.STExpErr 0 (1 / 2) v ![true, false] ![0, Pi.single 0 1])
-      (sz0.STthetaOp 0 (1 / 2) u ![true, false] (fun b => sz0.STExpErr 0 (1 / 2) u ![true, false] b)
-          ![0, Pi.single 0 1] + sz0.STExpDrift 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) u :=
-  h (by norm_num) sz0 0 (1 / 2) (by norm_num [abs_of_pos]) ![true, false] ![0, Pi.single 0 1]
-
-/-- Plain and zero-mode Duhamel at `d = 3`, `sz0`, `n = 0`, `E = 1/2`, `s = 1/4 < t = 1/2`, `A = {1,2}`, `σ = (+,-)`. -/
-theorem inst_duhamelZ (h : STExpDuhamelZ 3) :
-    zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-        (fun b => sz0.STExpErr 0 (1 / 2) (1 / 2) ![true, false] b) ![0, Pi.single 0 1] =
-      zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-        (RBM.Ind.Ugen 3 (sz0.L 0) (sz0.lam 0) (1 / 2) ![true, false] (1 / 4) (1 / 2)
-          (fun b => sz0.STExpErr 0 (1 / 2) (1 / 4) ![true, false] b)) ![0, Pi.single 0 1] +
-      ∫ u in (1 / 4 : ℝ)..(1 / 2 : ℝ), zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-        (RBM.Ind.Ugen 3 (sz0.L 0) (sz0.lam 0) (1 / 2) ![true, false] u (1 / 2)
-          (fun b => sz0.STExpDrift 0 (1 / 2) u ![true, false] b)) ![0, Pi.single 0 1] :=
-  h (by norm_num) sz0 0 (1 / 2) (by norm_num [abs_of_pos]) (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    ![true, false] (Finset.univ : Finset (Fin 2)) ![0, Pi.single 0 1]
-
-/-- `𝒬`-Duhamel at the same data, for the mollifier of `stMollifierEx_holds` (constants `C, c`, `ilambda_0 = 1/64 ≤ 1`). -/
-theorem inst_duhamelQ (h : STExpDuhamelQ 3) :
-    ∃ (C c : ℝ) (ϑ : ℝ → (Fin 2 → Zd 3 (sz0.L 0)) → ℂ), STMollifierProps (d := 3) (sz0.lam 0) C c ϑ ∧
-      STQop (d := 3) ϑ (1 / 2) (fun b => sz0.STExpErr 0 (1 / 2) (1 / 2) ![true, false] b) ![0, Pi.single 0 1] =
-        RBM.Ind.Ugen 3 (sz0.L 0) (sz0.lam 0) (1 / 2) ![true, false] (1 / 4) (1 / 2)
-          (STQop (d := 3) ϑ (1 / 4) (fun b => sz0.STExpErr 0 (1 / 2) (1 / 4) ![true, false] b)) ![0, Pi.single 0 1] +
-        ∫ u in (1 / 4 : ℝ)..(1 / 2 : ℝ), RBM.Ind.Ugen 3 (sz0.L 0) (sz0.lam 0) (1 / 2) ![true, false] u (1 / 2)
-          (sz0.STExpQsrc 0 (1 / 2) u ![true, false] ϑ) ![0, Pi.single 0 1] := by
-  obtain ⟨C, c, hC, hc, hex⟩ := stMollifierEx_holds 3 (by norm_num) 1 1 one_pos
-  have hlam : 0 < sz0.lam 0 := by simp [sz0]
-  have hlam' : sz0.lam 0 ≤ 1 := by
-    have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-    rw [this]; norm_num
-  obtain ⟨ϑ, hϑ⟩ := hex (sz0.L 0) (sz0.three_le_L 0) (sz0.lam 0) hlam hlam'
-  exact ⟨C, c, ϑ, hϑ, h (by norm_num) sz0 0 (1 / 2) (by norm_num [abs_of_pos]) C c ϑ hϑ (1 / 4) (1 / 2)
-    (by norm_num) (by norm_num) (by norm_num) ![true, false] ![0, Pi.single 0 1]⟩
-
 /-! ### `(ilambda² W^d)^{-1/5} ≠ 0`, the target, the index sets, `(normQA2)` -/
-
-/-- At `sz0`, `n = 0`: `ilambda² W^d = (1/64)² 32³ = 8`, so `(ilambda² W^d)^{-1/5} = 8^{-1/5} > 0`. -/
-theorem inst_A_value : sz0.lam 0 ^ 2 * ((sz0.W 0 : ℕ) : ℝ) ^ 3 = 8 := by norm_num [sz0]
-
-/-- **The index sets are nonempty** at the four data: `TimeIcc s t n ∋ s n`, both sign classes `σ₁ = σ₂`, `σ₁ ≠ σ₂` and every label. -/
-theorem st6_idx2_nonempty {d : ℕ} (sz : Sizes d) {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (n : ℕ) :
-    Nonempty (STIdx2 sz s t n) :=
-  ⟨⟨⟨s n, le_rfl, hst n⟩, ![true, false], 0⟩⟩
-
-theorem st6_idxSame_nonempty {d : ℕ} (sz : Sizes d) {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (n : ℕ) :
-    Nonempty (STIdx2P sz STSigSame s t n) :=
-  ⟨⟨⟨s n, le_rfl, hst n⟩, ⟨![true, true], rfl⟩, 0⟩⟩
-
-theorem st6_idxMixed_nonempty {d : ℕ} (sz : Sizes d) {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (n : ℕ) :
-    Nonempty (STIdx2P sz STSigMixed s t n) :=
-  ⟨⟨⟨s n, le_rfl, hst n⟩, ⟨![true, false], by simp [STSigMixed]⟩, 0⟩⟩
-
-/-- **`(normQA2)` at `A = {1,2}`** (`Q^{({1,2})} = Q^{(1)}Q^{(2)}`, regime (ii)): `‖Q^{({1,2})} 𝒜‖_∞ ≤ 4 ‖𝒜‖_∞` for a `2`-tensor on `Z_4^3`. -/
-theorem inst_normQA2 (T : (Fin 2 → Zd 3 4) → ℂ) : ‖zeroModeSet 3 4 (Finset.univ : Finset (Fin 2)) T‖ ≤ 4 * ‖T‖ := by
-  have h := norm_zeroModeSet_le (d := 3) (L := 4) (Finset.univ : Finset (Fin 2)) T
-  rw [Finset.card_univ, Fintype.card_fin] at h
-  norm_num at h
-  exact h
-
-end RBM.Gauss.Step6Inst
-
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
-
-/-- `STStep6` implies the regime (i) pin; at the data of regime (i) it is `inst_step6I`. -/
-theorem inst_step6R_of_any (h : STStep6 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_step6I (ST_step6R_of_any h STReg5I)
-
-end RBM.Gauss.Step6Inst

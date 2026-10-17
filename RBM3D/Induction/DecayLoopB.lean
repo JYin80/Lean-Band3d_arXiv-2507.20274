@@ -63,12 +63,6 @@ theorem LoopDecay.mono {N N' : ℕ} {R R' δ δ' : ℝ} {F : LoopIdx (Zd d L) �
     LoopDecay d L N' R' δ' F :=
   fun J hJ hJN x hx y hy hxy => (h J hJ (hJN.trans hN) x hx y hy (hR.trans hxy)).trans hδ
 
-/-- The difference of two decaying loop functions decays. -/
-theorem LoopDecay.sub {N : ℕ} {R δ δ' : ℝ} {F G : LoopIdx (Zd d L) → ℂ}
-    (hF : LoopDecay d L N R δ F) (hG : LoopDecay d L N R δ' G) :
-    LoopDecay d L N R (δ + δ') (F - G) := fun J hJ hJN x hx y hy hxy =>
-  (norm_sub_le _ _).trans (add_le_add (hF J hJ hJN x hx y hy hxy) (hG J hJ hJN x hx y hy hxy))
-
 end Def
 
 /-! ## 2. Anchors: labels that survive cutting and gluing -/
@@ -83,32 +77,11 @@ theorem mem_cutGlueL (k l : ℕ) : b ∈ (x.cutGlueL k l b).a := by
 theorem mem_cutGlueR (k l : ℕ) : b ∈ (x.cutGlueR k l b).a := by
   simp [LoopIdx.cutGlueR]
 
-theorem mem_cutGlue (k : ℕ) : b ∈ (x.cutGlue k b).a := by
-  simp [LoopIdx.cutGlue]
-
 /-- Every label of the loop survives `cutGlue` (the new label is only inserted). -/
 theorem mem_cutGlue_of_mem (k : ℕ) {c : α} (hc : c ∈ x.a) : c ∈ (x.cutGlue k b).a := by
   simp only [LoopIdx.cutGlue, List.mem_append, List.mem_cons]
   rw [← List.take_append_drop (k - 1) x.a, List.mem_append] at hc
   tauto
-
-/-- The left loop of the cut `(k, l)` keeps the label `a_l`, whatever the glued label is. -/
-theorem exists_anchor_cutGlueL (hl1 : 1 ≤ l) (hl : l ≤ x.length) :
-    ∃ c : α, ∀ b : α, c ∈ (x.cutGlueL k l b).a := by
-  have h : 0 < (x.a.drop (l - 1)).length := by
-    simp only [List.length_drop]; simp only [LoopIdx.length] at hl; omega
-  refine ⟨(x.a.drop (l - 1))[0], fun b => ?_⟩
-  simp only [LoopIdx.cutGlueL, List.mem_append, List.mem_cons]
-  exact Or.inr (Or.inr (List.getElem_mem h))
-
-/-- The right loop of the cut `(k, l)` keeps the label `a_k`. -/
-theorem exists_anchor_cutGlueR (hk1 : 1 ≤ k) (hkl : k < l) (hl : l ≤ x.length) :
-    ∃ c : α, ∀ b : α, c ∈ (x.cutGlueR k l b).a := by
-  have h : 0 < ((x.a.drop (k - 1)).take (l - k)).length := by
-    simp only [List.length_take, List.length_drop]; simp only [LoopIdx.length] at hl; omega
-  refine ⟨((x.a.drop (k - 1)).take (l - k))[0], fun b => ?_⟩
-  simp only [LoopIdx.cutGlueR, List.mem_append]
-  exact Or.inl (List.getElem_mem h)
 
 /-- Every label of the loop goes to the left or to the right loop of the cut `(k, l)`. -/
 theorem mem_cutGlueL_or_mem_cutGlueR (hk : 1 ≤ k) (hkl : k < l) {c : α} (hc : c ∈ x.a) :
@@ -163,11 +136,6 @@ private theorem DecayLoopB_zdistInf_neg (x : Zd d L) : zdistInf d L (-x) = zdist
 private theorem DecayLoopB_zdistInf_comm (a b : Zd d L) :
     zdistInf d L (a - b) = zdistInf d L (b - a) := by
   rw [← neg_sub b a, DecayLoopB_zdistInf_neg]
-
-private theorem DecayLoopB_zdistInf_tri (a b c : Zd d L) :
-    zdistInf d L (a - c) ≤ zdistInf d L (a - b) + zdistInf d L (b - c) := by
-  have := DecayLoopB_zdistInf_add_le (a - b) (b - c)
-  rwa [sub_add_sub_cancel] at this
 
 /-- **The far pair after one cut** (the pointwise content of RBM1D `norm_mul_le_of_far_aux` in `d`
 dimensions, RBM2D `far_cutGlueL_or_far_cutGlueR`, `BcalEDecay.lean:179` at `c9a24cf`): if two labels
@@ -296,66 +264,6 @@ theorem DecayLoopB_card_ball (c : Zd d L) {R : ℝ} (hR : 0 ≤ R) :
     gcongr
   exact (Nat.cast_le.mpr h1).trans h2
 
-/-- **The window sum, decay in the first variable** (RBM2D `norm_sum_SB_le_left`,
-`BcalEDecay.lean:237` at `c9a24cf`, `d = 2`; RBM1D `Hierarchy/Decay.lean:164`): for `S = SB d L g`, if
-`‖F_{ab}‖ ≤ M` and `‖F_{ab}‖ ≤ δ` once `|a - c|_∞ ≥ R`, then
-`‖Σ_{a,b} S^{(B)}_{ab} F_{ab}‖ ≤ (2R+1)^d M + L^d δ`. -/
-theorem norm_sum_SB_le_left (hL : 3 ≤ L) {R M δ : ℝ} (hR : 0 ≤ R) (hδ : 0 ≤ δ) (c : Zd d L)
-    (F : Zd d L → Zd d L → ℂ) (hF : ∀ a b, ‖F a b‖ ≤ M)
-    (hFd : ∀ a b, R ≤ (zdistInf d L (a - c) : ℝ) → ‖F a b‖ ≤ δ) :
-    ‖∑ a : Zd d L, ∑ b : Zd d L, SB d L g a b * F a b‖ ≤ (2 * R + 1) ^ d * M + (L : ℝ) ^ d * δ := by
-  classical
-  have hM : 0 ≤ M := (norm_nonneg _).trans (hF 0 0)
-  set win : Zd d L → ℝ := fun a => if (zdistInf d L (c - a) : ℝ) ≤ R then 1 else 0 with hwin
-  have hrow : ∀ a, ∑ b : Zd d L, ‖SB d L g a b * F a b‖ ≤ win a * M + δ := by
-    intro a
-    by_cases h : (zdistInf d L (a - c) : ℝ) < R
-    · have hw : win a = 1 := by
-        simp [hwin, DecayLoopB_zdistInf_comm c a, h.le]
-      calc ∑ b : Zd d L, ‖SB d L g a b * F a b‖ ≤ ∑ b : Zd d L, ‖SB d L g a b‖ * M :=
-            Finset.sum_le_sum fun b _ => by
-              rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hF a b) (norm_nonneg _)
-        _ = M := by rw [← Finset.sum_mul, sum_norm_SB_row d L g hL, one_mul]
-        _ ≤ win a * M + δ := by rw [hw]; linarith
-    · push Not at h
-      calc ∑ b : Zd d L, ‖SB d L g a b * F a b‖ ≤ ∑ b : Zd d L, ‖SB d L g a b‖ * δ :=
-            Finset.sum_le_sum fun b _ => by
-              rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hFd a b h) (norm_nonneg _)
-        _ = δ := by rw [← Finset.sum_mul, sum_norm_SB_row d L g hL, one_mul]
-        _ ≤ win a * M + δ := by
-          have : 0 ≤ win a := by simp only [hwin]; split_ifs <;> norm_num
-          nlinarith
-  have hcount : ∑ a : Zd d L, win a ≤ (2 * R + 1) ^ d := by
-    have e : ∑ a : Zd d L, win a =
-        (((Finset.univ.filter fun u : Zd d L => (zdistInf d L (c - u) : ℝ) ≤ R).card : ℕ) : ℝ) := by
-      simp only [hwin]
-      rw [Finset.sum_ite, Finset.sum_const_zero, add_zero, Finset.sum_const, nsmul_eq_mul, mul_one]
-    rw [e]
-    exact DecayLoopB_card_ball c hR
-  calc ‖∑ a : Zd d L, ∑ b : Zd d L, SB d L g a b * F a b‖
-      ≤ ∑ a : Zd d L, ∑ b : Zd d L, ‖SB d L g a b * F a b‖ :=
-        (norm_sum_le _ _).trans (Finset.sum_le_sum fun a _ => norm_sum_le _ _)
-    _ ≤ ∑ a : Zd d L, (win a * M + δ) := Finset.sum_le_sum fun a _ => hrow a
-    _ = (∑ a : Zd d L, win a) * M + (L : ℝ) ^ d * δ := by
-        rw [Finset.sum_add_distrib, ← Finset.sum_mul, Finset.sum_const, Finset.card_univ,
-          nsmul_eq_mul, card_Zd]
-        push_cast; rfl
-    _ ≤ (2 * R + 1) ^ d * M + (L : ℝ) ^ d * δ := by gcongr
-
-/-- **The window sum, decay in the second variable** (by the symmetry of `S^{(B)}`). -/
-theorem norm_sum_SB_le_right (hL : 3 ≤ L) {R M δ : ℝ} (hR : 0 ≤ R) (hδ : 0 ≤ δ) (c : Zd d L)
-    (F : Zd d L → Zd d L → ℂ) (hF : ∀ a b, ‖F a b‖ ≤ M)
-    (hFd : ∀ a b, R ≤ (zdistInf d L (b - c) : ℝ) → ‖F a b‖ ≤ δ) :
-    ‖∑ a : Zd d L, ∑ b : Zd d L, SB d L g a b * F a b‖ ≤ (2 * R + 1) ^ d * M + (L : ℝ) ^ d * δ := by
-  have e : ∑ a : Zd d L, ∑ b : Zd d L, SB d L g a b * F a b
-      = ∑ b : Zd d L, ∑ a : Zd d L, SB d L g b a * F a b := by
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun b _ => Finset.sum_congr rfl fun a _ => ?_
-    rw [show SB d L g a b = SB d L g b a from congrFun (congrFun (SB_transpose d L g) b) a]
-  rw [e]
-  exact norm_sum_SB_le_left (g := g) hL hR hδ c (fun b a => F a b) (fun b a => hF a b)
-    (fun b a h => hFd a b h)
-
 end Window
 
 /-! ## 5. One cut of a far loop -/
@@ -363,12 +271,6 @@ end Window
 section Glue
 
 variable {d L : ℕ} [NeZero L] (g : ℝ)
-
-/-- The `(k, l)` summand `Σ_{a,b} F(I.cutGlueL k l a) S^{(B)}_{ab} G(I.cutGlueR k l b)` of the
-two-edge cut terms (`S = SB d L g`).  Port of RBM1D `Decay.glueTerm`, RBM2D `glueTerm`
-(`BcalEDecay.lean:302` at `c9a24cf`). -/
-def glueTerm (F G : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L)) (k l : ℕ) : ℂ :=
-  ∑ a : Zd d L, ∑ b : Zd d L, F (I.cutGlueL k l a) * SB d L g a b * G (I.cutGlueR k l b)
 
 /-- `S^{(B)}_{ab}` vanishes unless `|a - b|_∞ ≤ 1` (it is supported on `zdistD ≤ 1 ` and
 `zdistInf ≤ zdistD`). -/
@@ -430,23 +332,6 @@ theorem DecayLoopB_sum_norm_glue_le_of_far (hL : 3 ≤ L) {F G : LoopIdx (Zd d L
         · rw [DecayLoopB_SB_eq_zero g hab]; simp
     _ = (L : ℝ) ^ d * (δF * MG + MF * δG) := by
         simp only [← Finset.sum_mul, DecayLoopB_sum_sum_norm_SB d L g hL]
-
-/-- **One cut of a far loop** (RBM2D `norm_glueTerm_le_of_far`, `d = 2`; RBM1D `Hierarchy/Decay.lean:368`): if
-two labels of the loop are at distance `≥ 2R + 1` and both factors have `R`-decay, the `(k, l)`
-summand is `≤ L^d (δ_F M_G + M_F δ_G)`. -/
-theorem norm_glueTerm_le_of_far (hL : 3 ≤ L) {F G : LoopIdx (Zd d L) → ℂ} {I : LoopIdx (Zd d L)}
-    (hI : I.WF) {k l : ℕ} (hk : 1 ≤ k) (hkl : k < l) (hl : l ≤ I.length) {R δF δG MF MG : ℝ}
-    (hδF : 0 ≤ δF) (hδG : 0 ≤ δG)
-    (hFd : LoopDecay d L I.length R δF F) (hGd : LoopDecay d L I.length R δG G)
-    (hF : ∀ a, ‖F (I.cutGlueL k l a)‖ ≤ MF) (hG : ∀ b, ‖G (I.cutGlueR k l b)‖ ≤ MG)
-    {x y : Zd d L} (hx : x ∈ I.a) (hy : y ∈ I.a)
-    (hxy : 2 * R + 1 ≤ (zdistInf d L (x - y) : ℝ)) :
-    ‖glueTerm g F G I k l‖ ≤ (L : ℝ) ^ d * (δF * MG + MF * δG) := by
-  refine le_trans ?_ (DecayLoopB_sum_norm_glue_le_of_far (g := g) hL hI hk hkl hl hδF hδG hFd hGd hF hG hx hy hxy)
-  unfold glueTerm
-  refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun a _ => (norm_sum_le _ _).trans
-    (Finset.sum_le_sum fun b _ => ?_))
-  rw [norm_mul, norm_mul]
 
 end Glue
 
@@ -2244,243 +2129,5 @@ Targets 3 and 2 are applied at the merged flow instance `sz0` (`L = 4(n+1)`, `W 
 (`STGdecayW`, resp. `STDecayLoopU`) are other gates' outputs and stay hypotheses of the examples; every
 deterministic hypothesis is discharged.  `DecayLoopB_sz0_far_nonempty_U` and `DecayLoopB_sz0_far_nonempty_EK` show that the
 far set of `STDecayLoopU` and the far premise of `EKFastDecay` are nonempty at the data, for every `n`. -/
-
-namespace RBM.Gauss.DecayLoopBInst
-
-open Filter RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Ind RBM.Gauss.SizesInst
-  RBM.Gauss.InductionDefsInst
-
-
-private def DecayLoopB_I3 : LoopIdx (Zd 3 5) :=
-  loopOf ![true, false, true] ![(0 : Zd 3 5), fun _ => 2, 0]
-
-private theorem DecayLoopB_I3_WF : DecayLoopB_I3.WF := by simp [DecayLoopB_I3, loopOf, LoopIdx.WF]
-private theorem DecayLoopB_I3_length : DecayLoopB_I3.length = 3 := by simp [DecayLoopB_I3, loopOf, LoopIdx.length]
-private theorem DecayLoopB_I3_mem0 : (0 : Zd 3 5) ∈ DecayLoopB_I3.a := by simp [DecayLoopB_I3, loopOf]
-private theorem DecayLoopB_I3_mem1 : (fun _ => 2 : Zd 3 5) ∈ DecayLoopB_I3.a := by simp [DecayLoopB_I3, loopOf]
-private theorem DecayLoopB_I3_far : 2 * (1 / 2 : ℝ) + 1 ≤ (zdistInf 3 5 ((0 : Zd 3 5) - fun _ => 2) : ℝ) := by
-  have : zdistInf 3 5 ((0 : Zd 3 5) - fun _ => 2) = 2 := by decide
-  rw [this]; norm_num
-
-open scoped Classical in
-private def DecayLoopB_F3 : LoopIdx (Zd 3 5) → ℂ :=
-  fun J => if ∀ x ∈ J.a, ∀ y ∈ J.a, x = y then 1 else (1 / 10 : ℂ)
-
-private theorem DecayLoopB_F3_decay (N : ℕ) : LoopDecay 3 5 N (1 / 2) (1 / 10) DecayLoopB_F3 := by
-  intro J hJ hJN x hx y hy hxy
-  have hne : ¬ (∀ x ∈ J.a, ∀ y ∈ J.a, x = y) := by
-    intro h
-    have := h x hx y hy
-    subst this
-    have h0 : zdistInf 3 5 (x - x) = 0 := by simp [zdistInf]
-    rw [h0] at hxy
-    norm_num at hxy
-  simp [DecayLoopB_F3, hne]
-
-private theorem DecayLoopB_F3_bound (J : LoopIdx (Zd 3 5)) : ‖DecayLoopB_F3 J‖ ≤ 1 := by
-  unfold DecayLoopB_F3; split_ifs <;> norm_num
-
-example : ‖glueTerm (1 / 2) DecayLoopB_F3 DecayLoopB_F3 DecayLoopB_I3 1 2‖ ≤ ((5 : ℕ) : ℝ) ^ 3 * (1 / 10 * 1 + 1 * (1 / 10)) :=
-  norm_glueTerm_le_of_far (g := 1 / 2) (R := 1 / 2) (by norm_num) DecayLoopB_I3_WF le_rfl (by norm_num)
-    (by rw [DecayLoopB_I3_length]; norm_num) (by norm_num) (by norm_num) (DecayLoopB_F3_decay _) (DecayLoopB_F3_decay _)
-    (fun a => DecayLoopB_F3_bound _) (fun b => DecayLoopB_F3_bound _) DecayLoopB_I3_mem0 DecayLoopB_I3_mem1 DecayLoopB_I3_far
-
-example : ‖∑ a : Zd 3 5, ∑ b : Zd 3 5, SB 3 5 (1 / 2) a b * (if a = 0 then (1 : ℂ) else 1 / 10)‖ ≤
-    (2 * 1 + 1) ^ 3 * 1 + ((5 : ℕ) : ℝ) ^ 3 * (1 / 10) :=
-  norm_sum_SB_le_left (g := 1 / 2) (by norm_num) zero_le_one (by norm_num) 0
-    (fun a b => if a = 0 then 1 else 1 / 10) (fun a b => by split_ifs <;> norm_num)
-    (fun a b h => by
-      by_cases ha : a = 0
-      · subst ha
-        have h0 : zdistInf 3 5 ((0 : Zd 3 5) - 0) = 0 := by simp [zdistInf]
-        rw [h0] at h; norm_num at h
-      · simp [ha])
-
-private def DecayLoopB_eeσ : List Bool := [true, false, true]
-private def DecayLoopB_eea : List (Zd 3 5) := [0, fun _ => 2, 0]
-private def DecayLoopB_eea' : List (Zd 3 5) := [fun _ => 1, 0, fun _ => 3]
-
-example (b b' : Zd 3 5) :
-    (STeeLoop DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' 2 b b').length = 8 ∧ (STeeLoop DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' 2 b b').WF ∧
-    (fun _ => 3 : Zd 3 5) ∈ (STeeLoop DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' 2 b b').a :=
-  ⟨length_eeLoop DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' (k := 2) (by simp [DecayLoopB_eea]) (by simp [DecayLoopB_eea, DecayLoopB_eea']) b b',
-    eeLoop_WF DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' (k := 2) (by norm_num) (by simp [DecayLoopB_eea]) (by simp [DecayLoopB_eeσ, DecayLoopB_eea])
-      (by simp [DecayLoopB_eea, DecayLoopB_eea']) b b',
-    mem_eeLoop_right DecayLoopB_eeσ DecayLoopB_eea DecayLoopB_eea' 2 b b' (by simp [DecayLoopB_eea'])⟩
-
-example : (∃ c : Zd 3 5, ∀ b, c ∈ (DecayLoopB_I3.cutGlueL 1 3 b).a) ∧ (∃ c : Zd 3 5, ∀ b, c ∈ (DecayLoopB_I3.cutGlueR 1 3 b).a) :=
-  ⟨exists_anchor_cutGlueL DecayLoopB_I3 (by norm_num) (by rw [DecayLoopB_I3_length]),
-    exists_anchor_cutGlueR DecayLoopB_I3 le_rfl (by norm_num) (by rw [DecayLoopB_I3_length])⟩
-
-
-
-/-- `2(n+1) ≤ |c|_∞` for `c = (2(n+1), 2(n+1), 2(n+1))` on `Z_L^3`, `L = 4(n+1)`. -/
-private theorem sz0_zdistInf (n : ℕ) :
-    2 * (n + 1) ≤ zdistInf 3 (sz0.L n) (fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) := by
-  have hL : sz0.L n = 4 * (n + 1) := rfl
-  have hv : ((2 * (n + 1) : ℕ) : ZMod (sz0.L n)).val = 2 * (n + 1) := by
-    rw [ZMod.val_natCast_of_lt]
-    rw [hL]; omega
-  unfold zdistInf
-  refine le_trans ?_ (Finset.le_sup (f := fun i : Fin 3 => zdist (sz0.L n)
-    (((fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n)) : Zd 3 (sz0.L n))) i))
-    (Finset.mem_univ (0 : Fin 3)))
-  simp only [zdist, hv, hL]
-  omega
-
-/-- `ℓ_0 ≤ 1` at `sz0`: `ilambda ≤ 1/64`. -/
-private theorem sz0_ell_zero (n : ℕ) : ellT (sz0.L n) (sz0.lam n) 0 ≤ 1 := by
-  have hx : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
-    have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hg : sz0.lam n ≤ 1 / 64 := by
-    have h6 : (64 : ℝ) ≤ (2 * ((n : ℝ) + 1)) ^ 6 := by
-      calc (64 : ℝ) = 2 ^ 6 := by norm_num
-        _ ≤ (2 * ((n : ℝ) + 1)) ^ 6 := pow_le_pow_left₀ (by norm_num) hx 6
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-    rw [one_div]; exact inv_anti₀ (by norm_num) h6
-  calc ellT (sz0.L n) (sz0.lam n) 0 ≤ max (sz0.lam n / Real.sqrt |1 - (0 : ℝ)|) 1 := min_le_left _ _
-    _ = 1 := by
-        rw [show |1 - (0 : ℝ)| = 1 by norm_num, Real.sqrt_one, div_one]
-        exact max_eq_right (by linarith)
-
-/-- `W^{1/10} ≤ 2(n+1)` at `sz0` (`W = (2(n+1))^5`). -/
-private theorem sz0_W_rpow (n : ℕ) : ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
-  have hx : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
-    have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hx0 : (0 : ℝ) < 2 * ((n : ℝ) + 1) := by linarith
-  have hWe : ((sz0.W n : ℕ) : ℝ) = (2 * ((n : ℝ) + 1)) ^ 5 := by simp [sz0]
-  rw [hWe, ← Real.rpow_natCast (2 * ((n : ℝ) + 1)) 5, ← Real.rpow_mul hx0.le]
-  calc (2 * ((n : ℝ) + 1)) ^ (((5 : ℕ) : ℝ) * (1 / 10 : ℝ))
-      ≤ (2 * ((n : ℝ) + 1)) ^ (1 : ℝ) :=
-        Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
-    _ = 2 * ((n : ℝ) + 1) := Real.rpow_one _
-
-/-- **The far set of `STDecayLoopU` is nonempty at the window point `u = 0 ∈ [s_n,t_n]`, every `n`**:
-`a = (0, 0, c)`, `c = L/2 (1,1,1)`, `ℓ_0 W^{1/10} ≤ diam_∞ a` (`W^{1/10} ≤ 2(n+1) = L/2`). -/
-theorem DecayLoopB_sz0_far_nonempty_U (n : ℕ) :
-    ∃ (v : TimeIcc sInst tInst n) (a : Fin 3 → Zd 3 (sz0.L n)),
-      ellT (sz0.L n) (sz0.lam n) (v : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤
-        (STdiamInf a : ℝ) := by
-  refine ⟨⟨0, by simp [sInst], by simp [tInst]⟩, ![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))], ?_⟩
-  have hℓ := sz0_ell_zero n
-  have hW := sz0_W_rpow n
-  have hdiam : 2 * (n + 1) ≤ STdiamInf
-      (![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 3 → Zd 3 (sz0.L n)) := by
-    unfold STdiamInf
-    refine le_trans ?_ (Finset.le_sup (f := fun p : Fin 3 × Fin 3 => zdistInf 3 (sz0.L n)
-      ((![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 3 → Zd 3 (sz0.L n)) p.1 -
-        (![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 3 → Zd 3 (sz0.L n)) p.2))
-      (Finset.mem_univ ((2 : Fin 3), (0 : Fin 3))))
-    simpa using sz0_zdistInf n
-  have hdiamR : (2 * ((n : ℝ) + 1)) ≤ (STdiamInf
-      (![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 3 → Zd 3 (sz0.L n)) : ℝ) := by
-    have h1 : ((2 * (n + 1) : ℕ) : ℝ) ≤ (STdiamInf
-        (![0, 0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 3 → Zd 3 (sz0.L n)) : ℝ) := by
-      exact_mod_cast hdiam
-    have h2 : ((2 * (n + 1) : ℕ) : ℝ) = 2 * ((n : ℝ) + 1) := by push_cast; ring
-    linarith
-  have hWnn : 0 ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  calc ellT (sz0.L n) (sz0.lam n) ((⟨0, by simp [sInst], by simp [tInst]⟩ : TimeIcc sInst tInst n) : ℝ) *
-        ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ)
-      ≤ 1 * ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) := by gcongr
-    _ ≤ _ := by linarith
-
-
-/-- `|E_n| ≤ 2 - 1/10` along the merged flow `z0`. -/
-private theorem inst_hE (n : ℕ) : |STflowE z0 n| ≤ 2 - 1 / 10 := by
-  have him : 0 < (z0 n).im :=
-    lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz0.one_le_size n) _)
-      (flow_z0.2 n).2.1
-  exact (abs_lemE_le him).trans (flow_z0.2 n).1
-
-/-- **Target 3 at `d = 3`** on the merged flow instance (`sz0`, `z0`, `flow_z0`, `κ = ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`), window `[0, 1/16]` (`1/16 ≤ lemT z0`), arbitrary `Cd`; the uniform Step-2 decay `STGdecayW`
-stays the hypothesis. -/
-example (Cd : ℝ) (hD : STGdecayW sz0 (STflowE z0) sInst tInst Cd) :
-    STDecayLoopU sz0 (STflowE z0) sInst tInst :=
-  stDecayLoopU_of_step2 (d := 3) (by norm_num) sz0 (by norm_num) (by norm_num) flow_z0
-    (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-    (fun n => sixteenth_le_lemT n) Cd hD
-
-/-- **Target 3, applied at `k = 3`, `τ' = 1/10`, `D' = 1`.** -/
-example (Cd : ℝ) (hD : STGdecayW sz0 (STflowE z0) sInst tInst Cd) :
-    Prec sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 3 → Bool) × (Fin 3 → Zd 3 (sz0.L n)))
-      (fun n p ω =>
-        (‖Lloop sz0 n (STflowE z0 n) (p.1 : ℝ) p.2.1 p.2.2 ω‖ +
-          ‖Lloop sz0 n (STflowE z0 n) (p.1 : ℝ) p.2.1 p.2.2 ω -
-            STKloop sz0 n (STflowE z0 n) (p.1 : ℝ) p.2.1 p.2.2‖) *
-        (if ellT (sz0.L n) (sz0.lam n) (p.1 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤
-            (STdiamInf p.2.2 : ℝ) then 1 else 0))
-      (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) := by
-  have h : STDecayLoopU sz0 (STflowE z0) sInst tInst :=
-    stDecayLoopU_of_step2 (d := 3) (by norm_num) sz0 (by norm_num) (by norm_num) flow_z0
-      (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-      (fun n => sixteenth_le_lemT n) Cd hD
-  exact h 3 (by norm_num) (1 / 10) (by norm_num) 1 (by norm_num)
-
-/-- **Target 2 at `d = 3`** on the same data, `k = 2`, charges `(+,-)`: the four statements
-`STEKDecay` for `STegt`, `STksimLK` (every `l`), `STelklk`, `STee` (the `2k = 4` labels of `(a, a')`);
-the decay of the loops `STDecayLoopU` (another gate's output, `stDecayLoopU_of_step2`) stays the
-hypothesis, every deterministic hypothesis is discharged. -/
-example (hU : STDecayLoopU sz0 (STflowE z0) sInst tInst) :
-    STEKDecay sz0 sInst tInst (m := 2)
-      (fun n v ω (a : Fin 2 → Zd 3 (sz0.L n)) =>
-        sz0.STegt n (STflowE z0 n) (v : ℝ) ω ⟨List.ofFn ![true, false], List.ofFn a⟩) ∧
-    (∀ l : ℕ, STEKDecay sz0 sInst tInst (m := 2)
-      (fun n v ω (a : Fin 2 → Zd 3 (sz0.L n)) =>
-        sz0.STksimLK n (STflowE z0 n) (v : ℝ) ω l ⟨List.ofFn ![true, false], List.ofFn a⟩)) ∧
-    STEKDecay sz0 sInst tInst (m := 2)
-      (fun n v ω (a : Fin 2 → Zd 3 (sz0.L n)) =>
-        sz0.STelklk n (STflowE z0 n) (v : ℝ) ω ⟨List.ofFn ![true, false], List.ofFn a⟩) ∧
-    STEKDecay sz0 sInst tInst (m := 2 + 2)
-      (fun n v ω (b : Fin (2 + 2) → Zd 3 (sz0.L n)) =>
-        sz0.STee n (STflowE z0 n) (v : ℝ) ω ![true, false] (fun i => b (Fin.castAdd 2 i))
-          (fun i => b (Fin.natAdd 2 i))) :=
-  stEtermDecay (d := 3) (by norm_num) sz0 (κ := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num)
-    inst_hE sz0_admissible (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-    (fun n => by norm_num [tInst]) hU 2 le_rfl ![true, false]
-
-/-- **Targets 3 and 2 chained at `d = 3`**: the only hypothesis left is the uniform Step-2 decay
-`STGdecayW` (another gate's output); `STDecayLoopU` is derived by `stDecayLoopU_of_step2`, and
-`stEtermDecay` is applied to it (`k = 3`, charges `(+,-,+)`, first term `STegt`). -/
-example (Cd : ℝ) (hD : STGdecayW sz0 (STflowE z0) sInst tInst Cd) :
-    STEKDecay sz0 sInst tInst (m := 3)
-      (fun n v ω (a : Fin 3 → Zd 3 (sz0.L n)) =>
-        sz0.STegt n (STflowE z0 n) (v : ℝ) ω ⟨List.ofFn ![true, false, true], List.ofFn a⟩) :=
-  (stEtermDecay (d := 3) (by norm_num) sz0 (κ := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num)
-    inst_hE sz0_admissible (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-    (fun n => by norm_num [tInst])
-    (stDecayLoopU_of_step2 (d := 3) (by norm_num) sz0 (by norm_num) (by norm_num) flow_z0
-      (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-      (fun n => sixteenth_le_lemT n) Cd hD) 3 (by norm_num) ![true, false, true]).1
-
-/-- **The far premise of `EKFastDecay` is nonempty at the instance**: at `v = 0`, `ε = 1/10`, for every
-`n` the pair `a = (0, c)` has `W^{ε} ℓ_0 ≤ |a_1 - a_0|_{ℓ¹}`. -/
-theorem DecayLoopB_sz0_far_nonempty_EK (n : ℕ) :
-    ∃ (v : TimeIcc sInst tInst n) (a : Fin 2 → Zd 3 (sz0.L n)) (i j : Fin 2),
-      ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * ellT (sz0.L n) (sz0.lam n) (v : ℝ) ≤
-        (zdistD 3 (sz0.L n) (a i - a j) : ℝ) := by
-  refine ⟨⟨0, by simp [sInst], by simp [tInst]⟩,
-    ![0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))], 1, 0, ?_⟩
-  have hℓ := sz0_ell_zero n
-  have hW := sz0_W_rpow n
-  have h1 : 2 * (n + 1) ≤ zdistD 3 (sz0.L n)
-      (fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) :=
-    (sz0_zdistInf n).trans (zdistInf_le_zdistD 3 (sz0.L n) _)
-  have h2 : ((2 * (n + 1) : ℕ) : ℝ) ≤ (zdistD 3 (sz0.L n)
-      (fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) : ℝ) := by exact_mod_cast h1
-  have h3 : ((2 * (n + 1) : ℕ) : ℝ) = 2 * ((n : ℝ) + 1) := by push_cast; ring
-  have hWnn : 0 ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hsub : ((![0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 2 → Zd 3 (sz0.L n)) 1 -
-      (![0, fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))] : Fin 2 → Zd 3 (sz0.L n)) 0) =
-      (fun _ => ((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) := by simp
-  rw [hsub]
-  calc ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) *
-        ellT (sz0.L n) (sz0.lam n) ((⟨0, by simp [sInst], by simp [tInst]⟩ : TimeIcc sInst tInst n) : ℝ)
-      ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * 1 := by gcongr
-    _ ≤ _ := by linarith
-
-
-end RBM.Gauss.DecayLoopBInst
 
 end

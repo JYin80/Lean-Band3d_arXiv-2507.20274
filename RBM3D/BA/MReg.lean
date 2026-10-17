@@ -63,10 +63,6 @@ private theorem MReg_two (d L : ℕ) [NeZero L] (g c : ℝ) (z z' m m' : ℂ) (h
   have := mul_le_mul_of_nonneg_right hs (norm_nonneg (m - m'))
   nlinarith
 
-/-- `‖(x : ℂ) - (y : ℂ)‖ = |x - y|`. -/
-private theorem MReg_norm_real_sub (x y : ℝ) : ‖(x : ℂ) - (y : ℂ)‖ = |x - y| := by
-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-
 /-- `‖(E : ℂ) - (x + η I)‖ ≤ |x - E| + η` for `η > 0`. -/
 private theorem MReg_norm_sub_le (E x η : ℝ) (hη : 0 < η) :
     ‖(E : ℂ) - ((x : ℂ) + (η : ℂ) * Complex.I)‖ ≤ |x - E| + η := by
@@ -163,29 +159,6 @@ theorem BAbulk_window (d L : ℕ) [NeZero L] (g κ E x : ℝ) (hκ : 0 < κ) (hb
   linarith
 
 /-! ## 4. Targets 3 and 4: Lipschitz bound of `ρ_N` and the boundary value with a rate -/
-
-/-- **Target 3 (R3)**: `ρ_N` is Lipschitz on the `κ`-bulk, `|ρ_N(x) - ρ_N(y)| ≤ |x - y| / (π³κ²)`
-(the "continuous density" of `1_2:624`, quantitatively; uniform in `d`, `L`, `g`). -/
-theorem BArho_lip_of_bulk (d L : ℕ) [NeZero L] (g κ x y : ℝ) (hκ : 0 < κ) (hx : BAbulk d L g κ x)
-    (hy : BAbulk d L g κ y) :
-    |BArho d L g x - BArho d L g y| ≤ |x - y| / (Real.pi ^ 3 * κ ^ 2) := by
-  obtain ⟨mx, hmx, hmxκ⟩ := (BAbulk_iff_exists d L g κ x hκ).mp hx
-  obtain ⟨my, hmy, hmyκ⟩ := (BAbulk_iff_exists d L g κ y hκ).mp hy
-  have e1 := BAm_real_eq_of_self d L g x mx hmx
-  have e2 := BAm_real_eq_of_self d L g y my hmy
-  have h := MReg_two d L g (Real.pi * κ) (x : ℂ) (y : ℂ) mx my (by simp) (by simp) hmx hmy
-    (by positivity) hmxκ hmyκ
-  rw [MReg_norm_real_sub] at h
-  have h1 : |mx.im - my.im| ≤ ‖mx - my‖ := by
-    have := Complex.abs_im_le_norm (mx - my)
-    rwa [Complex.sub_im] at this
-  have h2 : |mx.im - my.im| * (Real.pi * κ) ^ 2 ≤ |x - y| := by
-    have := mul_le_mul_of_nonneg_right h1 (by positivity : 0 ≤ (Real.pi * κ) ^ 2)
-    nlinarith
-  unfold BArho
-  rw [e1, e2, ← sub_div, abs_div, abs_of_pos Real.pi_pos, div_le_div_iff₀ Real.pi_pos (by positivity)]
-  have := mul_le_mul_of_nonneg_right h2 Real.pi_pos.le
-  nlinarith
 
 /-- **Target 4 (R4)**: the boundary value with a rate, in the `κ`-bulk, no `3 ≤ L`, no `0 < g`:
 `|π⁻¹ Im m(E + iη) - ρ_N(E)| ≤ 2η / (π³κ²)` for every `η > 0`. -/
@@ -339,46 +312,3 @@ theorem unDensBARow'_holds : UNDensBARow' := by
 end RBM.Univ
 
 /-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, the merged flow point of `(L, g) = (4, 10)`) -/
-
-namespace RBM.BA.MRegInst
-
-open RBM RBM.Gauss RBM.BA RBM.Univ RBM.BA.MFixedPointInst RBM.BA.CouplingWindowInst
-
-/-- `κ = (Im m_S)/π > 0` at the merged flow point. -/
-private theorem MReg_flow_pos : 0 < (mS 4 10).im / Real.pi := div_pos (selfS 4 10).1 Real.pi_pos
-
-/-- The `ρ`-bulk datum of the flow point, as in `RBM.BA.ImmLowerInst` (I4). -/
-private theorem MReg_flow_bulk : BAbulk 3 4 g0P ((mS 4 10).im / Real.pi) EP := by
-  unfold BAbulk BArho
-  rw [BAm_real_eq_of_self 3 4 g0P EP m0P flowP_real.1]
-  exact div_le_div_of_nonneg_right flowP_real.2 Real.pi_pos.le
-
-/-- (I1) The pin `UNDensBARow'` itself. -/
-example : UNDensBARow' := unDensBARow'_holds
-
-/-- (I2) Target 2 at the flow point: the window `|x - E_P| ≤ (πκ)³/8` stays in the `κ/2`-bulk. -/
-example : ∀ x : ℝ, |x - EP| ≤ (Real.pi * ((mS 4 10).im / Real.pi)) ^ 3 / 8 →
-    BAbulk 3 4 g0P ((mS 4 10).im / Real.pi / 2) x :=
-  fun x hx => BAbulk_window 3 4 g0P _ EP x MReg_flow_pos MReg_flow_bulk hx
-
-/-- (I3) Target 5 at the flow point. -/
-example : ∀ x η : ℝ, |x - EP| ≤ (Real.pi * ((mS 4 10).im / Real.pi)) ^ 3 / 8 → 0 < η → η ≤ 10 →
-    (Real.pi * ((mS 4 10).im / Real.pi)) ^ 5 / 2048 ≤
-      (BAm 3 4 g0P ((x : ℂ) + (η : ℂ) * Complex.I)).im :=
-  fun x η hx h0 h10 => BAm_im_lower_window 3 4 g0P _ EP x η MReg_flow_pos MReg_flow_bulk hx h0 h10
-
-/-- (I4) Target 6 at the merged class sequence `S0` (the coupling parameter of `S0` is the private
-`UNPins_hg_3_10`, hence the existential form; proof irrelevance identifies `by norm_num : 0 < 3/10` with it). -/
-example : ∃ E κ : ℝ, 0 < κ ∧ ∀ δ : ℝ, 0 < δ → δ ≤ (Real.pi * κ) ^ 3 / 8 →
-    UNDens' (fun n => BAm 3 ((RBM.Univ.BAInst.S0 : Sizes 3).L n) ((RBM.Univ.BAInst.S0 : Sizes 3).lam n)) E
-      (fun n => BArho 3 ((RBM.Univ.BAInst.S0 : Sizes 3).L n) ((RBM.Univ.BAInst.S0 : Sizes 3).lam n) E) δ :=
-  have hg : (0 : ℝ) < 3 / 10 := by norm_num
-  ⟨(RBM.BA.UNPinsInst.fp 4 hg).E, RBM.BA.UNPinsInst.clsκ 4 hg, RBM.BA.UNPinsInst.clsκ_pos 4 hg,
-    fun δ hδ hδ' => unDens'_ba 3 RBM.Univ.BAInst.S0 _ _ (RBM.BA.UNPinsInst.clsκ_pos 4 hg)
-      RBM.Univ.BAInst.S0_bulk δ hδ hδ'⟩
-
-/-- (I5) The merged consumer with `rD` discharged by the proved pin. -/
-example (rT : UNTrLocalInitBARow') (rN : UNNormBARow) (hLoc : UNLocAvgBA) :=
-  RBM.Univ.BAInst.inst_step1GoodC''_ba unDensBARow'_holds rT rN hLoc
-
-end RBM.BA.MRegInst

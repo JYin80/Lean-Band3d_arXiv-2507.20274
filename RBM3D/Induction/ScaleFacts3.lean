@@ -461,15 +461,6 @@ theorem st_window {𝔠d 𝔡 : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (h
     _ ≤ sz.Bctl n (t n) ^ 𝔠d := hpow
     _ ≤ (1 - t n) / (1 - s n) := h1
 
-/-- **The merged `STEKWin`** (`lem:sum_decay` window, `3_5:1633`): `0 ≤ s ≤ t`, case (i) (`STCaseI`, i.e.
-`t ≤ 1 - ilambda²/L²`), `t < 1` and `(1-t)/(1-s) ≥ W⁻¹` (`st_window`). -/
-theorem st_EKWin {𝔠d 𝔡 : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (hdc : (d : ℝ) * 𝔠d < 1)
-    (hcon : sz.STConStInd 𝔠d s t) (hWO : sz.WO 𝔡)
-    (hW : Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop)
-    (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (hcase : STCaseI sz s t) (ht1 : ∀ n, t n < 1) :
-    STEKWin sz s t :=
-  ⟨hs0, hst, fun n => by linarith [hcase n], ht1, st_window sz h𝔠d hdc hcon hWO hW hs0 ht1⟩
-
 /-! ## 5. Regimes: sub-intervals and the split at the middle time `u = 1 - ilambda²/L²` -/
 
 /-- **`(con_st_ind)` passes to a sub-interval**: from `[s,t]` to `[s',t']`, `s ≤ s' < t' ≤ t < 1`
@@ -493,35 +484,6 @@ theorem st_conStInd_sub {𝔠d : ℝ} {s t s' t' : ℕ → ℝ} (h𝔠d : 0 < �
         rw [div_le_div_iff₀ hxs hxs']
         nlinarith [hs n, ht n]
 
-/-- **The split at `u = 1 - ilambda²/L²`, first part** (`3_5:1104-1105`): on `[s, min(t,u)]` the regime is `STCaseI`
-(`1 - min(t,u) ≥ 1 - u = ilambda²/L²`) and `(con_st_ind)` holds, for the sequences `n ↦ min (t n) (u n)`.
-`s_n < t_n` and `s_n < u_n` for all `n` keep the window `[s_n, min(t_n,u_n)]` nonempty (at `s_n = u_n` it would be a
-point and `(con_st_ind)`, which needs `(1-t')/(1-s') < 1`, would fail; the statement does not cover that endpoint). -/
-theorem st_split_I {𝔠d : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (hcon : sz.STConStInd 𝔠d s t)
-    (ht1 : ∀ n, t n < 1) (hst : ∀ n, s n < t n)
-    (hsu : ∀ n, s n < 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) :
-    STCaseI sz s (fun n => min (t n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)) ∧
-      sz.STConStInd 𝔠d s (fun n => min (t n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)) := by
-  refine ⟨fun n => ?_, st_conStInd_sub sz h𝔠d hcon (fun n => le_rfl)
-    (fun n => lt_min (hst n) (hsu n)) (fun n => min_le_left _ _) ht1⟩
-  have := min_le_right (t n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)
-  dsimp only
-  linarith
-
-/-- **The split at `u = 1 - ilambda²/L²`, second part** (`3_5:1104-1105`): on `[max(s,u), t]` the regime is `STCaseII`
-(`1 - max(s,u) ≤ 1 - u = ilambda²/L²`) and `(con_st_ind)` holds, for the sequences `n ↦ max (s n) (u n)`.
-`s_n < t_n` and `u_n < t_n` for all `n` keep the window nonempty (at `u_n = t_n` it would be a point). -/
-theorem st_split_II {𝔠d : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (hcon : sz.STConStInd 𝔠d s t)
-    (ht1 : ∀ n, t n < 1) (hst : ∀ n, s n < t n)
-    (hut : ∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 < t n) :
-    STCaseII sz (fun n => max (s n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)) t ∧
-      sz.STConStInd 𝔠d (fun n => max (s n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)) t := by
-  refine ⟨fun n => ?_, st_conStInd_sub sz h𝔠d hcon (fun n => le_max_left _ _)
-    (fun n => max_lt (hst n) (hut n)) (fun n => le_rfl) ht1⟩
-  have := le_max_right (s n) (1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)
-  dsimp only
-  linarith
-
 end RBM.Gauss.Sizes
 
 /-! ## 6. Instances at `d = 3`
@@ -531,112 +493,3 @@ Every deterministic hypothesis is discharged.  `szB` is the merged second size s
 `(s,t) = (7/8, 15/16)` (`STRegIterI szB`: `1 - s = 1/8 ≤ ilambda² = 1`, `1 - t = ilambda²/L² = 1/16`), case (ii) at
 `(15/16, 31/32)` (`STCaseII`: `1 - s = ilambda²/L² = 1/16`), `𝔠d = 1/100` (`(con_st_ind)` holds eventually for every
 `𝔠d > 0`, `conStInd_const`).  The window instances are at `sz0` with the merged `sInst = 0`, `tInst = 1/16`. -/
-
-namespace RBM.Gauss.ScaleFacts3Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Path Filter
-
-private theorem zB_abs_E (n : ℕ) : |STflowE zB n| < 2 := abs_lemE_lt_two (by simp [zB])
-
-private theorem szB_conI {𝔠d : ℝ} (h : 0 < 𝔠d) :
-    szB.STConStInd 𝔠d (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h
-
-private theorem szB_conII {𝔠d : ℝ} (h : 0 < 𝔠d) :
-    szB.STConStInd 𝔠d (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h
-
-/-- The depths `k_min` at `𝔠d = 1/100` (`r = 2, 3, 10, 50, 100`; `2 + 8 𝔠d (r-1) = 2.08, 2.16, 2.72, 5.92, 9.92`). -/
-example : st_kmin (1 / 100) 2 = 3 ∧ st_kmin (1 / 100) 3 = 3 ∧ st_kmin (1 / 100) 10 = 3 ∧
-    st_kmin (1 / 100) 50 = 6 ∧ st_kmin (1 / 100) 100 = 10 := by
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> norm_num [st_kmin, Nat.floor_eq_iff]
-
-/-- Item 1, case (i): `st_hscale_I` and `st_hscale_I'` at `(szB, zB, 7/8, 15/16)`, `𝔠d = 1/100`, `𝔡 = 1/10`. -/
-example (r : ℕ) (hr : 2 ≤ r) :
-    ∃ c : ℝ, 0 < c ∧ ∀ᶠ n in atTop, ∀ q : STPair (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n,
-      STPsi (szB.STAI n) (etaT (STflowE zB n) (7 / 8) / etaT (STflowE zB n) q.1.2) r
-          (st_kmin (1 / 100) r) ≤ c * szB.STAI n ^ (3 / 4 : ℝ) :=
-  st_hscale_I szB (E := STflowE zB) (𝔠d := 1 / 100) (𝔡 := 1 / 10) (by norm_num) szB_regIterI
-    (szB_conI (by norm_num)) szB_WO (fun _ => by norm_num) zB_abs_E r hr
-
-example : ∀ r, 2 ≤ r → ∃ k : ℕ, ∃ c : ℝ, 0 < c ∧ ∀ᶠ n in atTop,
-    ∀ q : STPair (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n,
-      STPsi (szB.STAI n) (etaT (STflowE zB n) (7 / 8) / etaT (STflowE zB n) q.1.2) r k ≤
-        c * szB.STAI n ^ (3 / 4 : ℝ) :=
-  st_hscale_I' szB (E := STflowE zB) (𝔠d := 1 / 100) (𝔡 := 1 / 10) (by norm_num) szB_regIterI
-    (szB_conI (by norm_num)) szB_WO (fun _ => by norm_num) zB_abs_E
-
-/-- Item 2, case (ii): `st_hscale_II` and `st_hscale_II'` at `(szB, zB, 15/16, 31/32)`, `𝔠d = 1/100`. -/
-example (r : ℕ) (hr : 2 ≤ r) :
-    ∃ c : ℝ, 0 < c ∧ ∀ᶠ n in atTop, ∀ q : STPair (fun _ => (15 / 16 : ℝ)) (fun _ => 31 / 32) n,
-      STPsi (szB.STAII (fun _ => 15 / 16) n)
-          (etaT (STflowE zB n) (15 / 16) / etaT (STflowE zB n) q.1.2) r (st_kmin (1 / 100) r) ≤
-        c * szB.STAII (fun _ => 15 / 16) n ^ (3 / 4 : ℝ) :=
-  st_hscale_II szB (E := STflowE zB) (𝔠d := 1 / 100) (by norm_num) (szB_conII (by norm_num))
-    (fun _ => by norm_num) zB_abs_E r hr
-
-example : ∀ r, 2 ≤ r → ∃ k : ℕ, ∃ c : ℝ, 0 < c ∧ ∀ᶠ n in atTop,
-    ∀ q : STPair (fun _ => (15 / 16 : ℝ)) (fun _ => 31 / 32) n,
-      STPsi (szB.STAII (fun _ => 15 / 16) n)
-          (etaT (STflowE zB n) (15 / 16) / etaT (STflowE zB n) q.1.2) r k ≤
-        c * szB.STAII (fun _ => 15 / 16) n ^ (3 / 4 : ℝ) :=
-  st_hscale_II' szB (E := STflowE zB) (𝔠d := 1 / 100) (by norm_num) (szB_conII (by norm_num))
-    (fun _ => by norm_num) zB_abs_E
-
-/-- Item 3: `st_hBA_I` at `(szB, 7/8, 15/16)` (`d = 3 ≥ 2`) and `st_hBA_II` at `(szB, 15/16, 31/32)`, `𝔠d = 1/100 ≤ 1/4`. -/
-example : ∃ c : ℝ, 0 ≤ c ∧ ∀ᶠ n in atTop,
-    ∀ v : TimeIcc (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n,
-      szB.Bctl n (v : ℝ) * szB.STAI n ^ (3 / 4 : ℝ) ≤ c :=
-  st_hBA_I szB (𝔡 := 1 / 10) (by norm_num) szB_regIterI.1 szB_WO
-
-example : ∃ c : ℝ, 0 ≤ c ∧ ∀ᶠ n in atTop,
-    ∀ v : TimeIcc (fun _ => (15 / 16 : ℝ)) (fun _ => 31 / 32) n,
-      szB.Bctl n (v : ℝ) * szB.STAII (fun _ => 15 / 16) n ^ (3 / 4 : ℝ) ≤ c :=
-  st_hBA_II szB (𝔠d := 1 / 100) (by norm_num) (by norm_num) (szB_conII (by norm_num))
-    (fun _ => by norm_num)
-
-/-- Item 4: `st_window` and `st_EKWin` at `sz0` with the merged `sInst = 0`, `tInst = 1/16` (`d = 3`, `𝔠d = 1/100`,
-`d 𝔠d = 3/100 < 1`, `W → ∞`, `(eq:WO)` at `𝔡 = 1/10`); `W → ∞` also from `Admissible` (`scaleFacts3_W_tendsto`). -/
-example : ∀ᶠ n in atTop, ((sz0.W n : ℕ) : ℝ)⁻¹ ≤ (1 - tInst n) / (1 - sInst n) :=
-  st_window sz0 (𝔠d := 1 / 100) (𝔡 := 1 / 10) (by norm_num) (by norm_num) (sz0_con _ (by norm_num)) sz0_WO
-    W_tendsto_sz0 sz0_hs0 (fun n => by simp only [tInst]; norm_num)
-
-example : STEKWin sz0 sInst tInst :=
-  st_EKWin sz0 (𝔠d := 1 / 100) (𝔡 := 1 / 10) (by norm_num) (by norm_num) (sz0_con _ (by norm_num)) sz0_WO
-    (scaleFacts3_W_tendsto sz0 sz0_admissible) sz0_hs0 (fun n => (sz0_hst n).le) sz0_caseI
-    (fun n => by simp only [tInst]; norm_num)
-
-/-- Item 5: `st_conStInd_sub` from `[7/8, 15/16]` to `[29/32, 59/64]`; the split at `u = 1 - 1/16 = 15/16` of the
-interval `[7/8, 31/32]` (`7/8 < u < 31/32`): `[7/8, min(31/32,u)] = [7/8, 15/16]` is case (i) and
-`[max(7/8,u), 31/32] = [15/16, 31/32]` is case (ii), both with `(con_st_ind)`. -/
-example : szB.STConStInd (1 / 100) (fun _ => 29 / 32) (fun _ => 59 / 64) :=
-  st_conStInd_sub szB (by norm_num) (szB_conI (by norm_num)) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num)
-
-private theorem szB_con_wide : szB.STConStInd (1 / 100) (fun _ => 7 / 8) (fun _ => 31 / 32) :=
-  conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)
-
-example :=
-  st_split_I szB (𝔠d := 1 / 100) (s := fun _ => 7 / 8) (t := fun _ => 31 / 32) (by norm_num) szB_con_wide
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => by simp [szB]; norm_num)
-
-example :=
-  st_split_II szB (𝔠d := 1 / 100) (s := fun _ => 7 / 8) (t := fun _ => 31 / 32) (by norm_num) szB_con_wide
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => by simp [szB]; norm_num)
-
-/-- Item 6: the copied helpers at `szB`. -/
-example : ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ 1 → ((szB.size n : ℕ) : ℝ) ^ (-(2 : ℝ)) ≤ szB.Bctl n u :=
-  st_Bctl_ge szB (Λ := 1) (tendsto_size szB szB_tendsto)
-    (Eventually.of_forall fun n => ⟨by simp [szB], by simp [szB]⟩)
-
-example : STbootRHS 1 (fun _ => 1) (fun _ => 1) (1 / 2) 3 2 =
-    (1 / 2 : ℝ) ^ (-(1 : ℝ) / (4 * ((2 : ℕ) : ℝ))) +
-      (((Finset.Icc 1 (3 - 1)).card + (Finset.Icc (3 - 1) (3 + 1)).card +
-        (Finset.Icc ((3 + 1) / 2 + 1) (3 - 1)).card : ℕ) : ℝ) :=
-  st_bootRHS_one 1 (1 / 2) 3 2
-
-example : ∀ k r, 2 ≤ r → 2 ≤ r + k :=
-  st_iterate (S := fun r k => 2 ≤ r + k) (fun r hr => by omega) (fun n k hn _ _ _ => by omega)
-
-end RBM.Gauss.ScaleFacts3Inst

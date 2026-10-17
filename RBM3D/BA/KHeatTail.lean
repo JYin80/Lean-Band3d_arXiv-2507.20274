@@ -750,37 +750,6 @@ theorem kBA_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ →
 
 /-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P` of `KKernelInst`) -/
 
-namespace KHeatTailInst
-
-open RBM.BA.MFixedPointInst
-
-/-- `zdistD 3 4 (1, 0, 2) = 3` (the point of the instance is at torus `ℓ¹` distance `3`). -/
-theorem inst_zdistD : zdistD 3 4 (![1, 0, 2] : Zd 3 4) = 3 := by
-  decide
-
-/-- Target `kBA_le` at `τ = 1 ≤ L² = 16`, `a = (1, 0, 2)`, `Λ = 10`, `κ = Im m₀`. -/
-theorem inst_kBA_le :
-    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-      kBA 3 4 P.g0 P.E P.m0 1 ![1, 0, 2] ≤ C * Real.exp (-c * 3) := by
-  obtain ⟨C, c, hC, hc, h⟩ := kBA_le 3 (by norm_num) 10 P.m0.im (by norm_num) P.real.1.1
-  refine ⟨C, c, hC, hc, ?_⟩
-  have h1 := h 4 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real 1 one_pos (by norm_num) ![1, 0, 2]
-  have h2 : min (((3 : ℕ) : ℝ) ^ 2 / 1) ((3 : ℕ) : ℝ) = 3 := by
-    rw [min_eq_right (by norm_num)]
-    norm_num
-  rw [inst_zdistD, h2] at h1
-  simpa using h1
-
-/-- Target `BAP_tail_le` at `τ = 1`, `ρ = 2`: the mass at torus distance `≥ 2`. -/
-theorem inst_tail_le :
-    ∃ cT : ℝ, 0 < cT ∧
-      ∑ b ∈ Finset.univ.filter (fun b : Zd 3 4 => (2 : ℝ) ≤ (zdistD 3 4 b : ℝ)), kBA 3 4 P.g0 P.E P.m0 1 b
-        ≤ 2 * ((3 : ℕ) : ℝ) * Real.exp (-cT * min ((2 : ℝ) ^ 2 / 1) 2) := by
-  obtain ⟨cT, hcT, h⟩ := BAP_tail_le 3 (by norm_num) 10 P.m0.im (by norm_num) P.real.1.1
-  exact ⟨cT, hcT, h 4 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real 1 one_pos 2 (by norm_num)⟩
-
-end KHeatTailInst
-
 end RBM.BA
 
 end

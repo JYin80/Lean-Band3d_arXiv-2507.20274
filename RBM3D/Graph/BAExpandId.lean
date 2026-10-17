@@ -69,29 +69,6 @@ open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
 /-! ## 1. Vocabulary (the probe, lines 135-153) -/
 
-/-- `𝒢_{xy}` of `(eq;I42inG)` (`B:68-72`) as a BA graph, the twin of `LWG5Graph` (`LWExpTerm3.lean:54`), all solid edges
-uncircled (`G = Ǧ + M` is `BAGraph.partition`, `BAVocab.lean:229`); `k` selects `S⁺` for the first waved edge, `s` the
-closing edge's charge. -/
-def baG5Graph (k s : Bool) : BAGraph (Fin 2) (Fin 3) where
-  solid := [SEdge.mk true false (Sum.inl 0) (Sum.inr 0), SEdge.mk true false (Sum.inr 0) (Sum.inr 1),
-    SEdge.mk true false (Sum.inr 1) (Sum.inr 2), SEdge.mk true false (Sum.inr 2) (Sum.inl 1),
-    if s then SEdge.mk true false (Sum.inl 1) (Sum.inl 0) else SEdge.mk false false (Sum.inl 0) (Sum.inl 1)]
-  waved := [WEdge.mk k true (Sum.inr 1) (Sum.inr 0), WEdge.mk false false (Sum.inr 0) (Sum.inr 2)]
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-/-- **L4d, the BA identity half** (band: `LWG5Identity`, `LWExpTerm5.lean:76`).  For lists `Ls k s` of packed BA graphs the
-expectation identity `𝔼 𝒢_{xy} = Σ_μ 𝔼 Γ_μ` at the BA data `BAlwData` (`BAExpandW.lean:98`) for all `0 ≤ t < 1`.  No exponent
-pairs: the coefficients `m^j m̄^{j'}` of the band are `M`-dotted edges here, and `(1 + M⁺S⁺)` is the `S⁺`-waved chain
-(`BAGGGamma`, D402). -/
-def BAG5Identity (d : ℕ) (Ls : Bool → Bool → List (BAPGraph (Fin 2))) : Prop :=
-  ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 →
-    ∀ (k s : Bool) (x y : Idx d L W),
-      ∫ ω, (baG5Graph k s).val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0) =
-        ((Ls k s).map fun q => ∫ ω, q.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0)).sum
-
 /-! ## 1b. The red charge: complex conjugation (Amend 1)
 
 A red solid edge is the complex conjugate of the blue one at the same data and the same endpoints
@@ -375,28 +352,6 @@ def BAstep (sel : BASel) (P : BAPGraph (Fin 2)) : Option (List ((ℕ × ℕ) × 
 def BAexpand (sel : BASel) (fuel : ℕ) (P : BAPGraph (Fin 2)) : List ((ℕ × ℕ) × BAPGraph (Fin 2)) :=
   expandG (BAstep sel) fuel P
 
-/-- The list of the root: the partition of `baG5Graph k s`, each term expanded (the exponent pairs dropped). -/
-def BAexpandRoot (sel : BASel) (fuel : ℕ) (k s : Bool) : List (BAPGraph (Fin 2)) :=
-  (baG5Graph k s).partition.flatMap fun P => (BAexpand sel fuel P).map Prod.snd
-
-/-- The selection rule of the leaf side: some candidate when there is one. -/
-def BAselClassical : BASel := fun P =>
-  open Classical in if h : Nonempty (BARCand P) then some h.some else none
-
-/-- A graph has a candidate iff it has a circled pair `p`, `q` of solid edges of one charge with `p.1.src = q.1.dst`. -/
-theorem baRCand_nonempty_iff (P : BAPGraph (Fin 2)) :
-    Nonempty (BARCand P) ↔ ∃ p ∈ lwSplit P.g.solid, ∃ q ∈ lwSplit p.2, p.1.σ = q.1.σ ∧ p.1.circ = true ∧
-      q.1.circ = true ∧ p.1.src = q.1.dst := by
-  constructor
-  · rintro ⟨c⟩
-    exact ⟨c.p, c.hp, c.q, c.hq, c.hpσ.trans c.hqσ.symm, c.hpc, c.hqc, c.hpv.trans c.hqv.symm⟩
-  · rintro ⟨p, hp, q, hq, h1, h2, h3, h5⟩
-    exact ⟨⟨p.1.σ, p.1.src, p, q, hp, hq, rfl, h2, h1.symm, h3, rfl, h5.symm⟩⟩
-
-/-- `BAselClassical` returns a candidate whenever there is one. -/
-theorem baSelClassical_isSome (P : BAPGraph (Fin 2)) (h : Nonempty (BARCand P)) : BAselClassical P ≠ none := by
-  simp [BAselClassical, h]
-
 /-! ## 3. Normality of the children -/
 
 /-- Every child of a candidate is a normal graph (`BAGraph.partition_normal`, `BAVocab.lean:930`; `pcomp` keeps `g`). -/
@@ -581,30 +536,6 @@ private theorem BAExpandId_flat_sum {X : Type*} (Φ : X → ℂ) (l : List X) (g
   rw [List.map_map, hg r hr]
   rfl
 
-/-- **The identity half of LW-14e at BA, for every selection rule and every fuel** (`B:78-108`, `B:393-405`): the list of
-`BAexpandRoot sel fuel` satisfies the expectation identity `𝔼 𝒢_{xy} = Σ_μ 𝔼 Γ_μ`.  `expandG_sum` (`LWExpTerm5.lean:234`, any
-carrier) with `X := BAPGraph (Fin 2)`, the invariant `Normal`, the weight `w = fun _ => 1`, and the step lemma
-`kids_normal` + `kids_identity`.  The stop rule and the leaf property are not claimed (`baTwB_stuck`, probe 97).  Hypotheses of
-the statement: `BASelf` and `0 ≤ t < 1` (`BAG5Identity`). -/
-theorem baExpandIdentity_holds (d : ℕ) (sel : BASel) (fuel : ℕ) : BAG5Identity d (BAexpandRoot sel fuel) := by
-  intro L W _ _ hL g0 E t m hSelf ht0 ht1 k s x y
-  have hexp := expandG_sum (BAstep sel) (fun P : BAPGraph (Fin 2) => P.g.Normal)
-    (fun P => ∫ ω, P.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0)) (fun _ => 1) rfl
-    (fun _ _ _ _ => (one_mul (1 : ℂ)).symm)
-    (by
-      intro P l hP hst
-      obtain ⟨c, hc, rfl⟩ := Option.map_eq_some_iff.1 hst
-      refine ⟨c.kids_normal, ?_⟩
-      simp only [one_mul]
-      exact BARCand.kids_identity hL g0 E t m hSelf ht0 ht1 c x y) fuel
-  rw [BAExpandId_integral_partition hL g0 E t m hSelf ht0 ht1 (baG5Graph k s) ![x, y]]
-  unfold BAexpandRoot
-  exact (BAExpandId_flat_sum (fun P : BAPGraph (Fin 2) => ∫ ω, P.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0))
-    (baG5Graph k s).partition (fun P => BAexpand sel fuel P) (by
-      intro P _
-      have := (hexp P (BAGraph.partition_normal _ P ‹_›)).1
-      simpa [BAexpand] using this)).symm
-
 end Identity
 
 /-! ## 7. Compiled instances (namespace `RBM.Graph.BAExpandIdInst`)
@@ -613,159 +544,6 @@ end Identity
 has `27` points.  The packed graph is the shape of `baG5Graph true true` with every solid edge circled (a normal term of its
 partition): `5` solid edges, `2` waved edges, `3` internal vertices, `E' = Fin 2`, `I' = Fin 3`, `ext = id`.  The candidate is at
 `v = inr 0`: `p = Ǧ_{inr0 inr1}`, `q = Ǧ_{inl0 inr0}`. -/
-
-namespace BAExpandIdInst
-
-set_option maxRecDepth 100000
-
-/-- `baG5Graph true true` with every solid edge circled. -/
-def baG5Circ : BAGraph (Fin 2) (Fin 3) where
-  solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 0) (Sum.inr 1),
-    SEdge.mk true true (Sum.inr 1) (Sum.inr 2), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
-    SEdge.mk true true (Sum.inl 1) (Sum.inl 0)]
-  waved := [WEdge.mk true true (Sum.inr 1) (Sum.inr 0), WEdge.mk false false (Sum.inr 0) (Sum.inr 2)]
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-theorem baG5Circ_normal : baG5Circ.Normal := ⟨by decide, by decide⟩
-
-/-- The packed instance graph (external `x, y`, three internal vertices; normal). -/
-abbrev instP : BAPGraph (Fin 2) :=
-  { E' := Fin 2, I' := Fin 3, ext := id, ext_surj := Function.surjective_id, g := baG5Circ }
-
-/-- A `GG` candidate of `instP` at `v = inr 0`: `p = Ǧ_{v,inr1}`, `q = Ǧ_{inl0,v}`. -/
-def instCand : BARCand instP where
-  σ := true
-  v := Sum.inr 0
-  p := (SEdge.mk true true (Sum.inr 0) (Sum.inr 1),
-    [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 1) (Sum.inr 2),
-      SEdge.mk true true (Sum.inr 2) (Sum.inl 1), SEdge.mk true true (Sum.inl 1) (Sum.inl 0)])
-  q := (SEdge.mk true true (Sum.inl 0) (Sum.inr 0),
-    [SEdge.mk true true (Sum.inr 1) (Sum.inr 2), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
-      SEdge.mk true true (Sum.inl 1) (Sum.inl 0)])
-  hp := by simp [lwSplit, instP, baG5Circ]
-  hq := by simp [lwSplit]
-  hpσ := rfl
-  hpc := rfl
-  hqσ := rfl
-  hqc := rfl
-  hpv := rfl
-  hqv := rfl
-
-/-- The step at `instCand` is not degenerate: `gg2` has `8` terms, `gg4` has `5`, and the children number `63`
-(partition term counts), `instP` has a candidate, `BAselClassical` selects one. -/
-theorem instCand_sizes : (instP.g.gg2 instCand.p instCand.q).length = 8 ∧
-    (instP.g.gg4 instCand.p instCand.q).length = 5 ∧ instCand.kids.length = 63 := by
-  decide
-
-theorem instP_selected : BAselClassical instP ≠ none := baSelClassical_isSome _ ⟨instCand⟩
-
-/-- The conjugate of `baG5Circ`: every solid edge red (`σ = false`, circled), the coloured waved edge conjugated
-(`S⁺_{inr1 inr0} ↦ S⁻_{inr0 inr1}`, `BAExpandId_flipW`). -/
-def baG5CircRed : BAGraph (Fin 2) (Fin 3) where
-  solid := [SEdge.mk false true (Sum.inl 0) (Sum.inr 0), SEdge.mk false true (Sum.inr 0) (Sum.inr 1),
-    SEdge.mk false true (Sum.inr 1) (Sum.inr 2), SEdge.mk false true (Sum.inr 2) (Sum.inl 1),
-    SEdge.mk false true (Sum.inl 1) (Sum.inl 0)]
-  waved := [WEdge.mk true false (Sum.inr 0) (Sum.inr 1), WEdge.mk false false (Sum.inr 0) (Sum.inr 2)]
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-theorem baG5CircRed_normal : baG5CircRed.Normal := ⟨by decide, by decide⟩
-
-/-- The packed red instance graph (the conjugate of `instP`; normal). -/
-abbrev instPRed : BAPGraph (Fin 2) :=
-  { E' := Fin 2, I' := Fin 3, ext := id, ext_surj := Function.surjective_id, g := baG5CircRed }
-
-/-- A **red** `GG` candidate of `instPRed` at `v = inr 0`: `p = Ḡ̌_{v,inr1}`, `q = Ḡ̌_{inl0,v}` (both `σ = false`, circled). -/
-def instCandRed : BARCand instPRed where
-  σ := false
-  v := Sum.inr 0
-  p := (SEdge.mk false true (Sum.inr 0) (Sum.inr 1),
-    [SEdge.mk false true (Sum.inl 0) (Sum.inr 0), SEdge.mk false true (Sum.inr 1) (Sum.inr 2),
-      SEdge.mk false true (Sum.inr 2) (Sum.inl 1), SEdge.mk false true (Sum.inl 1) (Sum.inl 0)])
-  q := (SEdge.mk false true (Sum.inl 0) (Sum.inr 0),
-    [SEdge.mk false true (Sum.inr 1) (Sum.inr 2), SEdge.mk false true (Sum.inr 2) (Sum.inl 1),
-      SEdge.mk false true (Sum.inl 1) (Sum.inl 0)])
-  hp := by simp [lwSplit, instPRed, baG5CircRed]
-  hq := by simp [lwSplit]
-  hpσ := rfl
-  hpc := rfl
-  hqσ := rfl
-  hqc := rfl
-  hpv := rfl
-  hqv := rfl
-
-/-- The red step is not degenerate either: `gg2r` has `8` terms, `gg4r` has `5`, the children number `63`. -/
-theorem instCandRed_sizes : (BAExpandId_gg2r instPRed.g instCandRed.p instCandRed.q).length = 8 ∧
-    (BAExpandId_gg4r instPRed.g instCandRed.p instCandRed.q).length = 5 ∧ instCandRed.kids.length = 63 := by
-  decide
-
-theorem instPRed_selected : BAselClassical instPRed ≠ none := baSelClassical_isSome _ ⟨instCandRed⟩
-
-/-- The root is not degenerate either: its partition has `2^5 = 32` terms for every `k`, `s` (each solid edge is circled or an
-`M`-dotted edge). -/
-theorem baG5Graph_partition_length : ∀ k s : Bool, (baG5Graph k s).partition.length = 32 := by
-  decide
-
-/-- **Instance of `BARCand.kids_identity`** (one step of the expansion) at `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`,
-`m = i`, `t = 1/2`, the packed instance graph and its candidate, all labels `x, y`: no hypothesis. -/
-theorem baExpandId_inst_kids_identity (x y : Idx 3 3 1) :
-    ∫ ω, instP.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-      (instCand.kids.map fun r => ∫ ω, r.2.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
-  BARCand.kids_identity (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
-    instCand x y
-
-/-- **Instance of `BARCand.kids_normal`** at the same candidate. -/
-theorem baExpandId_inst_kids_normal : ∀ r ∈ instCand.kids, r.2.g.Normal := instCand.kids_normal
-
-/-- **Instance of the red-charge `GG` identity `baExpFrame_gg_red`** at `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`,
-`t = 1/2`, the red graph `baG5CircRed` and the red pair of `instCandRed`, all external labels: only `BASelf`, `3 ≤ 3`,
-`0 ≤ 1/2 < 1`, the candidate fields. -/
-theorem baExpandId_inst_gg_red (ℓe : Fin 2 → Idx 3 3 1) :
-    ∫ ω, baG5CircRed.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ℓe ∂(PF 3 3 1 0) =
-      ∫ ω, baSum (BAExpandId_gg2r baG5CircRed instCandRed.p instCandRed.q) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ℓe +
-        baSum (BAExpandId_gg4r baG5CircRed instCandRed.p instCandRed.q) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ℓe
-        ∂(PF 3 3 1 0) :=
-  baExpFrame_gg_red 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
-    baG5CircRed ℓe instCandRed.p instCandRed.hp instCandRed.q instCandRed.hq rfl rfl rfl rfl rfl
-
-/-- **Instance of `BARCand.kids_identity` at a red candidate**: the step at `instCandRed`, all labels `x, y`. -/
-theorem baExpandId_inst_kids_identity_red (x y : Idx 3 3 1) :
-    ∫ ω, instPRed.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-      (instCandRed.kids.map fun r => ∫ ω, r.2.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
-  BARCand.kids_identity (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
-    instCandRed x y
-
-/-- **Instance of `BARCand.kids_normal` at a red candidate.** -/
-theorem baExpandId_inst_kids_normal_red : ∀ r ∈ instCandRed.kids, r.2.g.Normal := instCandRed.kids_normal
-
-/-- **Instance of `baExpandIdentity_holds`** at the root `baG5Graph true true`, fuel `1`, the rule `BAselClassical`, all external
-labels `x, y`: no hypothesis (`BASelf` is `BAExpandInst.baSelf_zero`, `3 ≤ 3`, `0 ≤ 1/2 < 1`). -/
-theorem baExpandId_inst_identity (k s : Bool) (x y : Idx 3 3 1) :
-    ∫ ω, (baG5Graph k s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-      ((BAexpandRoot BAselClassical 1 k s).map fun q =>
-        ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
-  baExpandIdentity_holds 3 BAselClassical 1 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero
-    (by norm_num) (by norm_num) k s x y
-
-/-- The same at fuel `2`. -/
-example (k s : Bool) (x y : Idx 3 3 1) :
-    ∫ ω, (baG5Graph k s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-      ((BAexpandRoot BAselClassical 2 k s).map fun q =>
-        ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
-  baExpandIdentity_holds 3 BAselClassical 2 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero
-    (by norm_num) (by norm_num) k s x y
-
-/-- The engine at the BA carrier with the weight `1` (probe 490-494). -/
-example (st : BAPGraph (Fin 2) → Option (List ((ℕ × ℕ) × BAPGraph (Fin 2)))) (Inv : BAPGraph (Fin 2) → Prop)
-    (Φ : BAPGraph (Fin 2) → ℂ) : ExpandGSum st Inv Φ (fun _ => 1) :=
-  expandG_sum st Inv Φ (fun _ => 1)
-
-end BAExpandIdInst
 
 end RBM.Graph
 

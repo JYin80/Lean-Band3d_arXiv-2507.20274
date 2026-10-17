@@ -873,11 +873,6 @@ theorem baLWtermExp_holds : ∀ d : ℕ, BALWtermExp d := by
   · exact Or.inl ⟨⟨u, hP⟩, hu⟩
   · exact Or.inr ⟨⟨u, not_lt.1 hP⟩, hu⟩
 
-/-- **Target 6: BA Step 2 closed** (`3_5:345-609`, BA `7_8:1993-2099`): `baStep2_holds` (`BA/Step2CloseBA.lean:181`) at the two stage-L closures; `BAStep2 d` for every `d`
-with no antecedent.  The carrier forms of `BALWterm`, `BALWtermExp` (`baPin LWtermG`, `baPin LWtermExpG`) are those of T2386, so the closed pins enter `STStep2G`
-through `stLWBgL_of_LWtermG`, `stLWTgL_of_LWtermExpG` (`Chain/Step2EventsGen`). -/
-theorem baStep2_closed : ∀ d : ℕ, BAStep2 d := fun d => baStep2_holds d (baLWterm_holds d) (baLWtermExp_holds d)
-
 /-! ## 8. Compiled nonempty instances of targets 4, 5, 6 (`d = 3`)
 
 Data (`BA/LWPinsBA.lean` §3, `Graph/BATermHolds.lean` §4): `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0`
@@ -885,117 +880,6 @@ Data (`BA/LWPinsBA.lean` §3, `Graph/BATermHolds.lean` §4): `sz0` (`n = 0`: `L 
 `ℓ ≤ (log W)^{10} ℓ_t`: not a collapsed window), `D = 5`.  What stays a hypothesis is another gate's input: `STInitialGT2gL` and `LWLoopExpgL` (inside `LWAssmExpgL`).  The index set of the regime `1 - t > λ²/L²` is
 nonempty at every `n`; that of the regime `1 - t ≤ λ²/L²` is empty at the merged flow data for every `t ≤ BAflowT0` (the last example of this section), so the
 union (target 5) is exercised through the first regime. -/
-
-section Inst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst RBM.BA.MFixedPointInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-open private Ψ0 Ψ0_window from RBM3D.BA.LWPinsBA
-open private FlowPins_zS_add_mS_im FlowPins_wI_im from RBM3D.BA.FlowPins
-
-/-- The range `ℓ_n = ℓ_t` of the instances of targets 4, 5 (`ℓ_t ≥ 1`). -/
-private def BATermHoldsB_ℓ0 (n : ℕ) : ℝ := ellT (sz0.L n) (sz0.lam n) (1 / 2)
-
-private theorem BATermHoldsB_ℓ0_ge (n : ℕ) : 1 ≤ BATermHoldsB_ℓ0 n :=
-  one_le_ellT (by exact_mod_cast (by have := sz0.three_le_L n; omega : 1 ≤ sz0.L n))
-
-/-- `ℓ_n ≤ (log W_n)^{10} ℓ_t`: `log W_n ≥ 1` since `W_n ≥ 32 > e`. -/
-private theorem BATermHoldsB_ℓ0_le (n : ℕ) :
-    BATermHoldsB_ℓ0 n ≤ (Real.log ((sz0.W n : ℕ) : ℝ)) ^ 10 * ellT (sz0.L n) (sz0.lam n) (1 / 2) := by
-  have hW : (32 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := by
-    change (32 : ℝ) ≤ (((2 * (n + 1)) ^ 5 : ℕ) : ℝ)
-    have h : 2 ^ 5 ≤ (2 * (n + 1)) ^ 5 := Nat.pow_le_pow_left (by omega) 5
-    exact_mod_cast h
-  have hlog : 1 ≤ Real.log ((sz0.W n : ℕ) : ℝ) := by
-    rw [Real.le_log_iff_exp_le (by linarith)]
-    have := Real.exp_one_lt_d9
-    linarith
-  exact le_mul_of_one_le_left (zero_le_one.trans (BATermHoldsB_ℓ0_ge n)) (one_le_pow₀ hlog)
-
-/-- `λ_n²/L_n² ≤ 2^{-12}` along `sz0` (`λ_n ≤ 1/64`, `L_n ≥ 1`). -/
-private theorem BATermHoldsB_reg_small (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ 1 / 4096 := by
-  have hx : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hlam : sz0.lam n ≤ 1 / 64 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-    rw [one_div]
-    exact inv_anti₀ (by norm_num) (by nlinarith [pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hx 6])
-  have hlam0 : 0 ≤ sz0.lam n := by change 0 ≤ ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹; positivity
-  have hL1 : (1 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-    exact_mod_cast (by have := sz0.three_le_L n; omega : 1 ≤ sz0.L n)
-  have h1 : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ sz0.lam n ^ 2 :=
-    div_le_self (by positivity) (one_le_pow₀ hL1)
-  have h2 : sz0.lam n ^ 2 ≤ (1 / 64) ^ 2 := pow_le_pow_left₀ hlam0 hlam 2
-  nlinarith
-
-/-- The horizon at the merged flow data is `BAflowT0 ≤ 25/36` (`BAt0 = Im m/(Im m + Im z)`, `Im z_n + Im m_n = 6/5`, `Im z_n ≥ 11/30`). -/
-private theorem BATermHoldsB_t0_le (n : ℕ) : BAflowT0 sz0 zSeq n ≤ 25 / 36 := by
-  unfold BAflowT0 BAt0
-  rw [BAm_zSeq n]
-  have h2 := FlowPins_zS_add_mS_im (sz0.L n) (sz0.lam n)
-  have h3 : (zSeq n).im + (mS (sz0.L n) (sz0.lam n)).im = 6 / 5 := by
-    unfold zSeq; rw [h2, FlowPins_wI_im]
-  have h4 : (mS (sz0.L n) (sz0.lam n)).im + (zSeq n).im = 6 / 5 := by linarith
-  have h5 := zSeq_im_ge n
-  rw [h4, div_le_iff₀ (by norm_num)]
-  linarith
-
-/-- The index set of `BALWtermExpS 3` is nonempty at every size at the instance data (`λ_n²/L_n² ≤ 2^{-12} < 1/2`). -/
-example : ∀ n, Nonempty {_p : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)) //
-    sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - (1 / 2 : ℝ)} :=
-  fun n => ⟨⟨(fun _ => true, fun _ => 0), by have := BATermHoldsB_reg_small n; linarith⟩⟩
-
-/-- **The regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N` is empty at the merged flow data for every admissible `t`** (`t ≤ BAflowT0 ≤ 25/36`, so
-`1 - t ≥ 11/36 > 2^{-12} ≥ λ_n²/L_n²`): the instance of `baLWtermExpN_holds` (`Graph/BATermHolds.lean:758`) is n/a at `(sz0, zSeq)`, and target 5 is
-exercised through the regime of target 4. -/
-example : ∀ n, ∀ t : ℝ, t ≤ BAflowT0 sz0 zSeq n → sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - t := by
-  intro n t ht
-  have h1 := BATermHoldsB_t0_le n
-  have h2 := BATermHoldsB_reg_small n
-  linarith
-
-/-- **Instance of target 4** (`baLWtermExpS_holds 3`): `𝓔^{Gc,(2)}_{t,σ,(a,b)} ≺ η_t⁻¹ (W^{-d} B_{t,0})^{1/2} W^{-d} 𝒯^ℓ_{t,D}(|a-b|)` on the regime `1 - t > λ²/L²` at the data
-above, `D = 5 < 2d + 1` (the branch through `max (D, 2d + 1)`). -/
-example (hI : STInitialGT2gL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (1 / 10) Ψ0)
-    (hL : LWLoopExpgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) BATermHoldsB_ℓ0) :
-    PrecL sz0 μ0 (U := fun n => {_p : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - (1 / 2 : ℝ)})
-      (fun n p ω => ‖LWEg (baFMz sz0 zSeq) n (1 / 2 : ℝ) p.1.1 p.1.2 ω‖)
-      (fun n p _ => ((baFMz sz0 zSeq).eta n (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2 : ℝ)) ^ (1 / 2 : ℝ) *
-        ((((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailW 3 (sz0.L n) (sz0.lam n) (1 / 2 : ℝ) (BATermHoldsB_ℓ0 n) ((sz0.W n : ℕ) : ℝ) 5
-          ((zdistInf 3 (sz0.L n) (p.1.2 0 - p.1.2 1) : ℕ) : ℝ))) :=
-  baLWtermExpS_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) Ψ0 BATermHoldsB_ℓ0
-    ⟨by norm_num, Ψ0_window, hI, fun n => zero_le_one.trans (BATermHoldsB_ℓ0_ge n), BATermHoldsB_ℓ0_le, hL⟩ 5 (by norm_num)
-
-/-- **Instance of target 5** (`baLWtermExp_holds 3`, the merged pin `BALWtermExp 3`): the union of the two regimes at the data above and `D = 5`. -/
-example (hI : STInitialGT2gL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (1 / 10) Ψ0)
-    (hL : LWLoopExpgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) BATermHoldsB_ℓ0) :
-    PrecL sz0 μ0 (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖LWEg (baFMz sz0 zSeq) n (1 / 2 : ℝ) p.1 p.2 ω‖)
-      (fun n p _ => ((baFMz sz0 zSeq).eta n (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2 : ℝ)) ^ (1 / 2 : ℝ) *
-        ((((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailW 3 (sz0.L n) (sz0.lam n) (1 / 2 : ℝ) (BATermHoldsB_ℓ0 n) ((sz0.W n : ℕ) : ℝ) 5
-          ((zdistInf 3 (sz0.L n) (p.2 0 - p.2 1) : ℕ) : ℝ))) :=
-  baLWtermExp_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) Ψ0 BATermHoldsB_ℓ0
-    ⟨by norm_num, Ψ0_window, hI, fun n => zero_le_one.trans (BATermHoldsB_ℓ0_ge n), BATermHoldsB_ℓ0_le, hL⟩ 5 (by norm_num)
-
-/-- **Instance of target 6** (`baStep2_closed 3`), shape of `BA/Step2CloseBA.lean` §5 (instance of `baStep2_holds`) with `BALWterm 3`, `BALWtermExp 3` now discharged:
-the constants `C_d, 𝔠_d` first, then the conclusion bundle at `s ≡ 1/10 < t ≡ 1/2` under the binders of `STStep2G`. -/
-example : ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 10) → STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 10) →
-      STConStInd sz0 𝔠d (fun _ => 1 / 10) (fun _ => 1 / 2) →
-      STStep1LoopgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 10) (fun _ => 1 / 2) →
-      STStep1WeakgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 10) (fun _ => 1 / 2) →
-        STStep2ConclgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 10) (fun _ => 1 / 2) Cd) := by
-  obtain ⟨Cd, hCd, 𝔠d, h𝔠d, h𝔠d1, h⟩ := baStep2_closed 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num)
-  exact ⟨Cd, hCd, 𝔠d, h𝔠d, h𝔠d1, h (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun n => by have := half_lt_t0 n; change (1 / 10 : ℝ) ≤ BAflowT0 sz0 zSeq n; linarith) (fun _ => by norm_num)
-    (fun n => (half_lt_t0 n).le)⟩
-
-end Inst
 
 end RBM.BA
 

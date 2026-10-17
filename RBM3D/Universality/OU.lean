@@ -223,90 +223,9 @@ theorem ouSample_law (sz : Sizes d) (n : ℕ) {t : ℝ} (ht : 0 ≤ t) :
 
 end U0Band
 
-section U0Zero
-
-variable {d : ℕ} {sz : Sizes d}
-
-/-- **Law transfer at `t = 0`** (RBM2D paper `1-2:339`; `RBM2D/Universality/OU.lean:176`): `𝐇_0 = H`
-under `ouP` has the law of the model matrix `M.H n` under `M.μ` (first marginal of `ouP`,
-`ouMat_zero`). -/
-theorem ouMat_zero_map (M : UNModel sz) (n : ℕ) :
-    (ouP M n).map (ouMat M n 0) = M.μ.map (M.H n) := by
-  have hH : Measurable (M.H n) :=
-    measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => M.meas n i j
-  have h : ouMat M n 0 = M.H n ∘ Prod.fst := funext (ouMat_zero M n)
-  rw [h, ← Measure.map_map hH measurable_fst]
-  unfold ouP
-  rw [Measure.map_fst_prod, measure_univ, one_smul]
-
-/-- **Law transfer from the frozen carrier**: the band matrix `seqXmat sz n` on `seqP sz` and `𝐇_0`
-on `ouP` have the same law (`RBM2D/Universality/OU.lean:188`, `seqXmat_map_eq_ouMat_zero`). -/
-theorem seqXmat_map_eq_ouMat_zero (sz : Sizes d) (n : ℕ) :
-    (seqP sz).map (seqXmat sz n) = (ouP (UNModel.band sz) n).map (ouMat (UNModel.band sz) n 0) :=
-  (ouMat_zero_map (UNModel.band sz) n).symm
-
-end U0Zero
-
 end RBM.Univ
 
 /-! ## Compiled nonempty instances (band model `UNModel.band sz0`, `d = 3`, `n = 0`: `L = 4`,
 `W = 32`, `lam = 1/64`, `N = 2097152`) -/
-
-namespace RBM.Univ.OUCheck
-
-open MeasureTheory ProbabilityTheory
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst
-open scoped NNReal
-
-/-- `ouSample_law` at `UNModel.band sz0`, `n = 0`, `t = 1`. -/
-example : (ouP (UNModel.band sz0) 0).map (ouSample sz0 0 1) =
-    Measure.infinitePi (fun c => gaussianReal 0 (ouVar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 1 c)) :=
-  ouSample_law sz0 0 zero_le_one
-
-/-- `ouSample_law` at `t = 1/2` and `t = 0` (the limit `t = 0` has `ouVar = gvarF`). -/
-example : (ouP (UNModel.band sz0) 0).map (ouSample sz0 0 (1 / 2)) =
-    Measure.infinitePi (fun c => gaussianReal 0
-      (ouVar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (1 / 2) c)) :=
-  ouSample_law sz0 0 (by norm_num)
-
-example : (ouP (UNModel.band sz0) 0).map (ouSample sz0 0 0) =
-    Measure.infinitePi (fun c => gaussianReal 0
-      (ouVar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 c)) :=
-  ouSample_law sz0 0 le_rfl
-
-/-- At `t = 0` the OU variance is the band variance (`ouVar = gvarF`). -/
-theorem ouVar_zero (c : CoordF 3 (sz0.L 0) (sz0.W 0)) :
-    ouVar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 c = gvarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) c := by
-  simp [ouVar]
-
-/-- At `t = 1` the weights `e^{-1}`, `1 - e^{-1}` are both positive: the GUE part is nonzero. -/
-theorem ouVar_one_gue_weight_pos : 0 < (1 - Real.exp (-1)).toNNReal := by
-  rw [Real.toNNReal_pos, sub_pos]
-  exact Real.exp_lt_one_iff.2 (by norm_num)
-
-/-- `ouMat_zero_map` at `UNModel.band sz0`, `n = 0`. -/
-example : (ouP (UNModel.band sz0) 0).map (ouMat (UNModel.band sz0) 0 0) =
-    (UNModel.band sz0).μ.map ((UNModel.band sz0).H 0) :=
-  ouMat_zero_map (UNModel.band sz0) 0
-
-example : (seqP sz0).map (seqXmat sz0 0) =
-    (ouP (UNModel.band sz0) 0).map (ouMat (UNModel.band sz0) 0 0) :=
-  seqXmat_map_eq_ouMat_zero sz0 0
-
-example : Measurable (ouMat (UNModel.band sz0) 0 1) := measurable_ouMat _ 0 1
-example : Measurable (ouSample sz0 0 1) := measurable_ouSample sz0 0 1
-example (ω : SeqΩ sz0 × Ω 3 (sz0.L 0) (sz0.W 0)) :
-    ouMat (UNModel.band sz0) 0 1 ω = Xmat 3 (sz0.L 0) (sz0.W 0) (ouSample sz0 0 1 ω) :=
-  ouMat_eq_Xmat_ouSample sz0 0 1 ω
-
-#print axioms RBM.Univ.isProbabilityMeasure_ouP
-#print axioms RBM.Univ.ouMat_eq_Xmat_ouSample
-#print axioms RBM.Univ.measurable_ouSample
-#print axioms RBM.Univ.measurable_ouMat
-#print axioms RBM.Univ.ouSample_law
-#print axioms RBM.Univ.ouMat_zero_map
-#print axioms RBM.Univ.seqXmat_map_eq_ouMat_zero
-
-end RBM.Univ.OUCheck
 
 end

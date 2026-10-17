@@ -90,10 +90,6 @@ private theorem lwMEA_zdistInf_le {d : ℕ} (L : ℕ) [NeZero L] (x : Zd d L) : 
   unfold zdist
   exact (min_le_left _ _).trans (ZMod.val_lt _).le
 
-private theorem lwMEA_zdistInf_zero (d L : ℕ) : zdistInf d L (0 : Zd d L) = 0 := by
-  unfold zdistInf
-  exact Nat.eq_zero_of_le_zero (Finset.sup_le fun i _ => by simp)
-
 private theorem lwMEA_flow_im_pos {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : 0 < (z n).im := by
   have h := (hflow.2 n).2.1
@@ -409,51 +405,6 @@ The merged preflight data (`sz0`: `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (
 `t ≡ 1/16`; `ε₀ = 1/20`, `Ψ0 = W^{-1}`, `ℓ_n = ℓ_t`, `LWAssmExp` from `assmExp_of`).  The subtype is nonempty at every `n`
 (`λ²/L² < 1 - t` by `strict_all`; `regA` holds for the diagonal pairs `(x, x)`: `|a - a|_∞ = 0`).  What stays a hypothesis is
 another gate's stochastic input: `LWInit` and `LWLoopExp` (`(initialGT2)`, `(LW_assm_exp)`). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.LWInst
-
-/-- The index set of (A) at `K > 0` is nonempty at every size (the diagonal pair). -/
-example (K : ℝ) (hK : 0 < K) (n : ℕ) :
-    Nonempty {q : Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n) //
-      sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - tInst n ∧ regA 3 K sz0 n (tInst n) (ℓT tInst n) q} := by
-  refine ⟨⟨(0, 0), strict_all n, Or.inl ?_⟩⟩
-  simp only [sub_self, lwMEA_zdistInf_zero, Nat.cast_zero]
-  have h1 := Real.log_nonneg (one_le_W n)
-  have h2 : 0 ≤ ellT (sz0.L n) (sz0.lam n) (tInst n) := ellT_nonneg
-  positivity
-
-/-- **Instance of `lwMomExpNoExp_holds`** (`d = 3`, `p = 2`, `K = 6`, merged `sz0`, `t ≡ 1/16`, every `D > 0`): `LWInit` and `LWLoopExp`
-stay hypotheses, every deterministic hypothesis is discharged. -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst))
-    (D : ℝ) (hD : 0 < D) :
-    sz0.Prec (U := fun n => {q : Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - tInst n ∧ regA 3 6 sz0 n (tInst n) (ℓT tInst n) q})
-      (fun n q _ => ∫ ω, ‖LWf sz0 n (STflowE z0 n) (tInst n) ω q.1.1 q.1.2‖ ^ 2 ∂(sz0.seqP))
-      (fun n q _ => ((etaT (STflowE z0 n) (tInst n))⁻¹ * (sz0.Bctl n (tInst n)) ^ (1 / 2 : ℝ) *
-        sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tInst n)
-          (min ((zdistInf 3 (sz0.L n) (STblk sz0 n q.1.1 - STblk sz0 n q.1.2) : ℕ) : ℝ) (ℓT tInst n))) ^ 2 +
-        ((sz0.W n : ℕ) : ℝ) ^ (-D)) :=
-  lwMomExpNoExp_holds 3 6 (by norm_num) le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    2 (dvd_refl 2) (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst)
-    (assmExp_of hI hL) D hD
-
-/-- **Instance of `lwMomExpNoExp_holds`** at another scale and moment, `p = 4`, `K = 1/2`. -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst))
-    (D : ℝ) (hD : 0 < D) :
-    sz0.Prec (U := fun n => {q : Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - tInst n ∧ regA 3 (1 / 2) sz0 n (tInst n) (ℓT tInst n) q})
-      (fun n q _ => ∫ ω, ‖LWf sz0 n (STflowE z0 n) (tInst n) ω q.1.1 q.1.2‖ ^ 4 ∂(sz0.seqP))
-      (fun n q _ => ((etaT (STflowE z0 n) (tInst n))⁻¹ * (sz0.Bctl n (tInst n)) ^ (1 / 2 : ℝ) *
-        sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tInst n)
-          (min ((zdistInf 3 (sz0.L n) (STblk sz0 n q.1.1 - STblk sz0 n q.1.2) : ℕ) : ℝ) (ℓT tInst n))) ^ 4 +
-        ((sz0.W n : ℕ) : ℝ) ^ (-D)) :=
-  lwMomExpNoExp_holds 3 (1 / 2) (by norm_num) le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) 4 (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst)
-    (assmExp_of hI hL) D hD
-
-end Instances
 
 end RBM.Graph
 

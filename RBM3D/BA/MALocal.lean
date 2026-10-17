@@ -834,10 +834,6 @@ section Main
 theorem baEnd_locSCL (d : ℕ) (hML : UNMLOutBA d) : BAEnd_locSCL d :=
   baMANetLoc d (baLocSCFixed_of_ML d hML)
 
-/-- **A5, `baEnd_locSCL_three`**: `BAEnd_locSCL 3`, unconditional (A4 at `unMLOutBA_three`, `BA/MainIndTermBA.lean:47`); closing
-condition (i). -/
-theorem baEnd_locSCL_three : BAEnd_locSCL 3 := baEnd_locSCL 3 unMLOutBA_three
-
 /-- **A6, `unLocAvgBAAt_of_locSCL`** (per-`d` core of the bridge; the band `locSC_to_UNLocAvgBand`, `Endpoints.lean:519`): the second half
 of `BAEnd_locSCL d` is `UNLocAvgBAAt d`; the only rewriting is `𝓑_{η,0} = Bctl n (1 - η)` (`calB_zero_eq_Bctl`, `Im z > 0`). -/
 theorem unLocAvgBAAt_of_locSCL (d : ℕ) (hd : 3 ≤ d) (h : BAEnd_locSCL d) : UNLocAvgBAAt d := by
@@ -849,78 +845,9 @@ theorem unLocAvgBAAt_of_locSCL (d : ℕ) (hd : 3 ≤ d) (h : BAEnd_locSCL d) : U
   rw [calB_zero_eq_Bctl sz n (by omega) (MALocal_endDom_im_pos hz)]
   exact ha
 
-/-- **A7, `UNLocAvgBA_of_BAEnd_locSCL`**: the merged `∀ d` row `UNLocAvgBA` from `∀ d, BAEnd_locSCL d` (one line from A6 and P6; `d > 3` is
-out of scope, Jun decision B, DECISIONS §316). -/
-theorem UNLocAvgBA_of_BAEnd_locSCL (h : ∀ d : ℕ, BAEnd_locSCL d) : UNLocAvgBA :=
-  UNLocAvgBA_iff_at.2 fun d hd => unLocAvgBAAt_of_locSCL d hd (h d)
-
-/-- **A8, `unLocAvgBAAt_of_ML`** (A6 ∘ A4): `UNLocAvgBAAt d` from `UNMLOutBA d`; at `d = 3` with `unMLOutBA_three` it is N2's input. -/
-theorem unLocAvgBAAt_of_ML (d : ℕ) (hd : 3 ≤ d) (hML : UNMLOutBA d) : UNLocAvgBAAt d :=
-  unLocAvgBAAt_of_locSCL d hd (baEnd_locSCL d hML)
-
 end Main
 
 /-! ## 6. A9: compiled nonempty instances at `d = 3` -/
-
-section Inst
-
-open RBM.BA.UNPinsInst RBM.Univ.BAInst RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-private theorem MALocal_hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-/-- **A2** at `S0` (`κ_* = clsκ`, `ε = 1/20`, `τ = 1/10`, `D = 2`), from the merged `unMLOutBA_three`: the fixed-`z` bounds hold for every
-point of the end domain, and the end domain is nonempty at every `n`. -/
-example : (∀ᶠ n in atTop, ∀ z : ℂ, BAendDom S0 (clsκ 4 MALocal_hg) (1 / 20) n z →
-      Sizes.seqP (S0.withLam 0) {ω | BAlocBad1z S0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP (S0.withLam 0) {ω | BAlocBad2z S0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ)))) ∧
-    ∀ n, ∃ z : ℂ, BAendDom S0 (clsκ 4 MALocal_hg) (1 / 20) n z :=
-  ⟨baLocSCFixed_of_ML 3 unMLOutBA_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 20) (1 / 10) 2
-      (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num),
-    fun n => inst_locAvg_domain (by norm_num) n⟩
-
-/-- **A3, A4** at `S0`: the net from the fixed-`z` form, and `BAEnd_locSCL 3` from `unMLOutBA_three` (the same point, with `E_*` in the
-bulk and the window nonempty by the previous instance). -/
-example : (∀ᶠ n in atTop, Sizes.seqP (S0.withLam 0) {ω | ∃ z : ℂ, BAendDom S0 (clsκ 4 MALocal_hg) (1 / 20) n z ∧
-        BAlocBad1z S0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP (S0.withLam 0) {ω | ∃ z : ℂ, BAendDom S0 (clsκ 4 MALocal_hg) (1 / 20) n z ∧
-        BAlocBad2z S0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ)))) ∧
-    ∀ n, ∃ z : ℂ, BAendDom S0 (clsκ 4 MALocal_hg) (1 / 20) n z :=
-  ⟨baMANetLoc 3 (baLocSCFixed_of_ML 3 unMLOutBA_three) le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 20)
-      (1 / 10) 2 (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num),
-    fun n => inst_locAvg_domain (by norm_num) n⟩
-
-/-- **A5** at `S0`: `BAEnd_locSCL 3`, unconditional. -/
-example := baEnd_locSCL_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 20) (1 / 10) 2
-  (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **A6, A8** at `S0`: `UNLocAvgBAAt 3` from `unMLOutBA_three` (N2's `d = 3` input), at `κ_*`, `ε = τ = 1/10`, `D = 1`. -/
-example := unLocAvgBAAt_of_ML 3 le_rfl unMLOutBA_three (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 10) (1 / 10) 1
-  (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **A6** at `S0` from the unconditional `baEnd_locSCL_three`, and **A7**: the `∀ d` row from `∀ d, BAEnd_locSCL d` (the `d > 3` forms
-are Jun decision B's open pins, a hypothesis of this example). -/
-example (h : ∀ d : ℕ, BAEnd_locSCL d) : True := by
-  have _ := unLocAvgBAAt_of_locSCL 3 le_rfl baEnd_locSCL_three (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 10)
-    (1 / 10) 1 (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num)
-  have _ := UNLocAvgBA_of_BAEnd_locSCL h 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MALocal_hg) (1 / 10) (1 / 10) 1
-    (clsκ_pos 4 MALocal_hg) (by norm_num) (by norm_num) (by norm_num)
-  trivial
-
-/-- **A1** at `sz0`, `zSeq`, `flow_sz0` (`κ = 1/2`, `(ε, 𝔠, 𝔡) = (1/10, 1/6, 1/10)`), `n = 0`: the transfer identities and the `B`-constants. -/
-example (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) (a : Zd 3 (sz0.L 0)) : True := by
-  have _ := MALocal_G_sub_M (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 0 ω x y
-  have _ := MALocal_avg_sub_m (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 0 ω a
-  have _ := MALocal_STWB_le le_rfl (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 0 1
-  have _ := MALocal_Bctl_le le_rfl (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 0
-  trivial
-
-/-- The real range of the ρ-bulk and the margin at `i`, at `S0`, `n = 0`: `E_*` is in the bulk, so `|E_*| ≤ 2 + 2 d λ_0`; `Im m_0(i) ≥ (2 + 2 d λ_0)^{-2}`. -/
-example : |(fp 4 MALocal_hg).E| ≤ 2 + 2 * (3 : ℕ) * |S0.lam 0| ∧
-    1 / (2 + 2 * (3 : ℕ) * |S0.lam 0|) ^ 2 ≤ (BAm 3 (S0.L 0) (S0.lam 0) Complex.I).im :=
-  ⟨MALocal_bulk_abs_le 3 (S0.L 0) (S0.lam 0) _ _ (clsκ_pos 4 MALocal_hg) (cls_bulk 4 (by norm_num) MALocal_hg),
-    MALocal_im_I_ge 3 (S0.L 0) (S0.lam 0)⟩
-
-end Inst
 
 end RBM.BA
 

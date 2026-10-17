@@ -868,42 +868,6 @@ theorem duhamelII_band_gL (d : ℕ) (hd : 3 ≤ d) :
     (fun sz κ ε 𝔠 𝔡 z _ h => stepDecompGen_loopForm_band sz (STflowE z) fun n => abs_lemE_lt_two (ST_flow_im_pos sz h n))
     (fun sz z => Step2EventsGen_bandGrid sz (STflowE z)) (fun sz z s t K n k ω => pathH_isHermitian sz s t K n k ω)
 
-/-- **The engine of `STDuhamelII`, mixed conjunct** (`(zYU2)`, `3_5:2263-2277`), zero-mode set `Q = {0}` (`Q^{(1)}`), any sign class `P` (the argument does not use the signs): if
-`‖Q^{(1)} 𝒰_{s,u}(𝓛-𝒦)^{(2)}_{s,σ}‖_a ≺ F`, then `‖Q^{(1)}(𝓛-𝒦)^{(2)}_{u,σ}‖_a ≺ F + A^{-1/5} W^{-d}𝒯̃^L_{u,D} + W^{-D}` uniformly in `u ∈ [s,t]`, `σ ∈ P`.  Hypotheses: the flow;
-the window `STReg5II` (`ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²`: the second half is `(TTT2)` through `Or.inr` and the saturation `ℓ_u = L` of the profile); `(con_st_ind)` at
-`𝔠_d = 1/100`; `hE`, the body of `STEtermsMidConcl` written out (as in `stDuhamelConcl_engine`, so that the registry scan sees only `Prec`).  The band corollary, name and type
-unchanged, of `stDuhamelConclgL_engineQ1` at the band tuple through `bandFM_STDuhamelConcl`. -/
-theorem stDuhamelConcl_engineQ1 (hd : 3 ≤ d) {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d)
-    {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
-    (htz : ∀ n, t n ≤ lemT (z n)) (hReg : STReg5II sz s t)
-    (hCon : STConStInd sz (1 / 100) s t)
-    (hE : ∀ D : ℝ, 0 < D →
-      sz.Prec (U := STIdx2 sz s t) (fun n p ω => ‖STELKLK sz n (STflowE z n) (p.1 : ℝ) p.2.1 p.2.2 ω‖)
-        (fun n p _ => (STAI sz n) ^ (-(1 / 3) : ℝ) * (etaT (STflowE z n) (p.1 : ℝ))⁻¹ *
-          STprof sz n (p.1 : ℝ) D ((sz.L n : ℕ) : ℝ) (p.2.2 0) (p.2.2 1)) ∧
-      sz.Prec (U := STIdx2 sz s t) (fun n p ω => ‖STEGt sz n (STflowE z n) (p.1 : ℝ) p.2.1 p.2.2 ω‖)
-        (fun n p _ => (STAI sz n) ^ (-(1 / 2) : ℝ) * (etaT (STflowE z n) (p.1 : ℝ))⁻¹ *
-          STprof sz n (p.1 : ℝ) D ((sz.L n : ℕ) : ℝ) (p.2.2 0) (p.2.2 1)) ∧
-      sz.Prec (U := fun n => STIdx2 sz s t n × Fin 2)
-        (fun n p ω => ‖STEEk sz n (STflowE z n) (p.1.1 : ℝ) p.2 p.1.2.1 p.1.2.2 ω‖)
-        (fun n p _ => (STAI sz n) ^ (-(1 / 2) : ℝ) * (etaT (STflowE z n) (p.1.1 : ℝ))⁻¹ *
-          STprof sz n (p.1.1 : ℝ) D ((sz.L n : ℕ) : ℝ) (p.1.2.2 0) (p.1.2.2 1) ^ 2))
-    (P : (Fin 2 → Bool) → Prop) :
-    STDuhamelConcl sz {0} P (STflowE z) s t :=
-  (RBM.BA.bandFM_STDuhamelConcl sz (STflowE z) s t {0} P).2
-    (RBM.BA.stDuhamelConclgL_engineQ1 d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun _ z => STflowE z) (fun sz _ => sz.lam)
-      (step5CasesGen_flowFacts_band d) (iniTermGen_kerFacts_band d)
-      (fun sz κ ε 𝔠 𝔡 z _ h n => gridRepTailGen_ker_band sz (STflowE z) n (abs_lemE_lt_two (ST_flow_im_pos sz h n)).le)
-      (bandStep2_STGridMart.1 (ST_gridMart_of_repN (RBM.Ind.stGridRepN_holds d hd)))
-      ((bandFM_STBdata d).1 (ST_Bdata_holds (by omega))) (step2IterGen_K2_band d)
-      (fun _ _ _ _ _ _ => ⟨1, zero_le_one, fun sz _ z h => lemDecCalELipG_flowMod_band sz (tendsto_size sz h.1.2.2.1) _⟩)
-      (fun sz κ ε 𝔠 𝔡 z _ h n => (norm_mE (abs_lemE_lt_two (ST_flow_im_pos sz h n)).le).le)
-      (fun sz κ ε 𝔠 𝔡 z hκ hε h t ht => duhamelI_Ks_band d sz κ ε 𝔠 𝔡 z hκ hε h t ht)
-      (fun sz κ ε 𝔠 𝔡 z _ h => stepDecompGen_loopForm_band sz (STflowE z) fun n => abs_lemE_lt_two (ST_flow_im_pos sz h n))
-      (fun sz z => Step2EventsGen_bandGrid sz (STflowE z)) (fun sz z s t K n k ω => pathH_isHermitian sz s t K n k ω) hd hκ hε h𝔡 sz
-      hflow hs hst htz hReg hCon hE P)
-
 /-- **`STDuhamelII`** (case (ii), the integrated hierarchy: `Q^{(1)}` for `σ₁ ≠ σ₂`, no zero-mode removal for `σ₁ = σ₂`): the band corollary, name and type unchanged (G1), of
 `stDuhamelIIgL_of` through `STDuhamelII_iff_gL`. -/
 theorem stDuhamelII_holds (d : ℕ) : STDuhamelII d :=
@@ -914,55 +878,3 @@ end Main
 end RBM.Gauss.Sizes
 
 /-! ## Compiled nonempty instances at `d = 3` -/
-
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Path Filter
-
-/-- `stDuhamelII_holds` at `(szB, zB, 15/16, 31/32)` (the data of `inst_duhamelII`). -/
-theorem inst_duhamelII_proved (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STEtermsMidConcl sz E s t →
-      STDuhamelConcl sz {0} STSigMixed E s t ∧ STDuhamelConcl sz ∅ STSigSame E s t) szB zB
-      (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_duhamelII (stDuhamelII_holds 3) Cd hCd
-
-/-- `stDuhamelConcl_engineQ1` at the same data, mixed signs (`σ = (+,-)` is in the class); `STEtermsMidConcl` is the proved pin of
-another gate (a hypothesis of the example), every deterministic hypothesis is discharged. -/
-example (hE : STEtermsMidConcl szB (STflowE zB) (fun _ => 15 / 16) (fun _ => 31 / 32)) :
-    STDuhamelConcl szB {0} STSigMixed (STflowE zB) (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  stDuhamelConcl_engineQ1 (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) szB flow_zB (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5II
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) hE STSigMixed
-
-/-- The same at strictly interior data `(szB, zB, 19/20, 31/32)`: `ilambda²/L^d = 1/64 ≤ 1-t = 1/32 ≤ 1-s = 1/20 < 1/16 = ilambda²/L²`
-(`inst_duhamelII_proved` has `1-s = ilambda²/L²`, the closed end of the regime). -/
-example (hE : STEtermsMidConcl szB (STflowE zB) (fun _ => 19 / 20) (fun _ => 31 / 32)) :
-    STDuhamelConcl szB {0} STSigMixed (STflowE zB) (fun _ => 19 / 20) (fun _ => 31 / 32) :=
-  stDuhamelConcl_engineQ1 (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) szB flow_zB (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) (fun n => ⟨by simp [szB]; norm_num, by simp [szB]; norm_num⟩)
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) hE STSigMixed
-
-/-- `stDuhamelII_holds` at the same strictly interior data. -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STEtermsMidConcl sz E s t →
-      STDuhamelConcl sz {0} STSigMixed E s t ∧ STDuhamelConcl sz ∅ STSigSame E s t) szB zB
-      (fun _ => 19 / 20) (fun _ => 31 / 32) Cd :=
-  inst_ing5 STReg5II _ (stDuhamelII_holds 3) szB zB flow_zB (fun _ => 19 / 20) (fun _ => 31 / 32)
-    (fun _ => by norm_num) (fun _ => by norm_num) (szB_flow_ht (by norm_num))
-    (fun n => ⟨by simp [szB]; norm_num, by simp [szB]; norm_num⟩)
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
-
-
-
-/-- **Target 9 at a concrete instance** (`stDuhamelIIgL_of` at the band tuple through `duhamelII_band_gL`, every premise discharged by a band result) at `(szB, zB, 15/16, 31/32)`
-and every `C_d > 0`: the conclusion of the generic pin, read through `STDuhamelII_iff_gL`, gives the instance `InstIng5Concl`. -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STEtermsMidConcl sz E s t →
-      STDuhamelConcl sz {0} STSigMixed E s t ∧ STDuhamelConcl sz ∅ STSigSame E s t) szB zB
-      (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_duhamelII ((RBM.BA.STDuhamelII_iff_gL 3).2 (duhamelII_band_gL 3 (by norm_num))) Cd hCd
-
-end RBM.Gauss.Step5Inst

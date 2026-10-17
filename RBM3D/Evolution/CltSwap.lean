@@ -329,37 +329,6 @@ theorem cltTransfer {d : ℕ} (sz : Sizes d) (n : ℕ) (f : Ω d (sz.L n) (sz.W 
 
 /-! ### Checks: compiled nonempty instances at `d = 3`, `L = 3`, `W = 1`, `g = 1/2` -/
 
-section Checks
-
-example : MeasurePreservingCltSplit 3 3 1 (1 / 2) := measurePreserving_cltSplit 3 3 1 (1 / 2)
-example : MeasurePreservingCltSwap 3 3 1 (1 / 2) := measurePreserving_cltSwap 3 3 1 (1 / 2)
-example : IntegralEqZeroOfCltSwapNeg 3 3 1 (1 / 2) :=
-  integral_eq_zero_of_cltSwap_neg 3 3 1 (1 / 2)
-
-/-- `cltTelescope` at the concrete enumeration `Fintype.equivFin`, for every `Φ`. -/
-example (Φ : Ω 3 3 1 → ℂ) (ω ω' : Ω 3 3 1) :
-    Φ ω - Φ ω' = ∑ k ∈ Finset.range (Fintype.card (CoordF 3 3 1)),
-      (Φ (cltHyb 3 3 1 (Fintype.equivFin (CoordF 3 3 1)) k ω ω') -
-        Φ (cltHyb 3 3 1 (Fintype.equivFin (CoordF 3 3 1)) (k + 1) ω ω')) :=
-  cltTelescope 3 3 1 (Fintype.equivFin (CoordF 3 3 1)) Φ ω ω'
-
-/-- The antisymmetric integrand `F p = p.1 c - p.2 c` against `PF ⊗ PF` at `(3, 3, 1, 1/2)`:
-the hypothesis `F ∘ cltSwap c = -F` is discharged and the integral vanishes. -/
-example (c : CoordF 3 3 1) :
-    ∫ p, ((p.1 c : ℂ) - (p.2 c : ℂ)) ∂((PF 3 3 1 (1 / 2)).prod (PF 3 3 1 (1 / 2))) = 0 :=
-  integral_eq_zero_of_cltSwap_neg 3 3 1 (1 / 2) c (fun p => (p.1 c : ℂ) - (p.2 c : ℂ))
-    (fun p => by simp [cltSwap])
-
-/-- `cltTransfer` at the merged `sz0`, `n = 0` (`L = 4`, `W = 32`, `lam = 1/64`) and the
-measurable integrand `ω ↦ ω c₀`. -/
-example (c₀ : CoordF 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0)) :
-    ∫ ω, ((Sizes.slice SizesInst.sz0 0 ω c₀ : ℝ) : ℂ) ∂(Sizes.seqP SizesInst.sz0) =
-      ∫ ω, (ω c₀ : ℂ) ∂(PF 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0) (SizesInst.sz0.lam 0)) :=
-  cltTransfer SizesInst.sz0 0 (fun ω => (ω c₀ : ℂ))
-    (Complex.measurable_ofReal.comp (measurable_pi_apply c₀))
-
-end Checks
-
 end RBM.Evol
 
 end

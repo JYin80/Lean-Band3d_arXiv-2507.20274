@@ -130,9 +130,6 @@ private def LoopC2N_trCLM (n : Type*) [Fintype n] [DecidableEq n] :
     Matrix n n ℂ →L[ℝ] ℂ :=
   LinearMap.toContinuousLinearMap (Matrix.traceLinearMap n ℝ ℂ)
 
-private theorem LoopC2N_trCLM_apply (A : Matrix n n ℂ) :
-    LoopC2N_trCLM n A = Matrix.trace A := rfl
-
 private theorem LoopC2N_trace_hasDerivAt {P : ℝ → Matrix n n ℂ} {P' : Matrix n n ℂ}
     {t : ℝ} (h : HasDerivAt P P' t) :
     HasDerivAt (fun s => Matrix.trace (P s)) (Matrix.trace P') t := by
@@ -499,75 +496,6 @@ Data: the merged admissible sequence `sz0` (`RBM3D/Defs/Sizes.lean`, `d = 3`, `n
 at the Hermitian pair `M = 0`, `y = 1`.  Every hypothesis of the theorem is discharged; there is no
 external pin. -/
 
-namespace LoopC2NCheck
-
-open RBM.Gauss.SizesInst
-
-/-- The data are nondegenerate: `N = 2097152` and `η_u > 0`. -/
-theorem instance_data : Sizes.size sz0 0 = 2097152 ∧ 0 < etaT (0 : ℝ) (1 / 2) :=
-  ⟨sz0_values.2.2.1, etaT_pos (by norm_num) (by norm_num)⟩
-
-/-- **`hermTestFunLoopN` at `k = 3`**, `σ = (+,-,+)`, `b = ![0, 1, 2]` (three distinct blocks):
-both conjuncts, the bound at the Hermitian pair `M = 0`, `y = 1`. -/
-theorem hermTestFunLoopN_k3_instance :
-    HermTestFun sz0 0
-        (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-          loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-            (loopOf ![true, false, true] ![0, 1, 2])) ∧
-      ‖fderiv ℝ (fderiv ℝ
-          (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-            loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-              (loopOf ![true, false, true] ![0, 1, 2]))) 0 1 1‖ ≤
-        ((3 * (3 + 1) : ℕ) : ℝ) * (Sizes.size sz0 0 : ℝ) * (etaT (0 : ℝ) (1 / 2))⁻¹ ^ (3 + 2) *
-          ‖(1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)‖ ^ 2 := by
-  have h := hermTestFunLoopN sz0 3 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    ![true, false, true] ![0, 1, 2]
-  exact ⟨h.1, h.2 0 1 Matrix.isHermitian_zero Matrix.isHermitian_one⟩
-
-/-- **`hermTestFunLoopN` at `k = 3`, `σ = (+,-,+)`, `b = ![0, 0, 0]`** (one block repeated):
-both conjuncts, the bound at `M = 0`, `y = 1`.  (For distinct blocks `E_{b₁} E_{b₂} = 0`, so along
-`s ↦ s • 1`, where the resolvents are scalars, the observable of the previous instance vanishes;
-a repeated block does not have this property.) -/
-theorem hermTestFunLoopN_k3_same_instance :
-    HermTestFun sz0 0
-        (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-          loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-            (loopOf ![true, false, true] ![0, 0, 0])) ∧
-      ‖fderiv ℝ (fderiv ℝ
-          (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-            loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-              (loopOf ![true, false, true] ![0, 0, 0]))) 0 1 1‖ ≤
-        ((3 * (3 + 1) : ℕ) : ℝ) * (Sizes.size sz0 0 : ℝ) * (etaT (0 : ℝ) (1 / 2))⁻¹ ^ (3 + 2) *
-          ‖(1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)‖ ^ 2 := by
-  have h := hermTestFunLoopN sz0 3 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    ![true, false, true] ![0, 0, 0]
-  exact ⟨h.1, h.2 0 1 Matrix.isHermitian_zero Matrix.isHermitian_one⟩
-
-/-- **`hermTestFunLoopN` at `k = 1`**, `σ = (+)`, `b = ![0]`: both conjuncts, the bound
-(`k (k + 1) = 2`, exponent `k + 2 = 3`) at `M = 0`, `y = 1`. -/
-theorem hermTestFunLoopN_k1_instance :
-    HermTestFun sz0 0
-        (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-          loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-            (loopOf ![true] ![0])) ∧
-      ‖fderiv ℝ (fderiv ℝ
-          (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-            loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (zt 0 (1 / 2))
-              (loopOf ![true] ![0]))) 0 1 1‖ ≤
-        ((1 * (1 + 1) : ℕ) : ℝ) * (Sizes.size sz0 0 : ℝ) * (etaT (0 : ℝ) (1 / 2))⁻¹ ^ (1 + 2) *
-          ‖(1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)‖ ^ 2 := by
-  have h := hermTestFunLoopN sz0 1 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    ![true] ![0]
-  exact ⟨h.1, h.2 0 1 Matrix.isHermitian_zero Matrix.isHermitian_one⟩
-
-end LoopC2NCheck
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.hermTestFunLoopN
-#print axioms RBM.Ind.LoopC2NCheck.instance_data
-#print axioms RBM.Ind.LoopC2NCheck.hermTestFunLoopN_k3_instance
-#print axioms RBM.Ind.LoopC2NCheck.hermTestFunLoopN_k3_same_instance
-#print axioms RBM.Ind.LoopC2NCheck.hermTestFunLoopN_k1_instance

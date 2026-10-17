@@ -37,10 +37,10 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 
 open private BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
-open private BAS3Close_Iso BAS3Close_iso_refl BAS3Close_iso_symm BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_rel BAS3Close_pk
+open private BAS3Close_Iso BAS3Close_iso_symm BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_rel BAS3Close_pk
   BAS3Close_InvC BAS3Close_MC BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_CandC BAS3Close_Kids2 BAS3Close_Kids4
   BAS3Close_root_ge1 BAS3Close_root_ord3 BAS3Close_kids_coeff2 BAS3Close_kids_coeff4 BAS3Close_Even BAS3Close_Conn
-  BAS3Close_LeafC_dec BAS3Close_CtxExD_dec BAS3Close_InvC_dec BAS3Close_CandC_dec BAS3Close_CtxG BAS3Close_LeafT BAS3Close_MC
+  BAS3Close_CtxG BAS3Close_LeafT BAS3Close_MC
   BAS3Close_split_mono BAS3Close_even_split BAS3Close_conn_split BAS3Close_Even_dec BAS3Close_Conn_dec
   from RBM3D.Graph.BAS3Close
 
@@ -345,11 +345,6 @@ private def BAS3Close_Cat (s : Bool) (Q : BAPGraph (Fin 2)) : Prop := ∃ (k : B
 private theorem BAS3Close_cat_iso (s : Bool) : ∀ Q Q' : BAPGraph (Fin 2), BAS3Close_Iso Q Q' → BAS3Close_Cat s Q' → BAS3Close_Cat s Q := by
   rintro Q Q' h ⟨k, j, hj⟩
   exact ⟨k, j, BAS3Close_iso_trans h hj⟩
-
-/-- Equal graphs: isomorphic trivial packs. -/
-private theorem BAS3Close_iso_pk_eq {I : Type} [Fintype I] [DecidableEq I] {Δ g : BAGraph (Fin 2) I} (h : Δ = g) :
-    BAS3Close_Iso (BAS3Close_pk Δ) (BAS3Close_pk g) := by
-  subst h; exact BAS3Close_iso_refl _
 
 /-- A graph that becomes the pattern `g` under a renaming `e` of its internal vertices is isomorphic (as a trivial pack) to the trivial
 pack of `g`. -/

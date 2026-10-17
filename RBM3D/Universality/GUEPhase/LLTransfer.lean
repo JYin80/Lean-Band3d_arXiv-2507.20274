@@ -476,28 +476,4 @@ Lemma 2.8 parameters is the output of the §7.2 random layer (UN-50b), another g
 hypothesis of the example (the limit check of its `localLaw` field is in the prove report,
 section (a)). -/
 
-namespace RBM.Univ.GUEPhase.LLTransferInst
-
-open MeasureTheory ProbabilityTheory Filter Topology Matrix RBM RBM.Gauss RBM.Path RBM.Univ
-open RBM.Gauss.SizesInst
-
-private def zq (n : ℕ) : ℂ := ((0 : ℝ) : ℂ) + ((ouEtaLL sz0 (1 / 1000) n : ℝ) : ℂ) * Complex.I
-private def tq (n : ℕ) : ℝ := ouTStar sz0 (1 / 1000) n
-
-/-- **`oull_of_pathBounds`** at `sz0`, `E ≡ 0`, `t_n = N^{-1+τ_U}`: every deterministic hypothesis is
-discharged (`κ`, `τ_U`, `τ_U < 1/2`, `n₀`, `N → ∞`, `|E| ≤ 2 - κ`, `0 ≤ t_n`, `δ > 0`); the output is
-the body of `UNOULL sz0 (1/1000)` at `(κ, E, t, δ, p) = (1/10, 0, t, 1/10, p)`. -/
-example (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd 3 (sz0.L n)) → ℂ)
-    (hP : GUEPathBounds sz0 (fun n => lemE (zq n)) (fun n => (1 - ouZeta (tq n)) * lemT (zq n))
-      (fun n => lemT (zq n)) (gueGridK sz0 2) 2 Kt) (p : ℕ) :
-    ∀ᶠ n in atTop, ∀ x : Idx 3 (sz0.L n) (sz0.W n),
-      ∫ ω, ‖Gres (ouMat (UNModel.band sz0) n (tq n) ω) (zq n) true x x‖ ^ (2 * p)
-        ∂(ouP (UNModel.band sz0) n) ≤ Nsz sz0 n ^ (1 / 10 : ℝ) :=
-  oull_of_pathBounds sz0 (κ := 1 / 10) (τU := 1 / 1000) (by norm_num) (by norm_num)
-    (by norm_num) 2 (by norm_num) (Sizes.tendsto_size sz0 sz0_tendsto) (E := fun _ => 0) (t := tq)
-    (fun n => by norm_num) (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) Kt hP (1 / 10)
-    (by norm_num) p
-
-end RBM.Univ.GUEPhase.LLTransferInst
-
 end

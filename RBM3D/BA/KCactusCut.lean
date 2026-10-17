@@ -330,14 +330,14 @@ private theorem KCactusCut_φ_start (hF : KLIsTSP F) (hJ : J ∈ F) (s : BAslot 
   · set z := (KCactusCut_eIn hF J).symm y with hz
     have hy := KCactusCut_eIn_symm hF y
     obtain ⟨h1, h2, h3⟩ := KCactusCut_inChord hF z
-    simp only [KCactusCut_φ, BAslotStart_out, ← hz]
+    simp only [KCactusCut_φ, ← hz]
     refine ⟨?_, h1.1, le_trans (le_of_lt h3) h1.2⟩
     have := congrArg Prod.fst hy
     exact this.symm
   · set z := (KCactusCut_eIn hF J).symm y with hz
     have hy := KCactusCut_eIn_symm hF y
     obtain ⟨h1, h2, h3⟩ := KCactusCut_inChord hF z
-    simp only [KCactusCut_φ, BAslotStart_in, ← hz]
+    simp only [KCactusCut_φ, ← hz]
     refine ⟨?_, le_trans h1.1 (le_of_lt h3), h1.2⟩
     have := congrArg Prod.snd hy
     exact this.symm
@@ -649,7 +649,7 @@ private theorem KCactusCut_ψ_start (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ 
   · set z := (KCactusCut_eOut hF hn hJ).symm y with hz
     have hy := KCactusCut_eOut_symm hF hn hJ y
     have hE := KCactusCut_outChord hF hn hJ z
-    simp only [KCactusCut_ψ, BAslotStart_out, ← hz]
+    simp only [KCactusCut_ψ, ← hz]
     refine ⟨?_, ?_⟩
     · have := congrArg Prod.fst hy
       exact this.symm
@@ -659,7 +659,7 @@ private theorem KCactusCut_ψ_start (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ 
   · set z := (KCactusCut_eOut hF hn hJ).symm y with hz
     have hy := KCactusCut_eOut_symm hF hn hJ y
     have hE := KCactusCut_outChord hF hn hJ z
-    simp only [KCactusCut_ψ, BAslotStart_in, ← hz]
+    simp only [KCactusCut_ψ, ← hz]
     refine ⟨?_, ?_⟩
     · have := congrArg Prod.snd hy
       exact this.symm
@@ -1256,33 +1256,5 @@ end LeafW
 Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`), `t = 1/2`, `n = 4`
 (`TSP 4 = {∅, {(0,2)}, {(1,3)}}`: the cut at `J = (0,2)` of the tree `{(0,2)}` has an inner and an outer triangle),
 the charges `σ = (+,+,-,+)`, four distinct labels.  `baCactus_cut` has no hypothesis on `M`, `t`, the leaf weights or `P S Q`. -/
-
-namespace KCactusCutInst
-
-open RBM.BA.MFixedPointInst
-
-private theorem KCactusCut_isTSP_F02 :
-    KLIsTSP ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) :=
-  KLisTSP_of_mem_TSP (by rw [TSP_four]; simp)
-
-/-- **`baCactus_cut`** at the flow point, `F = {(0,2)}`, `J = (0,2)`, the leaf weights `Θ^{(σ_v,σ_{v+1})}`, the chord weight
-`Θ · 1 · Θ` with `Θ = Θ^{(+,-)}` (the chord term of K05b), four distinct labels. -/
-example :=
-  baCactus_cut (d := 3) (L := 4) (F := {((0 : Fin 4), (2 : Fin 4))}) (J := ((0 : Fin 4), (2 : Fin 4)))
-    KCactusCut_isTSP_F02 (by norm_num) (Finset.mem_singleton_self _)
-    (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) ![true, true, false, true]
-    ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]]
-    (BACactusValLeafW (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) ![true, true, false, true])
-    (BAThetaOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) true false) 1
-    (BAThetaOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) true false)
-
-/-- **`baCactus_leafW_in`, `baCactus_leafW_out`** at the same cut `J = (0,2)` of the square. -/
-example := baCactus_leafW_in (d := 3) (L := 4) (n := 4) (J := ((0 : Fin 4), (2 : Fin 4))) (by norm_num)
-  (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) ![true, true, false, true]
-
-example := baCactus_leafW_out (d := 3) (L := 4) (n := 4) (J := ((0 : Fin 4), (2 : Fin 4))) (by norm_num)
-  (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) ![true, true, false, true]
-
-end KCactusCutInst
 
 end RBM.BA

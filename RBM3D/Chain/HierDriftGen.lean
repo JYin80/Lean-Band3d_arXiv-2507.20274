@@ -304,17 +304,6 @@ section Drift
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **The pair-cut term of the loop generator over the carrier**: `STllPairN` (`HierAlgebra:~790`) with the kernel `Cm.S n`
-and the loop values `STLIMg`: `treeEqRhsS (Cm.S n) (STLIMg …)`. -/
-def STllPairNg (Cm : Step2Mat sz) (n : ℕ) (u : ℝ)
-    (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
-  treeEqRhsS d (sz.L n) (sz.W n) (Cm.S n) (STLIMg Cm n u M) I
-
-/-- `STllPairN` is `STllPairNg` at `bandStep2Mat` (`STllPairN_eq_treeEqRhs`, `treeEqRhs_eq_treeEqRhsS`). -/
-theorem bandStep2_STllPairN (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (u : ℝ)
-    (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (I : LoopIdx (Zd d (sz.L n))) :
-    sz.STllPairN n (E n) u M I = STllPairNg (bandStep2Mat sz E) n u M I := rfl
-
 /-- **Target 6, class `HierDriftGen_KLoop`**: `𝒦` of the carrier solves the convolution tree equations with the carrier
 kernel `Cm.S n` on `[0, 1)` (the merged `IsKLoopS`, `Loop/KLTree.lean:828`). -/
 def HierDriftGen_KLoop (Cm : Step2Mat sz) (n : ℕ) : Prop :=
@@ -378,93 +367,7 @@ end Drift
 
 /-! ### 3. Band discharges of `KLoop`, `KTwo` and the band drift identity (target 6) -/
 
-section BandDrift
-
-variable {d : ℕ}
-
-/-- **Band discharge of `HierDriftGen_KLoop`**: `KLK_isKLoop` (`KLTreeDeriv.lean:1049`) through `IsKLoop_iff_IsKLoopS`
-(`mSigma E = PropSpin (mE E)` and `SB d L g` by unfolding). -/
-theorem hierDriftGen_kLoop_band (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) (n : ℕ) :
-    HierDriftGen_KLoop (bandStep2Mat sz E) n :=
-  ⟨_, (IsKLoop_iff_IsKLoopS d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E n)) (Set.Ico (0 : ℝ) 1) _).1
-    (KLK_isKLoop d (sz.L n) (sz.W n) (sz.lam n) (E n) (sz.three_le_L n) (sz.W_pos n) (hE n))⟩
-
-/-- **Band discharge of `HierDriftGen_KTwo`**: `couplingLen_two_Kval_eq_thetaOp` (`HierAlgebra.lean:620`), the identity
-`HierDriftGen_couplingLenS_eq_ksim` and `Step2Kern_ThetaN_band`. -/
-theorem hierDriftGen_kTwo_band (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) (n : ℕ) :
-    HierDriftGen_KTwo (bandStep2Mat sz E) n := by
-  intro u hu H k hk σ a
-  rw [← HierDriftGen_couplingLenS_eq_ksim]
-  have h := RBM.Ind.couplingLen_two_Kval_eq_thetaOp d (sz.L n) (sz.W n) (sz.lam n) (sz.three_le_L n) (E n)
-    (hE n).le u hu.1 hu.2 (STLKIMg (bandStep2Mat sz E) n u H) hk σ a
-  have e := Step2Kern_ThetaN_band sz E n k σ u (fun v => STLKIMg (bandStep2Mat sz E) n u H (loopOf σ v))
-  exact h.trans (congrFun e a).symm
-
-/-- **Band: `loopDrift_sub_K_deriv_n`** (`HierAlgebra.lean:729`) from `loopDrift_sub_K_deriv_ng`. -/
-theorem hierDriftGen_band_loopDrift (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) (n : ℕ) (u : ℝ)
-    (hu0 : 0 ≤ u) (hu1 : u < 1) (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) {k : ℕ}
-    (hk : 2 ≤ k) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) :
-    (sz.STllPairN n (E n) u M (loopOf σ a) + sz.STegtM n (E n) u M (loopOf σ a)) -
-        deriv (fun v : ℝ => sz.STKloop n (E n) v σ a) u =
-      RBM.ThetaN d (sz.L n) (sz.lam n) (fun i => mSigma (E n) (σ i)) u
-          (fun b => sz.STLKIM n (E n) u M (loopOf σ b)) a +
-        ∑ l ∈ Finset.Icc 3 k, sz.STksimLKM n (E n) u M l (loopOf σ a) +
-        sz.STelklkM n (E n) u M (loopOf σ a) + sz.STegtM n (E n) u M (loopOf σ a) := by
-  have h := loopDrift_sub_K_deriv_ng (bandStep2Mat sz E) n (hierDriftGen_kLoop_band sz E hE n)
-    (hierDriftGen_kTwo_band sz E hE n) u ⟨hu0, hu1⟩ M k hk σ a
-  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
-  rw [hfm, Step2Kern_ThetaN_band] at h
-  exact h
-
-end BandDrift
-
 /-! ### 4. The hierarchy identity over the carrier (target 7) -/
-
-section Hierarchy
-
-variable {d : ℕ} {sz : Sizes d}
-
-/-- **Target 7, `HierarchyNg`**: `HierarchyN` (`HierarchyN.lean:56`) over the carrier; the generator is T5s1's `genMatOf`
-(`LoopGenN.lean:554`) at the walk coupling `g n`, the one-loop value `Cm.m n` and the energy `E n`. -/
-def HierarchyNg (Cm : Step2Mat sz) (E g : ℕ → ℝ) : Prop :=
-  ∀ (n : ℕ) (u : ℝ), 0 ≤ u → u < 1 →
-    ∀ M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ, M.IsHermitian →
-      ∀ (k : ℕ), 2 ≤ k → ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
-        RBM.Ind.genMatOf d (sz.L n) (sz.W n) (g n) (Cm.m n) (E n) u M (KLloopOf d (sz.L n) σ a) -
-            deriv (fun v : ℝ => Cm.KI n v (KLloopOf d (sz.L n) σ a)) u =
-          Step2Gen_ThetaN Cm.toFlowFM n σ u (fun b => STLKIMg Cm n u M (KLloopOf d (sz.L n) σ b)) a +
-            ∑ l ∈ Finset.Icc 3 k, STksimLKMg Cm n u M l (KLloopOf d (sz.L n) σ a) +
-            STelklkMg Cm n u M (KLloopOf d (sz.L n) σ a) + STegtMg Cm n u M (KLloopOf d (sz.L n) σ a)
-
-/-- **Target 7, `hierarchyNg_of`**: the hierarchy identity over the carrier, from `loopGenNOf` (T5s1) and
-`loopDrift_sub_K_deriv_ng`, under `LoopForm`, the walk's variance law `Cm.S n = SB d (sz.L n) (g n)`, `KLoop`, `KTwo`. -/
-theorem hierarchyNg_of (Cm : Step2Mat sz) (E g : ℕ → ℝ) (hL : StepDecompGen_LoopForm Cm E)
-    (hS : ∀ n, Cm.S n = SB d (sz.L n) (g n)) (hK : ∀ n, HierDriftGen_KLoop Cm n)
-    (hT : ∀ n, HierDriftGen_KTwo Cm n) : HierarchyNg Cm E g := by
-  intro n u hu0 hu1 M hM k hk σ a
-  have hgen := RBM.Ind.loopGenNOf d (sz.L n) (sz.W n) (g n) (Cm.m n) (E n) (sz.three_le_L n) (hL n).1 u hu1 M hM σ a
-  have hpair : RBM.Ind.genMatOf d (sz.L n) (sz.W n) (g n) (Cm.m n) (E n) u M (KLloopOf d (sz.L n) σ a) =
-      treeEqRhsS d (sz.L n) (sz.W n) (Cm.S n) (STLIMg Cm n u M) (KLloopOf d (sz.L n) σ a) +
-        STegtMg Cm n u M (KLloopOf d (sz.L n) σ a) := by
-    refine hgen.trans ?_
-    simp only [treeEqRhsS, STegtMg, STavgErrMg, STmsigg, STLIMg, (hL n).2.2.1 u M, hS n, PropSpin]
-    rfl
-  rw [hpair]
-  exact loopDrift_sub_K_deriv_ng Cm n (hK n) (hT n) u ⟨hu0, hu1⟩ M k hk σ a
-
-/-- **Target 7, band re-derivation**: `HierarchyN d` (`HierarchyN.lean:56`) from `hierarchyNg_of` at `bandStep2Mat`,
-`g = sz.lam`, `m = mE E`. -/
-theorem hierarchyN_of_Ng (d : ℕ) : RBM.Ind.HierarchyN d := by
-  intro sz n E hE u hu0 hu1 M hM k hk σ a
-  have h := hierarchyNg_of (bandStep2Mat sz (fun _ => E)) (fun _ => E) sz.lam
-    (stepDecompGen_loopForm_band sz (fun _ => E) (fun _ => hE)) (fun n => rfl)
-    (hierDriftGen_kLoop_band sz (fun _ => E) (fun _ => hE)) (hierDriftGen_kTwo_band sz (fun _ => E) (fun _ => hE))
-    n u hu0 hu1 M hM k hk σ a
-  have hfm : (bandStep2Mat sz (fun _ => E)).toFlowFM = bandFM sz (fun _ => E) := rfl
-  rw [hfm, Step2Kern_ThetaN_band] at h
-  exact h
-
-end Hierarchy
 
 /-! ### 5. One step of `𝒦` over a kernel `S` and a value family `KI` (target 9)
 
@@ -677,10 +580,6 @@ def HierDriftGen_UStep (C : FlowFM sz) (n : ℕ) : Prop :=
 def HierDriftGen_KLink (Cm : Step2Mat sz) (n : ℕ) : Prop :=
   ∀ w ∈ Set.Ico (0 : ℝ) 1, ∀ (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
     Cm.KI n w (KLloopOf d (sz.L n) σ a) = Cm.K n w σ a
-
-/-- Band discharge of the link (definitional). -/
-theorem hierDriftGen_kLink_band (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) : HierDriftGen_KLink (bandStep2Mat sz E) n :=
-  fun _ _ _ _ _ => rfl
 
 end GridDef
 
@@ -937,74 +836,9 @@ theorem gridDriftNg_at (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_Wa
   refine key.trans (le_of_eq ?_)
   ring
 
-/-- **Target 9 (b), `gridDriftNg`**: `gridDriftNg_at` at every size index (`gridDriftN`, `GridDriftN.lean:759`). -/
-theorem gridDriftNg (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ)
-    (s t : ℕ → ℝ) (K : ℕ → ℕ) (hExp : ∀ n, HierDriftGen_Expand Cm s t K n)
-    (hKL : ∀ n, HierDriftGen_KLoop Cm n) (hKT : ∀ n, HierDriftGen_KTwo Cm n)
-    (hU : ∀ n, HierDriftGen_UStep Cm.toFlowFM n)
-    (hS : ∀ (n : ℕ) (a : Zd d (sz.L n)), ∑ b : Zd d (sz.L n), ‖Cm.S n a b‖ ≤ 1)
-    (hKK : ∀ n, HierDriftGen_KLink Cm n) : GridDriftNg Cm s t K := by
-  intro hs0 hst ht1 hK n j hj k hk σ Bk hBk hB
-  exact gridDriftNg_at hL hW s t K n j (hExp n) (hKL n) (hKT n) (hU n) (hS n) (hKK n) (hs0 n) (hst n) (ht1 n)
-    (hK n) hj hk σ Bk hBk hB
-
 end GridMain
 
 /-! ### 9. The envelopes of `𝒦` (target 10) -/
-
-section EnvelopeAbstract
-
-/-- The abstract envelope: `KI` solving the derivative equation on `[0, 1)` is bounded on `[0, v]` for the loops of length
-at most `k` (`GridDriftN_exists_envelope`, `GridDriftN.lean:950`). -/
-theorem HierDriftGen_exists_envelope_of {d L W : ℕ} [NeZero L] {S : Matrix (Zd d L) (Zd d L) ℂ}
-    {KI : ℝ → LoopIdx (Zd d L) → ℂ} (hder : ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      HasDerivAt (fun s => KI s J) (treeEqRhsS d L W S (KI t) J) t) {v : ℝ} (hv0 : 0 ≤ v) (hv1 : v < 1) (k : ℕ) :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) v, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      J.length ≤ k → ‖KI w J‖ ≤ B := by
-  have h1 : ∀ ℓ : ℕ, ∀ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L), ∃ C : ℝ, 0 ≤ C ∧
-      (2 ≤ ℓ → ∀ w ∈ Set.Icc (0 : ℝ) v, ‖KI w (loopOf p.1 p.2)‖ ≤ C) := by
-    intro ℓ p
-    by_cases hℓ : 2 ≤ ℓ
-    · have hcont : ContinuousOn (fun w : ℝ => KI w (loopOf p.1 p.2)) (Set.Icc 0 v) := by
-        intro w hw
-        refine ContinuousAt.continuousWithinAt ?_
-        have hwf : (loopOf p.1 p.2).WF := gdn_loopOf_wf p.1 p.2
-        have hlen : 2 ≤ (loopOf p.1 p.2).length := by rw [gdn_loopOf_length]; exact hℓ
-        exact (hder w ⟨hw.1, lt_of_le_of_lt hw.2 hv1⟩ _ hwf hlen).continuousAt
-      obtain ⟨C, hC⟩ := (isCompact_Icc (a := (0 : ℝ)) (b := v)).exists_bound_of_continuousOn hcont
-      exact ⟨max C 0, le_max_right _ _, fun _ w hw => (hC w hw).trans (le_max_left _ _)⟩
-    · exact ⟨0, le_rfl, fun h => absurd h hℓ⟩
-  choose C hC0 hC using h1
-  refine ⟨∑ ℓ ∈ Finset.range (k + 1), ∑ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L), C ℓ p,
-    Finset.sum_nonneg fun ℓ _ => Finset.sum_nonneg fun p _ => hC0 ℓ p, ?_⟩
-  intro w hw J hJ h2 hk
-  have hJe := gdn_loopOf_eq J hJ
-  have hb := hC J.length (fun i => J.σ.getD i false, fun i => J.a.getD i (0 : Zd d L)) h2 w hw
-  simp only at hb
-  rw [hJe] at hb
-  refine hb.trans ?_
-  have hmem : J.length ∈ Finset.range (k + 1) := Finset.mem_range.2 (Nat.lt_succ_of_le hk)
-  refine le_trans ?_ (Finset.single_le_sum (f := fun ℓ => ∑ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L),
-    C ℓ p) (fun ℓ _ => Finset.sum_nonneg fun p _ => hC0 ℓ p) hmem)
-  exact Finset.single_le_sum (f := fun p : (Fin J.length → Bool) × (Fin J.length → Zd d L) =>
-    C J.length p) (fun p _ => hC0 _ p) (Finset.mem_univ _)
-
-end EnvelopeAbstract
-
-section EnvelopeCarrier
-
-variable {d : ℕ} {sz : Sizes d}
-
-/-- **Target 10, `HierDriftGen_exists_envelope`** (`GridDriftN_exists_envelope`, `GridDriftN.lean:950`, over the carrier):
-from `KLoop` (continuity of `KI` on `[0, 1)`) and the finiteness of the loops of length `≤ k`, a deterministic envelope of
-`Cm.KI n` on `[0, v]` exists. -/
-theorem HierDriftGen_exists_envelope (Cm : Step2Mat sz) (n : ℕ) (hK : HierDriftGen_KLoop Cm n) {v : ℝ} (hv0 : 0 ≤ v)
-    (hv1 : v < 1) (k : ℕ) :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) v, ∀ J : LoopIdx (Zd d (sz.L n)), J.WF → 2 ≤ J.length →
-      J.length ≤ k → ‖Cm.KI n w J‖ ≤ B :=
-  HierDriftGen_exists_envelope_of hK.choose_spec.1 hv0 hv1 k
-
-end EnvelopeCarrier
 
 section Envelope
 
@@ -1148,131 +982,6 @@ end Envelope
 
 /-! ### 10. Band discharges of `Expand`, `UStep` and the band grid drift (targets 8, 9) -/
 
-section BandGrid
-
-variable {d : ℕ}
-
-open scoped Matrix.Norms.Operator in
-/-- `Σ_y |(uKer μ v w - 1)(x,y)| ≤ |w - v| (1 - w)⁻¹` for `‖μ‖ = 1`, `0 ≤ w < 1`, no order between `v` and `w` (copy of
-the private `difRep3_sum_norm_uKer_sub_one`, `Path/DifREP3.lean:420`; `uKer_eq_one_add`, `norm_Theta_le`). -/
-theorem HierDriftGen_sum_norm_uKer_sub_one {L : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖ = 1)
-    {v w : ℝ} (hw0 : 0 ≤ w) (hw1 : w < 1) (x : Zd d L) :
-    ∑ y, ‖uKer d L g μ v w x y - (1 : Matrix (Zd d L) (Zd d L) ℂ) x y‖ ≤ |w - v| * (1 - w)⁻¹ := by
-  have hξ : ‖(w : ℂ) * μ‖ < 1 := norm_t_mul_lt_one hw0 hw1 hμ
-  have hu := uKer_eq_one_add (d := d) (L := L) (g := g) (s := v) hL hξ
-  have hΘ := norm_Theta_le (d := d) (L := L) (g := g) hL hw0 hw1 hμ
-  have hentry : ∀ y, uKer d L g μ v w x y - (1 : Matrix (Zd d L) (Zd d L) ℂ) x y =
-      ((((w : ℂ) - v) * μ) • (SB d L g * Theta d L g ((w : ℂ) * μ))) x y := by
-    intro y
-    rw [hu]
-    simp
-  simp only [hentry]
-  refine (sum_norm_row_le _ x).trans ?_
-  have hc : ‖((w : ℂ) - v) * μ‖ = |w - v| := by
-    rw [norm_mul, hμ, mul_one, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-  calc ‖(((w : ℂ) - v) * μ) • (SB d L g * Theta d L g ((w : ℂ) * μ))‖
-      ≤ ‖((w : ℂ) - v) * μ‖ * (‖SB d L g‖ * ‖Theta d L g ((w : ℂ) * μ)‖) :=
-        (norm_smul_le _ _).trans (mul_le_mul_of_nonneg_left (norm_mul_le _ _) (norm_nonneg _))
-    _ = |w - v| * ‖Theta d L g ((w : ℂ) * μ)‖ := by rw [hc, norm_SB d L g hL, one_mul]
-    _ ≤ |w - v| * (1 - w)⁻¹ := mul_le_mul_of_nonneg_left hΘ (abs_nonneg _)
-
-/-- **Band discharge of `HierDriftGen_UStep`**: first field `HierDriftGen_sum_norm_uKer_sub_one` (T2471's K3, all real `s`),
-second field the private `gdn_row_UG` (`GridDriftN.lean:428`), both through `Step2Kern_uKer_band`,
-`Step2Kern_thetaKer_band` and `‖m(σ) m(σ')‖ = 1` (`|E n| ≤ 2`). -/
-theorem hierDriftGen_uStep_band (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) (n : ℕ) :
-    HierDriftGen_UStep (bandStep2Mat sz E).toFlowFM n := by
-  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
-  have hμ : ∀ σ σ' : Bool, ‖mSigma (E n) σ * mSigma (E n) σ'‖ = 1 := fun σ σ' => by
-    rw [norm_mul, norm_mSigma (hE n).le, norm_mSigma (hE n).le, mul_one]
-  refine ⟨fun σ σ' s t ht0 ht1 a => ?_, fun σ σ' u Δ hu hΔ hv a => ?_⟩
-  · rw [hfm, Step2Kern_uKer_band]
-    exact HierDriftGen_sum_norm_uKer_sub_one (g := sz.lam n) (sz.three_le_L n) (hμ σ σ') ht0 ht1 a
-  · rw [hfm]
-    simp only [Step2Kern_uKer_band, Step2Kern_thetaKer_band, gdn_thetaKer_eq]
-    have h := gdn_row_UG (g := sz.lam n) (sz.three_le_L n) (hμ σ σ') hu hΔ hv a
-    simpa only [Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul] using h
-
-/-- **Band discharge of `HierDriftGen_Expand`**: the merged `condExp_loop_drift` (`Path/LoopStep.lean:310`) with the
-generator `genMat` written as `STllPairN + STegtM` (`stLoopGenNForm_holds`, `LoopGenN.lean:769`). -/
-theorem hierDriftGen_expand_band (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ)
-    (n : ℕ) : HierDriftGen_Expand (bandStep2Mat sz E) s t K n := by
-  intro hs0 hst ht1 hK j hj I hI h2
-  obtain ⟨hΔ0, hu0, hvu, hv1, hΔ1⟩ := gdn_time_facts s t K n j hs0 hst ht1 hK hj
-  have hu1 : gridTime s t K n j < 1 := by linarith
-  have hd := condExp_loop_drift sz s t K n j (E n) (hE n) hI hs0 hst hK hj hv1
-  filter_upwards [hd] with ω hω
-  have hgen : genMat d (sz.L n) (sz.W n) (sz.lam n) (E n) (gridTime s t K n j) (pathH sz s t K n j ω) I =
-      treeEqRhsS d (sz.L n) (sz.W n) ((bandStep2Mat sz E).S n)
-          (STLIMg (bandStep2Mat sz E) n (gridTime s t K n j) ((bandStep2Mat sz E).Hpath s t K n j ω)) I +
-        STegtMg (bandStep2Mat sz E) n (gridTime s t K n j) ((bandStep2Mat sz E).Hpath s t K n j ω) I := by
-    have hI' := gdn_loopOf_eq I hI
-    have h := RBM.Ind.stLoopGenNForm_holds d sz n (E n) (hE n) (gridTime s t K n j) hu0 hu1
-      (pathH sz s t K n j ω) (pathH_isHermitian sz s t K n j ω) I.length h2
-      (fun i : Fin I.length => I.σ.getD i false) (fun i : Fin I.length => I.a.getD i (0 : Zd d (sz.L n)))
-    rw [hI'] at h
-    exact h
-  rw [hgen] at hω
-  exact hω
-
-/-- The row sums of the band kernel `SB d L g` are `1`, in particular `≤ 1` (`sum_nnnorm_SB_row`). -/
-theorem hierDriftGen_SB_row (sz : Sizes d) (n : ℕ) (a : Zd d (sz.L n)) :
-    ∑ b : Zd d (sz.L n), ‖SB d (sz.L n) (sz.lam n) a b‖ ≤ 1 := by
-  have h := sum_nnnorm_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a
-  have h' := congrArg (fun x : NNReal => (x : ℝ)) h
-  simp at h'
-  exact h'.le
-
-/-- **Band: `GridDriftN`** (`GridDriftN.lean:663`) from `gridDriftNg` at `bandStep2Mat`: `predIncN` is `predIncNg`
-(`bandStep2_predIncN`), the loops, the generator and the error are definitionally the carrier's. -/
-theorem hierDriftGen_band_gridDriftN (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) :
-    RBM.Ind.GridDriftN sz E s t K := by
-  intro hE hs0 hst ht1 hK n j hj k hk σ Bk hBk hB
-  have hg := gridDriftNg (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E) s t K
-    (fun n => hierDriftGen_expand_band sz E hE s t K n) (hierDriftGen_kLoop_band sz E hE)
-    (hierDriftGen_kTwo_band sz E hE) (hierDriftGen_uStep_band sz E hE) (fun n a => hierDriftGen_SB_row sz n a)
-    (hierDriftGen_kLink_band sz E)
-  filter_upwards [hg hs0 hst ht1 hK n j hj k hk σ Bk hBk hB] with ω hω a
-  have h := hω a
-  rw [bandStep2_predIncN]
-  exact h
-
-/-- **Band: `GridDriftN_exists_envelope`** (`GridDriftN.lean:950`) from `HierDriftGen_exists_envelope_of` (the derivative
-equation is `KLK_isKLoop` through `IsKLoop_iff_IsKLoopS`). -/
-theorem hierDriftGen_band_exists_envelope {L W : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L) (hW : 1 ≤ W)
-    {E : ℝ} (hE : |E| < 2) {v : ℝ} (hv0 : 0 ≤ v) (hv1 : v < 1) (k : ℕ) :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) v, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      J.length ≤ k → ‖KLK d L g W E w J‖ ≤ B :=
-  HierDriftGen_exists_envelope_of (W := W) (S := SB d L g) (KI := fun w I => KLK d L g W E w I)
-    ((IsKLoop_iff_IsKLoopS d L W g (mSigma E) (Set.Ico (0 : ℝ) 1) _).1 (KLK_isKLoop d L W g E hL hW hE)).1
-    hv0 hv1 k
-
-/-- The band spectral data: `0 < η_v ≤ 1 - v` for `|E| < 2` (`mE_im ≤ 1`). -/
-theorem hierDriftGen_band_eta (E : ℝ) (hE : |E| < 2) {v : ℝ} (hv1 : v < 1) :
-    0 < etaT E v ∧ etaT E v ≤ 1 - v := by
-  refine ⟨etaT_pos hE hv1, ?_⟩
-  have him : (mE E).im ≤ 1 := by
-    rw [mE_im]
-    have : Real.sqrt (4 - E ^ 2) ≤ 2 :=
-      Real.sqrt_le_iff.2 ⟨by norm_num, by nlinarith [sq_nonneg E]⟩
-    linarith
-  calc etaT E v = (1 - v) * (mE E).im := rfl
-    _ ≤ (1 - v) * 1 := mul_le_mul_of_nonneg_left him (by linarith)
-    _ = 1 - v := mul_one _
-
-/-- **Band: `exists_norm_Kcal_le_win`** (`GridDriftN.lean:1098`) from `exists_norm_KI_le_wing` at `bandStep2Mat` and
-`μ = seqP sz` (`STKbound sz E` is `STKboundgL (bandFM sz E) (seqP sz)`). -/
-theorem hierDriftGen_band_exists_norm_Kcal_le_win (sz : Sizes d) (hsz : sz.SizeTendsto) (E : ℕ → ℝ)
-    (hKb : sz.STKbound E) (hE : ∀ n, |E n| < 2) (v : ℕ → ℝ) (hv0 : ∀ n, 0 ≤ v n) (hv1 : ∀ n, v n < 1) (m : ℕ)
-    (τ : ℝ) (hτ : 0 < τ) :
-    ∀ᶠ n in atTop, ∀ w ∈ Set.Icc (0 : ℝ) (v n), ∀ J : LoopIdx (Zd d (sz.L n)), J.WF →
-      2 ≤ J.length → J.length ≤ m →
-        ‖KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) w J‖ ≤
-          ((sz.size n : ℕ) : ℝ) ^ τ * ((etaT (E n) (v n))⁻¹) ^ m :=
-  exists_norm_KI_le_wing (bandStep2Mat sz E) (Sizes.seqP sz) hsz hKb (fun n w k σ a => rfl)
-    (fun n v hv0 hv1 => hierDriftGen_band_eta (E n) (hE n) hv1) v hv0 hv1 m τ hτ
-
-end BandGrid
-
 /-! ### 11. Compiled nonempty instances (`d = 3`, `sz0`; targets 6-10)
 
 Data: the merged admissible sequence `sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`, `N = 2097152`), the band carrier
@@ -1280,101 +989,6 @@ Data: the merged admissible sequence `sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `lam
 (`Δ = 1/8`, `u_1 = 1/8`, `u_2 = 1/4`), size index `0`, loops of length `3`, `σ = (+,-,+)`, labels `(0,1,2)` (distinct blocks
 of `Z_4^3`).  Every deterministic hypothesis is discharged; the pin `STKboundgL` (registered, owner K12/BA-V) stays a
 hypothesis of the envelope-window example. -/
-
-section Instances
-
-namespace HierDriftGenCheck
-
-open RBM.Gauss.SizesInst
-
-private abbrev E0 : ℕ → ℝ := fun _ => 0
-private abbrev s0 : ℕ → ℝ := fun _ => 0
-private abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev K0 : ℕ → ℕ := fun _ => 4
-private abbrev Ψ0 : ∀ n : ℕ, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ := fun _ => 0
-private abbrev Cm0 : Step2Mat sz0 := bandStep2Mat sz0 E0
-private abbrev σ3 : Fin 3 → Bool := ![true, false, true]
-private abbrev a3 : Fin 3 → Zd 3 (sz0.L 0) := ![0, 1, 2]
-
-private theorem hE0 : ∀ n, |E0 n| < 2 := fun _ => by norm_num
-private theorem hL0 : StepDecompGen_LoopForm Cm0 E0 := stepDecompGen_loopForm_band sz0 E0 hE0
-private theorem hW0 : StepDecompGen_WalkForm Cm0 sz0.lam Ψ0 := stepDecompGen_walkForm_band sz0 E0
-private theorem hst0 : s0 0 ≤ t0 0 := by norm_num
-private theorem ht10 : t0 0 < 1 := by norm_num
-private theorem hj0 : (0 : ℕ) < K0 0 := by norm_num
-
-/-- The grid data are nondegenerate. -/
-private theorem data : gridStep s0 t0 K0 0 = 1 / 8 ∧ gridTime s0 t0 K0 0 1 = 1 / 8 ∧
-    Sizes.size sz0 0 = 2097152 ∧ 0 < (Cm0.m 0).im :=
-  ⟨by norm_num [gridStep], by norm_num [gridStep, gridTime], sz0_values.2.2.1, (hL0 0).1⟩
-
-/-- **Target 6, `norm_primBilS_le`** at the band kernel `SB`, the loop `((+,-),(0,0))`, `F = G = 1`, `B_F = B_G = 1`. -/
-example :=
-  norm_primBilS_le 3 (sz0.L 0) (sz0.W 0) (SB 3 (sz0.L 0) (sz0.lam 0)) (hierDriftGen_SB_row sz0 0)
-    (fun _ => (1 : ℂ)) (fun _ => (1 : ℂ)) (⟨[true, false], [0, 0]⟩ : LoopIdx (Zd 3 (sz0.L 0))) rfl
-    (zero_le_one : (0 : ℝ) ≤ 1) (zero_le_one : (0 : ℝ) ≤ 1) (fun _ _ _ _ => by simp) (fun _ _ _ _ => by simp)
-
-/-- **Target 6, `primRhsS_split`** at the band kernel and the length-`2` loop (every `K`, `D`). -/
-example (K D : LoopIdx (Zd 3 (sz0.L 0)) → ℂ) :=
-  primRhsS_split 3 (sz0.L 0) (sz0.W 0) (SB 3 (sz0.L 0) (sz0.lam 0)) K D
-    (⟨[true, false], [0, 0]⟩ : LoopIdx (Zd 3 (sz0.L 0))) (by decide)
-
-/-- **Target 6, `loopDrift_sub_K_deriv_ng`**: `u = 1/2`, `M = 1`, `k = 3`, `σ = (+,-,+)`, `a = (0,1,2)`. -/
-example := loopDrift_sub_K_deriv_ng Cm0 0 (hierDriftGen_kLoop_band sz0 E0 hE0 0) (hierDriftGen_kTwo_band sz0 E0 hE0 0)
-  (1 / 2) ⟨by norm_num, by norm_num⟩ (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) 3
-  (by norm_num) σ3 a3
-
-/-- **Target 7, `hierarchyNg_of`**: the same data. -/
-example := hierarchyNg_of Cm0 E0 sz0.lam hL0 (fun _ => rfl) (hierDriftGen_kLoop_band sz0 E0 hE0)
-  (hierDriftGen_kTwo_band sz0 E0 hE0) 0 (1 / 2) (by norm_num) (by norm_num)
-  (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) Matrix.isHermitian_one 3 (by norm_num) σ3 a3
-
-/-- **Targets 8-9, `gridDriftNg`**: the pin `GridDriftNg` at the band carrier and the window, every class discharged. -/
-example : GridDriftNg Cm0 s0 t0 K0 :=
-  gridDriftNg hL0 hW0 s0 t0 K0 (fun n => hierDriftGen_expand_band sz0 E0 hE0 s0 t0 K0 n)
-    (hierDriftGen_kLoop_band sz0 E0 hE0) (hierDriftGen_kTwo_band sz0 E0 hE0) (hierDriftGen_uStep_band sz0 E0 hE0)
-    (fun n a => hierDriftGen_SB_row sz0 n a) (hierDriftGen_kLink_band sz0 E0)
-
-/-- The envelope of `𝒦` on `[0, u_1]` for loops of length `≤ 3` at the data (target 10, `HierDriftGen_exists_envelope`). -/
-private theorem env3 : ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) (gridTime s0 t0 K0 0 1),
-    ∀ J : LoopIdx (Zd 3 (sz0.L 0)), J.WF → 2 ≤ J.length → J.length ≤ 3 → ‖Cm0.KI 0 w J‖ ≤ B :=
-  HierDriftGen_exists_envelope Cm0 0 (hierDriftGen_kLoop_band sz0 E0 hE0 0)
-  (v := gridTime s0 t0 K0 0 1) (by norm_num [gridTime, gridStep]) (by norm_num [gridTime, gridStep]) 3
-
-/-- **Target 9 (a), `gridDriftNg_at`** at the data, step `j = 0` (`H_0 = 0`), the envelope `B_3` from `env3`. -/
-example :=
-  gridDriftNg_at hL0 hW0 s0 t0 K0 0 0 (hierDriftGen_expand_band sz0 E0 hE0 s0 t0 K0 0)
-    (hierDriftGen_kLoop_band sz0 E0 hE0 0) (hierDriftGen_kTwo_band sz0 E0 hE0 0)
-    (hierDriftGen_uStep_band sz0 E0 hE0 0) (hierDriftGen_SB_row sz0 0) (hierDriftGen_kLink_band sz0 E0 0)
-    (le_refl _) hst0 ht10 (by norm_num) hj0 (k := 3) (by norm_num) σ3 env3.choose env3.choose_spec.1
-    env3.choose_spec.2
-
-/-- Step `j = 1` (`H_1 = √Δ X_1` random), the envelope on `[0, u_2]`. -/
-private theorem env3' : ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) (gridTime s0 t0 K0 0 2),
-    ∀ J : LoopIdx (Zd 3 (sz0.L 0)), J.WF → 2 ≤ J.length → J.length ≤ 3 → ‖Cm0.KI 0 w J‖ ≤ B :=
-  HierDriftGen_exists_envelope Cm0 0 (hierDriftGen_kLoop_band sz0 E0 hE0 0)
-  (v := gridTime s0 t0 K0 0 2) (by norm_num [gridTime, gridStep]) (by norm_num [gridTime, gridStep]) 3
-
-example :=
-  gridDriftNg_at hL0 hW0 s0 t0 K0 0 1 (hierDriftGen_expand_band sz0 E0 hE0 s0 t0 K0 0)
-    (hierDriftGen_kLoop_band sz0 E0 hE0 0) (hierDriftGen_kTwo_band sz0 E0 hE0 0)
-    (hierDriftGen_uStep_band sz0 E0 hE0 0) (hierDriftGen_SB_row sz0 0) (hierDriftGen_kLink_band sz0 E0 0)
-    (le_refl _) hst0 ht10 (by norm_num) (by norm_num [K0]) (k := 3) (by norm_num) σ3 env3'.choose
-    env3'.choose_spec.1 env3'.choose_spec.2
-
-/-- **Band: `GridDriftN`** at the data. -/
-example := hierDriftGen_band_gridDriftN sz0 E0 s0 t0 K0
-
-/-- **Target 10, `exists_norm_KI_le_wing`**: `STKboundgL` (registered, KL7) stays a hypothesis; `SizeTendsto` is
-`sz0_tendsto`; the link is `rfl`; `0 < η_v ≤ 1 - v` is the band spectral data; `v ≡ 1/2`, `m = 3`, `τ = 1/10`. -/
-example (hKb : STKboundgL Cm0.toFlowFM (Sizes.seqP sz0)) :=
-  exists_norm_KI_le_wing Cm0 (Sizes.seqP sz0) sz0_tendsto hKb (fun n w k σ a => rfl)
-    (fun n v hv0 hv1 => hierDriftGen_band_eta (E0 n) (hE0 n) hv1) (fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun _ => by norm_num) 3 (1 / 10) (by norm_num)
-
-end HierDriftGenCheck
-
-end Instances
 
 end RBM.BA
 

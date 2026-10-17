@@ -85,10 +85,6 @@ private theorem auxGraph2_zdistInf_neg (d L : ℕ) [NeZero L] (x : Zd d L) :
   unfold zdistInf
   exact Finset.sup_congr rfl fun i _ => by simp [zdist_neg]
 
-private theorem auxGraph2_zdistInf_zero (d L : ℕ) : zdistInf d L (0 : Zd d L) = 0 := by
-  unfold zdistInf
-  exact Nat.eq_zero_of_le_zero (Finset.sup_le fun i _ => by simp)
-
 private theorem auxGraph2_zdistInf_add_le (d L : ℕ) [NeZero L] (x y : Zd d L) :
     zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
   unfold zdistInf
@@ -170,21 +166,6 @@ theorem lwXiVar_symm (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
       auxGraph2_Lloop_two_swap sz n false true b₁ b₂ ω (E n) (t n)]
     ring
   · rw [auxGraph2_zdistInf_sub_comm]
-
-/-- **The variables are not void**: `W^{-d} ≤ ξ([a],[a])²` (`0 ≤ ρ`). -/
-theorem lwXiSq_ge_W (hρ : 0 ≤ ρ n) (a : Zd d (sz.L n)) (ω : sz.SeqΩ) :
-    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ lwXiSq sz E t ρ n a a ω := by
-  unfold lwXiSq
-  have h1 : 0 ≤ ∑ b₁ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a) : ℝ) ≤ ρ n),
-      ∑ b₂ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a) : ℝ) ≤ ρ n),
-        ∑ σ ∈ ({![true, false], ![false, true]} : Finset (Fin 2 → Bool)),
-          ‖Lloop sz n (E n) (t n) σ ![b₁, b₂] ω‖ :=
-    Finset.sum_nonneg fun b₁ _ => Finset.sum_nonneg fun b₂ _ => Finset.sum_nonneg fun σ _ => norm_nonneg _
-  have h2 : (if (zdistInf d (sz.L n) (a - a) : ℝ) ≤ ρ n then (1 : ℝ) else 0) = 1 := by
-    rw [sub_self, auxGraph2_zdistInf_zero]
-    simp [hρ]
-  rw [h2]
-  linarith
 
 /-- **The inclusion of `(eq:Gbyxi)`** (`7_8:878-880`): for `0 ≤ R`, `2R + 1 ≤ ρ`, and blocks `a`, `b` at
 `zdistD`-distance `≤ R` from `[x]`, `[y]`, the right side `STgexRHS` of `(GijGEX)` at `([x], [y])` is at most
@@ -1285,216 +1266,11 @@ theorem lwXiRad_holds : LWXiRad := by
   linarith
 
 
-/-- Every entry of `G_t - M` is at most the sum of all entries (used to discharge `hA` at a concrete bound). -/
-private theorem auxGraph2_entry_le_sum {d : ℕ} (sz : Sizes d) (n : ℕ) (E t : ℝ) (ω : sz.SeqΩ)
-    (x y : Idx d (sz.L n) (sz.W n)) :
-    ‖STGM sz n E t ω x y‖ ≤ ∑ x', ∑ y', ‖STGM sz n E t ω x' y'‖ :=
-  (Finset.single_le_sum (f := fun y' => ‖STGM sz n E t ω x y'‖)
-    (fun _ _ => norm_nonneg _) (Finset.mem_univ y)).trans
-    (Finset.single_le_sum (f := fun x' => ∑ y', ‖STGM sz n E t ω x' y'‖)
-      (fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _) (Finset.mem_univ x))
-
 /-! ## 7. Compiled nonempty instances at the merged `d = 3` data
 
 `d = 3`, `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`), `z0`, `flow_z0`, `tInst ≡ 1/16`, the class `Φ0 ≡ W⁻¹` with
 `psiAll0` (`C₁ = C₂ = 2`, `C₃ = 1`, `Cc ≡ 1`, `ε₀ = 1/20`), `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `ε₁ = 1/20`,
 `R0 n = (log W_n)^{3/2}`, `ρ0 n = 2 (log W_n)^{3/2} + 1`.  What stays a hypothesis of an instance is another gate's
 stochastic input: `LWLoop2 sz0 (STflowE z0) tInst Φ0` and the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- The radius `R0 n = (log W_n)^{3/2}` (the radius of the merged tail `lwTail_log32`). -/
-private noncomputable def auxGraph2_R0 : ℕ → ℝ := fun n => Real.log ((sz0.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)
-
-/-- The radius `ρ0 n = 2 (log W_n)^{3/2} + 1 = 2 R0 n + 1`. -/
-private noncomputable def auxGraph2_ρ0 : ℕ → ℝ := fun n =>
-  2 * Real.log ((sz0.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) + 1
-
-private theorem auxGraph2_R0_nonneg (n : ℕ) : 0 ≤ auxGraph2_R0 n :=
-  Real.rpow_nonneg (Real.log_nonneg (RBM.Gauss.LWInst.one_le_W n)) _
-
-private theorem auxGraph2_ρ0_nonneg (n : ℕ) : 0 ≤ auxGraph2_ρ0 n := by
-  have := auxGraph2_R0_nonneg n
-  unfold auxGraph2_R0 at this
-  unfold auxGraph2_ρ0
-  linarith
-
-private theorem auxGraph2_ρ0_ge (n : ℕ) : 2 * auxGraph2_R0 n + 1 ≤ auxGraph2_ρ0 n := le_rfl
-
-/-- The radius premise of target 3 from target 6 at `C = 2`, `C' = 1`, `K = 3/2`. -/
-private theorem auxGraph2_ρ0_rad :
-    ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, auxGraph2_ρ0 n + 1 ≤ ((sz0.size n : ℕ) : ℝ) ^ τ := fun τ hτ =>
-  lwXiRad_holds sz0 sz0_tendsto 2 1 (3 / 2) (by norm_num) (by norm_num) (by norm_num) τ hτ
-
-/-- The entry law `‖G_t - M‖_max ≺ W^{-ε₁}` at `ε₁ = 1/20` (a stochastic input, kept as a hypothesis). -/
-private def auxGraph2_Entry : Prop :=
-  Prec sz0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-    (fun n p ω => ‖STGM sz0 n (STflowE z0 n) (tInst n) ω p.1 p.2‖)
-    (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ)))
-
-/-- Two distinct points of the fine lattice, at every size. -/
-private theorem auxGraph2_exists_ne (n : ℕ) : ∃ x y : Idx 3 (sz0.L n) (sz0.W n), x ≠ y := by
-  have h3 := sz0.three_le_L n
-  have h1 := sz0.W_pos n
-  have : Nontrivial (ZMod (sz0.W n * sz0.L n)) :=
-    ZMod.nontrivial_iff.2 (by nlinarith)
-  refine ⟨0, Pi.single 0 1, fun h => ?_⟩
-  have := congrFun h 0
-  simp at this
-
-/-- **Instance 1** (target 2): `W^{-d} ≤ ξ([a],[a])²`, `ξ([a],[a]) > 0`, at every size, block and sample. -/
-example : ∀ (n : ℕ) (a : Zd 3 (sz0.L n)) (ω : sz0.SeqΩ),
-    (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ lwXiSq sz0 (STflowE z0) tInst auxGraph2_ρ0 n a a ω ∧
-      0 < lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 n a a ω := by
-  intro n a ω
-  have h := lwXiSq_ge_W sz0 (STflowE z0) tInst auxGraph2_ρ0 n (auxGraph2_ρ0_nonneg n) a ω
-  have hW : (0 : ℝ) < (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ := by
-    have := RBM.Gauss.LWInst.one_le_W n
-    positivity
-  exact ⟨h, Real.sqrt_pos.2 (lt_of_lt_of_le hW h)⟩
-
-/-- **Instance 1** (target 2): the first conjunct of `LWXi` for `lwXiVar` at `n = 0`. -/
-example (a b : Zd 3 (sz0.L 0)) (ω : sz0.SeqΩ) :
-    0 ≤ lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω ∧
-      lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω =
-        lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 b a ω :=
-  ⟨lwXiVar_nonneg sz0 _ _ _ 0 a b ω, lwXiVar_symm sz0 _ _ _ 0 a b ω⟩
-
-/-- **Instance 1** (target 2, `(eq:Gbyxi)`): `lwXi_gexRHS_le` at `n = 0` for two distinct points, with the blocks
-`a = [x]`, `b = [y]` and `R = R0 0`, `ρ = ρ0 0`. -/
-example (ω : sz0.SeqΩ) :
-    ∃ x y : Idx 3 (sz0.L 0) (sz0.W 0), x ≠ y ∧
-      STgexRHS sz0 0 (STflowE z0 0) (tInst 0) ω (STblk sz0 0 x) (STblk sz0 0 y) ≤
-        lwXiSq sz0 (STflowE z0) tInst auxGraph2_ρ0 0 (STblk sz0 0 x) (STblk sz0 0 y) ω := by
-  obtain ⟨x, y, hxy⟩ := auxGraph2_exists_ne 0
-  refine ⟨x, y, hxy, lwXi_gexRHS_le sz0 (STflowE z0) tInst auxGraph2_ρ0 0 (auxGraph2_R0_nonneg 0)
-    (auxGraph2_ρ0_ge 0) x y (STblk sz0 0 x) (STblk sz0 0 y) ω ?_ ?_⟩
-  · show (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) x).1 - (split 3 (sz0.L 0) (sz0.W 0) x).1) : ℝ) ≤ _
-    rw [sub_self, zdistD_zero, Nat.cast_zero]; exact auxGraph2_R0_nonneg 0
-  · show (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) y).1 - (split 3 (sz0.L 0) (sz0.W 0) y).1) : ℝ) ≤ _
-    rw [sub_self, zdistD_zero, Nat.cast_zero]; exact auxGraph2_R0_nonneg 0
-
-/-- **Instance 1** (target 2, the Ward part): `lwXi_ward_sum` at `n = 0`, `A` the sum of the entries of `G_t - M`
-(so the hypothesis `hA` holds), every sample and block. -/
-example (ω : sz0.SeqΩ) (a₁ : Zd 3 (sz0.L 0)) :
-    ∑ a₂, lwXiSq sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a₁ a₂ ω ≤
-      2 * (2 * auxGraph2_ρ0 0 + 1) ^ (2 * 3) * ((((sz0.W 0 : ℕ) : ℝ) ^ 3 * etaT (STflowE z0 0) (tInst 0))⁻¹ *
-        (1 + ∑ x, ∑ y, ‖STGM sz0 0 (STflowE z0 0) (tInst 0) ω x y‖)) +
-      (2 * auxGraph2_ρ0 0 + 1) ^ 3 * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ := by
-  refine lwXi_ward_sum sz0 (STflowE z0) tInst auxGraph2_ρ0 0 (abs_lemE_lt_two (z0_im_pos 0))
-    (by simp only [tInst]; norm_num) (auxGraph2_ρ0_nonneg 0) ω (fun x y => ?_) a₁
-  exact auxGraph2_entry_le_sum sz0 0 (STflowE z0 0) (tInst 0) ω x y
-
-/-- **Instance 2** (target 3, `claim:xi`): `LWXi` for `ξ = lwXiVar` at the merged data; the premises `LWLoop2` and the
-entry law stay hypotheses, the radius premise is target 6. -/
-example (hL : LWLoop2 sz0 (STflowE z0) tInst RBM.Gauss.LWInst.Φ0) (hent : auxGraph2_Entry) :
-    LWXi sz0 (STflowE z0) tInst RBM.Gauss.LWInst.Φ0 (lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0) :=
-  lwXiClaim_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 tInst RBM.Gauss.LWInst.tInst_range.1 RBM.Gauss.LWInst.tInst_range.2 (1 / 20) 2 2 1
-    (fun _ => 1) RBM.Gauss.LWInst.Φ0 RBM.Gauss.LWInst.psiAll0 hL (1 / 20) (by norm_num) hent
-    auxGraph2_ρ0 auxGraph2_ρ0_nonneg auxGraph2_ρ0_rad
-
-/-- **Instance 3** (the consumer): the merged `LWAnp` (`h`, owed to LW-02) fed with `ξ = lwXiVar`. -/
-example (h : LWAnp 3) (hL : LWLoop2 sz0 (STflowE z0) tInst RBM.Gauss.LWInst.Φ0) (hent : auxGraph2_Entry) :
-    ∃ c : ℝ, 0 < c ∧
-      Prec sz0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-        (fun n ab ω => RBM.Graph.figAux.val (fun α β => lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 n α β ω)
-          (fun _ => ab.1) (fun _ => ab.2))
-        (fun n ab _ => ((((sz0.W n : ℕ) : ℝ) ^ 3) * etaT (STflowE z0 n) (tInst n))⁻¹ ^ 2 *
-          RBM.Gauss.LWInst.Φ0 n (c * ((zdistInf 3 (sz0.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ 2 *
-          RBM.Gauss.LWInst.Φ0 n 0 ^ (RBM.Graph.figAux.ordN - (2 : ℕ))) :=
-  RBM.Gauss.LWInst.inst_Anp h (lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0)
-    (lwXiClaim_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-      sz0 z0 flow_z0 tInst RBM.Gauss.LWInst.tInst_range.1 RBM.Gauss.LWInst.tInst_range.2 (1 / 20) 2 2 1
-      (fun _ => 1) RBM.Gauss.LWInst.Φ0 RBM.Gauss.LWInst.psiAll0 hL (1 / 20) (by norm_num) hent
-      auxGraph2_ρ0 auxGraph2_ρ0_nonneg auxGraph2_ρ0_rad)
-
-/-- The index set of target 4: pairs `x ≠ y` with blocks `a`, `b` within `zdistD`-distance `R0 n` of `[x]`, `[y]`. -/
-private abbrev auxGraph2_Ugb (n : ℕ) : Type :=
-  {q : (Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n)) × (Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) //
-    q.1.1 ≠ q.1.2 ∧
-    (zdistD 3 (sz0.L n) ((split 3 (sz0.L n) (sz0.W n) q.1.1).1 - q.2.1) : ℝ) ≤ auxGraph2_R0 n ∧
-    (zdistD 3 (sz0.L n) ((split 3 (sz0.L n) (sz0.W n) q.1.2).1 - q.2.2) : ℝ) ≤ auxGraph2_R0 n}
-
-/-- **Instance 4** (target 4, `(eq:Gbyxi)` off the diagonal): the index set is nonempty at every size, and
-`|G_{xy}| ≺ ξ(a, b)` holds under the entry law at the merged data. -/
-example (hent : auxGraph2_Entry) :
-    (∀ n, Nonempty (auxGraph2_Ugb n)) ∧
-    Prec sz0 (U := auxGraph2_Ugb)
-      (fun n q ω => ‖Gt sz0 n (STflowE z0 n) (tInst n) true ω q.1.1.1 q.1.1.2‖)
-      (fun n q ω => lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 n q.1.2.1 q.1.2.2 ω) := by
-  refine ⟨fun n => ?_, lwGbyXi_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst RBM.Gauss.LWInst.tInst_range.1
-    RBM.Gauss.LWInst.tInst_range.2 (1 / 20) (by norm_num) hent auxGraph2_ρ0 auxGraph2_R0
-    auxGraph2_R0_nonneg auxGraph2_ρ0_ge⟩
-  obtain ⟨x, y, hxy⟩ := auxGraph2_exists_ne n
-  refine ⟨⟨((x, y), (STblk sz0 n x, STblk sz0 n y)), hxy, ?_, ?_⟩⟩
-  · show (zdistD 3 (sz0.L n) ((split 3 (sz0.L n) (sz0.W n) x).1 - (split 3 (sz0.L n) (sz0.W n) x).1) : ℝ) ≤ _
-    rw [sub_self, zdistD_zero, Nat.cast_zero]; exact auxGraph2_R0_nonneg n
-  · show (zdistD 3 (sz0.L n) ((split 3 (sz0.L n) (sz0.W n) y).1 - (split 3 (sz0.L n) (sz0.W n) y).1) : ℝ) ≤ _
-    rw [sub_self, zdistD_zero, Nat.cast_zero]; exact auxGraph2_R0_nonneg n
-
-/-- **Instance 5** (target 5, `(eq:Gbyxi)` entrywise): `‖G_t - M‖_max ≺ Φ0(0)` at the merged data. -/
-example (hL : LWLoop2 sz0 (STflowE z0) tInst RBM.Gauss.LWInst.Φ0) (hent : auxGraph2_Entry) :
-    Prec sz0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-      (fun n p ω => ‖STGM sz0 n (STflowE z0 n) (tInst n) ω p.1 p.2‖)
-      (fun n _ _ => RBM.Gauss.LWInst.Φ0 n 0) :=
-  lwEntryPsi_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 tInst RBM.Gauss.LWInst.tInst_range.1 RBM.Gauss.LWInst.tInst_range.2 (1 / 20) 2 2 1
-    (fun _ => 1) RBM.Gauss.LWInst.Φ0 RBM.Gauss.LWInst.psiAll0 hL (1 / 20) (by norm_num) hent
-
-/-- **Instance 6** (`lwGbyXi_hxi`): the premises `hξ0`, `hξ` of the merged `lwGtoAG_holds` for
-`D = lwSampleData sz0 0 (zt _ _) _ M S Sp ω`, `ξ = c · lwXiVar`, from the sample event of target 4. -/
-example (M S Sp : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) (ω : sz0.SeqΩ)
-    {c : ℝ} (hc : 0 ≤ c)
-    (h : ∀ (x y : Idx 3 (sz0.L 0) (sz0.W 0)) (a b : Zd 3 (sz0.L 0)), x ≠ y →
-      (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) x).1 - a) : ℝ) ≤ auxGraph2_R0 0 →
-      (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) y).1 - b) : ℝ) ≤ auxGraph2_R0 0 →
-      ‖Gt sz0 0 (STflowE z0 0) (tInst 0) true ω x y‖ ≤
-        c * lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω) :
-    (∀ a b : Zd 3 (sz0.L 0), 0 ≤ c * lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω) ∧
-      (∀ (x y : Idx 3 (sz0.L 0) (sz0.W 0)) (a b : Zd 3 (sz0.L 0)), x ≠ y →
-        (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) x).1 - a) : ℝ) ≤ auxGraph2_R0 0 →
-        (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) y).1 - b) : ℝ) ≤ auxGraph2_R0 0 →
-        ‖(lwSampleData sz0 0 (zt (STflowE z0 0) (tInst 0)) (tInst 0) M S Sp ω).G x y‖ ≤
-          (fun a b : Zd 3 (sz0.L 0) => c * lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω) a b) :=
-  lwGbyXi_hxi sz0 (STflowE z0) tInst auxGraph2_ρ0 auxGraph2_R0 0 M S Sp ω hc h
-
-/-- **Instance 6, composed**: the merged deterministic `lwGtoAG_holds` at the sample data
-`D = lwSampleData sz0 0 (zt _ _) _ M S Sp ω` and `ξ = c_ξ · lwXiVar`, its premises `hξ0`, `hξ` supplied by
-`lwGbyXi_hxi`; the other premises (target 5, the decay of `S`, `S⁺`, the graph) stay hypotheses (LW-02). -/
-example {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : LGraph E I)
-    (hN : Γ.Normal) (hext : ∀ a b : E, Γ.molOf (Sum.inl a) = Γ.molOf (Sum.inl b) → a = b)
-    (M S Sp : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) (ω : sz0.SeqΩ)
-    (m : ℂ) (Ψ C c r cξ : ℝ) (hcξ : 0 ≤ cξ)
-    (hM : ∀ x y, M x y = if x = y then m else 0)
-    (hG : ∀ x y, x ≠ y → ‖Gt sz0 0 (STflowE z0 0) (tInst 0) true ω x y‖ ≤ Ψ)
-    (hGd : ∀ x, ‖Gt sz0 0 (STflowE z0 0) (tInst 0) true ω x x - m‖ ≤ Ψ)
-    (hC : 0 ≤ C) (hc : 0 < c)
-    (hS : ∀ x y, ‖S x y‖ ≤ C * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ *
-      Real.exp (-(c * (lwBdist 3 (sz0.L 0) (sz0.W 0) x y : ℝ))))
-    (hSp : ∀ x y, ‖Sp x y‖ ≤ C * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ *
-      Real.exp (-(c * (lwBdist 3 (sz0.L 0) (sz0.W 0) x y : ℝ))))
-    (hwin : ((sz0.W 0 : ℕ) : ℝ) ^ (-(3 : ℝ) / 2) ≤ Ψ) (hr : 0 ≤ r)
-    (hRr : (Fintype.card (E ⊕ I) : ℝ) * r ≤ auxGraph2_R0 0)
-    (h : ∀ (x y : Idx 3 (sz0.L 0) (sz0.W 0)) (a b : Zd 3 (sz0.L 0)), x ≠ y →
-      (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) x).1 - a) : ℝ) ≤ auxGraph2_R0 0 →
-      (zdistD 3 (sz0.L 0) ((split 3 (sz0.L 0) (sz0.W 0) y).1 - b) : ℝ) ≤ auxGraph2_R0 0 →
-      ‖Gt sz0 0 (STflowE z0 0) (tInst 0) true ω x y‖ ≤
-        cξ * lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω)
-    (ℓe : E → Idx 3 (sz0.L 0) (sz0.W 0)) :=
-  lwGtoAG_holds 3 le_rfl (sz0.L 0) (sz0.W 0) Γ hN hext
-    (lwSampleData sz0 0 (zt (STflowE z0 0) (tInst 0)) (tInst 0) M S Sp ω) m Ψ C c r (auxGraph2_R0 0)
-    (fun a b => cξ * lwXiVar sz0 (STflowE z0) tInst auxGraph2_ρ0 0 a b ω) hM hG hGd hC hc hS hSp hwin hr hRr
-    (lwGbyXi_hxi sz0 (STflowE z0) tInst auxGraph2_ρ0 auxGraph2_R0 0 M S Sp ω hcξ h).1
-    (lwGbyXi_hxi sz0 (STflowE z0) tInst auxGraph2_ρ0 auxGraph2_R0 0 M S Sp ω hcξ h).2 ℓe
-
-/-- **Instance** (target 6): the radii `R0`, `ρ0` are `N^{o(1)}` along `sz0`. -/
-example : ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, auxGraph2_ρ0 n + 1 ≤ ((sz0.size n : ℕ) : ℝ) ^ τ :=
-  auxGraph2_ρ0_rad
-
-end Instances
 
 end RBM.Graph

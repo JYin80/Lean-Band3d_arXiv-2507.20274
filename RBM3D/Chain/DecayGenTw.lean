@@ -49,31 +49,7 @@ theorem DecayGenTw_baWardPair {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) : 
 
 /-! ## 2. Target 12 (TLF-C5): `twSteps` and `STDecayLoopUgL` -/
 
-/-- `twSteps` is definitionally `STStep2ConclgL ∧ (conjunct 2) ∧ (conjunct 3) ∧ STDecayLoopUgL` (conjuncts 2-3 verbatim from
-`BA/TwistPins.lean:136-138`). -/
-example {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ) (Cd : ℝ) :
-    twSteps C μ s t Cd ↔ (STStep2ConclgL C μ s t Cd ∧
-      (∀ k : ℕ, 1 ≤ k → PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
-        (fun n p ω => ‖C.L n (p.1 : ℝ) p.2.1 p.2.2 ω‖) (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (k - 1))) ∧
-      (∀ k : ℕ, 1 ≤ k → PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
-        (fun n p ω => ‖C.L n (p.1 : ℝ) p.2.1 p.2.2 ω - C.K n (p.1 : ℝ) p.2.1 p.2.2‖) (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ k)) ∧
-      STDecayLoopUgL C μ s t) := Iff.rfl
-
-/-- Conjunct 4 of `twSteps` is `STDecayLoopUgL`. -/
-example {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ) (Cd : ℝ) (h : twSteps C μ s t Cd) :
-    STDecayLoopUgL C μ s t := h.2.2.2
-
 /-! ## 3. Target 13: target 6 at the BA carrier -/
-
-/-- **Target 6 at the BA carrier** `baFMz sz z`, law `seqP (sz.withLam 0)`, statement level: F3 from `EMn2BA_mF_data`, F1-F2 from
-`BAFlow` (`EMn2BA_T0_lt_one`), F4 from `DecayGenTw_baWardPair`; open: F5 (`STKcalDecaygL`, U2-BA's `BAKcalDecay`) and the Step 2 decay
-`STGdecayWgL` (T1-BA). -/
-example {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z)
-    {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (Cd : ℝ) (hK : STKcalDecaygL (baFMz sz z))
-    (hG : STGdecayWgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Cd) :
-    STDecayLoopUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t :=
-  stDecayLoopUgL_of_step2 hd sz _ _ κ 𝔠 𝔡 s t Cd ⟨hκ, fun n => (EMn2BA_mF_data sz h n).1, fun n t => rfl⟩ h.1 hs
-    (fun n => (ht n).trans_lt (EMn2BA_T0_lt_one hκ sz h n)) (DecayGenTw_baWardPair sz _ _) hK hG
 
 end RBM.BA
 

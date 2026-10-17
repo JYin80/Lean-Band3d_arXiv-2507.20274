@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Graph.AnpKey5
-import RBM3D.Graph.AnpKey4
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -476,23 +475,6 @@ theorem anpKey6_le_psi0 {d L : ℕ} [NeZero L] (ψ : ℝ → ℝ) (hanti : Antit
     ξ α β ≤ ψ 0 :=
   (hξψ α β).trans (hanti (Set.mem_Ici.2 le_rfl) (Set.mem_Ici.2 (Nat.cast_nonneg _)) (Nat.cast_nonneg _))
 
-/-- **`anpKey6_order`** (`AnpKey6OrderPin`): the sums along a nested order (`(kwuyayw_ng)`, `7_8:1397-1402`;
-`7_8:1420-1423`). -/
-theorem anpKey6_order : ∀ (d p q : ℕ) (E : List (NV p q × NV p q)) (σ : List (Fin q)), AnpSumOrder E σ →
-    ∀ (L : ℕ) [NeZero L] (ψ : ℝ → ℝ) (θ : ℝ),
-      AntitoneOn ψ (Set.Ici 0) → (∀ r : ℝ, 0 ≤ r → 0 < ψ r) → 0 < θ →
-      ∀ ξ : Zd d L → Zd d L → ℝ, (∀ α β, 0 ≤ ξ α β ∧ ξ α β = ξ β α) →
-        (∀ α β, ξ α β ≤ ψ ((zdistInf d L (α - β) : ℕ) : ℝ)) →
-        (∀ α, ∑ β, ξ α β ^ 2 ≤ θ) →
-        ∀ a b : Fin p → Zd d L,
-          ∑ ℓ : Fin q → Zd d L, (E.map fun e =>
-              ξ (Sum.elim (Sum.elim a b) ℓ e.1) (Sum.elim (Sum.elim a b) ℓ e.2)).prod ≤
-            θ ^ q * ψ 0 ^ ((E.length : ℤ) - 2 * (q : ℤ)) := by
-  intro d p q E σ hσ L _ ψ θ hanti hpos hθ ξ hξ hξψ hrow a b
-  have : Nonempty (Zd d L) := ⟨fun _ => 0⟩
-  exact anpKey6_order_gen E σ hσ ξ (ψ 0) θ (hpos 0 le_rfl) hθ (fun α β => (hξ α β).1)
-    (fun α β => (hξ α β).2) (anpKey6_le_psi0 ψ hanti ξ hξψ) hrow a b
-
 /-- **`anpKey6_sum`** (`AnpKey6SumPin`): the sums along a summation certificate (`(kwuyayw_ng_tree)`,
 `7_8:1414-1533`; the AM-GM split `7_8:1428-1431`). -/
 theorem anpKey6_sum : ∀ (d p q n : ℕ) (E : List (NV p q × NV p q)), AnpSumCert n E →
@@ -906,42 +888,6 @@ end Det
 
 section Corollaries
 
-/-- `valOn` on a region is at most the full value (`valOn` over a subset of the labels, all terms `≥ 0`). -/
-theorem anpKey6_valOn_le {p q : ℕ} (Γ : NGraph p q) {d L : ℕ} [NeZero L] (ξ : Zd d L → Zd d L → ℝ)
-    (hξ0 : ∀ α β, 0 ≤ ξ α β) (a b : Fin p → Zd d L) (S : Finset (Fin q → Zd d L)) :
-    Γ.valOn ξ a b S ≤ Γ.val ξ a b := by
-  rw [anpKey2_val_eq_valOn]
-  unfold NGraph.valOn
-  refine Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun ℓ _ _ => ?_
-  refine List.prod_nonneg fun z hz => ?_
-  obtain ⟨e, -, rfl⟩ := List.mem_map.1 hz
-  split_ifs
-  · exact zero_le_one
-  · exact hξ0 _ _
-
-/-- **`anpDetGhCaseIV_holds`** (`AnpKey6IVPin`): case (IV) on a region.  The bound of `anpDetGh_holds` holds for the
-whole sum, hence for the sum over the region; the case and induction hypotheses are not used. -/
-theorem anpDetGhCaseIV_holds : ∀ d : ℕ, AnpDetGhCaseIV d := by
-  intro d q _ _ p Γ π hG hN _ _ _
-  obtain ⟨C, c, hC, hc, hc1, H⟩ := anpDetGh_holds d p q Γ hG hN
-  refine ⟨C, c, hC, hc, hc1, fun L _ ψ θ hanti hpos hθ ξ hξ hξψ hrow a b => ?_⟩
-  exact (anpKey6_valOn_le Γ ξ (fun α β => (hξ α β).1) a b _).trans
-    (H L ψ θ hanti hpos hθ ξ hξ hξψ hrow a b)
-
-/-- **`anpDetGhStep_holds`** (`AnpKey6StepPin`): the merged step pin; its induction hypothesis is not used. -/
-theorem anpDetGhStep_holds : ∀ d : ℕ, AnpDetGhStep d :=
-  fun d q _ _ p Γ hG hN => anpDetGh_holds d p q Γ hG hN
-
-/-- **`anpIH_holds`** (`AnpKey6IHPin`): the induction hypothesis, for every `q`. -/
-theorem anpIH_holds : ∀ d q : ℕ, AnpIH d q :=
-  fun d _ p' k _ Γ' hG' hN' => anpDetGh_holds d p' k Γ' hG' hN'
-
-/-- **`anpDetGhRegStep_holds`** (`AnpKey6RegStepPin`): the merged step on regions, from the merged case split with
-the three case pins proved. -/
-theorem anpDetGhRegStep_holds : ∀ d : ℕ, AnpDetGhRegStep d :=
-  fun d => anpDetGhRegStep_of_cases d (anpDetGhCaseI_holds d) (anpDetGhCaseIII_holds d)
-    (anpDetGhCaseIV_holds d)
-
 /-- **`lwAnpKeyGh_holds`** (`AnpKey6KeyGhPin`): `lem:Anp_key_gh` (`7_8:1041-1077`), unconditionally. -/
 theorem lwAnpKeyGh_holds : ∀ d : ℕ, LWAnpKeyGh d := fun d => lwAnpKeyGh_of_det d (anpDetGh_holds d)
 
@@ -954,183 +900,5 @@ theorem lwAnp_holds : ∀ d : ℕ, LWAnp d := fun d => lwAnp_of_key d (lwAnpKey_
 end Corollaries
 
 /-! ## 6. Compiled nonempty instances at `d = 3` -/
-
-section Instances
-
-private theorem anpKey6_zdist_three_le (u : ZMod 3) : zdist 3 u ≤ 1 := by
-  revert u
-  decide
-
-private theorem anpKey6_zdistInf_three_le (x : Zd 3 3) : zdistInf 3 3 x ≤ 1 :=
-  Finset.sup_le fun i _ => anpKey6_zdist_three_le (x i)
-
-/-- The concrete data of the instances: `d = L = 3`, `ψ r = (1 + r)⁻¹` (positive, non-increasing), `θ = 1`,
-`ξ ≡ 1/6` (`Σ_β ξ² = 27/36 ≤ 1`, `ξ ≤ 1/2 ≤ ψ(|α - β|)` since `|α - β| ≤ 1` on `Z_3^3`). -/
-theorem anpKey6_inst_data :
-    AntitoneOn (fun r : ℝ => (1 + r)⁻¹) (Set.Ici 0) ∧ (∀ r : ℝ, 0 ≤ r → 0 < (fun r : ℝ => (1 + r)⁻¹) r) ∧
-      (0 : ℝ) < 1 ∧ (∀ _α _β : Zd 3 3, (0 : ℝ) ≤ 1 / 6 ∧ (1 / 6 : ℝ) = 1 / 6) ∧
-      (∀ α β : Zd 3 3, (1 / 6 : ℝ) ≤ (fun r : ℝ => (1 + r)⁻¹) ((zdistInf 3 3 (α - β) : ℕ) : ℝ)) ∧
-      (∀ _α : Zd 3 3, ∑ _β : Zd 3 3, (1 / 6 : ℝ) ^ 2 ≤ 1) := by
-  refine ⟨?_, ?_, one_pos, fun _ _ => ⟨by norm_num, rfl⟩, ?_, ?_⟩
-  · intro a ha b hb hab
-    have ha' : (0 : ℝ) ≤ a := ha
-    exact inv_anti₀ (by linarith) (by linarith)
-  · intro r hr
-    exact inv_pos.2 (by linarith)
-  · intro α β
-    have h1 : ((zdistInf 3 3 (α - β) : ℕ) : ℝ) ≤ 1 := by exact_mod_cast anpKey6_zdistInf_three_le _
-    have h2 : (0 : ℝ) ≤ ((zdistInf 3 3 (α - β) : ℕ) : ℝ) := Nat.cast_nonneg _
-    change (1 / 6 : ℝ) ≤ (1 + ((zdistInf 3 3 (α - β) : ℕ) : ℝ))⁻¹
-    rw [← one_div]
-    exact one_div_le_one_div_of_le (by linarith) (by linarith)
-  · intro α
-    simp only [Finset.sum_const, Finset.card_univ, card_Zd, nsmul_eq_mul]
-    norm_num
-
-/-- Instance (1): `anpDetGh_holds` at three merged graphs: `figAux` (no ghost), `anpKey5_figIVext` (case (IV),
-`q = 1 < p = 2`) and `anpKey2_figAuxGh` (ghost edges), with the concrete data of `anpKey6_inst_data` (`a ≡ 0`,
-`b ≡ 1`, `|a - b| = 1`) put into the bound: every deterministic hypothesis is discharged. -/
-theorem anpKey6_inst_eval {p q : ℕ} (Γ : NGraph p q) (hG : Γ.GhostOK) (hN : Γ.IsNested) :
-    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ c ≤ 1 ∧
-      Γ.val (fun _ _ : Zd 3 3 => (1 / 6 : ℝ)) (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3)) ≤
-        C * (1 : ℝ) ^ q * (fun r : ℝ => (1 + r)⁻¹) 0 ^ (Γ.ordN - (Γ.nngh : ℤ)) *
-          ∏ i, (if Γ.noGhostPath i = true then
-            (fun r : ℝ => (1 + r)⁻¹) (c * ((zdistInf 3 3 ((fun _ => (0 : Zd 3 3)) i - (fun _ => (1 : Zd 3 3)) i) : ℕ) : ℝ))
-            else 1) := by
-  obtain ⟨C, c, hC, hc, hc1, H⟩ := anpDetGh_holds 3 p q Γ hG hN
-  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := anpKey6_inst_data
-  exact ⟨C, c, hC, hc, hc1, H 3 (fun r : ℝ => (1 + r)⁻¹) 1 h1 h2 h3 (fun _ _ => 1 / 6) h4 h5 h6
-    (fun _ => 0) (fun _ => 1)⟩
-
-theorem anpKey6_inst_det :
-    AnpDetGhAt 3 figAux ∧ AnpDetGhAt 3 anpKey5_figIVext ∧ AnpDetGhAt 3 anpKey2_figAuxGh :=
-  ⟨anpDetGh_holds 3 2 2 figAux (anpKey_ghostOK_of_noGhost figAux_nested.2) figAux_nested.1,
-    anpDetGh_holds 3 2 1 anpKey5_figIVext anpKey5_inst_figIVext.1 anpKey5_inst_figIVext.2.1,
-    anpDetGh_holds 3 2 2 anpKey2_figAuxGh anpKey2_figAuxGh_ghostOK anpKey2_figAuxGh_nested⟩
-
-/-- Instance (1'): the bound at the concrete data, at the three merged graphs. -/
-theorem anpKey6_inst_det_eval :
-    (∃ C c : ℝ, 0 < C ∧ 0 < c ∧ c ≤ 1 ∧
-      figAux.val (fun _ _ : Zd 3 3 => (1 / 6 : ℝ)) (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3)) ≤
-        C * (1 : ℝ) ^ 2 * (fun r : ℝ => (1 + r)⁻¹) 0 ^ (figAux.ordN - (figAux.nngh : ℤ)) *
-          ∏ i, (if figAux.noGhostPath i = true then
-            (fun r : ℝ => (1 + r)⁻¹) (c * ((zdistInf 3 3 ((fun _ => (0 : Zd 3 3)) i - (fun _ => (1 : Zd 3 3)) i) : ℕ) : ℝ))
-            else 1)) ∧
-    (∃ C c : ℝ, 0 < C ∧ 0 < c ∧ c ≤ 1 ∧
-      anpKey5_figIVext.val (fun _ _ : Zd 3 3 => (1 / 6 : ℝ)) (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3)) ≤
-        C * (1 : ℝ) ^ 1 * (fun r : ℝ => (1 + r)⁻¹) 0 ^ (anpKey5_figIVext.ordN - (anpKey5_figIVext.nngh : ℤ)) *
-          ∏ i, (if anpKey5_figIVext.noGhostPath i = true then
-            (fun r : ℝ => (1 + r)⁻¹) (c * ((zdistInf 3 3 ((fun _ => (0 : Zd 3 3)) i - (fun _ => (1 : Zd 3 3)) i) : ℕ) : ℝ))
-            else 1)) ∧
-    (∃ C c : ℝ, 0 < C ∧ 0 < c ∧ c ≤ 1 ∧
-      anpKey2_figAuxGh.val (fun _ _ : Zd 3 3 => (1 / 6 : ℝ)) (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3)) ≤
-        C * (1 : ℝ) ^ 2 * (fun r : ℝ => (1 + r)⁻¹) 0 ^ (anpKey2_figAuxGh.ordN - (anpKey2_figAuxGh.nngh : ℤ)) *
-          ∏ i, (if anpKey2_figAuxGh.noGhostPath i = true then
-            (fun r : ℝ => (1 + r)⁻¹) (c * ((zdistInf 3 3 ((fun _ => (0 : Zd 3 3)) i - (fun _ => (1 : Zd 3 3)) i) : ℕ) : ℝ))
-            else 1)) :=
-  ⟨anpKey6_inst_eval figAux (anpKey_ghostOK_of_noGhost figAux_nested.2) figAux_nested.1,
-    anpKey6_inst_eval anpKey5_figIVext anpKey5_inst_figIVext.1 anpKey5_inst_figIVext.2.1,
-    anpKey6_inst_eval anpKey2_figAuxGh anpKey2_figAuxGh_ghostOK anpKey2_figAuxGh_nested⟩
-
-/-- Instance (2): the three merged `≺` pins at `d = 3` (`LWAnp 3` is the `h` of the merged `inst_Anp`, `LWAnpKey 3`
-that of `inst_AnpKey`), with no hypothesis. -/
-theorem anpKey6_inst_lw : LWAnpKeyGh 3 ∧ LWAnpKey 3 ∧ LWAnp 3 :=
-  ⟨lwAnpKeyGh_holds 3, lwAnpKey_holds 3, lwAnp_holds 3⟩
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.LWInst in
-/-- Instance (2'): the merged `inst_Anp` and `inst_AnpKey` with no hypothesis but the edge variables `ξ` and their
-bounds `LWXi` (the premise owed at its registry line). -/
-theorem anpKey6_inst_anp
-    (ξ : ∀ n, Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → sz0.SeqΩ → ℝ) (hξ : LWXi sz0 (STflowE z0) tInst Φ0 ξ) :
-    (∃ c : ℝ, 0 < c ∧
-      Prec sz0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-        (fun n ab ω => figAux.val (fun α β => ξ n α β ω) (fun _ => ab.1) (fun _ => ab.2))
-        (fun n ab _ => ((((sz0.W n : ℕ) : ℝ) ^ 3) * etaT (STflowE z0 n) (tInst n))⁻¹ ^ 2 *
-          Φ0 n (c * ((zdistInf 3 (sz0.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ 2 *
-          Φ0 n 0 ^ (figAux.ordN - (2 : ℕ)))) ∧
-    (∃ c : ℝ, 0 < c ∧
-      Prec sz0 (U := fun n => (Fin 2 → Zd 3 (sz0.L n)) × (Fin 2 → Zd 3 (sz0.L n)))
-        (fun n ab ω => figAux.val (fun α β => ξ n α β ω) ab.1 ab.2)
-        (fun n ab _ => ((((sz0.W n : ℕ) : ℝ) ^ 3) * etaT (STflowE z0 n) (tInst n))⁻¹ ^ 2 *
-          Φ0 n 0 ^ (figAux.ordN - (2 : ℕ)) *
-          ∏ i, Φ0 n (c * ((zdistInf 3 (sz0.L n) (ab.1 i - ab.2 i) : ℕ) : ℝ)))) :=
-  ⟨anpKey_inst_anp (anpDetGhStep_holds 3) ξ hξ, inst_AnpKey (lwAnpKey_holds 3) ξ hξ⟩
-
-/-- Instance (3): every merged step and case pin at `d = 3`, and the merged chains
-`anpKey3_inst_chain`, `anpKey2_inst_chain` closed with no hypothesis left. -/
-theorem anpKey6_inst_cases :
-    AnpDetGhCaseI 3 ∧ AnpDetGhCaseIII 3 ∧ AnpDetGhCaseIV 3 ∧ AnpDetGhRegStep 3 ∧ AnpDetGhStep 3 ∧ AnpIH 3 2 ∧
-      LWAnpKeyGh 3 ∧ LWAnpKeyGh 3 :=
-  ⟨anpDetGhCaseI_holds 3, anpDetGhCaseIII_holds 3, anpDetGhCaseIV_holds 3, anpDetGhRegStep_holds 3,
-    anpDetGhStep_holds 3, anpIH_holds 3 2,
-    anpKey3_inst_chain (anpDetGhCaseIII_holds 3) (anpDetGhCaseIV_holds 3),
-    anpKey2_inst_chain (anpDetGhCaseI_holds 3) (anpDetGhCaseIII_holds 3) (anpDetGhCaseIV_holds 3)⟩
-
-/-- Instance (3'): the three region/step corollaries applied at concrete graphs with every hypothesis discharged:
-case (IV) at `anpKey5_figIVext` (`q = 1`, no `A2` edge, neither case (I) nor case (III): `anpKey5_inst_figIVext`), the
-step at `figAux` (`q = 2`), the step on regions at `anpKey2_figAuxGh` (`π ≡ false`, no `A2` edge:
-`anpKey2_inst_figAuxGh`). -/
-theorem anpKey6_inst_apply :
-    AnpDetGhRegAt 3 anpKey5_figIVext anpKey5_piIV ∧ AnpDetGhAt 3 figAux ∧
-      AnpDetGhRegAt 3 anpKey2_figAuxGh (fun _ _ => false) :=
-  ⟨anpDetGhCaseIV_holds 3 1 one_pos (anpIH_holds 3 1) 2 anpKey5_figIVext anpKey5_piIV
-      anpKey5_inst_figIVext.1 anpKey5_inst_figIVext.2.1 anpKey5_inst_figIVext.2.2.1
-      anpKey5_inst_figIVext.2.2.2.1 anpKey5_inst_figIVext.2.2.2.2.1,
-    anpDetGhStep_holds 3 2 two_pos (anpIH_holds 3 2) 2 figAux
-      (anpKey_ghostOK_of_noGhost figAux_nested.2) figAux_nested.1,
-    anpDetGhRegStep_holds 3 2 two_pos (anpIH_holds 3 2) 2 anpKey2_figAuxGh (fun _ _ => false)
-      anpKey2_inst_figAuxGh.1 anpKey2_inst_figAuxGh.2.1 anpKey2_inst_figAuxGh.2.2.1⟩
-
-/-- Instance (4): `anpKey6_sum` at the depth-1 certificate of `figAux` minus `anpKey5_resAux` (no nested order,
-AM-GM needed), `d = L = 3`, `ψ r = (1 + r)⁻¹`, `θ = 1`, `ξ ≡ 1/6`, `a ≡ 0`, `b ≡ 1`. -/
-theorem anpKey6_inst_sum :
-    ∑ ℓ : Fin 2 → Zd 3 3, ((anpKey5_rest figAux anpKey5_resAux).map fun e : NV 2 2 × NV 2 2 =>
-        (fun _ _ : Zd 3 3 => (1 / 6 : ℝ))
-          (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.1)
-          (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.2)).prod ≤
-      (1 : ℝ) ^ 2 * (fun r : ℝ => (1 + r)⁻¹) 0 ^
-        (((anpKey5_rest figAux anpKey5_resAux).length : ℤ) - 2 * (2 : ℤ)) := by
-  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := anpKey6_inst_data
-  exact anpKey6_sum 3 2 2 1 (anpKey5_rest figAux anpKey5_resAux) anpKey5_inst_resAux.2.2 3
-    (fun r : ℝ => (1 + r)⁻¹) 1 h1 h2 h3 (fun _ _ => 1 / 6) h4 h5 h6
-    (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3))
-
-/-- Instance (4'): `anpKey6_order` at the nested order `[α]` of `figIVext` with nothing reserved (`p = 2`, `q = 1`,
-four solid edges), the same data. -/
-theorem anpKey6_inst_order :
-    ∑ ℓ : Fin 1 → Zd 3 3, ((anpKey5_rest anpKey5_figIVext ∅).map fun e : NV 2 1 × NV 2 1 =>
-        (fun _ _ : Zd 3 3 => (1 / 6 : ℝ))
-          (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.1)
-          (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.2)).prod ≤
-      (1 : ℝ) ^ 1 * (fun r : ℝ => (1 + r)⁻¹) 0 ^
-        (((anpKey5_rest anpKey5_figIVext ∅).length : ℤ) - 2 * (1 : ℤ)) := by
-  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := anpKey6_inst_data
-  exact anpKey6_order 3 2 1 (anpKey5_rest anpKey5_figIVext ∅) [0] anpKey5_inst_figIVext.2.2.2.2.2.2.2.2 3
-    (fun r : ℝ => (1 + r)⁻¹) 1 h1 h2 h3 (fun _ _ => 1 / 6) h4 h5 h6
-    (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3))
-
-/-- Instance (5): the union bound's family at `figAux` (two ghost-free paths of length 3: at most 9 reserved sets,
-each with `perPath` and `|rest| + n_ngh = n_S`), and its bound at the concrete data. -/
-theorem anpKey6_inst_union :
-    ∃ 𝓜 : Finset (Finset (Fin figAux.es.length)), (𝓜.card : ℝ) ≤ 9 ∧
-      (∀ M ∈ 𝓜, anpKey5_perPath figAux M ∧ (anpKey5_rest figAux M).length + figAux.nngh = figAux.nSolid) ∧
-      figAux.val (fun _ _ : Zd 3 3 => (1 / 6 : ℝ)) (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3)) ≤
-        ∑ M ∈ 𝓜, (∏ i, (if figAux.noGhostPath i = true then
-          (fun r : ℝ => (1 + r)⁻¹) ((1 + ∑ j, ((figAux.path j).length : ℝ))⁻¹ *
-            ((zdistInf 3 3 ((fun _ => (0 : Zd 3 3)) i - (fun _ => (1 : Zd 3 3)) i) : ℕ) : ℝ)) else 1)) *
-          ∑ ℓ : Fin 2 → Zd 3 3, ((anpKey5_rest figAux M).map fun e : NV 2 2 × NV 2 2 =>
-            (fun _ _ : Zd 3 3 => (1 / 6 : ℝ))
-              (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.1)
-              (Sum.elim (Sum.elim (fun _ : Fin 2 => (0 : Zd 3 3)) (fun _ : Fin 2 => (1 : Zd 3 3))) ℓ e.2)).prod := by
-  obtain ⟨𝓜, hcard, hM, H⟩ := anpKey6_union 2 2 figAux (anpKey_ghostOK_of_noGhost figAux_nested.2) figAux_nested.1
-  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := anpKey6_inst_data
-  refine ⟨𝓜, ?_, hM, H 3 3 (fun r : ℝ => (1 + r)⁻¹) h1 h2 (fun _ _ => 1 / 6) h4 h5
-    (fun _ => (0 : Zd 3 3)) (fun _ => (1 : Zd 3 3))⟩
-  refine hcard.trans (le_of_eq ?_)
-  have hlen : ∀ j, (figAux.path j).length = 3 := by decide +kernel
-  simp only [hlen, Fin.prod_univ_two]
-  norm_num
-
-end Instances
 
 end RBM.Graph

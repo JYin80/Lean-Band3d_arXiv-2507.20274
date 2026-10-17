@@ -116,13 +116,6 @@ theorem hermTestFunLoopNOf : HermTestFunLoopNOf := by
   push_cast
   ring
 
-/-- **Target 2, band re-derivation**: the merged pin `HermTestFunLoopN` from `hermTestFunLoopNOf` at `m = mE E`
-(`zt_eq_ztOf`, `etaT_eq_etaOf`, `mE_im_pos`). -/
-theorem hermTestFunLoopN_of_Of {d : ℕ} (sz : Sizes d) : RBM.Ind.HermTestFunLoopN sz := by
-  intro k n E u hE _ hu1 σ b
-  have h := hermTestFunLoopNOf sz k n (mE E) E u (mE_im_pos hE) hu1 σ b
-  exact h
-
 /-! ### 3. Translation by a Hermitian shift -/
 
 section Shift
@@ -514,16 +507,6 @@ theorem qvPropagatedNg (Cm : Step2Mat sz) (E g : ℕ → ℝ) (hL : StepDecompGe
   simp only [StepDecompGen_dirDerivN_LM hL, hee]
   exact StepDecompGen_core (g := g n) _ hz hM σ κ
 
-/-- **Target 3, band re-derivation**: `QVPropagatedN d` (`QVN.lean:799`) from `qvPropagatedNg` at `bandStep2Mat`,
-`g = sz.lam`, `m = mE E`. -/
-theorem qvPropagatedN_of_Ng (d : ℕ) : RBM.Ind.QVPropagatedN d := by
-  intro sz n E hE u hu0 hu1 M hM k hk σ κ
-  have hL := stepDecompGen_loopForm_band sz (fun _ => E) (fun _ => hE)
-  have h := qvPropagatedNg (bandStep2Mat sz (fun _ => E)) (fun _ => E) sz.lam hL (fun n => rfl) n u hu0 hu1 M hM
-    k hk σ κ
-  simp only [StepDecompGen_dirDerivN_LM hL] at h
-  exact h
-
 end QVTarget
 
 /-! ### 7. The vocabulary over `Step2Mat` (target 4) -/
@@ -611,15 +594,6 @@ theorem StepDecompGen_band_incr (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ
   change pathH sz s t K n (j + 1) ω - pathH sz s t K n j ω = _
   rw [pathH_succ]; abel
 
-/-- `ZfamN` is `ZfamNg` at `bandStep2Mat`. -/
-theorem bandStep2_ZfamN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*}
-    (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (ω : PathΩ sz) :
-    RBM.Ind.ZfamN sz s t K n j Φ ω = ZfamNg (bandStep2Mat sz E) s t K n j Φ ω := by
-  funext b
-  unfold RBM.Ind.ZfamN ZfamNg
-  rw [StepDecompGen_band_incr, StepDecompGen_dirDerivN_smul]
-  rfl
-
 /-- `loopFamN` is `loopFamNg` at `bandStep2Mat` (`loopM_eq_loopL`). -/
 theorem bandStep2_loopFamN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {k : ℕ} (σ : Fin k → Bool) :
     RBM.Ind.loopFamN sz E s t K n j σ = loopFamNg (bandStep2Mat sz E) s t K n j σ := by
@@ -649,10 +623,6 @@ theorem bandStep2_stoppedEdgeN {n k : ℕ} (σ : Fin k → Bool) (u : ℕ → �
   unfold RBM.Ind.stoppedEdgeN stoppedEdgeNg
   simp only [bandStep2_Ugen]
   rfl
-
-/-- `SubGaussFormN` is `SubGaussFormNg` at `bandStep2Mat`. -/
-theorem bandStep2_SubGaussFormN (j : ℕ) (τ : PathΩ sz → ℕ) (F : PathΩ sz → ℂ) (c : ℝ≥0) :
-    RBM.Ind.SubGaussFormN sz j τ F c ↔ SubGaussFormNg (bandStep2Mat sz E) j τ F c := Iff.rfl
 
 /-- `SubGaussStopN` is `SubGaussStopNg` at `bandStep2Mat` (`bandStep2_Ugen`). -/
 theorem bandStep2_SubGaussStopN {n k : ℕ} (σ : Fin k → Bool) (u : ℕ → ℝ) (τ : PathΩ sz → ℕ)
@@ -807,19 +777,6 @@ theorem ZvecNg_eq_stepZCN (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen
         (fun a a' => if a = a' then 1 else 0) b ω := by
   rw [StepDecompGen_stepZCN_eq_sum hL hW s t K n j hst ht1 hj σ _ b ω, StepDecompN_sum_delta]
 
-/-- **Target 5, `UN_stepZCNg`** (`Ugen_stepZCN`, `StepDecompN:1163`): `Step2Gen_UN ∘ ZvecNg` is `stepZCN` of the
-shifted loop family with the `Step2Gen_uKer`-product kernel. -/
-theorem UN_stepZCNg (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ)
-    (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ}
-    (σ : Fin k → Bool) (m : ℕ) (a : Fin k → Zd d (sz.L n)) (ω : PathΩ sz) :
-    Step2Gen_UN Cm.toFlowFM n σ (gridTime s t K n (j + 1)) (gridTime s t K n m)
-        (ZvecNg Cm s t K n j σ ω) a =
-      stepZCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-        (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω := by
-  rw [StepDecompGen_stepZCN_eq_sum hL hW s t K n j hst ht1 hj σ _ a ω]
-  rfl
-
 /-- `stepXiCN` with the identity kernel (in the world of one `Sizes`). -/
 theorem StepDecompGen_stepXiCN_delta (P : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*}
     [Fintype ι] [DecidableEq ι]
@@ -897,34 +854,6 @@ theorem YvecNg_eq_stepYCN (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen
   unfold YvecNg stepYCN
   rw [hω b, ZvecNg_eq_stepZCN hL hW s t K n j hst ht1 hj σ b ω]
 
-/-- **Target 5, `UN_stepYCNg`** (`Ugen_stepYCN`): a.e., for every label, `Step2Gen_UN ∘ YvecNg` is `stepYCN` of the
-shifted loop family with the `Step2Gen_uKer`-product kernel. -/
-theorem UN_stepYCNg (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ)
-    (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ}
-    (σ : Fin k → Bool) (m : ℕ) :
-    ∀ᵐ ω ∂(Cm.Pp), ∀ a : Fin k → Zd d (sz.L n),
-      Step2Gen_UN Cm.toFlowFM n σ (gridTime s t K n (j + 1)) (gridTime s t K n m)
-          (YvecNg Cm s t K n j σ ω) a =
-        stepYCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-          (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-            (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω := by
-  have hΦ := StepDecompGen_hΦ hL hW s t K n j hst ht1 hj σ
-  have hPp : Cm.Pp = pathP (sz.withLam lam') := hW.2.1
-  have h2 : ∀ᵐ ω ∂(Cm.Pp), ∀ b : Fin k → Zd d (sz.L n),
-      stepYCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-        (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) b ω =
-      ∑ a, (∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (b i) (a i)) *
-        stepYCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-          (fun a a' => if a = a' then 1 else 0) a ω := by
-    rw [hPp]
-    exact StepDecompN_stepYCN_eq_sum_delta_ae (sz.withLam lam') s t K n j hΦ _
-  filter_upwards [YvecNg_eq_stepYCN hL hW s t K n j hst ht1 hj σ, h2] with ω h1 h2 a
-  rw [h2 a]
-  unfold Step2Gen_UN
-  exact Finset.sum_congr rfl fun b _ => by rw [h1 b]
-
 /-- Conditional sub-Gaussianity for the walk `sz.withLam lam'` is conditional sub-Gaussianity for any measure equal to
 `pathP (sz.withLam lam')` (the filtrations agree by definition). -/
 theorem StepDecompGen_hcsg_of_withLam {d : ℕ} {sz : Sizes d} (lam' : ℕ → ℝ) {μ : Measure (PathΩ sz)}
@@ -935,188 +864,9 @@ theorem StepDecompGen_hcsg_of_withLam {d : ℕ} {sz : Sizes d} (lam' : ℕ → �
   subst hμ
   exact hX
 
-/-- **Target 5, `subGaussStopNg_zvecNg`** (`StepDecompN_subGaussStopN_zvecN`, `StepDecompN:1318`): the stopped, propagated
-increment `1_{j<τ} (Step2Gen_UN Z_j)_a` is conditionally sub-Gaussian with proxy `c` whenever `Δ · linTrVar` of `AbCN`
-and of `(-I) • AbCN` (the shifted loop family with the `Step2Gen_uKer`-product kernel) is at most `c` on `{j < τ}`. -/
-theorem subGaussStopNg_zvecNg [IsProbabilityMeasure Cm.Pp] (hL : StepDecompGen_LoopForm Cm E)
-    (hW : StepDecompGen_WalkForm Cm lam' Ψ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hst : s n ≤ t n)
-    (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) (τ : PathΩ sz → ℕ)
-    (hτ : MeasurableSet[filt sz j] {ω | j < τ ω}) (m : ℕ) (a : Fin k → Zd d (sz.L n))
-    (c : ℝ) (hc : 0 ≤ c)
-    (hboundRe : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      (AbCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-        (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c)
-    (hboundIm : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      ((-Complex.I) • AbCN (sz.withLam lam') s t K n j (loopFamNgShift Cm Ψ s t K n j σ)
-        (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c) :
-    SubGaussStopNg Cm σ (gridTime s t K n) τ (fun j ω => ZvecNg Cm s t K n j σ ω) m a j ⟨c, hc⟩ := by
-  have hΦ := StepDecompGen_hΦ hL hW s t K n j hst ht1 hj σ
-  have hPp : Cm.Pp = pathP (sz.withLam lam') := hW.2.1
-  have hZ := RBM.Ind.stepDecompCN_Z_subG (sz.withLam lam') s t K n j hΦ
-    (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate k i))
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a {ω | j < τ ω} hτ c hc hboundRe hboundIm
-  have hU := fun ω' => UN_stepZCNg hL hW s t K n j hst ht1 hj σ m a ω'
-  have hre : (fun ω => ({ω' | j < τ ω'}.indicator (fun ω' => Step2Gen_UN Cm.toFlowFM n σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (ZvecNg Cm s t K n j σ ω') a) ω).re)
-      = fun ω => {ω' | j < τ ω'}.indicator (fun ω' => RBM.Ind.stepZCN_re (sz.withLam lam') s t K n j
-        (loopFamNgShift Cm Ψ s t K n j σ) (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i)
-          (σ (finRotate k i)) (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω') ω := by
-    funext ω
-    by_cases h : ω ∈ {ω' | j < τ ω'}
-    · simp only [Set.indicator_of_mem h, hU]
-      simp [stepZCN]
-    · simp [Set.indicator_of_notMem h]
-  have him : (fun ω => ({ω' | j < τ ω'}.indicator (fun ω' => Step2Gen_UN Cm.toFlowFM n σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (ZvecNg Cm s t K n j σ ω') a) ω).im)
-      = fun ω => {ω' | j < τ ω'}.indicator (fun ω' => RBM.Ind.stepZCN_im (sz.withLam lam') s t K n j
-        (loopFamNgShift Cm Ψ s t K n j σ) (fun a b => ∏ i : Fin k, Step2Gen_uKer Cm.toFlowFM n (σ i)
-          (σ (finRotate k i)) (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω') ω := by
-    funext ω
-    by_cases h : ω ∈ {ω' | j < τ ω'}
-    · simp only [Set.indicator_of_mem h, hU]
-      simp [stepZCN]
-    · simp [Set.indicator_of_notMem h]
-  unfold SubGaussStopNg SubGaussFormNg
-  rw [hre, him]
-  exact ⟨StepDecompGen_hcsg_of_withLam lam' hPp hZ.1, StepDecompGen_hcsg_of_withLam lam' hPp hZ.2⟩
-
 end Ident2
 
 /-! ### 11. Band re-derivations of target 5 -/
-
-section BandIdent
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
-
-/-- The shifted loop family at `bandStep2Mat` and `Ψ = 0` is the band `loopFamN`. -/
-theorem stepDecompGen_band_loopFam (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {k : ℕ} (σ : Fin k → Bool) :
-    loopFamNgShift (bandStep2Mat sz E) (fun _ => 0) s t K n j σ = RBM.Ind.loopFamN sz E s t K n j σ := by
-  funext a M
-  change STLM sz n (E n) _ (0 + M) σ a = _
-  rw [zero_add]
-  exact loopM_eq_loopL d (sz.L n) (sz.W n) _ _ σ a
-
-/-- **Band: `ZvecN_eq_stepZCN`** (`StepDecompN:1126`) from `ZvecNg_eq_stepZCN`. -/
-theorem stepDecompGen_band_ZvecN_eq_stepZCN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool)
-    (b : Fin k → Zd d (sz.L n)) (ω : PathΩ sz) :
-    RBM.Ind.ZvecN sz E s t K n j σ ω b =
-      stepZCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ) (fun a a' => if a = a' then 1 else 0) b ω := by
-  have h := ZvecNg_eq_stepZCN (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ b ω
-  rw [stepDecompGen_band_loopFam] at h
-  rw [bandStep2_ZvecN]
-  exact h
-
-/-- The `Step2Gen_uKer`-product kernel at `bandFM` is the band `uKer`-product kernel of `Ugen`. -/
-theorem stepDecompGen_band_kernel (n : ℕ) {k : ℕ} (σ : Fin k → Bool) (v w : ℝ) :
-    (fun a b : Fin k → Zd d (sz.L n) => ∏ i : Fin k, Step2Gen_uKer (bandStep2Mat sz E).toFlowFM n (σ i)
-      (σ (finRotate k i)) v w (a i) (b i)) =
-    fun a b => ∏ i : Fin k, RBM.uKer d (sz.L n) (sz.lam n) (RBM.cycProd (fun i => mSigma (E n) (σ i)) i)
-      v w (a i) (b i) := by
-  funext a b
-  exact Finset.prod_congr rfl fun i _ => by
-    rw [show (bandStep2Mat sz E).toFlowFM = bandFM sz E from rfl, Step2Kern_uKer_band]
-    rfl
-
-/-- **Band: `Ugen_stepZCN`** (`StepDecompN:1163`) from `UN_stepZCNg`. -/
-theorem stepDecompGen_band_Ugen_stepZCN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) (m : ℕ)
-    (a : Fin k → Zd d (sz.L n)) (ω : PathΩ sz) :
-    RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n (j + 1)) (gridTime s t K n m)
-        (RBM.Ind.ZvecN sz E s t K n j σ ω) a =
-      stepZCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, RBM.uKer d (sz.L n) (sz.lam n)
-          (RBM.cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω := by
-  have h := UN_stepZCNg (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ m a ω
-  rw [bandStep2_Ugen, bandStep2_ZvecN]
-  refine h.trans ?_
-  rw [stepDecompGen_band_loopFam, stepDecompGen_band_kernel]
-  rfl
-
-/-- **Band: `martIncN_eq_stepXiCN`** (`StepDecompN:1269`) from `martIncNg_eq_stepXiCN`. -/
-theorem stepDecompGen_band_martIncN_eq_stepXiCN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) :
-    ∀ᵐ ω ∂(pathP sz), ∀ b : Fin k → Zd d (sz.L n),
-      RBM.Ind.martIncN sz E s t K n j σ ω b =
-        stepXiCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ) (fun a a' => if a = a' then 1 else 0) b ω := by
-  have h := martIncNg_eq_stepXiCN (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ
-  filter_upwards [h] with ω hω b
-  have := hω b
-  rw [stepDecompGen_band_loopFam] at this
-  exact this
-
-/-- **Band: `YvecN_eq_stepYCN`** from `YvecNg_eq_stepYCN`. -/
-theorem stepDecompGen_band_YvecN_eq_stepYCN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) :
-    ∀ᵐ ω ∂(pathP sz), ∀ b : Fin k → Zd d (sz.L n),
-      RBM.Ind.YvecN sz E s t K n j σ ω b =
-        stepYCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ) (fun a a' => if a = a' then 1 else 0) b ω := by
-  have h := YvecNg_eq_stepYCN (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ
-  filter_upwards [h] with ω hω b
-  have := hω b
-  rw [stepDecompGen_band_loopFam] at this
-  rw [bandStep2_YvecN]
-  exact this
-
-/-- **Band: `Ugen_stepYCN`** from `UN_stepYCNg`. -/
-theorem stepDecompGen_band_Ugen_stepYCN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) (m : ℕ) :
-    ∀ᵐ ω ∂(pathP sz), ∀ a : Fin k → Zd d (sz.L n),
-      RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n (j + 1)) (gridTime s t K n m)
-          (RBM.Ind.YvecN sz E s t K n j σ ω) a =
-        stepYCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ)
-          (fun a b => ∏ i : Fin k, RBM.uKer d (sz.L n) (sz.lam n)
-            (RBM.cycProd (fun i => mSigma (E n) (σ i)) i)
-            (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω := by
-  have h := UN_stepYCNg (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ m
-  filter_upwards [h] with ω hω a
-  have := hω a
-  rw [stepDecompGen_band_loopFam, stepDecompGen_band_kernel] at this
-  rw [bandStep2_Ugen, bandStep2_YvecN]
-  exact this
-
-/-- **Band: `StepDecompN_subGaussStopN_zvecN`** (`StepDecompN:1318`) from `subGaussStopNg_zvecNg`. -/
-theorem stepDecompGen_band_subGaussStopN_zvecN (hE : ∀ n, |E n| < 2) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) (τ : PathΩ sz → ℕ)
-    (hτ : MeasurableSet[filt sz j] {ω | j < τ ω}) (m : ℕ) (a : Fin k → Zd d (sz.L n))
-    (c : ℝ) (hc : 0 ≤ c)
-    (hboundRe : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      (AbCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, RBM.uKer d (sz.L n) (sz.lam n) (RBM.cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c)
-    (hboundIm : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      ((-Complex.I) • AbCN sz s t K n j (RBM.Ind.loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, RBM.uKer d (sz.L n) (sz.lam n) (RBM.cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c) :
-    RBM.Ind.SubGaussStopN sz (E n) σ (gridTime s t K n) τ (fun j ω => RBM.Ind.ZvecN sz E s t K n j σ ω) m a j
-      ⟨c, hc⟩ := by
-  have hZ : (fun j ω => RBM.Ind.ZvecN sz E s t K n j σ ω) =
-      fun j ω => ZvecNg (bandStep2Mat sz E) s t K n j σ ω := by
-    funext j ω; exact bandStep2_ZvecN sz E s t K n j σ ω ▸ rfl
-  have key := subGaussStopNg_zvecNg (stepDecompGen_loopForm_band sz E hE) (stepDecompGen_walkForm_band sz E)
-    s t K n j hst ht1 hj σ τ hτ m a c hc
-    (fun ω hω => by
-      have := hboundRe ω hω
-      rw [← stepDecompGen_band_kernel, ← stepDecompGen_band_loopFam] at this
-      exact this)
-    (fun ω hω => by
-      have := hboundIm ω hω
-      rw [← stepDecompGen_band_kernel, ← stepDecompGen_band_loopFam] at this
-      exact this)
-  have h2 := (bandStep2_SubGaussStopN sz E σ (gridTime s t K n) τ
-    (fun j ω => ZvecNg (bandStep2Mat sz E) s t K n j σ ω) m a j (⟨c, hc⟩ : ℝ≥0)).2 key
-  exact Eq.mpr (congrArg (fun Z => RBM.Ind.SubGaussStopN sz (E n) σ (gridTime s t K n) τ Z m a j (⟨c, hc⟩ : ℝ≥0))
-    hZ) h2
-
-end BandIdent
 
 /-! ### 12. Compiled nonempty instances (`d = 3`, `sz0`; targets 1-5)
 
@@ -1124,122 +874,6 @@ Data: the merged admissible sequence `sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `lam
 `bandStep2Mat sz0 (fun _ => 0)` (`E = 0`, `m = i`) with `Ψ = 0`, `lam' = sz0.lam`, the window `s ≡ 0`, `t ≡ 1/2`, `K ≡ 4`
 (`Δ = 1/8`, `u_1 = 1/8`, `u_2 = 1/4`), size index `0`, loops of length `3`, `σ = (+,-,+)`, label `(0,0,0)`.  Step `j = 0`
 has `H_0 = 0` (deterministic), step `j = 1` a random `H_1`.  Every deterministic premise is discharged. -/
-
-section Instances
-
-namespace StepDecompGenCheck
-
-open RBM.Gauss.SizesInst
-
-private abbrev E0 : ℕ → ℝ := fun _ => 0
-private abbrev s0 : ℕ → ℝ := fun _ => 0
-private abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev K0 : ℕ → ℕ := fun _ => 4
-private abbrev Ψ0 : ∀ n : ℕ, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ := fun _ => 0
-private abbrev Cm0 : Step2Mat sz0 := bandStep2Mat sz0 E0
-private abbrev σ3 : Fin 3 → Bool := ![true, false, true]
-private abbrev b3 : Fin 3 → Zd 3 (sz0.L 0) := ![0, 0, 0]
-
-private theorem hE0 : ∀ n, |E0 n| < 2 := fun _ => by norm_num
-private theorem hL0 : StepDecompGen_LoopForm Cm0 E0 := stepDecompGen_loopForm_band sz0 E0 hE0
-private theorem hW0 : StepDecompGen_WalkForm Cm0 sz0.lam Ψ0 := stepDecompGen_walkForm_band sz0 E0
-private theorem hst0 : s0 0 ≤ t0 0 := by norm_num
-private theorem ht10 : t0 0 < 1 := by norm_num
-private theorem hj0 : 0 + 1 ≤ K0 0 := by norm_num
-private theorem hj1 : 1 + 1 ≤ K0 0 := by norm_num
-
-/-- The data are nondegenerate. -/
-private theorem data : gridStep s0 t0 K0 0 = 1 / 8 ∧ gridTime s0 t0 K0 0 1 = 1 / 8 ∧
-    gridTime s0 t0 K0 0 2 = 1 / 4 ∧ Sizes.size sz0 0 = 2097152 ∧ 0 < (Cm0.m 0).im :=
-  ⟨by norm_num [gridStep], by norm_num [gridStep, gridTime], by norm_num [gridStep, gridTime],
-    sz0_values.2.2.1, (hL0 0).1⟩
-
-/-- **Target 2** at a spectral value that is not a band value (`m = 3/10 + i/2`, `E = 1/5`, `u = 1/2`, `k = 3`): both
-conjuncts, the bound at the Hermitian pair `M = 0`, `y = 1`. -/
-theorem hermTestFunLoopNOf_instance :
-    HermTestFun sz0 0
-        (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-          loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M)
-            (ztOf ((3 : ℂ) / 10 + Complex.I / 2) (1 / 5) (1 / 2)) (loopOf σ3 ![0, 1, 2])) ∧
-      ‖fderiv ℝ (fderiv ℝ
-          (fun M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ =>
-            loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M)
-              (ztOf ((3 : ℂ) / 10 + Complex.I / 2) (1 / 5) (1 / 2)) (loopOf σ3 ![0, 1, 2]))) 0 1 1‖ ≤
-        ((3 * (3 + 1) : ℕ) : ℝ) * (Sizes.size sz0 0 : ℝ) * (etaOf ((3 : ℂ) / 10 + Complex.I / 2) (1 / 2))⁻¹ ^ (3 + 2) *
-          ‖(1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)‖ ^ 2 := by
-  have h := hermTestFunLoopNOf sz0 3 0 ((3 : ℂ) / 10 + Complex.I / 2) (1 / 5) (1 / 2) (by norm_num) (by norm_num)
-    σ3 ![0, 1, 2]
-  exact ⟨h.1, h.2 0 1 Matrix.isHermitian_zero Matrix.isHermitian_one⟩
-
-/-- **Target 3** at the band carrier, `M = 1`, `κ ≡ 1`, `k = 3`, `u = 1/2`. -/
-example := qvPropagatedNg Cm0 E0 sz0.lam hL0 (fun _ => rfl) 0 (1 / 2) (by norm_num) (by norm_num) 1
-  Matrix.isHermitian_one 3 (by norm_num) σ3 (fun _ => 1)
-
-/-- **Target 2, carrier corollary** at the band carrier. -/
-example := StepDecompGen_hermLoop hL0 hW0 0 (1 / 2) (by norm_num) σ3 b3
-
-/-- **Target 5**, step `j = 0` (`H_0 = 0`) and step `j = 1` (`H_1 = √Δ X_1`). -/
-example (ω : PathΩ sz0) (b : Fin 3 → Zd 3 (sz0.L 0)) :=
-  ZvecNg_eq_stepZCN hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3 b ω
-
-example (ω : PathΩ sz0) (b : Fin 3 → Zd 3 (sz0.L 0)) :=
-  ZvecNg_eq_stepZCN hL0 hW0 s0 t0 K0 0 1 hst0 ht10 hj1 σ3 b ω
-
-example := martIncNg_eq_stepXiCN hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3
-
-example := martIncNg_eq_stepXiCN hL0 hW0 s0 t0 K0 0 1 hst0 ht10 hj1 σ3
-
-example := YvecNg_eq_stepYCN hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3
-
-example := YvecNg_eq_stepYCN hL0 hW0 s0 t0 K0 0 1 hst0 ht10 hj1 σ3
-
-example (a : Fin 3 → Zd 3 (sz0.L 0)) (ω : PathΩ sz0) :=
-  UN_stepZCNg hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3 1 a ω
-
-example (a : Fin 3 → Zd 3 (sz0.L 0)) (ω : PathΩ sz0) :=
-  UN_stepZCNg hL0 hW0 s0 t0 K0 0 1 hst0 ht10 hj1 σ3 2 a ω
-
-example := UN_stepYCNg hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3 1
-
-example := UN_stepYCNg hL0 hW0 s0 t0 K0 0 1 hst0 ht10 hj1 σ3 2
-
-/-- The kernel of `UN` at the data. -/
-private abbrev U3 (j m : ℕ) : (Fin 3 → Zd 3 (sz0.L 0)) → (Fin 3 → Zd 3 (sz0.L 0)) → ℂ :=
-  fun a b => ∏ i : Fin 3, Step2Gen_uKer Cm0.toFlowFM 0 (σ3 i) (σ3 (finRotate 3 i))
-    (gridTime s0 t0 K0 0 (j + 1)) (gridTime s0 t0 K0 0 m) (a i) (b i)
-
-private theorem hΔ : 0 ≤ gridStep s0 t0 K0 0 := by norm_num [gridStep]
-
-/-- `H_0 = 0` at the data (`s 0 = 0`, `j = 0`): the walk is deterministic, so `AbCN` does not depend on `ω`. -/
-private theorem pathH_zero (ω : PathΩ sz0) : pathH (sz0.withLam sz0.lam) s0 t0 K0 0 0 ω = 0 := by
-  simp [pathH, s0]
-
-private def A₀3 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ :=
-  AbCN (sz0.withLam sz0.lam) s0 t0 K0 0 0 (loopFamNgShift Cm0 Ψ0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 (fun _ => 0)
-
-private theorem AbCN_eq (ω : PathΩ sz0) :
-    AbCN (sz0.withLam sz0.lam) s0 t0 K0 0 0 (loopFamNgShift Cm0 Ψ0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 ω = A₀3 := by
-  simp [A₀3, AbCN, pathH, s0]
-
-/-- The sub-Gaussian proxy. -/
-private def c3 : ℝ :=
-  max (gridStep s0 t0 K0 0 * linTrVar 0 A₀3) (gridStep s0 t0 K0 0 * linTrVar 0 ((-Complex.I) • A₀3))
-
-private theorem c3_nonneg : 0 ≤ c3 := le_max_of_le_left (mul_nonneg hΔ (linTrVar_nonneg 0 _))
-
-/-- **Target 5, `subGaussStopNg_zvecNg`**: the stopping family `τ ≡ K 0` (`{0 < τ}` is the whole space), `m = 1`. -/
-example : SubGaussStopNg Cm0 σ3 (gridTime s0 t0 K0 0) (fun _ => K0 0)
-    (fun j ω => ZvecNg Cm0 s0 t0 K0 0 j σ3 ω) 1 b3 0 ⟨c3, c3_nonneg⟩ := by
-  have hτ : MeasurableSet[filt sz0 0] {ω : PathΩ sz0 | 0 < (fun _ : PathΩ sz0 => K0 0) ω} := by
-    have : {ω : PathΩ sz0 | 0 < (fun _ : PathΩ sz0 => K0 0) ω} = Set.univ :=
-      Set.eq_univ_of_forall fun _ => by norm_num
-    rw [this]; exact MeasurableSet.univ
-  exact subGaussStopNg_zvecNg hL0 hW0 s0 t0 K0 0 0 hst0 ht10 hj0 σ3 (fun _ => K0 0) hτ 1 b3 c3 c3_nonneg
-    (fun ω _ => by rw [AbCN_eq]; exact le_max_left _ _) (fun ω _ => by rw [AbCN_eq]; exact le_max_right _ _)
-
-end StepDecompGenCheck
-
-end Instances
 
 end RBM.BA
 

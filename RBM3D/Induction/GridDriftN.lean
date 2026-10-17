@@ -941,45 +941,6 @@ private theorem gdn_loopOf_eq {d L : ℕ} [NeZero L] (J : LoopIdx (Zd d L)) (hJ 
   simp only [loopOf, LoopIdx.length]
   rw [gdn_ofFn_getD σ' false a'.length hJ, gdn_ofFn_getD a' 0 a'.length rfl]
 
-/-- **A deterministic envelope of `𝒦` exists.**  For `|E| < 2`, `0 ≤ v < 1` and every `k`, there is
-`B ≥ 0` with `‖𝒦_w(J)‖ ≤ B` for all `w ∈ [0, v]` and all well-formed loops `J` of length in
-`[2, k]`: `w ↦ 𝒦_w(J)` is continuous on `[0, 1)` (it is differentiable there, `KLK_isKLoop`), and
-there are finitely many loops of length `≤ k` over `Zd d L`.  (No analogue in RBM2D: its envelope
-witness `exists_norm_Kcal_le_win` is asymptotic.)  It discharges the envelope hypothesis of
-`gridDriftN` at a concrete size index. -/
-theorem GridDriftN_exists_envelope {d L W : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L) (hW : 1 ≤ W)
-    {E : ℝ} (hE : |E| < 2) {v : ℝ} (hv0 : 0 ≤ v) (hv1 : v < 1) (k : ℕ) :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) v, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      J.length ≤ k → ‖KLK d L g W E w J‖ ≤ B := by
-  have h1 : ∀ ℓ : ℕ, ∀ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L), ∃ C : ℝ, 0 ≤ C ∧
-      (2 ≤ ℓ → ∀ w ∈ Set.Icc (0 : ℝ) v, ‖KLK d L g W E w (loopOf p.1 p.2)‖ ≤ C) := by
-    intro ℓ p
-    by_cases hℓ : 2 ≤ ℓ
-    · have hcont : ContinuousOn (fun w : ℝ => KLK d L g W E w (loopOf p.1 p.2)) (Set.Icc 0 v) := by
-        intro w hw
-        refine ContinuousAt.continuousWithinAt ?_
-        have hwf : (loopOf p.1 p.2).WF := gdn_loopOf_wf p.1 p.2
-        have hlen : 2 ≤ (loopOf p.1 p.2).length := by rw [gdn_loopOf_length]; exact hℓ
-        exact (gdn_hasDeriv (g := g) (W := W) hL hW hE hw.1 (lt_of_le_of_lt hw.2 hv1) hwf
-          hlen).continuousAt
-      obtain ⟨C, hC⟩ := (isCompact_Icc (a := (0 : ℝ)) (b := v)).exists_bound_of_continuousOn hcont
-      exact ⟨max C 0, le_max_right _ _, fun _ w hw => (hC w hw).trans (le_max_left _ _)⟩
-    · exact ⟨0, le_rfl, fun h => absurd h hℓ⟩
-  choose C hC0 hC using h1
-  refine ⟨∑ ℓ ∈ Finset.range (k + 1), ∑ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L), C ℓ p,
-    Finset.sum_nonneg fun ℓ _ => Finset.sum_nonneg fun p _ => hC0 ℓ p, ?_⟩
-  intro w hw J hJ h2 hk
-  have hJe := gdn_loopOf_eq J hJ
-  have hb := hC J.length (fun i => J.σ.getD i false, fun i => J.a.getD i (0 : Zd d L)) h2 w hw
-  simp only at hb
-  rw [hJe] at hb
-  refine hb.trans ?_
-  have hmem : J.length ∈ Finset.range (k + 1) := Finset.mem_range.2 (Nat.lt_succ_of_le hk)
-  refine le_trans ?_ (Finset.single_le_sum (f := fun ℓ => ∑ p : (Fin ℓ → Bool) × (Fin ℓ → Zd d L),
-    C ℓ p) (fun ℓ _ => Finset.sum_nonneg fun p _ => hC0 ℓ p) hmem)
-  exact Finset.single_le_sum (f := fun p : (Fin J.length → Bool) × (Fin J.length → Zd d L) =>
-    C J.length p) (fun p _ => hC0 _ p) (Finset.mem_univ _)
-
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `W^{-d} B_{w,0} ≤ 2 (1 - v)⁻¹` for `0 ≤ w ≤ v < 1` (replaces RBM2D's `kloop_Mt_eq` chain of
@@ -1180,82 +1141,6 @@ supplied by `GridDriftN_exists_envelope`.  `exists_norm_Kcal_le_win`: the owed p
 (registered, `RBM3D/Test/Axioms.lean`; proved by KL7) stays a hypothesis of the example; `SizeTendsto`
 is `sz0_tendsto`, the other hypotheses are discharged. -/
 
-namespace GridDriftNCheck
-
-open RBM.Gauss.SizesInst
-
-/-- `E ≡ 0`. -/
-abbrev E0 : ℕ → ℝ := fun _ => 0
-/-- `s ≡ 1/10`. -/
-abbrev s0 : ℕ → ℝ := fun _ => 1 / 10
-/-- `t ≡ 1/2`. -/
-abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-/-- `K ≡ 4`. -/
-abbrev K0 : ℕ → ℕ := fun _ => 4
-
-/-- The grid data are nondegenerate: `Δ = 1/10`, `u_0 = 1/10`, `u_1 = 1/5 < 1`. -/
-theorem data : gridStep s0 t0 K0 0 = 1 / 10 ∧ gridTime s0 t0 K0 0 0 = 1 / 10 ∧
-    gridTime s0 t0 K0 0 (0 + 1) = 1 / 5 := by
-  refine ⟨?_, ?_, ?_⟩ <;> norm_num [gridStep, gridTime]
-
-/-- **`gridDriftN` at `sz0`**, `k = 3`, `σ = (+,-,+)`, `j = 0`: one grid step of `LK_SDE` for the
-size sequence `sz0` and every label `a ∈ (Z_4^3)^3`, with a deterministic envelope `B_3 ≥ 0` of
-`𝒦` on `[0, u_1]` (it exists: `GridDriftN_exists_envelope`).  No hypothesis is left open. -/
-theorem gridDriftN_instance :
-    ∃ Bk : ℝ, 0 ≤ Bk ∧ ∀ᵐ ω ∂(pathP sz0), ∀ a : Fin 3 → Zd 3 (sz0.L 0),
-      ‖predIncN sz0 E0 s0 t0 K0 0 0 ![true, false, true] ω a - (gridStep s0 t0 K0 0 : ℂ) *
-          (∑ l ∈ Finset.Icc 3 3, sz0.STksimLKM 0 (E0 0) (gridTime s0 t0 K0 0 0)
-              (pathH sz0 s0 t0 K0 0 0 ω) l (loopOf ![true, false, true] a) +
-            sz0.STelklkM 0 (E0 0) (gridTime s0 t0 K0 0 0) (pathH sz0 s0 t0 K0 0 0 ω)
-              (loopOf ![true, false, true] a) +
-            sz0.STegtM 0 (E0 0) (gridTime s0 t0 K0 0 0) (pathH sz0 s0 t0 K0 0 0 ω)
-              (loopOf ![true, false, true] a))‖
-        ≤ stepErrN 3 (sz0.L 0) (sz0.W 0) (E0 0) 3 (gridTime s0 t0 K0 0 0)
-            (gridTime s0 t0 K0 0 (0 + 1)) (gridStep s0 t0 K0 0) Bk := by
-  obtain ⟨_, _, _, hv1, _⟩ := gdn_time_facts s0 t0 K0 0 0 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨Bk, hB0, hB⟩ := GridDriftN_exists_envelope (d := 3) (L := sz0.L 0) (W := sz0.W 0)
-    (g := sz0.lam 0) (sz0.three_le_L 0) (sz0.W_pos 0) (E := E0 0) (by norm_num)
-    (v := gridTime s0 t0 K0 0 (0 + 1)) (by rw [data.2.2]; norm_num) hv1 3
-  exact ⟨Bk, hB0, gridDriftN sz0 E0 s0 t0 K0 (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) 0 0 (by norm_num) 3
-    (by norm_num) ![true, false, true] Bk hB0 hB⟩
-
-/-- **The envelope `B_3` exists at `sz0`** (`GridDriftN_exists_envelope`, `n = 0`, `v = u_1 = 1/5`,
-`k = 3`): a finite `B ≥ 0` with `‖𝒦_w(J)‖ ≤ B` on `[0, 1/5]` for the loops of length `2` and `3`. -/
-theorem envelope_instance :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) (1 / 5), ∀ J : LoopIdx (Zd 3 (sz0.L 0)), J.WF →
-      2 ≤ J.length → J.length ≤ 3 → ‖KLK 3 (sz0.L 0) (sz0.lam 0) (sz0.W 0) 0 w J‖ ≤ B :=
-  GridDriftN_exists_envelope (d := 3) (L := sz0.L 0) (W := sz0.W 0) (g := sz0.lam 0)
-    (sz0.three_le_L 0) (sz0.W_pos 0) (E := 0) (by norm_num) (v := 1 / 5) (by norm_num)
-    (by norm_num) 3
-
-/-- **`exists_norm_Kcal_le_win` at `sz0`**, `E ≡ 0`, `v ≡ 1/2`, `m = 3`, `τ = 1`: eventually in `n`,
-`‖𝒦_w(J)‖ ≤ N η_{1/2}^{-3}` for `w ∈ [0, 1/2]` and the well-formed loops of length `2` and `3`.  The
-owed pin `STKbound sz0 E0` is the hypothesis; `SizeTendsto` is `sz0_tendsto`. -/
-theorem exists_norm_Kcal_le_win_instance (hKb : sz0.STKbound E0) :
-    ∀ᶠ n in atTop, ∀ w ∈ Set.Icc (0 : ℝ) (1 / 2), ∀ J : LoopIdx (Zd 3 (sz0.L n)), J.WF →
-      2 ≤ J.length → J.length ≤ 3 →
-        ‖KLK 3 (sz0.L n) (sz0.lam n) (sz0.W n) (E0 n) w J‖ ≤
-          ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) * ((etaT (E0 n) (1 / 2))⁻¹) ^ 3 :=
-  exists_norm_Kcal_le_win sz0 sz0_tendsto E0 hKb (fun _ => by norm_num) (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun _ => by norm_num) 3 1 one_pos
-
-end GridDriftNCheck
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.kStepC
-#print axioms RBM.Ind.uStepC
-#print axioms RBM.Ind.stepErrN
-#print axioms RBM.Ind.GridDriftN
-#print axioms RBM.Ind.gridDriftN_at
-#print axioms RBM.Ind.gridDriftN
-#print axioms RBM.Ind.GridDriftN_exists_envelope
-#print axioms RBM.Ind.exists_norm_Kcal_le_win
-#print axioms RBM.Ind.GridDriftNCheck.data
-#print axioms RBM.Ind.GridDriftNCheck.gridDriftN_instance
-#print axioms RBM.Ind.GridDriftNCheck.envelope_instance
-#print axioms RBM.Ind.GridDriftNCheck.exists_norm_Kcal_le_win_instance

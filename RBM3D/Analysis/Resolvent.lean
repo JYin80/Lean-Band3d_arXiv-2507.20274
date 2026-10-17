@@ -112,15 +112,6 @@ theorem norm_sub_smul_ge_of_isHermitian {n : Type*} [Fintype n] [DecidableEq n]
     |z.im| * ‖v‖ ≤ ‖Matrix.toEuclideanLin H v - z • v‖ :=
   norm_sub_smul_ge (Matrix.isSymmetric_toEuclideanLin_iff.mpr hH) z v
 
-open Matrix in
-/-- **The deterministic envelope for a Hermitian matrix**: a solution of `H u - z u = w`
-obeys `‖u‖ ≤ |Im z|⁻¹ ‖w‖`, on the whole space and with no exceptional set. -/
-theorem norm_le_of_isHermitian {n : Type*} [Fintype n] [DecidableEq n]
-    {H : Matrix n n ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0)
-    {u w : EuclideanSpace ℂ n} (h : Matrix.toEuclideanLin H u - z • u = w) :
-    ‖u‖ ≤ |z.im|⁻¹ * ‖w‖ :=
-  norm_le_of_sub_smul_eq (Matrix.isSymmetric_toEuclideanLin_iff.mpr hH) hz h
-
 /-! ### Consequences for the matrix inverse
 
 What the loop estimates actually use: off the real axis `H - z` is invertible, and the

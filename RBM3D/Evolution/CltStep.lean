@@ -65,19 +65,6 @@ section Defs
 
 variable {d L W K k : ℕ} [NeZero L] [NeZero W]
 
-/-- The centred factor `X_m`: `Y_{b_m} - 𝔼Y_{b_m}` for `m < p`, its conjugate for `m ≥ p`
-(the integrand of `(eq:bound_isolated)`, on the finite model `PF d L W g`). -/
-def cltStep_Xo {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ) (b : Fin (2 * p) → Fin k → Zd d L)
-    (m : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
-  if (m : ℕ) < p then
-    cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g)
-  else (starRingEnd ℂ) (cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g))
-
-/-- `Γ_i = ∏_{m ≠ i} X_m`. -/
-def cltStep_Gamma {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ) (b : Fin (2 * p) → Fin k → Zd d L)
-    (i : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
-  ∏ m ∈ Finset.univ.erase i, cltStep_Xo F g E u b m ω
-
 /-- `cltStep_Xo` over an abstract evaluation `Y ω b'` (the band: `Y = cltEvalAt F E u`; the carrier: `cltEvalAtOf`). -/
 def cltStep_XoY {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ) (b : Fin (2 * p) → Fin k → Zd d L)
     (m : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
@@ -96,19 +83,6 @@ end Defs
 section Helpers
 
 variable {d L W K k : ℕ} [NeZero L] [NeZero W]
-
-private theorem cltStep_gEntry_meas (E s u : ℝ) (σ : Bool) (x y : Idx d L W) :
-    Measurable fun ω : Ω d L W => gEntry d L W E s (Hflow d L W u ω) σ x y := by
-  have hH : Measurable fun ω : Ω d L W => Hflow d L W u ω :=
-    Measurable.of_eval fun a => Measurable.of_eval fun b => measurable_Hflow d L W u a b
-  exact (walk_measurable_Gres_apply (zt E s) σ x y).comp hH
-
-private theorem cltStep_eval_meas (F : LocalForm d L W k K) (E u : ℝ) (b : Fin k → Zd d L) :
-    Measurable fun ω : Ω d L W => cltEvalAt F E u ω b := by
-  unfold cltEvalAt LocalForm.eval
-  refine Finset.measurable_sum _ fun j _ => Finset.measurable_sum _ fun q _ => ?_
-  exact measurable_const.mul
-    (Finset.measurable_prod _ fun i _ => cltStep_gEntry_meas E u u _ _ _)
 
 private theorem cltStep_evalOf_meas (F : LocalForm d L W k K) (m : ℂ) (E u : ℝ)
     (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Fin k → Zd d L) :
@@ -709,14 +683,6 @@ private theorem cltStep_zdistInf_add_le {d L : ℕ} [NeZero L] (x y : Zd d L) :
     _ ≤ _ := add_le_add (Finset.le_sup (f := fun j => zdist L (x j)) (Finset.mem_univ i))
           (Finset.le_sup (f := fun j => zdist L (y j)) (Finset.mem_univ i))
 
-/-- `c_κ > 0` for `0 < κ`, `|E| ≤ 2 - κ` (a re-proof of the private `cltres_ck_pos` of
-`RBM3D/Evolution/CltResolvent.lean`). -/
-private theorem cltStep_ck_pos {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) : 0 < cltCk κ := by
-  have h1 : κ ≤ 2 := by have := abs_nonneg E; linarith
-  unfold cltCk
-  have : 0 < κ * (4 - κ) := mul_pos hκ (by linarith)
-  positivity
-
 /-- Absorption of a constant `A ≤ N` into one power of `N`. -/
 private theorem cltStep_absorb {N A x y : ℝ} (hN : 1 ≤ N) (hA : A ≤ N) (hxy : x + 1 ≤ y) :
     A * N ^ x ≤ N ^ y := by
@@ -928,61 +894,6 @@ private theorem cltStep_seq {𝔠 κ' : ℝ} {g' s : ℕ → ℝ} (h𝔠 : 0 < �
     _ ≤ N ^ (-D - 3) := cltStep_absorb hN1 hNC3 (by linarith)
 
 
-/-- **Item 2: one real coordinate of the telescoping** (`CltStep` of RBM2D, `CltStep.lean:579-600`,
-for the two-label forms `STcltB`).  Under `HClt` at `τ = s`, a `2`-label local form `F` that is
-`(w_n + 1)`-local (`w_n = (log W_n)^3 ℓ_s`) with coefficients `≤ N^{C'}`, for every `p ≥ 1`, `D > 0`,
-eventually in `n`, for every `b : Fin (2p) → (Fin 2 → Zd)` with all labels in the window
-`|b_m1 - b_m2|_∞ ≤ w_n` and an isolated index `i` (`10 w_n ≤ |b_i1 - b_m1|_∞`, `m ≠ i`), every
-enumeration `e` of the real coordinates and every step `j`:
-`‖∫ (X_i(T_j) - X_i(T_{j+1})) Γ_i(ω) d(P⊗P)‖ ≤ N^{-D-3}`.  The far threshold of the good event is
-`θ_n = max (3 w_n - 2) w_n` (`= 3 w_n - 2` for `w_n ≥ 1`), the locality radius `ρ = w_n + 1`, the
-separation `R = 8 w_n` (`cltStep_geom`). -/
-theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ)
-    (hH : HClt sz κ ε 𝔠 𝔡 z s s t Cd) (K : ℕ) (C' : ℝ) (hC' : 0 ≤ C')
-    (F : ∀ n, LocalForm d (sz.L n) (sz.W n) 2 K)
-    (hcoef : ∀ᶠ n in atTop, ∀ b j q, ‖(F n).coef b j q‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C')
-    (hloc : ∀ n, (F n).Local (cltStep_win sz n (s n) + 1))
-    (p : ℕ) (hp : 1 ≤ p) (D : ℝ) (hD : 0 < D) :
-    ∀ᶠ n in atTop,
-      ∀ (b : Fin (2 * p) → Fin 2 → Zd d (sz.L n)) (i : Fin (2 * p)),
-        (∀ m, ((zdistInf d (sz.L n) (b m 0 - b m 1) : ℕ) : ℝ) ≤ cltStep_win sz n (s n)) →
-        (∀ m, m ≠ i →
-          10 * cltStep_win sz n (s n) ≤ ((zdistInf d (sz.L n) (b i 0 - b m 0) : ℕ) : ℝ)) →
-        ∀ (e : CoordF d (sz.L n) (sz.W n) ≃ Fin (Fintype.card (CoordF d (sz.L n) (sz.W n))))
-          (j : ℕ), j < Fintype.card (CoordF d (sz.L n) (sz.W n)) →
-          ‖∫ q, (cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
-                  (cltHyb d (sz.L n) (sz.W n) e j q.1 q.2) -
-                cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
-                  (cltHyb d (sz.L n) (sz.W n) e (j + 1) q.1 q.2)) *
-              cltStep_Gamma (F n) (sz.lam n) (STflowE z n) (s n) b i q.1
-            ∂((PF d (sz.L n) (sz.W n) (sz.lam n)).prod (PF d (sz.L n) (sz.W n) (sz.lam n)))‖ ≤
-            ((sz.size n : ℕ) : ℝ) ^ (-D - 3) := by
-  have hH' := hH
-  obtain ⟨hd, hκ, hε, hflow, hs0, -, hst, htl, -⟩ := hH
-  obtain ⟨⟨h𝔠, -, hN, hBW, -⟩, hE, ht1, hRC⟩ :=
-    RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
-  have hκ' : 0 < κ / 2 := by linarith
-  have hδ : 0 < ε / 2 := by linarith
-  have hck : 0 < cltCk (κ / 2) := cltStep_ck_pos (E := STflowE z 0) hκ' (hE 0).le
-  have hRn : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) ≤ 1 - s n := by
-    filter_upwards [hRC] with n hn
-    have := hst n; linarith [hn]
-  refine cltStep_seq sz h𝔠 hck hN hBW K C' hC' F hcoef (fun n => cltEvalAt (F n) (STflowE z n) (s n))
-    (fun n b' => cltStep_eval_meas (F n) (STflowE z n) (s n) b')
-    (fun n θ D' ω => cltGoodAt d (sz.L n) (sz.W n) (STflowE z n) (s n) θ D' ω) ?_
-    (fun θ hθ D' hD' D'' hD'' => cltGood_whp sz κ ε 𝔠 𝔡 z s s t Cd hH' 1 θ one_pos
-      (fun n => by have := hθ n; unfold cltStep_win at this; simpa only [one_mul] using this) D' hD' D'' hD'')
-    (fun D'' hD'' => cltCoord_tail sz (by omega) 𝔠 h𝔠 hN hBW D'' hD'') ?_ p hp D hD
-  · filter_upwards [hRn, hcoef] with n hR hcoefn ω b'
-    exact cltEval_detMulti_le d (sz.L n) (sz.W n) 2 (κ / 2) (ε / 2) (STflowE z n) (s n) K (F n) C'
-      (Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ' hδ (hE n).le hR hcoefn (Hflow_isHermitian _ _ _ _ _)
-  · filter_upwards [hRn] with n hR hθ θ D' hθR b' c ω₀ s' hadj hfar hgood' hs'
-    have hηlow := cltEta_lower d (sz.L n) (sz.W n) (κ / 2) (ε / 2) (STflowE z n) (s n) hκ' hδ (hE n).le hR
-    have hz : (zt (STflowE z n) (s n)).im ≠ 0 :=
-      (lt_of_lt_of_le (div_pos hck (by exact_mod_cast sz.one_le_size n)) hηlow).ne'
-    exact cltPathMulti_bound d (sz.L n) (sz.W n) 2 K (F n) (STflowE z n) (s n) _ (8 * cltStep_win sz n (s n)) θ D'
-      b' c ω₀ s' (hs0 n) ((hst n).trans_lt (ht1 n)) hz (hloc n) hθ hadj hfar hθR hgood' hs'
-
 /-- **Item 2 over the carrier** (`cltStepOf`): the same bound under `HCltOf` at `τ = s`, for the evaluation
 `cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n)` at the matrix `H₀ n + H_s(ω)` and the law `PF d L W (g' n)`; `κ ≤ Im (C.m n)`,
 `κ ≤ 1` replace `cltCk (κ/2)`. -/
@@ -1067,16 +978,6 @@ theorem cltStep_pairForm_evalOf (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d
     simp [cltStep_pairForm, this]
   · intro h; exact absurd (Finset.mem_univ _) h
 
-
-/-- The evaluation of `cltStep_pairForm`: the double sum over the two monomial slots (`m = mE E` of `cltStep_pairForm_evalOf`). -/
-theorem cltStep_pairForm_eval (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L W × Bool) →
-    (Idx d L W × Idx d L W × Bool) → ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
-    (b : Fin k → Zd d L) :
-    (cltStep_pairForm (W := W) c2).eval E s M b =
-      ∑ q0 : Idx d L W × Idx d L W × Bool, ∑ q1 : Idx d L W × Idx d L W × Bool,
-        c2 b q0 q1 * (gEntry d L W E s M q0.2.2 q0.1 q0.2.1 *
-          gEntry d L W E s M q1.2.2 q1.1 q1.2.1) :=
-  cltStep_pairForm_evalOf c2 (mE E) E s M b
 
 private theorem cltStep_gres_blockMat (H : Matrix (Idx d L W) (Idx d L W) ℂ)
     (z : ℂ) (σ : Bool) (x y : Vtx d L W) :
@@ -1223,14 +1124,6 @@ theorem cltStep_loopForm_evalOf (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (m : �
     ring
   · simp [h]
 
-/-- **Item 1, evaluation** (band).  In the window, `cltStep_loopForm` evaluates to `scale · 𝓛^{(2)}_{σ,b}` (`m = mE E`). -/
-theorem cltStep_loopForm_eval (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (E u : ℝ)
-    (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b : Fin 2 → Zd d (sz.L n))
-    (hb : (zdistInf d (sz.L n) (b 0 - b 1) : ℝ) ≤ cltStep_win sz n s) :
-    (cltStep_loopForm sz n s σ).eval E u M b =
-      ((cltStep_scale sz n : ℝ) : ℂ) * loopFine d (sz.L n) (sz.W n) M (zt E u) σ b :=
-  cltStep_loopForm_evalOf sz n s σ (mE E) E u M b hb
-
 /-- **Item 1, locality.**  `cltStep_loopForm` is `(w_n + 1)`-local, `w_n = (log W)^3 ℓ_s`: a non-zero
 coefficient has `x ∈ [b₁]`, `y ∈ [b₂]` with `|b₁ - b₂|_∞ ≤ w_n`, and the sum of the distances of
 `[x]`, `[y]` to one of the two labels is `|b₁ - b₂|_∞`. -/
@@ -1329,21 +1222,6 @@ theorem cltStep_scale_le (n : ℕ) {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) (hlam0 : 0 �
     _ = N ^ (2 : ℝ) := by
         rw [← Real.rpow_mul hN0.le]
         norm_num
-
-/-- **Item 1, the identity.**  `STcltB` is `cltEvalAt` of the two-label form `cltStep_loopForm`, up to the
-deterministic constant `scale · 𝒦^{(2)}_{s,σ,b}` (which cancels in `STcltX`), for the labels in
-the window. -/
-theorem cltStep_loopForm_stcltB (n : ℕ) (E s : ℝ) (σ : Fin 2 → Bool) (b : Fin 2 → Zd d (sz.L n))
-    (hb : (zdistInf d (sz.L n) (b 0 - b 1) : ℝ) ≤ cltStep_win sz n s) (ω : sz.SeqΩ) :
-    STcltB sz n E s σ b ω =
-      cltEvalAt (cltStep_loopForm sz n s σ) E s (sz.slice n ω) b -
-        ((cltStep_scale sz n : ℝ) : ℂ) * STKloop sz n E s σ b := by
-  unfold STcltB STLKM STLM cltEvalAt
-  rw [cltStep_loopForm_eval sz n s σ E s _ b hb]
-  change ((cltStep_scale sz n : ℝ) : ℂ) * (loopFine d (sz.L n) (sz.W n) (Hflow d (sz.L n) (sz.W n) s (sz.slice n ω))
-    (zt E s) σ b - STKloop sz n E s σ b) = _
-  ring
-
 
 /-- **Item 1, coefficient bound, eventually**: under `(eq:WO)` (`ilambda ≤ 𝔡⁻¹`) and `N → ∞`, every
 coefficient of `cltStep_loopForm` is at most `N²` (`C' = 2`), eventually in `n`, for every `σ`. -/
@@ -1583,241 +1461,5 @@ discharged (`cltGood_hclt_szCL`, the coefficient bound from `szCL_WO`, the local
 `cltStep_loopForm_local`).  The statements go through the generic definitions applied to `szCL` (the
 elaboration trap of T2141).  The label configuration `cltStep_szCL_witness` has the window
 `|b₁ - b₂|_∞ = m² > 0` (not the degenerate window `0` of `szCL_cltIso_witness`) and is isolated. -/
-
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Evol Filter
-
-/-- The point `y_n = (m², 0, 0)`, `m = n + 24`, of `Z_{L_n}^3`: `|y_n| = m²`. -/
-def cltStep_yCL (n : ℕ) : Zd 3 (szCL.L n) := Pi.single 0 (((n + 24) ^ 2 : ℕ) : ZMod (szCL.L n))
-
-theorem cltStep_zdistInf_yCL (n : ℕ) : zdistInf 3 (szCL.L n) (cltStep_yCL n) = (n + 24) ^ 2 := by
-  have h1 : (n + 24) ^ 2 ≤ (n + 24) ^ 5 := Nat.pow_le_pow_right (by omega) (by omega)
-  have h2 : 1 ≤ (n + 24) ^ 5 := Nat.one_le_pow _ _ (by omega)
-  have hlt : (n + 24) ^ 2 < szCL.L n := by
-    change (n + 24) ^ 2 < 2 * (n + 24) ^ 5
-    omega
-  have hz : zdist (szCL.L n) (((n + 24) ^ 2 : ℕ) : ZMod (szCL.L n)) = (n + 24) ^ 2 := by
-    unfold zdist
-    rw [ZMod.val_cast_of_lt hlt]
-    change min ((n + 24) ^ 2) (2 * (n + 24) ^ 5 - (n + 24) ^ 2) = (n + 24) ^ 2
-    omega
-  apply le_antisymm
-  · calc zdistInf 3 (szCL.L n) (cltStep_yCL n) ≤ zdistD 3 (szCL.L n) (cltStep_yCL n) := zdistInf_le_zdistD _ _ _
-      _ = (n + 24) ^ 2 := by rw [cltStep_yCL, zdistD_single, hz]
-  · calc (n + 24) ^ 2 = zdist (szCL.L n) (cltStep_yCL n 0) := by rw [cltStep_yCL, Pi.single_eq_same, hz]
-      _ ≤ zdistInf 3 (szCL.L n) (cltStep_yCL n) :=
-          Finset.le_sup (f := fun i => zdist (szCL.L n) (cltStep_yCL n i)) (Finset.mem_univ 0)
-
-/-- **A label configuration with a positive window satisfying the premises of `cltStep` and of
-`STCltIsoConcl`** at `(szCL, sCL)`, `p = 1`, every `n`: `b^{(1)} = (0, y_n)` (window `|b₁ - b₂| =
-m² > 0`, `m² ≤ (log W)^3 ℓ_s`) and `b^{(2)} = (x_n, x_n)`; `b^{(1)}` is isolated:
-`10 (log W)^3 ℓ_s ≤ 10 m³ ≤ m⁵ = |x_n|`. -/
-theorem cltStep_szCL_witness (n : ℕ) :
-    ∃ b : Fin (2 * 1) → (Fin 2 → Zd 3 (szCL.L n)),
-      (∀ k, ((zdistInf 3 (szCL.L n) ((b k) 0 - (b k) 1) : ℕ) : ℝ) ≤ cltStep_win szCL n (sCL n)) ∧
-      0 < zdistInf 3 (szCL.L n) ((b 0) 0 - (b 0) 1) ∧
-      (∀ j, j ≠ 0 → 10 * cltStep_win szCL n (sCL n) ≤
-        ((zdistInf 3 (szCL.L n) ((b 0) 0 - (b j) 0) : ℕ) : ℝ)) := by
-  have hlog1 := szCL_one_le_log_W n
-  have hlogm := szCL_log_W_le n
-  have hlogeq := szCL_log_W n
-  have h0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hw : cltStep_win szCL n (sCL n) = Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 := by
-    unfold cltStep_win
-    rw [szCL_ellT_s, mul_one]
-  have hlow : ((n : ℝ) + 24) ^ 2 ≤ Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 := by
-    rw [hlogeq]
-    have hl2 : (1 / 2 : ℝ) ≤ Real.log 2 := by
-      have := Real.log_two_gt_d9; linarith
-    have h24 : (24 : ℝ) ≤ (n : ℝ) + 24 := by linarith
-    have hm0 : (0 : ℝ) ≤ (n : ℝ) + 24 := by linarith
-    have h3 : ((n : ℝ) + 24) ^ 3 * (1 / 8) ≤ ((n : ℝ) + 24) ^ 3 * Real.log 2 ^ 3 := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      calc (1 / 8 : ℝ) = (1 / 2) ^ 3 := by norm_num
-        _ ≤ Real.log 2 ^ 3 := pow_le_pow_left₀ (by norm_num) hl2 3
-    calc ((n : ℝ) + 24) ^ 2 ≤ ((n : ℝ) + 24) ^ 3 * (1 / 8) := by
-          have : ((n : ℝ) + 24) ^ 3 = ((n : ℝ) + 24) ^ 2 * ((n : ℝ) + 24) := by ring
-          rw [this]
-          nlinarith [sq_nonneg ((n : ℝ) + 24)]
-      _ ≤ ((n : ℝ) + 24) ^ 3 * Real.log 2 ^ 3 := h3
-      _ = (((n : ℝ) + 24) * Real.log 2) ^ 3 := by ring
-  refine ⟨fun k => if k = 0 then ![0, cltStep_yCL n] else ![xCL n, xCL n], fun k => ?_, ?_, fun j hj => ?_⟩
-  · rw [hw]
-    by_cases hk : k = 0
-    · have h : zdistInf 3 (szCL.L n)
-          (((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-              (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) k) 0 -
-            ((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-              (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) k) 1) = (n + 24) ^ 2 := by
-        simp only [hk, ↓reduceIte]
-        simp only [Matrix.cons_val_zero, Matrix.cons_val_one, zero_sub]
-        rw [cltStep_zdistInf_neg, cltStep_zdistInf_yCL]
-      rw [h]
-      push_cast
-      exact hlow
-    · have h : zdistInf 3 (szCL.L n)
-          (((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-              (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) k) 0 -
-            ((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-              (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) k) 1) = 0 := by
-        simp [hk, zdistInf]
-      rw [h]
-      push_cast
-      exact pow_nonneg (by linarith) 3
-  · simp only [↓reduceIte, Matrix.cons_val_zero, Matrix.cons_val_one, zero_sub]
-    rw [cltStep_zdistInf_neg, cltStep_zdistInf_yCL]
-    positivity
-  · have h : ((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-          (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) 0) 0 -
-        ((fun k : Fin (2 * 1) => if k = 0 then ![0, cltStep_yCL n] else
-          (![xCL n, xCL n] : Fin 2 → Zd 3 (szCL.L n))) j) 0 = -xCL n := by
-      simp [hj]
-    rw [h, cltStep_zdistInf_neg, zdistInf_xCL, hw]
-    have h3 : Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 ≤ ((n : ℝ) + 24) ^ 3 :=
-      pow_le_pow_left₀ (by linarith) hlogm 3
-    have h24 : (24 : ℝ) ≤ (n : ℝ) + 24 := by linarith
-    have hm3 : (0 : ℝ) ≤ ((n : ℝ) + 24) ^ 3 := by positivity
-    have h10 : 10 * ((n : ℝ) + 24) ^ 3 ≤ ((n : ℝ) + 24) ^ 5 := by
-      have : ((n : ℝ) + 24) ^ 5 = ((n : ℝ) + 24) ^ 2 * ((n : ℝ) + 24) ^ 3 := by ring
-      rw [this]
-      have : (10 : ℝ) ≤ ((n : ℝ) + 24) ^ 2 := by nlinarith
-      nlinarith
-    push_cast
-    linarith
-
-/-- **Instance of `stCltIso_holds`** (`d = 3`): the pin `STCltIso 3` applied at `(szCL, zCL, sCL,
-tCL)`, `C_d = 1`; every deterministic hypothesis (flow, time ranges, regime, `(con_st_ind)`) is
-discharged by the merged `inst_cltIso`, and the premises of `STCltIsoConcl` are satisfiable with a
-positive window at every `n` (`cltStep_szCL_witness`). -/
-example : InstIng5Concl (fun sz E s t => STCltIsoConcl sz E s t) szCL zCL sCL tCL 1 :=
-  inst_cltIso (stCltIso_holds 3) 1 one_pos
-
-example : ∀ n, ∃ b : Fin (2 * 1) → (Fin 2 → Zd 3 (szCL.L n)),
-    (∀ k, ((zdistInf 3 (szCL.L n) ((b k) 0 - (b k) 1) : ℕ) : ℝ) ≤
-      Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 * ellT (szCL.L n) (szCL.lam n) (sCL n)) ∧
-    0 < zdistInf 3 (szCL.L n) ((b 0) 0 - (b 0) 1) ∧
-    (∃ i, ∀ j, j ≠ i → 10 * Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 * ellT (szCL.L n) (szCL.lam n) (sCL n) ≤
-      ((zdistInf 3 (szCL.L n) ((b i) 0 - (b j) 0) : ℕ) : ℝ)) := by
-  intro n
-  obtain ⟨b, h1, h2, h3⟩ := cltStep_szCL_witness n
-  refine ⟨b, h1, h2, 0, fun j hj => ?_⟩
-  have := h3 j hj
-  unfold cltStep_win at this
-  rw [← mul_assoc] at this
-  exact this
-
-/-- **Instance of `stCltIso_holds` as a statement about the pin itself** (`STCltIso 3`). -/
-example : STCltIso 3 := stCltIso_holds 3
-
-/-- **Instance of item 1** at `(szCL, sCL)`, `σ = (+,-)`, every `n`: for the label pair `b = (0, y_n)`
-of positive window `m² > 0` (`cltStep_szCL_witness`), `STcltB` is `cltEvalAt` of the two-label form
-`cltStep_loopForm` up to the constant `scale · 𝒦`, and the form is `(w_n + 1)`-local with
-coefficients `≤ scale`. -/
-example (n : ℕ) (E : ℝ) (ω : szCL.SeqΩ) :
-    ∃ b : Fin 2 → Zd 3 (szCL.L n), 0 < zdistInf 3 (szCL.L n) (b 0 - b 1) ∧
-      STcltB szCL n E (sCL n) ![true, false] b ω =
-        cltEvalAt (cltStep_loopForm szCL n (sCL n) ![true, false]) E (sCL n) (szCL.slice n ω) b -
-          ((cltStep_scale szCL n : ℝ) : ℂ) * STKloop szCL n E (sCL n) ![true, false] b ∧
-      (cltStep_loopForm szCL n (sCL n) ![true, false]).Local (cltStep_win szCL n (sCL n) + 1) ∧
-      ∀ b' j q, ‖(cltStep_loopForm szCL n (sCL n) ![true, false]).coef b' j q‖ ≤
-        cltStep_scale szCL n := by
-  obtain ⟨b, h1, h2, -⟩ := cltStep_szCL_witness n
-  exact ⟨b 0, h2, cltStep_loopForm_stcltB szCL n E (sCL n) ![true, false] (b 0) (h1 0) ω,
-    cltStep_loopForm_local szCL n (sCL n) ![true, false],
-    fun b' j q => cltStep_loopForm_coef_le szCL n (sCL n) ![true, false] b' j q⟩
-
-/-- The coefficient bound of `cltStep_loopForm` at `szCL`: `‖coef‖ ≤ N²`, eventually (`szCL_WO`,
-`szCL_tendsto`). -/
-theorem cltStep_szCL_coef (σ : Fin 2 → Bool) :
-    ∀ᶠ n in atTop, ∀ b j q, ‖(cltStep_loopForm szCL n (sCL n) σ).coef b j q‖ ≤
-      ((szCL.size n : ℕ) : ℝ) ^ (2 : ℝ) :=
-  cltStep_loopForm_coef_le_eventually szCL (by norm_num) szCL_tendsto szCL_WO (fun n => sCL n) σ
-
-/-- **Instance of item 2 (`cltStep`)** at `(szCL, zCL, sCL, tCL)`, `p = 1`, `D = 1`, `σ = (+,-)`,
-the form `cltStep_loopForm` of `STcltB`: `HClt` from `cltGood_hclt_szCL`; the coefficient bound and the
-locality are discharged; only `STStep2Concl` stays a hypothesis.  The premises (window and isolation)
-are satisfiable at every `n` (`cltStep_szCL_witness`). -/
-example (hStep2 : STStep2Concl szCL (STflowE zCL) sCL tCL 1) :=
-  cltStep szCL (1 / 10) (1 / 10) (1 / 6) (1 / 10) zCL sCL tCL 1 (cltGood_hclt_szCL hStep2) 2 2
-    (by norm_num) (fun n => cltStep_loopForm szCL n (sCL n) ![true, false])
-    (cltStep_szCL_coef ![true, false]) (fun n => cltStep_loopForm_local szCL n (sCL n) ![true, false])
-    1 le_rfl 1 one_pos
-
-/-- **Instance of item 2 at nondegenerate labels**: the conclusion of `cltStep` at `(szCL, zCL, sCL,
-tCL)`, `p = 1`, `D = 1`, `σ = (+,-)`, specialised to the label configuration `b = (cltStep_szCL_witness n)`
-(window `m² > 0`, `b^{(1)}` isolated), for every enumeration `e` of the real coordinates and every
-step `j`: the type is inferred (the elaboration trap forbids writing `Idx 3 (szCL.L n) …`). -/
-example (hStep2 : STStep2Concl szCL (STflowE zCL) sCL tCL 1) :=
-  (cltStep szCL (1 / 10) (1 / 10) (1 / 6) (1 / 10) zCL sCL tCL 1 (cltGood_hclt_szCL hStep2) 2 2
-    (by norm_num) (fun n => cltStep_loopForm szCL n (sCL n) ![true, false])
-    (cltStep_szCL_coef ![true, false])
-    (fun n => cltStep_loopForm_local szCL n (sCL n) ![true, false]) 1 le_rfl 1 one_pos).mono
-    fun n hn => hn (cltStep_szCL_witness n).choose 0 (cltStep_szCL_witness n).choose_spec.1
-      (cltStep_szCL_witness n).choose_spec.2.2
-
-/-- **Instance of `stCltIsogL_holds`** (`d = 3`): the generic pin as a statement, and applied at the band data of `Step5Inst`
-(`bandFM szCL (STflowE zCL)`, `seqP szCL`, `H₀ = 0`, `g' = lam`, `κ = 1/2`, `δ = 1/10`, `s = sCL`, `t = tCL`): `HCltOf` is
-discharged by `cltGood_hCltOf_szCL` (only the Step 2 pins `STLocalEntryUgL`, `STGdecayWgL` are hypotheses) and the conclusion is
-the isolation bound, whose premises are satisfiable with a positive window at every `n` (`cltStep_szCL_witness`). -/
-example : RBM.BA.STCltIsogL 3 := RBM.BA.stCltIsogL_holds 3
-
-example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
-    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
-    RBM.BA.STCltIsoConclgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL :=
-  RBM.BA.stCltIsogL_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL _ _ szCL.lam (STflowE zCL) (fun _ => 0) sCL tCL
-    (cltGood_hCltOf_szCL hLoc hDec)
-
-/-- **Instance of `cltStepOf`** at the band data, `p = 1`, `D = 1`, `σ = (+,-)`, the form `cltStep_loopForm` of `STcltB`,
-specialised to the label configuration `cltStep_szCL_witness n` (window `m² > 0`, `b^{(1)}` isolated), for every enumeration
-`e` of the real coordinates and every step `j`. -/
-example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
-    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :=
-  (cltStepOf szCL _ _ (cltGood_hCltOf_szCL hLoc hDec) 2 2 (by norm_num)
-    (fun n => cltStep_loopForm szCL n (sCL n) ![true, false]) (cltStep_szCL_coef ![true, false])
-    (fun n => cltStep_loopForm_local szCL n (sCL n) ![true, false]) 1 le_rfl 1 one_pos).mono
-    fun n hn => hn (cltStep_szCL_witness n).choose 0 (cltStep_szCL_witness n).choose_spec.1
-      (cltStep_szCL_witness n).choose_spec.2.2
-
-/-- **Instance of `cltStep_loopForm_evalOf`** at `(szCL, n = 0)`, the non-semicircle value `m = 1/2 + i`, `σ = (+,-)`, the labels
-of the positive window `cltStep_szCL_witness 0`, every matrix `M`. -/
-example (M : Matrix (Idx 3 (szCL.L 0) (szCL.W 0)) (Idx 3 (szCL.L 0) (szCL.W 0)) ℂ) :
-    ∃ b : Fin 2 → Zd 3 (szCL.L 0), 0 < zdistInf 3 (szCL.L 0) (b 0 - b 1) ∧
-      (cltStep_loopForm szCL 0 (sCL 0) ![true, false]).evalOf ⟨1 / 2, 1⟩ 0 (1 / 2) M b =
-        ((cltStep_scale szCL 0 : ℝ) : ℂ) * loopFine 3 (szCL.L 0) (szCL.W 0) M (ztOf ⟨1 / 2, 1⟩ 0 (1 / 2))
-          ![true, false] b := by
-  obtain ⟨b, h1, h2, -⟩ := cltStep_szCL_witness 0
-  exact ⟨b 0, h2, cltStep_loopForm_evalOf szCL 0 (sCL 0) ![true, false] ⟨1 / 2, 1⟩ 0 (1 / 2) M (b 0) (h1 0)⟩
-
-/-- **Instance of `cltStep_pairForm_evalOf`** (`c2 ≡ 1`, `d = L = 3`, `W = 1`, `m = 1/2 + i`). -/
-example (M : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) (b : Fin 1 → Zd 3 3) :
-    (cltStep_pairForm (W := 1) (fun _ _ _ => (1 : ℂ)) : LocalForm 3 3 1 1 2).evalOf ⟨1 / 2, 1⟩ 0 (1 / 2) M b =
-      ∑ q0 : Idx 3 3 1 × Idx 3 3 1 × Bool, ∑ q1 : Idx 3 3 1 × Idx 3 3 1 × Bool,
-        (fun _ _ _ => (1 : ℂ)) b q0 q1 * (gEntryOf 3 3 1 ⟨1 / 2, 1⟩ 0 (1 / 2) M q0.2.2 q0.1 q0.2.1 *
-          gEntryOf 3 3 1 ⟨1 / 2, 1⟩ 0 (1 / 2) M q1.2.2 q1.1 q1.2.1) :=
-  cltStep_pairForm_evalOf _ _ _ _ M b
-
-end RBM.Gauss.Step5Inst
-
-namespace RBM.Evol
-
-#print axioms cltStep_pairForm_eval
-#print axioms cltStep_loopForm_eval
-#print axioms cltStep_loopForm_local
-#print axioms cltStep_loopForm_coef_le
-#print axioms cltStep_loopForm_coef_le_eventually
-#print axioms cltStep_loopForm_stcltB
-#print axioms cltStep_scale_le
-#print axioms cltStep
-#print axioms RBM.Gauss.Sizes.stCltIso_holds
-#print axioms RBM.BA.stCltIsogL_holds
-#print axioms cltStepOf
-#print axioms cltStep_pairForm_evalOf
-#print axioms cltStep_loopForm_evalOf
-#print axioms RBM.Gauss.Step5Inst.cltStep_zdistInf_yCL
-#print axioms RBM.Gauss.Step5Inst.cltStep_szCL_witness
-#print axioms RBM.Gauss.Step5Inst.cltStep_szCL_coef
-
-end RBM.Evol
 
 end

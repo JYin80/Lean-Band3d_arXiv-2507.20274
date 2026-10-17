@@ -82,11 +82,6 @@ namespace RBM.Graph
 
 section Compose
 
-/-- the local lemma for the identity term (`s₀ = s`) -/
-theorem scostLL_refl {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : LGraph E I) :
-    LGraph.ScostLL Γ Γ :=
-  fun s => ⟨s, fun _ _ h => h, le_rfl⟩
-
 /-- **Composition** (F §3, the pin `ScostLLTransPin`): the local lemma for `Γ → T` and for `T → U` gives it for `Γ → U`
 (`s ↦ s₁ ↦ s₀`: the separation and the cost inequality compose). -/
 theorem LGraph.ScostLL.trans {E I I' I'' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
@@ -151,9 +146,6 @@ theorem scostLL_el_nonneg (h : ℕ × ℕ × ℕ × ℕ) : 0 ≤ scostLL_el h :=
 
 theorem scostLL_el_le_one (h : ℕ × ℕ × ℕ × ℕ) : scostLL_el h ≤ 1 := by
   unfold scostLL_el; split_ifs <;> omega
-
-private theorem scostLL_el_eq_one {h : ℕ × ℕ × ℕ × ℕ} (hh : lwElem h = true) : scostLL_el h = 1 := by
-  simp [scostLL_el, hh]
 
 private theorem scostLL_el_eq_zero {h : ℕ × ℕ × ℕ × ℕ} (hh : lwElem h = false) : scostLL_el h = 0 := by
   simp [scostLL_el, hh]
@@ -233,9 +225,6 @@ theorem scostLL_elem_E0 (X R A : ℕ × ℕ × ℕ × ℕ) :
   rw [scostLL_el_eq_zero h0] at h
   omega
 
-/-- (E3): equal added and removed patterns do not change `[elem]`. -/
-theorem scostLL_elem_E3 (X R : ℕ × ℕ × ℕ × ℕ) : scostLL_el (X + R) - scostLL_el (X + R) = 0 := sub_self _
-
 /-- (E1) for a blue pair: `X + (1, 1, 0, 0)` is elementary iff `X = 0`. -/
 theorem scostLL_elem_E1 (X : ℕ × ℕ × ℕ × ℕ) : scostLL_el (X + (1, 1, 0, 0)) = if X = 0 then 1 else 0 := by
   rcases X with ⟨a, b, c, d⟩
@@ -247,12 +236,6 @@ theorem scostLL_elem_E5 (X : ℕ × ℕ × ℕ × ℕ) : scostLL_el (X + (0, 0, 
   rcases X with ⟨a, b, c, d⟩
   rcases scostLL_el_spec a b (c + 1) (d + 1) with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;>
     by_cases hX : (a, b, c, d) = 0 <;> simp_all [Prod.ext_iff]
-
-/-- an elementary pattern is not `0` -/
-theorem scostLL_elem_ne_zero {H : ℕ × ℕ × ℕ × ℕ} (h : lwElem H = true) : H ≠ 0 := by
-  rintro rfl
-  revert h
-  decide
 
 /-- (E4), both colours: a pattern with half-edges of both colours is not elementary. -/
 theorem scostLL_elem_E4col (H : ℕ × ℕ × ℕ × ℕ) (h1 : 0 < H.1 + H.2.1) (h2 : 0 < H.2.2.1 + H.2.2.2) :
@@ -1584,16 +1567,6 @@ theorem scostLL_split_comap (s : Setoid (E ⊕ (I ⊕ Fin 1))) :
   · intro h
     exact Or.inr ⟨scostLL_emb_ne_alpha u, scostLL_emb_ne_alpha v, h⟩
 
-/-- the split does not change the relation on the external vertices -/
-theorem scostLL_split_inl (s : Setoid (E ⊕ (I ⊕ Fin 1))) (a b : E) :
-    scostLL_split (Sum.inr (Sum.inr 0)) s (Sum.inl a) (Sum.inl b) ↔ s (Sum.inl a) (Sum.inl b) := by
-  constructor
-  · rintro (h | ⟨-, -, h⟩)
-    · exact h ▸ s.refl' _
-    · exact h
-  · intro h
-    exact Or.inr ⟨scostLL_inl_ne_alpha a, scostLL_inl_ne_alpha b, h⟩
-
 open Classical in
 private theorem scostLL_joined_map_emb (L : List (SEdge (E ⊕ I))) (s' : Setoid (E ⊕ (I ⊕ Fin 1)))
     (halone : ∀ w, s' w (Sum.inr (Sum.inr 0)) → w = Sum.inr (Sum.inr 0)) (w₀ : E ⊕ (I ⊕ Fin 1)) :
@@ -1936,96 +1909,11 @@ private theorem localReg6b_hk_two {V : Type} (e₁ e₂ : SEdge V) (P : SEdge V 
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- Instance (1), `scostLL_loop` at `Γ_2 = fxyPowGraph 2`, `z = x`, blue. -/
-theorem localReg6b_inst_loop :
-    LGraph.ScostLL (fxyPowGraph 2) (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true) :=
-  scostLL_loop (fxyPowGraph 2) (Sum.inl 0) true
-
 /-- Instance (1'), the term `T1 = owxT1 m Γ x` of `(Owx)`: `Loop(x)` at an arbitrary graph (`owxT1` and `lwPrimLoop` have the
 same solid list and the same waved list, up to the coefficient). -/
 theorem localReg6b_inst_T1 (m : ℂ) (Γ : LGraph E I) (x : I) : LGraph.ScostLL Γ (owxT1 m Γ x) :=
   LGraph.ScostLL.of_perm Γ (lwPrimLoop Γ (Sum.inr x) true) (owxT1 m Γ x) (List.Perm.refl _) rfl
     (scostLL_loop Γ (Sum.inr x) true)
-
-/-- Instance (2), `scostLL_addLoop` at `Γ_2`, `z = β_0`, blue. -/
-theorem localReg6b_inst_addLoop :
-    LGraph.ScostLL (fxyPowGraph 2) (lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true) :=
-  scostLL_addLoop (fxyPowGraph 2) (Sum.inr 1) true
-
-/-- the hypothesis of instance (3): the blue light-weight at `β_0` is the head of the solid list of `Γ_2` -/
-theorem localReg6b_inst_moveLoopPerm :
-    (fxyPowGraph 2).solid.Perm (⟨true, true, Sum.inr 1, Sum.inr 1⟩ :: (fxyPowGraph 2).solid.tail) :=
-  List.Perm.refl _
-
-/-- Instance (3), `scostLL_moveLoop` at `Γ_2`, `z = β_0`, blue. -/
-theorem localReg6b_inst_moveLoop :
-    LGraph.ScostLL (fxyPowGraph 2) (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true) :=
-  scostLL_moveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true localReg6b_inst_moveLoopPerm
-
-/-- The 2-cycle `Z → U → Z` of one colour (two blue edges `inr 0 ⇄ inr 1`), no waved or dotted edge: `scost ⊥ = 0`. -/
-def localReg6b_instCyc : LGraph (Fin 2) (Fin 2) where
-  solid := [⟨true, false, .inr 0, .inr 1⟩, ⟨true, false, .inr 1, .inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-
-/-- Instance (4), `scostLL_contract` at the 2-cycle: `Contract(z; u, u)` with `z = inr 0`, `u = v = inr 1` (the collapse; every
-hypothesis is discharged). -/
-theorem localReg6b_inst_contract :
-    LGraph.ScostLL localReg6b_instCyc (lwPrimContract localReg6b_instCyc [] (.inr 0) (.inr 1) (.inr 1)) :=
-  scostLL_contract localReg6b_instCyc [] (.inr 0) (.inr 1) (.inr 1) (by decide) (by decide) (List.Perm.refl _)
-
-open Classical in
-/-- the trivial merge of the 2-cycle costs `0` -/
-theorem localReg6b_instCyc_bot : localReg6b_instCyc.scost ⊥ = 0 := by
-  have hk : localReg6b_instCyc.skept ⊥ = localReg6b_instCyc.solid := by
-    simp [LGraph.skept, localReg6b_instCyc]
-  unfold LGraph.scost
-  rw [hk, localReg6a_sIntCls_bot_card, localReg6a_sElemCls_bot_card _ hk]
-  have h : localReg6b_instCyc.nElem = 2 := by decide
-  rw [h]
-  simp [localReg6b_instCyc]
-
-open Classical in
-/-- the contracted 2-cycle costs `-2` at the trivial merge: the witness `s₀ = ⊥` fails, the repair is forced -/
-theorem localReg6b_instCyc_contract_bot :
-    (lwPrimContract localReg6b_instCyc [] (.inr 0) (.inr 1) (.inr 1)).scost ⊥ = -2 := by
-  set Γ' := lwPrimContract localReg6b_instCyc [] (.inr 0) (.inr 1) (.inr 1) with hΓ'
-  have hk : Γ'.skept ⊥ = [] := by simp [LGraph.skept, hΓ', lwPrimContract]
-  have hk' : ({ Γ' with solid := [] } : LGraph (Fin 2) (Fin 2)).skept ⊥ =
-      ({ Γ' with solid := [] } : LGraph (Fin 2) (Fin 2)).solid := by simp [LGraph.skept]
-  rw [localReg6a_scost_congr Γ' { Γ' with solid := [] } ⊥ (by rw [hk]; simp [LGraph.skept]) rfl]
-  unfold LGraph.scost
-  rw [hk', localReg6a_sIntCls_bot_card, localReg6a_sElemCls_bot_card _ hk']
-  have h : ({ Γ' with solid := [] } : LGraph (Fin 2) (Fin 2)).nElem = 0 := by decide
-  rw [h]
-  simp [hΓ', lwPrimContract, localReg6b_instCyc]
-
-open Classical in
-/-- the 2-cycle removed costs `-4` at the trivial merge -/
-theorem localReg6b_instCyc_L_bot :
-    ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).scost ⊥ = -4 := by
-  have hk : ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).skept ⊥ =
-      ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).solid := by simp [LGraph.skept]
-  unfold LGraph.scost
-  rw [hk, localReg6a_sIntCls_bot_card, localReg6a_sElemCls_bot_card _ hk]
-  have h : ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).nElem = 0 := by decide
-  rw [h]
-  simp [localReg6b_instCyc]
-
-/-- Instance (4), `scostLL_repair` at the 2-cycle with `s = ⊥`: the witness is `⊥` or the merge of the two vertices. -/
-theorem localReg6b_inst_repair :
-    ∃ s₀ : Setoid (Fin 2 ⊕ Fin 2), (s₀ = ⊥ ∨ s₀ = scostLL_merge ⊥ (Sum.inr 1) (Sum.inr 0)) ∧
-      (∀ a b : Fin 2, ¬ (⊥ : Setoid (Fin 2 ⊕ Fin 2)) (Sum.inl a) (Sum.inl b) → ¬ s₀ (Sum.inl a) (Sum.inl b)) ∧
-      localReg6b_instCyc.scost s₀ ≤ ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).scost ⊥ + 2 :=
-  scostLL_repair localReg6b_instCyc [] true (.inr 0) (.inr 1) (.inr 1) (.inr 0) (.inr 1) ⊥ (List.Perm.refl _) rfl rfl
-    rfl (by simp)
-
-/-- the repair is forced at the 2-cycle: `s₀ = ⊥` is not a witness (`0 ≤ -4 + 2` is false) -/
-theorem localReg6b_instCyc_repair_forced :
-    ¬ localReg6b_instCyc.scost ⊥ ≤ ({ localReg6b_instCyc with solid := [] } : LGraph (Fin 2) (Fin 2)).scost ⊥ + 2 := by
-  rw [localReg6b_instCyc_bot, localReg6b_instCyc_L_bot]
-  decide
 
 /-- Instance (4'), the term `R2 = oe2xR2 m Γ q x y y'` of the `GG` expansion: `Contract(x; y', y)`. -/
 theorem localReg6b_inst_R2 (m : ℂ) (Γ : LGraph E I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (x : I)
@@ -2039,61 +1927,6 @@ theorem localReg6b_inst_R2 (m : ℂ) (Γ : LGraph E I) (q : SEdge (E ⊕ I) × L
     rw [hm]
     exact (List.perm_append_singleton _ _).symm
   · simp [lwPrimContract, oe2xR2, LGraph.owxExt]
-
-/-- Instance (5), `trans` at `Loop(x)` then `AddLoop` at the fresh vertex `α`, red. -/
-theorem localReg6b_inst_trans : LGraph.ScostLL (fxyPowGraph 2)
-    (lwPrimAddLoop (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true) (Sum.inr (Sum.inr 0)) false) :=
-  LGraph.ScostLL.trans (fxyPowGraph 2) (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true)
-    (lwPrimAddLoop (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true) (Sum.inr (Sum.inr 0)) false)
-    (scostLL_loop (fxyPowGraph 2) (Sum.inl 0) true)
-    (scostLL_addLoop (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true) (Sum.inr (Sum.inr 0)) false)
-
-/-- an explicit onto relabelling `I ⊕ Fin 1 ⊕ Fin 1 → I ⊕ Fin 2` fixing the external vertices (`Equiv.sumAssoc`, `finSumFinEquiv`) -/
-def localReg6b_phi : Fin 2 ⊕ ((Fin (2 * 2) ⊕ Fin 1) ⊕ Fin 1) → Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 2) :=
-  Sum.map id ((Equiv.sumAssoc (Fin (2 * 2)) (Fin 1) (Fin 1)).trans
-    (Equiv.sumCongr (Equiv.refl (Fin (2 * 2))) finSumFinEquiv))
-
-theorem localReg6b_phi_surj : Function.Surjective localReg6b_phi :=
-  Function.Surjective.sumMap Function.surjective_id
-    ((Equiv.sumAssoc (Fin (2 * 2)) (Fin 1) (Fin 1)).trans
-      (Equiv.sumCongr (Equiv.refl (Fin (2 * 2))) finSumFinEquiv)).surjective
-
-/-- Instance (6), `trans` and `of_relabel` at the `owxT2` shape: `MoveLoop(β_0)` then `Loop(α)`, relabelled to `I ⊕ Fin 2` by
-the explicit `localReg6b_phi`. -/
-theorem localReg6b_inst_T2 : LGraph.ScostLL (fxyPowGraph 2)
-    ((lwPrimLoop (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-      (Sum.inr (Sum.inr 0)) true).relabel localReg6b_phi) :=
-  LGraph.ScostLL.of_relabel (fxyPowGraph 2) _ localReg6b_phi localReg6b_phi_surj (fun _ => rfl)
-    (LGraph.ScostLL.trans (fxyPowGraph 2)
-      (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-      (lwPrimLoop (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-        (Sum.inr (Sum.inr 0)) true) localReg6b_inst_moveLoop
-      (scostLL_loop _ (Sum.inr (Sum.inr 0)) true))
-
-/-- Instance (6), the statement of the check file (every onto `φ` fixing `inl`). -/
-theorem localReg6b_inst_T2_all :
-    ∀ φ : Fin 2 ⊕ ((Fin (2 * 2) ⊕ Fin 1) ⊕ Fin 1) → Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 2),
-      Function.Surjective φ → (∀ a : Fin 2, φ (Sum.inl a) = Sum.inl a) →
-        LGraph.ScostLL (fxyPowGraph 2)
-          ((lwPrimLoop (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-            (Sum.inr (Sum.inr 0)) true).relabel φ) :=
-  fun φ hφ hφl => LGraph.ScostLL.of_relabel (fxyPowGraph 2) _ φ hφ hφl
-    (LGraph.ScostLL.trans (fxyPowGraph 2)
-      (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-      (lwPrimLoop (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true)
-        (Sum.inr (Sum.inr 0)) true) localReg6b_inst_moveLoop
-      (scostLL_loop _ (Sum.inr (Sum.inr 0)) true))
-
-/-- Instance (7), the §55 transfer: `ScostLL Γ T` carries `k ≤ scost` from the merges of `Γ` to those of `T`, for `far` and
-`all` alike (no hypothesis restricting to far merges). -/
-theorem localReg6b_inst_transfer :
-    ∀ {I I' : Type} [Fintype I] [DecidableEq I] [Fintype I'] [DecidableEq I'] (Γ : LGraph (Fin 2) I)
-      (T : LGraph (Fin 2) I') (far : Bool) (k : ℤ), LGraph.ScostLL Γ T →
-      (∀ s₀ : Setoid (Fin 2 ⊕ I), (far = true → ¬ s₀ (Sum.inl 0) (Sum.inl 1)) → k ≤ LGraph.scost Γ s₀) →
-        ∀ s : Setoid (Fin 2 ⊕ I'), (far = true → ¬ s (Sum.inl 0) (Sum.inl 1)) → k ≤ LGraph.scost T s := by
-  intro I I' _ _ _ _ Γ T far k hLL hk s hs
-  obtain ⟨s₀, hsep, hcost⟩ := hLL s
-  exact (hk s₀ (fun hf => hsep 0 1 (hs hf))).trans hcost
 
 /-- Instance (8a), the placement lemma for `MoveSC(z; u, v)` (`{u → α, α → v}`), every `Γ`, `rest`, `z`, `u`, `v`: whenever the
 two added edges are not both inside a class of `s` (`k ≤ 1`), splitting `α` off costs no more. -/
@@ -2183,197 +2016,6 @@ theorem localReg6b_inst_moveSC_k2 (Γ : LGraph E I) (rest : List (SEdge (E ⊕ I
   rw [e, hT]
   simp only [List.length_singleton, Nat.cast_one] at *
   linarith
-
-/-- the placement lemma for the loop shape of `Loop(z)`, at an arbitrary graph -/
-theorem localReg6b_inst_loop_placement (Γ : LGraph E I) (z : E ⊕ I) (col : Bool) (s : Setoid (E ⊕ (I ⊕ Fin 1))) :
-    (lwPrimLoop Γ z col).scost (scostLL_split (Sum.inr (Sum.inr 0)) s) ≤ (lwPrimLoop Γ z col).scost s :=
-  scostLL_placement (lwPrimLoop Γ z col) Γ.solid _ (List.Perm.refl _) (Or.inl ⟨col, rfl⟩) s
-    (fun _ _ h => by simp at h)
-
-/-- the placement lemma for the loop shape of `MoveLoop(z)` at `Γ_2` -/
-theorem localReg6b_inst_moveLoop_placement (s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1))) :
-    (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true).scost
-        (scostLL_split (Sum.inr (Sum.inr 0)) s) ≤
-      (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true).scost s :=
-  scostLL_placement _ (fxyPowGraph 2).solid.tail _ (List.Perm.refl _) (Or.inl ⟨true, rfl⟩) s
-    (fun _ _ h => by simp at h)
-
-/-- Instances of the pattern facts: `(1,1,0,0) + (1,1,0,0)` is not elementary, `0 + (1,1,0,0)` and `0 + (0,0,1,1)` are (E1,
-E5); a pair removed from a residual (E0: the value `-1` is attained; E3); two colours, two ins, two outs (E4); an added pair of
-two colours, two ins, two outs (E6); an elementary pattern is not `0`. -/
-theorem localReg6b_inst_patterns :
-    scostLL_el (((1, 1, 0, 0) : ℕ × ℕ × ℕ × ℕ) + (1, 1, 0, 0)) = 0 ∧
-    scostLL_el ((0 : ℕ × ℕ × ℕ × ℕ) + (1, 1, 0, 0)) = 1 ∧
-    scostLL_el ((0 : ℕ × ℕ × ℕ × ℕ) + (0, 0, 1, 1)) = 1 ∧
-    (scostLL_el ((0 : ℕ × ℕ × ℕ × ℕ) + 0) - scostLL_el ((0 : ℕ × ℕ × ℕ × ℕ) + (1, 1, 0, 0)) = -1 ∧
-      lwElem ((0 : ℕ × ℕ × ℕ × ℕ) + (1, 1, 0, 0)) = true) ∧
-    scostLL_el (((1, 0, 2, 0) : ℕ × ℕ × ℕ × ℕ) + (0, 1, 0, 1)) -
-      scostLL_el (((1, 0, 2, 0) : ℕ × ℕ × ℕ × ℕ) + (0, 1, 0, 1)) = 0 ∧
-    lwElem ((1, 0, 1, 0) : ℕ × ℕ × ℕ × ℕ) = false ∧ lwElem ((0, 1, 0, 1) : ℕ × ℕ × ℕ × ℕ) = false ∧
-    lwElem ((1, 0, 1, 0) : ℕ × ℕ × ℕ × ℕ) = false ∧
-    lwElem (((1, 0, 0, 0) : ℕ × ℕ × ℕ × ℕ) + (0, 1, 1, 0)) = false ∧
-    lwElem (((0, 0, 0, 0) : ℕ × ℕ × ℕ × ℕ) + (0, 1, 0, 1)) = false ∧
-    lwElem (((0, 0, 0, 0) : ℕ × ℕ × ℕ × ℕ) + (1, 0, 1, 0)) = false ∧
-    ((1, 1, 0, 0) : ℕ × ℕ × ℕ × ℕ) ≠ 0 := by
-  refine ⟨?_, ?_, ?_, ?_, scostLL_elem_E3 _ _, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [scostLL_elem_E1]
-    decide
-  · rw [scostLL_elem_E1]
-    decide
-  · rw [scostLL_elem_E5]
-    decide
-  · refine ⟨?_, ?_⟩
-    · have h1 : scostLL_el ((0 : ℕ × ℕ × ℕ × ℕ) + 0) = 0 := by rw [add_zero]; exact scostLL_el_zero
-      rw [h1, zero_add, scostLL_el_eq_one (by decide)]
-      norm_num
-    · decide
-  · exact scostLL_elem_E4col _ (by decide) (by decide)
-  · exact scostLL_elem_E4out _ (by decide)
-  · exact scostLL_elem_E4in _ (by decide)
-  · exact scostLL_elem_E6col _ _ (by decide) (by decide)
-  · exact scostLL_elem_E6out _ _ (by decide)
-  · exact scostLL_elem_E6in _ _ (by decide)
-  · exact scostLL_elem_ne_zero (by decide)
-
-/-- Instance of `scostLL_refl` at `Γ_2`. -/
-theorem localReg6b_inst_refl : LGraph.ScostLL (fxyPowGraph 2) (fxyPowGraph 2) := scostLL_refl _
-
-open Classical in
-/-- Instance of the class-sum form at `Γ_2`, every merge. -/
-theorem localReg6b_inst_scost_eq (s : Setoid (Fin 2 ⊕ Fin (2 * 2))) :
-    (fxyPowGraph 2).scost s = ((scostLL_kept (fxyPowGraph 2).solid s).length : ℤ) +
-      2 * ((fxyPowGraph 2).waved.length : ℤ) +
-      ∑ c ∈ (fxyPowGraph 2).sIntCls s, (scostLL_el (scostLL_clsPat (fxyPowGraph 2).solid s c) - 2) :=
-  scostLL_scost_eq (fxyPowGraph 2) s
-
-open Classical in
-/-- Instances of the fresh vertex bookkeeping (b) at the vertex types of `Γ_2` plus `α`: the image of `qmap` and the internal
-classes. -/
-theorem localReg6b_inst_fresh_classes (s' : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1))) :
-    (∀ c' : Quotient s', (∃ c₀, localReg6a_qmap (owxEmb 1) s' c₀ = c') ↔
-      ¬ ((∀ w, s' w (Sum.inr (Sum.inr 0)) → w = Sum.inr (Sum.inr 0)) ∧
-        c' = Quotient.mk s' (Sum.inr (Sum.inr 0)))) ∧
-    (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true).sIntCls s' =
-      ((fxyPowGraph 2).sIntCls (Setoid.comap (owxEmb 1) s')).image (localReg6a_qmap (owxEmb 1) s') ∪
-        (if (∀ w, s' w (Sum.inr (Sum.inr 0)) → w = Sum.inr (Sum.inr 0)) then
-          {Quotient.mk s' (Sum.inr (Sum.inr 0))} else ∅) :=
-  ⟨scostLL_qmap_range s', scostLL_intCls_emb (fxyPowGraph 2) (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true) s'⟩
-
-/-- the merge of `Γ_2` with `α ~ x` and every other vertex alone: `α`, `x` get the value `0`, `y` the value `1`, `α_i`, `β_i`
-the values `i + 2` -/
-def localReg6b_instS : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)) :=
-  Setoid.ker (fun w : Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1) => match w with
-    | Sum.inl a => a.val
-    | Sum.inr (Sum.inl j) => j.val + 2
-    | Sum.inr (Sum.inr _) => 0)
-
-/-- Instance (8a) at concrete data: `MoveSC(α_0; x, y)` at `Γ_2` with the merge `α ~ x` (`k = 1`, an SC pair): splitting `α` off
-costs no more. -/
-theorem localReg6b_inst_moveSC_Gamma2 :
-    (lwPrimMoveSC (fxyPowGraph 2) [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0)
-        (Sum.inl 1)).scost (scostLL_split (Sum.inr (Sum.inr 0)) localReg6b_instS) ≤
-      (lwPrimMoveSC (fxyPowGraph 2) [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0)
-        (Sum.inl 1)).scost localReg6b_instS :=
-  localReg6b_inst_moveSC_placement (fxyPowGraph 2) _ (Sum.inr 0) (Sum.inl 0) (Sum.inl 1) localReg6b_instS
-    (by
-      rintro ⟨-, h⟩
-      have h' : (0 : ℕ) = 1 := h
-      omega)
-
-open Classical in
-/-- Instance of the surgery identity at `Γ_2` (the term `Loop(x)`), every merge. -/
-theorem localReg6b_inst_surgery (s' : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1))) :
-    (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true).scost s' =
-      ((scostLL_kept (fxyPowGraph 2).solid (Setoid.comap (owxEmb 1) s')).length : ℤ) +
-        ((scostLL_kept [(⟨true, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 0)⟩ :
-          SEdge (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)))] s').length : ℤ) +
-        2 * (((fxyPowGraph 2).waved.length : ℤ) + 1) +
-        ∑ c₀ ∈ (fxyPowGraph 2).sIntCls (Setoid.comap (owxEmb 1) s'),
-          (scostLL_el (scostLL_clsPat (fxyPowGraph 2).solid (Setoid.comap (owxEmb 1) s') c₀ +
-            scostLL_clsPat [(⟨true, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 0)⟩ :
-              SEdge (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)))] s' (localReg6a_qmap (owxEmb 1) s' c₀)) - 2) +
-        (if (∀ w, s' w (Sum.inr (Sum.inr 0)) → w = Sum.inr (Sum.inr 0)) then
-          scostLL_el (scostLL_clsPat [(⟨true, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 0)⟩ :
-            SEdge (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)))] s' (Quotient.mk s' (Sum.inr (Sum.inr 0)))) - 2 else 0) := by
-  have h := scostLL_fresh_scost (fxyPowGraph 2) 1
-    [⟨true, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 0)⟩] [⟨false, true, owxEmb 1 (Sum.inl 0), Sum.inr (Sum.inr 0)⟩] s'
-  simp only [List.length_singleton, Nat.cast_one] at h
-  exact h
-
-open Classical in
-/-- Instance of the localisation at `Γ_2`: `AddLoop` at `β_0`, blue (`R = []`, `A = [loop at β_0]`, `X = Γ_2.solid`, `C` the
-class of `β_0`), every merge. -/
-theorem localReg6b_inst_localise (s : Setoid (Fin 2 ⊕ Fin (2 * 2))) :
-    (lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true).scost s - (fxyPowGraph 2).scost s =
-      ((scostLL_kept [(⟨true, true, Sum.inr 1, Sum.inr 1⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2)))] s).length : ℤ) -
-        ((scostLL_kept ([] : List (SEdge (Fin 2 ⊕ Fin (2 * 2)))) s).length : ℤ) +
-        2 * (((lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true).waved.length : ℤ) - (fxyPowGraph 2).waved.length) +
-        ∑ c ∈ ({Quotient.mk s (Sum.inr 1)} : Finset (Quotient s)),
-          (if c ∈ (fxyPowGraph 2).sIntCls s then
-            scostLL_el (scostLL_clsPat [(⟨true, true, Sum.inr 1, Sum.inr 1⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2)))] s c +
-              scostLL_clsPat (fxyPowGraph 2).solid s c) -
-            scostLL_el (scostLL_clsPat ([] : List (SEdge (Fin 2 ⊕ Fin (2 * 2)))) s c +
-              scostLL_clsPat (fxyPowGraph 2).solid s c) else 0) :=
-  scostLL_local_diff_C (fxyPowGraph 2) (lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true) [] [⟨true, true, Sum.inr 1, Sum.inr 1⟩]
-    (fxyPowGraph 2).solid s (List.Perm.refl _) (List.Perm.refl _) {Quotient.mk s (Sum.inr 1)}
-    (fun e he => absurd he (List.not_mem_nil))
-    (fun e he => by
-      simp only [List.mem_singleton] at he
-      subst he
-      exact ⟨Finset.mem_singleton_self _, Finset.mem_singleton_self _⟩)
-
-/-- the hypothesis of the `Contract(α_0; x, y)` instance at `Γ_2`: the edges `α_0 → y` and `x → α_0` of the blue block (a
-permutation of the solid list, not an equality) -/
-theorem localReg6b_inst_contractPerm : (fxyPowGraph 2).solid.Perm
-    ((⟨true, false, Sum.inr 0, Sum.inl 1⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))) :: ⟨true, false, Sum.inl 0, Sum.inr 0⟩ ::
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩]) :=
-  (List.perm_middle (a := (⟨true, false, Sum.inr 0, Sum.inl 1⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))))
-    (l₁ := [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inl 0, Sum.inr 0⟩])
-    (l₂ := [⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-      ⟨false, false, Sum.inr 2, Sum.inl 1⟩])).trans
-    (List.Perm.cons _ (List.perm_middle (a := (⟨true, false, Sum.inl 0, Sum.inr 0⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))))
-      (l₁ := [⟨true, true, Sum.inr 1, Sum.inr 1⟩])
-      (l₂ := [⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩])))
-
-/-- Instance (4), `scostLL_contract` at `Γ_2`: `Contract(α_0; x, y)`, the `GG` term `R2` in the starting graph. -/
-theorem localReg6b_inst_contractGamma2 : LGraph.ScostLL (fxyPowGraph 2)
-    (lwPrimContract (fxyPowGraph 2) [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-      ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)) :=
-  scostLL_contract _ _ _ _ _ (by decide) (by decide) localReg6b_inst_contractPerm
-
-/-- the §55 check at `Γ_2` (`p = 2`): a local lemma `ScostLL Γ_2 T` transfers `Φ^all(Γ_2) ≥ 2p = 4` and `Φ^far(Γ_2) ≥ 3p = 6`
-to every merge of `T`, with no `far`/`all` switch in `ScostLL` itself -/
-theorem localReg6b_inst_s55 {I' : Type} [Fintype I'] [DecidableEq I'] (T : LGraph (Fin 2) I')
-    (hT : LGraph.ScostLL (fxyPowGraph 2) T) :
-    (∀ s : Setoid (Fin 2 ⊕ I'), 4 ≤ T.scost s) ∧ (∀ s : Setoid (Fin 2 ⊕ I'), ¬ s (Sum.inl 0) (Sum.inl 1) → 6 ≤ T.scost s) :=
-  ⟨fun s => localReg6b_inst_transfer (fxyPowGraph 2) T false 4 hT
-      (fun s₀ _ => localReg6a_inst_cost2.1 s₀ (fun h => absurd h (by decide))) s (fun h => absurd h (by decide)),
-   fun s hs => localReg6b_inst_transfer (fxyPowGraph 2) T true 6 hT
-      (fun s₀ h => localReg6a_inst_cost2.2 s₀ h) s (fun _ => hs)⟩
-
-/-- the §55 values for the four primitives at `Γ_2`: `Loop(x)`, `AddLoop(β_0)`, `MoveLoop(β_0)`, `Contract(α_0; x, y)` keep
-`4 ≤ scost` for every merge and `6 ≤ scost` for every merge separating `x` and `y` -/
-theorem localReg6b_inst_s55_prims :
-    ((∀ s, 4 ≤ (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true).scost s) ∧
-      (∀ s, ¬ s (Sum.inl 0) (Sum.inl 1) → 6 ≤ (lwPrimLoop (fxyPowGraph 2) (Sum.inl 0) true).scost s)) ∧
-    ((∀ s, 4 ≤ (lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true).scost s) ∧
-      (∀ s, ¬ s (Sum.inl 0) (Sum.inl 1) → 6 ≤ (lwPrimAddLoop (fxyPowGraph 2) (Sum.inr 1) true).scost s)) ∧
-    ((∀ s, 4 ≤ (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true).scost s) ∧
-      (∀ s, ¬ s (Sum.inl 0) (Sum.inl 1) →
-        6 ≤ (lwPrimMoveLoop (fxyPowGraph 2) (fxyPowGraph 2).solid.tail (Sum.inr 1) true).scost s)) ∧
-    ((∀ s, 4 ≤ (lwPrimContract (fxyPowGraph 2) [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0)
-        (Sum.inl 1)).scost s) ∧
-      (∀ s, ¬ s (Sum.inl 0) (Sum.inl 1) →
-        6 ≤ (lwPrimContract (fxyPowGraph 2) [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-          ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0)
-          (Sum.inl 1)).scost s)) :=
-  ⟨localReg6b_inst_s55 _ localReg6b_inst_loop, localReg6b_inst_s55 _ localReg6b_inst_addLoop,
-    localReg6b_inst_s55 _ localReg6b_inst_moveLoop, localReg6b_inst_s55 _ localReg6b_inst_contractGamma2⟩
 
 end Instances
 

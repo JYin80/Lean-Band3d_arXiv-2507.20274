@@ -862,10 +862,6 @@ theorem stNetLift2_part1 (d : ℕ) :
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Ind
-
-set_option linter.style.longLine false
-
 /-! ## 6. Compiled nonempty instances at `d = 3`
 
 The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
@@ -875,34 +871,3 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 (`RBM3D/Induction/Defs.lean`, section 3).  Every deterministic hypothesis is discharged; what stays
 a hypothesis is the per-time statement `STStep2DecayPT` itself (the stochastic input of ST2-04),
 at an arbitrary constant `C_d`. -/
-
-section Instances
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `Step2NetLift` at the flow of the instance (`κ = τ = (1/10)/2`, `𝔡 = 1/10`, `s ≡ 0`,
-`t ≡ 1/16`): `step2NetLift` applies for every `C_d`. -/
-example (Cd : ℝ) : Step2NetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) (1 / 10) sInst tInst Cd :=
-  step2NetLift sz0 _ _ _ _ _ _ _
-
-/-- `step2NetLift`, fully applied: every hypothesis (`0 < κ`, `|E_n| ≤ 2 - κ`, `0 < τ`,
-`0 ≤ s ≤ t < 1`, `N → ∞`, `(eq:WO)`, `RangeCond`) is discharged; the per-time family
-`STStep2DecayPT` stays the hypothesis of the implication. -/
-example (Cd : ℝ) (hD : STStep2DecayPT sz0 Cd (STflowE z0) sInst tInst) :
-    STStep2Decay sz0 Cd (STflowE z0) sInst tInst :=
-  step2NetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) (1 / 10) sInst tInst Cd
-    (by norm_num) (fun n => (RBM.Green.Instance.premises.2.1 n).le) (by norm_num) (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) RBM.Green.Instance.premises.2.2.2.1
-    sz0_tendsto flow_z0.1.2.2.2.2 RBM.Green.Instance.premises.2.2.2.2 hD
-
-/-- `stNetLift2_part1` at `d = 3`: `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `sz0`, `z0`, `STFlow`
-(`flow_z0`), `0 ≤ s ≤ t ≤ lemT z_n` (`sixteenth_le_lemT`). -/
-example (Cd : ℝ) (hD : STStep2DecayPT sz0 Cd (STflowE z0) sInst tInst) :
-    STStep2Decay sz0 Cd (STflowE z0) sInst tInst :=
-  stNetLift2_part1 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) Cd hD
-
-end Instances
-
-end RBM.Ind

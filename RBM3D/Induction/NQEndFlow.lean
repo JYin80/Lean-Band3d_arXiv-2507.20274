@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Induction.NQEndLin
-import RBM3D.Induction.Step34PinsP
 import RBM3D.Induction.ScaleFacts3
 import RBM3D.Induction.GridGoodN
 import RBM3D.Induction.NQLin
@@ -120,9 +119,6 @@ def STNQConclPT'' (E s t : ℕ → ℝ) : Prop :=
 
 end Pins
 
-/-- `lem:STOeq_NQ`, R2* (case (i)): `STOeqNQ'` over the primed conclusion (`3_5:1136`; DECISIONS §80 (1)). -/
-def STOeqNQ'' (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STNQConcl'' sz E s t)
-
 /-- `lem:STOeq_Qt`, R2* (`3_5:1362`): case (i), `STOeqQt` over `STXiBoot'` (DECISIONS §80 (1)). -/
 def STOeqQt' (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STXiBoot' sz E s t)
 
@@ -184,24 +180,6 @@ section Bridges
 
 variable {d : ℕ}
 
-/-- `STbootRHS` is antitone in `B > 0` (only its first summand contains `B`, with the exponent
-`-1/(4p) ≤ 0`): `STbootRHS lo XL XLK B n_ p ≤ STbootRHS lo XL XLK B' n_ p` for `0 < B' ≤ B`, `XL ≥ 0`. -/
-private theorem nqFlow_bootRHS_anti {lo : ℕ} {XL XLK : ℕ → ℝ} {B B' : ℝ} {n_ p : ℕ} (hB' : 0 < B')
-    (hle : B' ≤ B) (hXL : ∀ m, 0 ≤ XL m) :
-    STbootRHS lo XL XLK B n_ p ≤ STbootRHS lo XL XLK B' n_ p := by
-  unfold STbootRHS
-  have hexp : -(1 : ℝ) / (4 * (p : ℝ)) ≤ 0 :=
-    div_nonpos_of_nonpos_of_nonneg (by norm_num) (by positivity)
-  have h1 : B ^ (-(1 : ℝ) / (4 * (p : ℝ))) ≤ B' ^ (-(1 : ℝ) / (4 * (p : ℝ))) :=
-    Real.rpow_le_rpow_of_nonpos hB' hle hexp
-  have h2 : B ^ (-(1 : ℝ) / (4 * (p : ℝ))) * XL (2 * n_ - 1) ^ (1 / 2 : ℝ) *
-        XL (4 * p) ^ (1 / (4 * (p : ℝ))) ≤
-      B' ^ (-(1 : ℝ) / (4 * (p : ℝ))) * XL (2 * n_ - 1) ^ (1 / 2 : ℝ) *
-        XL (4 * p) ^ (1 / (4 * (p : ℝ))) :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg (hXL _) _))
-      (Real.rpow_nonneg (hXL _) _)
-  linarith
-
 /-- A pointwise larger right side keeps `≺` (the failure event only shrinks; `N^τ ≥ 0`). -/
 private theorem nqFlow_prec_of_le_right {sz : Sizes d} {U : ℕ → Type*} {ξ ζ ζ' : ∀ n, U n → sz.SeqΩ → ℝ}
     (h : sz.Prec ξ ζ) (hle : ∀ n u ω, ζ n u ω ≤ ζ' n u ω) : sz.Prec ξ ζ' := by
@@ -209,78 +187,6 @@ private theorem nqFlow_prec_of_le_right {sz : Sizes d} {U : ℕ → Type*} {ξ �
   obtain ⟨u, hu⟩ := hω
   exact ⟨u, lt_of_le_of_lt (mul_le_mul_of_nonneg_left (hle n u ω)
     (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hu⟩
-
-/-- **`STNQConcl'` implies `STNQConcl''`** (`T2246_stNQConcl''_of_stNQConcl'`): the right side of the primed
-conclusion is `B_u^{1/6} XLK + STbootRHS 2 … B_u`, that of `STNQConcl''` has `B_s ≤ B_u` (`STBctl_mono`, `u ≤ t_n < 1`)
-in the first summand of `STbootRHS`, which is larger (`nqFlow_bootRHS_anti`).  Private: a public theorem with
-`STNQConcl'` in a binder would make the registry scan (`Test/Axioms.lean`) report it as an unregistered premise. -/
-private theorem stNQConcl''_of_stNQConcl' (sz : Sizes d) (E s t : ℕ → ℝ) (ht1 : ∀ n, t n < 1)
-    (h : STNQConcl' sz E s t) : STNQConcl'' sz E s t := by
-  intro n_ p hn hp XL XLK hXL hXLK hXLp hXLKp
-  refine nqFlow_prec_of_le_right (h n_ p hn hp XL XLK hXL hXLK hXLp hXLKp) fun n q ω => ?_
-  have hu1 : ((q.1 : ℝ)) < 1 := (q.1.2.2).trans_lt (ht1 n)
-  have hs1 : s n < 1 := lt_of_le_of_lt q.1.2.1 hu1
-  have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz hs1
-  have hBsu : sz.Bctl n (s n) ≤ sz.Bctl n (q.1 : ℝ) := STBctl_mono sz n q.1.2.1 hu1
-  have hb := nqFlow_bootRHS_anti (lo := 2) (XL := fun m => XL m n (q.1 : ℝ))
-    (XLK := fun m => XLK m n (q.1 : ℝ)) (n_ := n_) (p := p) hBs hBsu
-    (fun m => zero_le_one.trans (hXL _ _ _))
-  change (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * XLK n_ n (q.1 : ℝ) +
-      STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (q.1 : ℝ)) n_ p ≤
-    (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * XLK n_ n (q.1 : ℝ) +
-      STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (s n)) n_ p
-  linarith
-
-/-- **`STXiBoot` implies `STXiBoot'`** (`T2246_stXiBoot'_of_stXiBoot`): `B_s ≤ B_u` for `s_n ≤ u ≤ t_n < 1`. -/
-theorem stXiBoot'_of_stXiBoot {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (ht1 : ∀ n, t n < 1)
-    (h : STXiBoot sz E s t) : STXiBoot' sz E s t := by
-  intro n_ p hn hp XL XLK hXL hXLK hXLp hXLKp
-  refine nqFlow_prec_of_le_right (h n_ p hn hp XL XLK hXL hXLK hXLp hXLKp) fun n q ω => ?_
-  have hsu : s n ≤ q.1.2 := q.2.1.trans q.2.2.1
-  have hu1 : q.1.2 < 1 := q.2.2.2.trans_lt (ht1 n)
-  have hs1 : s n < 1 := lt_of_le_of_lt hsu hu1
-  have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz hs1
-  have hBsu : sz.Bctl n (s n) ≤ sz.Bctl n q.1.2 := STBctl_mono sz n hsu hu1
-  exact nqFlow_bootRHS_anti (lo := 1) (XL := fun m => XL m n q.1.2) (XLK := fun m => XLK m n q.1.2)
-    (n_ := n_) (p := p) hBs hBsu (fun m => zero_le_one.trans (hXL _ _ _))
-
-/-- A bridge between two conclusions of an ingredient pin (`STIngR`) that needs only `t_n < 1`: unfold `STIngR`, keep
-`𝔠_d`, and get `t_n < 1` from `t_n ≤ lemT z_n < 1` (`lemT_lt_one`; the imaginary part of `z_n` is positive by the flow
-condition), as `stOeqNQ'_of_stOeqNQ` (`Step34PinsP.lean:156`). -/
-private theorem nqFlow_ingR_mono (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (C C' : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (hCC : ∀ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ), (∀ n, t n < 1) → C sz E s t → C' sz E s t)
-    (h : STIngR d R C) : STIngR d R C' := by
-  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
-  obtain ⟨𝔠d, h𝔠d0, h𝔠d1, H⟩ := h hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
-  refine ⟨𝔠d, h𝔠d0, h𝔠d1, ?_⟩
-  intro 𝔠 sz z hflow s t hs hst ht hR hK hKw hLK hcon hStep2
-  have hold := H 𝔠 sz z hflow s t hs hst ht hR hK hKw hLK hcon hStep2
-  have him : ∀ n, 0 < (z n).im := fun n =>
-    lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _)
-      (hflow.2 n).2.1
-  have ht1 : ∀ n, t n < 1 := fun n => (ht n).trans_lt (lemT_lt_one (him n))
-  exact hCC sz (STflowE z) s t ht1 hold
-
-/-- **`lem:STOeq_NQ`, primed, implies its R2* form** (`T2246_stOeqNQ''_of_stOeqNQ'`). -/
-theorem stOeqNQ''_of_stOeqNQ' : ∀ d : ℕ, STOeqNQ' d → STOeqNQ'' d := fun d h =>
-  nqFlow_ingR_mono d STCaseI (fun sz E s t => STNQConcl' sz E s t) (fun sz E s t => STNQConcl'' sz E s t)
-    (fun sz E s t ht1 => stNQConcl''_of_stNQConcl' sz E s t ht1) h
-
-/-- **`lem:STOeq_Qt` implies its R2* form** (`T2246_stOeqQt'_of_stOeqQt`). -/
-theorem stOeqQt'_of_stOeqQt : ∀ d : ℕ, STOeqQt d → STOeqQt' d := fun d h =>
-  nqFlow_ingR_mono d STCaseI (fun sz E s t => STXiBoot sz E s t) (fun sz E s t => STXiBoot' sz E s t)
-    (fun sz E s t ht1 => stXiBoot'_of_stXiBoot sz E s t ht1) h
-
-/-- **`lem:STOeq_Qt_nonzero` implies its R2* form** (`T2246_stOeqQtNZ'_of_stOeqQtNZ`). -/
-theorem stOeqQtNZ'_of_stOeqQtNZ : ∀ d : ℕ, STOeqQtNZ d → STOeqQtNZ' d := fun d h =>
-  nqFlow_ingR_mono d STCaseII (fun sz E s t => STXiBoot sz E s t) (fun sz E s t => STXiBoot' sz E s t)
-    (fun sz E s t ht1 => stXiBoot'_of_stXiBoot sz E s t ht1) h
-
-/-- The statement pinned for the private implication (`T2246_stNQConcl''_of_stNQConcl'`, check file section 3):
-the theorem above has exactly this type. -/
-example : ∀ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ), (∀ n, t n < 1) →
-    STNQConcl' sz E s t → STNQConcl'' sz E s t := @stNQConcl''_of_stNQConcl'
 
 end Bridges
 
@@ -963,133 +869,6 @@ merged `inst_OeqQtNZ` (`szB`, `zB`, `s ≡ 15/16`, `t ≡ 31/32`).  `STKbound`, 
 gate's pin (`STLK s`, `STStep2Concl`, the pair hypotheses `Ξ̂ ≺ 1` of the pin, the owed merged pins `STOeqNQ`,
 `STOeqQt`, `STOeqQtNZ`). -/
 
-namespace NQEndFlowInst
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- **(1) `stOeqNQPT''_holds` at the data**: the per-time R2* pin at `(sz0, z0, s ≡ 0, t ≡ 1/16)`, `C_d = 1`: the
-constant `𝔠_d ∈ (0, 1/100]`, then the stochastic premises of `STIngR` (`STKbound`, `STKward`, `STLK`, `STStep2Concl`),
-then the conclusion `STNQConclPT''`.  Every deterministic hypothesis (`3 ≤ d`, the flow, `0 ≤ s < t ≤ lemT z`, the
-regime `STCaseI`, `(con_st_ind)`, `C_d > 0`) is discharged by `inst_ing`. -/
-theorem inst_OeqNQPT'' :
-    InstIngConcl (fun sz E s t => STNQConclPT'' sz E s t) sz0 z0 sInst tInst 1 :=
-  inst_ing STCaseI (fun sz E s t => STNQConclPT'' sz E s t) (stOeqNQPT''_holds 3) sz0 z0 flow_z0 sInst tInst
-    sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con 1 one_pos
-
-/-- **(1) with the conclusion applied** at `n_ = 3`, `p = 1`, `XL ≡ XLK ≡ 1`: `STKbound`, `STKward` come from the
-flow, the stochastic premises `STLK s`, `STStep2Concl` and the pair hypotheses `Ξ̂ ≺ 1` of the pin (the conclusions
-of Steps 3-4, other gates' pins) stay hypotheses; the per-time conclusion
-`(𝓛-𝒦)^{(3)}_{u,σ,a}/B_u³ ≺ B_u^{1/6} + STbootRHS 2 1 1 B_s 3 1` for every non-alternating `σ` and label `a`
-(`PrecPT`: the union over `u ∈ [0, 1/16]` outside `P`) is the conclusion. -/
-example (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
-    (hXp : ∀ m, 1 ≤ m → STlenL 3 1 m →
-      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiL sz0 n (STflowE z0 n) q.1.1 m ω)
-        (fun n q _ => (1 : ℝ)))
-    (hXKp : ∀ m, 1 ≤ m → m ≤ 3 →
-      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiLK sz0 n (STflowE z0 n) q.1.1 m ω)
-        (fun n q _ => (1 : ℝ))) :
-    PrecPT sz0 (U := fun n => TimeIcc sInst tInst n × {σ : Fin 3 → Bool // ∃ k, σ k = σ (finRotate 3 k)} ×
-        (Fin 3 → Zd 3 (sz0.L n)))
-      (fun n q ω => ‖Lloop sz0 n (STflowE z0 n) (q.1 : ℝ) q.2.1.1 q.2.2 ω -
-        STKloop sz0 n (STflowE z0 n) (q.1 : ℝ) q.2.1.1 q.2.2‖ / (sz0.Bctl n (q.1 : ℝ)) ^ 3)
-      (fun n q _ => (sz0.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * 1 +
-        STbootRHS 2 (fun _ => 1) (fun _ => 1) (sz0.Bctl n (sInst n)) 3 1) := by
-  obtain ⟨𝔠d, -, -, hC⟩ := inst_OeqNQPT''
-  exact hC (stKbound_of_flow sz0 (by norm_num) (by norm_num) flow_z0)
-    (stKward_of_flow sz0 (by norm_num) (by norm_num) flow_z0) hLK hStep2 3 1 (by norm_num) le_rfl
-    (fun _ _ _ => 1) (fun _ _ _ => 1) (fun _ _ _ => le_rfl) (fun _ _ _ => le_rfl) hXp hXKp
-
-/-- **(2) `stOeqNQ''_of_stOeqNQ'`** at the data: the merged owed pin `STOeqNQ 3` (a hypothesis) gives the R2* pin by
-`stOeqNQ'_of_stOeqNQ` (`Step34PinsP.lean:156`) and `stOeqNQ''_of_stOeqNQ'`, applied at the merged data
-`sz0, z0` with every deterministic hypothesis discharged by `inst_ing`. -/
-example (h : STOeqNQ 3) : InstIngConcl (fun sz E s t => STNQConcl'' sz E s t) sz0 z0 sInst tInst 1 :=
-  inst_ing STCaseI (fun sz E s t => STNQConcl'' sz E s t) (stOeqNQ''_of_stOeqNQ' 3 (stOeqNQ'_of_stOeqNQ 3 h))
-    sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con 1 one_pos
-
-/-- **(2) with the conclusion applied**: at the data, the stochastic premises of the pin being given, the R2*
-conclusion `STNQConcl''` holds for `(sz0, E = STflowE z0, s, t)`. -/
-example (h : STOeqNQ 3) (hKb : STKbound sz0 (STflowE z0)) (hKw : STKward sz0 (STflowE z0))
-    (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1) :
-    STNQConcl'' sz0 (STflowE z0) sInst tInst := by
-  obtain ⟨𝔠d, -, -, hC⟩ := inst_ing STCaseI (fun sz E s t => STNQConcl'' sz E s t)
-    (stOeqNQ''_of_stOeqNQ' 3 (stOeqNQ'_of_stOeqNQ 3 h)) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht
-    sz0_caseI sz0_con 1 one_pos
-  exact hC hKb hKw hLK hStep2
-
-/-- **(2) the private implication at the data**: `t_n < 1` is discharged, the merged primed conclusion `STNQConcl'`
-(the hypothesis) gives `STNQConcl''`. -/
-example (h : STNQConcl' sz0 (STflowE z0) sInst tInst) : STNQConcl'' sz0 (STflowE z0) sInst tInst :=
-  stNQConcl''_of_stNQConcl' sz0 (STflowE z0) sInst tInst (fun n => by simp only [tInst]; norm_num) h
-
-/-- **(3) `stXiBoot'_of_stXiBoot`** at `(sz0, STflowE z0, s ≡ 0, t ≡ 1/16)`: `t_n < 1` is discharged; the merged
-conclusion `STXiBoot` (the owed `lem:STOeq_Qt`) is the hypothesis. -/
-example (h : STXiBoot sz0 (STflowE z0) sInst tInst) : STXiBoot' sz0 (STflowE z0) sInst tInst :=
-  stXiBoot'_of_stXiBoot sz0 (STflowE z0) sInst tInst (fun n => by simp only [tInst]; norm_num) h
-
-/-- **`stOeqQt'_of_stOeqQt`** (case (i)) at `(sz0, z0, 0, 1/16)`, applied through `inst_ing`. -/
-example (h : STOeqQt 3) : InstIngConcl (fun sz E s t => STXiBoot' sz E s t) sz0 z0 sInst tInst 1 :=
-  inst_ing STCaseI (fun sz E s t => STXiBoot' sz E s t) (stOeqQt'_of_stOeqQt 3 h) sz0 z0 flow_z0 sInst tInst
-    sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con 1 one_pos
-
-/-- **`stOeqQtNZ'_of_stOeqQtNZ`** (case (ii)) at `(szB, zB, 15/16, 31/32)` (the data of the merged `inst_OeqQtNZ`),
-applied through `inst_ing`. -/
-example (h : STOeqQtNZ 3) :
-    InstIngConcl (fun sz E s t => STXiBoot' sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) 1 :=
-  inst_ing STCaseII (fun sz E s t => STXiBoot' sz E s t) (stOeqQtNZ'_of_stOeqQtNZ 3 h) szB zB flow_zB
-    (fun _ => 15 / 16) (fun _ => 31 / 32) (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_caseII
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) 1 one_pos
-
-/-- **(4) the vocabulary at numbers**: `Λ = XL(2k-1)(XL(4p)/B)^{1/(2p)} = 2^{1/2}` at `XL ≡ 1`, `B = 1/2`,
-`k = 3`, `p = 1` (so `Λ^{1/2}` is the first summand `B^{-1/4}` of `STbootRHS`), and `STbootRHS 2 1 1 B 3 1` is
-antitone in `B` (`B = 1/2 ≥ 1/4`). -/
-example : nqFlowLam (fun _ => 1) (1 / 2) 3 1 = (2 : ℝ) ^ (1 / 2 : ℝ) := by
-  unfold nqFlowLam
-  norm_num
-
-example : (nqFlowLam (fun _ => (1 : ℝ)) (1 / 2) 3 1) ^ ((1 : ℝ) / 2) =
-    (1 / 2 : ℝ) ^ (-(1 : ℝ) / (4 * ((1 : ℕ) : ℝ))) * (1 : ℝ) ^ (1 / 2 : ℝ) * (1 : ℝ) ^ (1 / (4 * ((1 : ℕ) : ℝ))) :=
-  nqFlow_lam_sqrt (k := 3) le_rfl (by norm_num) (fun _ => zero_le_one)
-
-example : STbootRHS 2 (fun _ => (1 : ℝ)) (fun _ => 1) (1 / 2) 3 1 ≤
-    STbootRHS 2 (fun _ => (1 : ℝ)) (fun _ => 1) (1 / 4) 3 1 :=
-  nqFlow_bootRHS_anti (by norm_num) (by norm_num) (fun _ => zero_le_one)
-
-example : nqFlowPhiC (fun _ => (1 : ℝ)) (fun _ => 1) 3 = 8 := by
-  unfold nqFlowPhiC
-  rw [show Finset.Icc 1 (3 + 1) = {1, 2, 3, 4} by decide]
-  norm_num [Finset.sum_insert]
-
-/-- **(5) the four statements of the check file, section 3** (statement equalities): the public bridges have
-exactly the pinned types; the private one is `stNQConcl''_of_stNQConcl'` above. -/
-example : ∀ d : ℕ, STOeqNQ' d → STOeqNQ'' d := @stOeqNQ''_of_stOeqNQ'
-example : ∀ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ), (∀ n, t n < 1) →
-    STXiBoot sz E s t → STXiBoot' sz E s t := @stXiBoot'_of_stXiBoot
-example : ∀ d : ℕ, STOeqQt d → STOeqQt' d := @stOeqQt'_of_stOeqQt
-example : ∀ d : ℕ, STOeqQtNZ d → STOeqQtNZ' d := @stOeqQtNZ'_of_stOeqQtNZ
-example : ∀ d : ℕ, STOeqNQPT'' d := @stOeqNQPT''_holds
-
-end NQEndFlowInst
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Gauss.Sizes.STNQConcl''
-#print axioms RBM.Gauss.Sizes.STXiBoot'
-#print axioms RBM.Gauss.Sizes.STNQConclPT''
-#print axioms RBM.Gauss.Sizes.STOeqNQ''
-#print axioms RBM.Gauss.Sizes.STOeqQt'
-#print axioms RBM.Gauss.Sizes.STOeqQtNZ'
-#print axioms RBM.Gauss.Sizes.STIterR'
-#print axioms RBM.Gauss.Sizes.STIterations'
-#print axioms RBM.Gauss.Sizes.STIterationsII'
-#print axioms RBM.Gauss.Sizes.STOeqNQPT''
-#print axioms RBM.Ind.nqFlowLam
-#print axioms RBM.Ind.nqFlowPhiC
-#print axioms RBM.Gauss.Sizes.stXiBoot'_of_stXiBoot
-#print axioms RBM.Gauss.Sizes.stOeqNQ''_of_stOeqNQ'
-#print axioms RBM.Gauss.Sizes.stOeqQt'_of_stOeqQt
-#print axioms RBM.Gauss.Sizes.stOeqQtNZ'_of_stOeqQtNZ
-#print axioms RBM.Ind.stOeqNQPT''_holds
-#print axioms RBM.Ind.NQEndFlowInst.inst_OeqNQPT''

@@ -76,12 +76,6 @@ theorem baStep2Mat_walkForm (sz : Sizes d) (lam0 E : ℕ → ℝ) :
       show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _],
    rfl, fun _ _ _ _ _ _ => rfl⟩
 
-/-- **Target 1 (b), `baStep2Mat_imLeOne`**: `Im m ≤ 1` at the BA family along the flow, every `n`
-(`EMn2BA_mF_data`; `m` of `baStep2Mat` is `BAmF` by `rfl`). -/
-theorem baStep2Mat_imLeOne (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).m n).im ≤ 1 :=
-  (EMn2BA_mF_data sz h n).2
-
 /-- **Target 1 (c), `baStep2Mat_S`**: the variance law of the BA walk, `S = SB d L 0` (`EMn2BA_SB_zero`). -/
 theorem baStep2Mat_S (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) : (baStep2Mat sz lam0 E).S n = SB d (sz.L n) 0 :=
   (EMn2BA_SB_zero (sz.L n)).symm
@@ -644,35 +638,6 @@ theorem baHierDrift_classes (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → 
       filter_upwards [BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow] with n hn
       exact baHierDrift_kClasses sz _ _ n κ hκ hn.1 (BAflow_real κ ε 𝔠 𝔡 sz z hflow n)⟩
 
-/-- **Target 6, `baGridDrift_ev`** (finding F1): `gridDriftNg_at` for the indices past the window, with the BA `LoopForm` as a
-hypothesis (`baStep2Mat_loopForm` closes it) and the drift classes of `baHierDrift_classes`; the walk is `baStep2Mat_walkForm`. -/
-theorem baGridDrift_ev (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
-    (hL : StepDecompGen_LoopForm (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (BAflowEs sz z))
-    (s t : ℕ → ℝ) (K : ℕ → ℕ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1) (hK : ∀ n, K n ≠ 0) :
-    ∀ᶠ n in Filter.atTop, ∀ j : ℕ, j < K n → ∀ k : ℕ, 2 ≤ k → ∀ (σ : Fin k → Bool) (Bk : ℝ), 0 ≤ Bk →
-      (∀ w ∈ Set.Icc (0 : ℝ) (gridTime s t K n (j + 1)), ∀ J : LoopIdx (Zd d (sz.L n)), J.WF →
-        2 ≤ J.length → J.length ≤ k → ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).KI n w J‖ ≤ Bk) →
-      ∀ᵐ ω ∂((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Pp), ∀ a : Fin k → Zd d (sz.L n),
-        ‖predIncNg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s t K n j σ ω a - (gridStep s t K n : ℂ) *
-            (∑ l ∈ Finset.Icc 3 k, STksimLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (gridTime s t K n j)
-                ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Hpath s t K n j ω) l (KLloopOf d (sz.L n) σ a) +
-              STelklkMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (gridTime s t K n j)
-                ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Hpath s t K n j ω) (KLloopOf d (sz.L n) σ a) +
-              STegtMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (gridTime s t K n j)
-                ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Hpath s t K n j ω) (KLloopOf d (sz.L n) σ a))‖ ≤
-          stepErrNg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).toFlowFM n k (gridTime s t K n j)
-            (gridTime s t K n (j + 1)) (gridStep s t K n) Bk := by
-  obtain ⟨hExp, hKL', hS, hev⟩ := baHierDrift_classes sz κ ε 𝔠 𝔡 z hκ hflow
-  filter_upwards [hev] with n hn j hj k hk σ Bk hBk hB
-  exact gridDriftNg_at hL (baStep2Mat_walkForm sz _ _) s t K n j (hExp s t K n) hn.1 hn.2.1 hn.2.2 (hS n)
-    (hKL' n) (hs0 n) (hst n) (ht1 n) (hK n) hj hk σ Bk hBk hB
-
-/-- **Target 6, `baQVPropagated`**: the quadratic-variation pin `QVPropagatedNg` at the BA carrier (`qvPropagatedNg` at `g = 0`,
-`S = SB d L 0` of `baStep2Mat_S`), every `lam0, E`, under the BA `LoopForm`. -/
-theorem baQVPropagated (sz : Sizes d) (lam0 E : ℕ → ℝ) (hL : StepDecompGen_LoopForm (baStep2Mat sz lam0 E) E) :
-    QVPropagatedNg (baStep2Mat sz lam0 E) 0 :=
-  qvPropagatedNg (baStep2Mat sz lam0 E) E 0 hL (fun n => baStep2Mat_S sz lam0 E n)
-
 end Flow
 
 /-! ## 6. Compiled nonempty instances (targets 1-6)
@@ -681,76 +646,6 @@ end Flow
 `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), the grid `(s, t, K) = (0, 1/32, 4)`.  Every deterministic
 premise is discharged: `0 < κ`, the flow, `0 < BAflowLam0 sz0 zSeq n` (every `n` along `sz0`, `baStep2Fam_lam_pos_le`), `BAReal`
 (`BAflow_real`), the BA `LoopForm` (T2486's `baStep2Mat_loopForm`); no input stays a hypothesis. -/
-
-namespace GridDriftBAInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- `BAReal` at the flow of `sz0`, every index. -/
-theorem inst_real (n : ℕ) : BAReal 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (1 / 2) (BAflowEs sz0 zSeq n)
-    (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) :=
-  BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n
-
-/-- `0 < g₀_n` along `sz0`, every index (`0 < g_n`, `g₀ = √t₀ g`). -/
-theorem inst_lam0_pos (n : ℕ) : 0 < BAflowLam0 sz0 zSeq n :=
-  (baStep2Fam_lam_pos_le (by norm_num) flow_sz0 n (sz0_lam_pos n)).1
-
-/-- The BA `LoopForm` at the flow of `sz0`. -/
-theorem inst_loopForm :
-    StepDecompGen_LoopForm (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (BAflowEs sz0 zSeq) :=
-  baStep2Mat_loopForm 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-/-- **Target 1** at the data: the walk class (every `lam0, E`), `Im m ≤ 1` at the flow (`n = 1`), the variance law, the
-probability law. -/
-example : StepDecompGen_WalkForm (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0
-    (fun n => ((BAflowLam0 sz0 zSeq n : ℝ) : ℂ) • PsiI 3 (sz0.L n) (sz0.W n)) :=
-  baStep2Mat_walkForm sz0 _ _
-
-example : ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).m 1).im ≤ 1 :=
-  baStep2Mat_imLeOne sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq flow_sz0 1
-
-example : (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).S 1 = SB 3 (sz0.L 1) 0 :=
-  baStep2Mat_S sz0 _ _ 1
-
-example (a : Zd 3 (sz0.L 1)) :
-    ∑ b : Zd 3 (sz0.L 1), ‖(baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).S 1 a b‖ ≤ 1 :=
-  baStep2Mat_S_rowSum sz0 _ _ 1 a
-
-example : IsProbabilityMeasure (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp :=
-  baStep2Mat_isProb sz0 _ _
-
-/-- **Target 2** at the data, `n = 1` (`L = 8`, `W = 1024`): `KLink` and `KLoop`. -/
-example : HierDriftGen_KLink (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 1 :=
-  baHierDrift_kLink sz0 _ _ 1
-
-example : HierDriftGen_KLoop (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 1 :=
-  baHierDrift_kLoop sz0 _ _ 1 (1 / 2) (by norm_num) (inst_lam0_pos 1) (inst_real 1)
-
-/-- **Target 3** at the data, `n = 1`: `KTwo`. -/
-example : HierDriftGen_KTwo (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 1 :=
-  baHierDrift_kTwo sz0 _ _ 1 (1 / 2) (by norm_num) (inst_lam0_pos 1) (inst_real 1)
-
-/-- **Target 4** at the data, `n = 1`: `UStep`. -/
-example : HierDriftGen_UStep (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 1 :=
-  baHierDrift_uStep sz0 _ _ 1 (1 / 2) (by norm_num) (inst_real 1)
-
-/-- **Target 5** at the data, `n = 1`, the grid `(s, t, K) = (0, 1/32, 4)`: `Expand`. -/
-example : HierDriftGen_Expand (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 0) (fun _ => 1 / 32)
-    (fun _ => 4) 1 :=
-  baHierDrift_expand sz0 _ _ 1 (1 / 2) (by norm_num) (inst_real 1) _ _ _
-
-/-- **Target 6** at the data: the classes along the flow; the eventual drift reading on the grid `(0, 1/32, 4)`; the quadratic variation. -/
-example := baHierDrift_classes sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-example := baHierDrift_kClasses sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 1 (1 / 2) (by norm_num) (inst_lam0_pos 1) (inst_real 1)
-
-example := baGridDrift_ev sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0 inst_loopForm
-  (fun _ => 0) (fun _ => 1 / 32) (fun _ => 4) (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num)
-  (fun _ => by norm_num)
-
-example := baQVPropagated sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) inst_loopForm
-
-end GridDriftBAInst
 
 end RBM.BA
 

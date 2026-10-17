@@ -50,19 +50,6 @@ variable {d L : ℕ}
 def BAMssOf (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (σ₁ σ₂ : Bool) : Matrix (Zd d L) (Zd d L) ℂ :=
   Matrix.of fun a b => M σ₁ b a * M σ₂ a b
 
-/-- Bridge: `BAMss` of the merged `BA/MFixedPoint.lean:511` is `BAMssOf` at `M(σ) = BAMsigma B σ`. -/
-theorem BAMssOf_BAMsigma (B : Matrix (Zd d L) (Zd d L) ℂ) (σ₁ σ₂ : Bool) :
-    BAMssOf (BAMsigma d L B) σ₁ σ₂ = BAMss d L B σ₁ σ₂ := rfl
-
-/-- If every `M(σ)` is symmetric then so is every `M^{(σ₁,σ₂)}`. -/
-theorem BAMssOf_isSymm {M : Bool → Matrix (Zd d L) (Zd d L) ℂ} (hM : ∀ σ, (M σ)ᵀ = M σ) (σ₁ σ₂ : Bool) :
-    (BAMssOf M σ₁ σ₂)ᵀ = BAMssOf M σ₁ σ₂ := by
-  have h1 : ∀ σ x y, M σ x y = M σ y x := fun σ x y => by
-    simpa using congrFun (congrFun (hM σ) y) x
-  ext a b
-  simp only [Matrix.transpose_apply, BAMssOf, Matrix.of_apply]
-  rw [h1 σ₁ a b, h1 σ₂ b a]
-
 variable [NeZero L]
 
 /-- `Θ_t^{(σ₁,σ₂)} = (1 - t M^{(σ₁,σ₂)})⁻¹` (`(def_Thxi)` at `S^{(B)} = I`, `1_2:1073-1076`) for a general
@@ -70,20 +57,6 @@ charge-indexed `M`. -/
 def BAThetaOf (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
     Matrix (Zd d L) (Zd d L) ℂ :=
   PropThetaQ (BAMssOf M σ₁ σ₂) t
-
-/-- Bridge: `BATheta` of the merged `BA/MFixedPoint.lean:515` is `BAThetaOf` at `M(σ) = BAMsigma (BAMB ..) σ`.  So
-`Γ` is a function of `(Bool → Matrix, t)` only, as `BATreeRep` requires. -/
-theorem BAThetaOf_BAMsigma (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
-    BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t σ₁ σ₂ = BATheta d L g E m t σ₁ σ₂ := rfl
-
-/-- If every `M(σ)` is symmetric then so is every `Θ_t^{(σ₁,σ₂)}` (for every `t`: `Ring.inverse` commutes with
-transposition, no invertibility is needed). -/
-theorem BAThetaOf_isSymm {M : Bool → Matrix (Zd d L) (Zd d L) ℂ} (hM : ∀ σ, (M σ)ᵀ = M σ) (t : ℝ)
-    (σ₁ σ₂ : Bool) : (BAThetaOf M t σ₁ σ₂)ᵀ = BAThetaOf M t σ₁ σ₂ := by
-  unfold BAThetaOf PropThetaQ
-  have hs : (1 - (t : ℂ) • BAMssOf M σ₁ σ₂)ᵀ = 1 - (t : ℂ) • BAMssOf M σ₁ σ₂ := by
-    rw [Matrix.transpose_sub, Matrix.transpose_one, Matrix.transpose_smul, BAMssOf_isSymm hM]
-  rw [← Matrix.nonsing_inv_eq_ringInverse, Matrix.transpose_nonsing_inv, hs]
 
 end Edge
 
@@ -125,12 +98,6 @@ def BAslotStart (F : Finset (Fin n × Fin n)) : BAslot F → Fin n
 @[simp] theorem BAslotStart_leaf (F : Finset (Fin n × Fin n)) (v : Fin n) :
     BAslotStart F (BAslotLeaf F v) = v := rfl
 
-@[simp] theorem BAslotStart_out (F : Finset (Fin n × Fin n)) (J : ↥F) :
-    BAslotStart F (BAslotOut F J) = J.1.1 := rfl
-
-@[simp] theorem BAslotStart_in (F : Finset (Fin n × Fin n)) (J : ↥F) :
-    BAslotStart F (BAslotIn F J) = J.1.2 := rfl
-
 variable [NeZero n]
 
 /-- The node of a slot: the tree node (`KLnodes F`, an `M`-cycle) the slot belongs to. -/
@@ -138,15 +105,6 @@ def BAslotNode (F : Finset (Fin n × Fin n)) : BAslot F → Fin n × Fin n
   | Sum.inl v => KLleafPar F v
   | Sum.inr (Sum.inl J) => KLnodePar F J.1
   | Sum.inr (Sum.inr J) => J.1
-
-@[simp] theorem BAslotNode_leaf (F : Finset (Fin n × Fin n)) (v : Fin n) :
-    BAslotNode F (BAslotLeaf F v) = KLleafPar F v := rfl
-
-@[simp] theorem BAslotNode_out (F : Finset (Fin n × Fin n)) (J : ↥F) :
-    BAslotNode F (BAslotOut F J) = KLnodePar F J.1 := rfl
-
-@[simp] theorem BAslotNode_in (F : Finset (Fin n × Fin n)) (J : ↥F) :
-    BAslotNode F (BAslotIn F J) = J.1 := rfl
 
 theorem BAslotNode_mem_nodes (F : Finset (Fin n × Fin n)) (s : BAslot F) : BAslotNode F s ∈ KLnodes F := by
   rcases s with v | J | J
@@ -274,25 +232,6 @@ private theorem BAKCactus_IsSucc_eq (hinj : ∀ x y, node x = node y → key x =
     · exact le_antisymm (hmin u' hn') (hmin' u hn)
   exact hinj u u' (hn.trans hn'.symm) hkey
 
-private theorem BAKCactus_succ_injective (hinj : ∀ x y, node x = node y → key x = key y → x = y) :
-    Function.Injective (BAKCactus_succ node key) := by
-  intro s t hst
-  have hs := BAKCactus_succ_spec node key s
-  have ht := BAKCactus_succ_spec node key t
-  rw [hst] at hs
-  obtain ⟨hn1, hc1⟩ := hs
-  obtain ⟨hn2, hc2⟩ := ht
-  have hnst : node s = node t := hn1.symm.trans hn2
-  rcases hc1 with ⟨hlt1, hmin1⟩ | ⟨hmax1, hmin1⟩ <;> rcases hc2 with ⟨hlt2, hmin2⟩ | ⟨hmax2, hmin2⟩
-  · by_contra hne
-    have hk : key s ≠ key t := fun h => hne (hinj s t hnst h)
-    rcases lt_or_gt_of_ne hk with h | h
-    · exact absurd (hmin1 t hnst.symm h) (not_le.mpr hlt2)
-    · exact absurd (hmin2 s hnst h) (not_le.mpr hlt1)
-  · exact absurd (hmin2 s hnst) (not_le.mpr hlt1)
-  · exact absurd (hmin1 t hnst.symm) (not_le.mpr hlt2)
-  · exact hinj s t hnst (le_antisymm (hmax2 s hnst) (hmax1 t hnst.symm))
-
 /-- Going up inside a fibre without wrapping. -/
 private theorem BAKCactus_succ_reach_up (hinj : ∀ x y, node x = node y → key x = key y → x = y) :
     ∀ (m : ℕ) (s t : α), key t - key s = m → node s = node t → key s ≤ key t →
@@ -386,18 +325,6 @@ theorem BAnextSlot_eq_of_wrap {s u : BAslot F} (hnode : BAslotNode F u = BAslotN
   BAKCactus_IsSucc_eq (BAKCactus_hinj hF hn) (BAKCactus_succ_spec (BAslotNode F) (fun x => (BAslotStart F x).val) s)
     ⟨hnode, Or.inr ⟨hmax, hmin⟩⟩
 
-/-- **`BAnextSlot` is injective**, hence bijective. -/
-theorem BAnextSlot_injective : Function.Injective (BAnextSlot F) :=
-  BAKCactus_succ_injective (BAKCactus_hinj hF hn)
-
-/-- **`BAnextSlot` is a permutation of `BAslot F`.** -/
-theorem BAnextSlot_bijective : Function.Bijective (BAnextSlot F) :=
-  Finite.injective_iff_bijective.1 (BAnextSlot_injective hF hn)
-
-/-- `BAnextSlot` as a permutation of the slots. -/
-def BAnextSlotPerm : Equiv.Perm (BAslot F) :=
-  Equiv.ofBijective (BAnextSlot F) (BAnextSlot_bijective hF hn)
-
 /-- **Each node is one cycle of `BAnextSlot`**: two slots lie in the same node iff one is reached from the other by
 iterating `BAnextSlot` (`⇒`: one cycle per node; `⇐`: `BAnextSlot` preserves `BAslotNode`). -/
 theorem BAnextSlot_orbit (s t : BAslot F) :
@@ -408,18 +335,6 @@ theorem BAnextSlot_orbit (s t : BAslot F) :
   induction k generalizing s with
   | zero => rfl
   | succ k ih => rw [Function.iterate_succ_apply, ← ih, BAslotNode_nextSlot]
-
-/-- **`BAnextSlotPerm` has one cycle per node**, in Mathlib's terms: two slots are in the same cycle iff they have the
-same node. -/
-theorem BAnextSlot_sameCycle_iff (s t : BAslot F) :
-    (BAnextSlotPerm hF hn).SameCycle s t ↔ BAslotNode F s = BAslotNode F t := by
-  rw [BAnextSlot_orbit hF hn]
-  constructor
-  · intro h
-    obtain ⟨k, hk⟩ := h.exists_nat_pow_eq
-    exact ⟨k, by rw [← hk, ← Equiv.Perm.iterate_eq_pow]; rfl⟩
-  · rintro ⟨k, hk⟩
-    exact ⟨k, by rw [zpow_natCast, ← Equiv.Perm.iterate_eq_pow]; exact hk⟩
 
 end NextSlot
 
@@ -488,15 +403,6 @@ function of the sizes, `M(σ)`, `t`, `F`, `σ`, `a` only. -/
 def BAGamma (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
     (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) (a : Fin n → Zd d L) : ℂ :=
   BACactusVal d L M t F σ a
-
-theorem BAGamma_eq (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
-    (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) (a : Fin n → Zd d L) :
-    BAGamma d L n M t F σ a = BACactusVal d L M t F σ a := rfl
-
-/-- On `F ∈ TSP n` (so `KLIsTSP F`) `BAGamma` is the cactus value. -/
-theorem BAGamma_of_mem_TSP (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
-    {F : Finset (Fin n × Fin n)} (_hF : F ∈ TSP n) (σ : Fin n → Bool) (a : Fin n → Zd d L) :
-    BAGamma d L n M t F σ a = BACactusVal d L M t F σ a := rfl
 
 /-! ## 6. API: transport, the value at `F = ∅` and at `n = 3`, orientation -/
 
@@ -640,41 +546,6 @@ theorem BACactusVal_three (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) 
 
 end Three
 
-section Orient
-
-variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
-
-private theorem BAKCactus_gval_orient {Nd Lf Ed : Type*} [Fintype Nd] [DecidableEq Nd] [Fintype Lf]
-    [Fintype Ed] (a : Lf → Zd d L) (M : Lf → Matrix (Zd d L) (Zd d L) ℂ) (p : Lf → Nd)
-    (E : Ed → Matrix (Zd d L) (Zd d L) ℂ) (c q : Ed → Nd) (hE : ∀ e, (E e)ᵀ = E e) (o : Ed → Bool) :
-    KLgval d L a M p E c q =
-      KLgval d L a M p E (fun e => if o e then q e else c e) (fun e => if o e then c e else q e) := by
-  unfold KLgval
-  refine Finset.sum_congr rfl fun b _ => ?_
-  congr 1
-  refine Finset.prod_congr rfl fun e _ => ?_
-  cases h : o e
-  · simp [h]
-  · have := congrFun (congrFun (hE e) (b (q e))) (b (c e))
-    simpa [h, Matrix.transpose_apply] using this
-
-/-- **Orientation invariance** (target 5 (c)): if every `M(σ)` is symmetric (the block Anderson case: `BAMB_symm`,
-`BATheta_isSymm`) then the value does not depend on the orientation chosen for the chords and the `M`-edges: any
-set of edges (`o e = true`) may be reversed.  (For non-symmetric `M` the orientation matters; BA is symmetric.) -/
-theorem BACactusVal_orient {M : Bool → Matrix (Zd d L) (Zd d L) ℂ} (hM : ∀ σ, (M σ)ᵀ = M σ) (t : ℝ)
-    (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) (a : Fin n → Zd d L) (o : ↥F ⊕ BAslot F → Bool) :
-    BACactusVal d L M t F σ a =
-      KLgval d L a (BACactusValLeafW M t σ) (BAslotLeaf F) (BACactusValEdgeW M t F σ)
-        (fun e => if o e then BACactusValTgt F e else BACactusValSrc F e)
-        (fun e => if o e then BACactusValSrc F e else BACactusValTgt F e) := by
-  refine BAKCactus_gval_orient _ _ _ _ _ _ (fun e => ?_) o
-  rcases e with J | s
-  · change ((t : ℂ) • BAThetaOf M t (σ J.1.1) (σ J.1.2))ᵀ = (t : ℂ) • BAThetaOf M t (σ J.1.1) (σ J.1.2)
-    rw [Matrix.transpose_smul, BAThetaOf_isSymm hM]
-  · exact hM _
-
-end Orient
-
 section Zero
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
@@ -757,26 +628,6 @@ theorem BACactusVal_sum_zero_BAMLoop (hn : 2 ≤ n) (W : ℕ) (M : Bool → Matr
   rw [h2, BAKCactus_getD_ofFn σ false _ (v + 1).isLt, BAKCactus_getD_ofFn a 0 _ (v + 1).isLt,
     BAKCactus_getD_ofFn a 0 _ v.isLt]
 
-/-- **`(Kn3sol)` against the K00 carrier** (`1_2:1176`): `W^{-2d} Γ_M(∅) = ∑_b ∏_k Θ^{(σ_k,σ_{k+1})}(a_k, b_k) ·
-𝓜^{(3)}_{σ,b}` with `𝓜^{(3)} = BAMLoop` (`(eq:KMloop)`, `BAMLoop_apply`).  Since `TSP 3 = {∅}` the left side is
-`W^{-d(n-1)} ∑_{F ∈ TSP 3} Γ_M(F)` of `BATreeRep` at `n = 3`. -/
-theorem BACactusVal_three_BAMLoop (W : ℕ) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin 3 → Bool)
-    (a : Fin 3 → Zd d L) :
-    (((W : ℂ) ^ d)⁻¹) ^ 2 * BACactusVal d L M t (∅ : Finset (Fin 3 × Fin 3)) σ a =
-      ∑ b₀, ∑ b₁, ∑ b₂,
-        BAThetaOf M t (σ 0) (σ 1) (a 0) b₀ * BAThetaOf M t (σ 1) (σ 2) (a 1) b₁ *
-          BAThetaOf M t (σ 2) (σ 0) (a 2) b₂ * BAMLoop d L W M (KLloopOf d L σ ![b₀, b₁, b₂]) := by
-  rw [BACactusVal_three, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun b₀ _ => ?_
-  rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun b₁ _ => ?_
-  rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun b₂ _ => ?_
-  rw [BAMLoop_apply d L W M (KLloopOf d L σ ![b₀, b₁, b₂]) 3 (by norm_num) (by simp [KLloopOf])
-    (by simp [KLloopOf])]
-  simp [KLloopOf, Finset.prod_range_succ, List.getD_eq_getElem?_getD, List.ofFn_succ]
-  ring
-
 end MLoop
 
 /-! ## 7. Compiled nonempty instances
@@ -787,408 +638,11 @@ labels `a = (0,1,2)` resp. `(0,1,2,1)`; `n = 4` has the three trees `∅`, `{(0,
 `t = 0` the chords carry `0 · Θ`, so only `F = ∅` survives and the tree sum is the `M`-loop, `BAMLoop`.  Datum of the
 symmetry part: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`), `t = 1/2`. -/
 
-namespace KCactusInst
-
-open RBM.BA.MFixedPointInst
-
-/-- The slot type carries `Fintype` and `DecidableEq`. -/
-example (F : Finset (Fin 4 × Fin 4)) : Fintype (BAslot F) := inferInstance
-
-example (F : Finset (Fin 4 × Fin 4)) : DecidableEq (BAslot F) := inferInstance
-
-/-- The slot count at `n = 4`, `F = {(0,2)}`: `4 + 2 · 1 = 6` slots. -/
-example : Fintype.card (BAslot ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4))) = 6 := by
-  rw [BAslot_card]; rfl
-
-private theorem BAKCactus_F02 : KLIsTSP ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) :=
-  KLisTSP_of_mem_TSP (by rw [TSP_four]; simp)
-
-private theorem BAKCactus_F13 : KLIsTSP ({((1 : Fin 4), (3 : Fin 4))} : Finset (Fin 4 × Fin 4)) :=
-  KLisTSP_of_mem_TSP (by rw [TSP_four]; simp)
-
-/-- The tree sum at `t = 0`, `n = 3`, equals `BAMLoop_witness = 15` (K00): `TSP 3 = {∅}`. -/
-example : ∑ F ∈ TSP 3, BACactusVal 1 3 BAMLoop_witM 0 F ![true, true, false] ![![0], ![1], ![2]] = 15 := by
-  have h := BACactusVal_sum_zero_BAMLoop (d := 1) (L := 3) (n := 3) (by norm_num) 1 BAMLoop_witM
-    ![true, true, false] ![![0], ![1], ![2]]
-  have hl : KLloopOf 1 3 ![true, true, false] ![![0], ![1], ![2]] =
-      (⟨[true, true, false], [![0], ![1], ![2]]⟩ : LoopIdx (Zd 1 3)) := rfl
-  rw [hl, BAMLoop_witness] at h
-  simpa using h
-
-/-- `n = 4`, the star `F = ∅`, `t = 0`: `Γ_M(∅) = M(+)_{01} M(-)_{12} M(+)_{21} M(+)_{10} = 1 · 5 · 2 · 1 = 10 ≠ 0`
-(the `M`-loop, `BAMLoop_apply`). -/
-example : BACactusVal 1 3 BAMLoop_witM 0 (∅ : Finset (Fin 4 × Fin 4)) ![true, true, false, true]
-    ![![0], ![1], ![2], ![1]] = 10 := by
-  rw [BACactusVal_empty_zero (by norm_num), Fin.prod_univ_four]
-  have h1 : BAMLoop_witM true (![0] : Zd 1 3) ![1] = 1 := rfl
-  have h2 : BAMLoop_witM false (![1] : Zd 1 3) ![2] = 5 := rfl
-  have h3 : BAMLoop_witM true (![2] : Zd 1 3) ![1] = 2 := rfl
-  have h4 : BAMLoop_witM true (![1] : Zd 1 3) ![0] = 1 := rfl
-  change BAMLoop_witM true ![0] ![1] * BAMLoop_witM false ![1] ![2] * BAMLoop_witM true ![2] ![1] *
-    BAMLoop_witM true ![1] ![0] = 10
-  rw [h1, h2, h3, h4]; norm_num
-
-/-- `n = 4`, `t = 0`: the three trees `∅`, `{(0,2)}`, `{(1,3)}` (each `KLIsTSP`); the two diagonals carry `0 · Θ`
-and vanish, the star carries the whole `M`-loop `= 10` (`BAGamma` is the cactus value). -/
-example : BAGamma 1 3 4 BAMLoop_witM 0 {((0 : Fin 4), (2 : Fin 4))} ![true, true, false, true]
-    ![![0], ![1], ![2], ![1]] = 0 :=
-  BACactusVal_zero_of_nonempty BAMLoop_witM ⟨_, Finset.mem_singleton_self _⟩ _ _
-
-example : BAGamma 1 3 4 BAMLoop_witM 0 {((1 : Fin 4), (3 : Fin 4))} ![true, true, false, true]
-    ![![0], ![1], ![2], ![1]] = 0 :=
-  BACactusVal_zero_of_nonempty BAMLoop_witM ⟨_, Finset.mem_singleton_self _⟩ _ _
-
-example : ∑ F ∈ TSP 4, BAGamma 1 3 4 BAMLoop_witM 0 F ![true, true, false, true] ![![0], ![1], ![2], ![1]] = 10 := by
-  have h := BACactusVal_sum_zero_BAMLoop (d := 1) (L := 3) (n := 4) (by norm_num) 1 BAMLoop_witM
-    ![true, true, false, true] ![![0], ![1], ![2], ![1]]
-  have hl : KLloopOf 1 3 ![true, true, false, true] ![![0], ![1], ![2], ![1]] =
-      (⟨[true, true, false, true], [![0], ![1], ![2], ![1]]⟩ : LoopIdx (Zd 1 3)) := rfl
-  have hm := BAMLoop_apply 1 3 1 BAMLoop_witM ⟨[true, true, false, true], [![0], ![1], ![2], ![1]]⟩ 4
-    (by norm_num) rfl rfl
-  rw [hl, hm] at h
-  simp only [Finset.prod_range_succ, Finset.prod_range_zero] at h
-  have h1 : BAMLoop_witM true (![1] : Zd 1 3) ![0] = 1 := rfl
-  have h2 : BAMLoop_witM true (![0] : Zd 1 3) ![1] = 1 := rfl
-  have h3 : BAMLoop_witM false (![1] : Zd 1 3) ![2] = 5 := rfl
-  have h4 : BAMLoop_witM true (![2] : Zd 1 3) ![1] = 2 := rfl
-  change _ = (((1 : ℕ) : ℂ) ^ 1)⁻¹ ^ (4 - 1) * (1 * BAMLoop_witM true ![1] ![0] * BAMLoop_witM true ![0] ![1] *
-    BAMLoop_witM false ![1] ![2] * BAMLoop_witM true ![2] ![1]) at h
-  rw [h1, h2, h3, h4] at h
-  norm_num at h
-  exact h
-
 /-! ### The slots and cycles of `F = {(0,2)}`, `n = 4` (two nodes, six slots; paper figure `A:552-583`) -/
-
-private abbrev BAKCactus_F02set : Finset (Fin 4 × Fin 4) := {((0 : Fin 4), (2 : Fin 4))}
-
-private theorem BAKCactus_F02mem : ((0 : Fin 4), (2 : Fin 4)) ∈ BAKCactus_F02set :=
-  Finset.mem_singleton_self _
-
-private theorem BAKCactus_leafPar0 : KLleafPar BAKCactus_F02set 0 = ((0 : Fin 4), (2 : Fin 4)) :=
-  KLleafPar_eq (by decide) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar1 : KLleafPar BAKCactus_F02set 1 = ((0 : Fin 4), (2 : Fin 4)) :=
-  KLleafPar_eq (by decide) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar2 : KLleafPar BAKCactus_F02set 2 = KLwholeP 4 :=
-  KLleafPar_eq (KLwholeP_mem_nodes _) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar3 : KLleafPar BAKCactus_F02set 3 = KLwholeP 4 :=
-  KLleafPar_root _ rfl
-
-private theorem BAKCactus_nodePar02 : KLnodePar BAKCactus_F02set ((0 : Fin 4), (2 : Fin 4)) = KLwholeP 4 :=
-  KLnodePar_eq (by decide) (KLwholeP_mem_nodes _) (KLarcLe_wholeP _) (by decide) (by decide)
-
-/-- A computable model of the node of a slot of `F = {(0,2)}`. -/
-private def BAKCactus_nodeM : BAslot BAKCactus_F02set → Fin 4 × Fin 4
-  | Sum.inl v => if v.val < 2 then (0, 2) else (0, 3)
-  | Sum.inr (Sum.inl _) => (0, 3)
-  | Sum.inr (Sum.inr _) => (0, 2)
-
-private theorem BAKCactus_nodeM_eq : BAslotNode BAKCactus_F02set = BAKCactus_nodeM := by
-  funext s
-  rcases s with v | J | J
-  · fin_cases v
-    · exact BAKCactus_leafPar0
-    · exact BAKCactus_leafPar1
-    · exact BAKCactus_leafPar2
-    · exact BAKCactus_leafPar3
-  · obtain ⟨J, hJ⟩ := J
-    obtain rfl := Finset.mem_singleton.1 hJ
-    exact BAKCactus_nodePar02
-  · obtain ⟨J, hJ⟩ := J
-    obtain rfl := Finset.mem_singleton.1 hJ
-    rfl
-
-/-- The successor table of `F = {(0,2)}` (the cycles of the figure, `A:552-583`): the root `(0,3)` is the cycle
-`out(0,2) → leaf 2 → leaf 3 → out(0,2)`, the node `(0,2)` is the cycle `leaf 0 → leaf 1 → in(0,2) → leaf 0`. -/
-private def BAKCactus_nextM : BAslot BAKCactus_F02set → BAslot BAKCactus_F02set
-  | Sum.inl v => if v.val = 0 then Sum.inl 1 else if v.val = 1 then Sum.inr (Sum.inr ⟨_, BAKCactus_F02mem⟩)
-      else if v.val = 2 then Sum.inl 3 else Sum.inr (Sum.inl ⟨_, BAKCactus_F02mem⟩)
-  | Sum.inr (Sum.inl _) => Sum.inl 2
-  | Sum.inr (Sum.inr _) => Sum.inl 0
-
-private theorem BAKCactus_tableM : ∀ s : BAslot BAKCactus_F02set,
-    BAKCactus_nodeM (BAKCactus_nextM s) = BAKCactus_nodeM s ∧
-      ((BAslotStart _ s < BAslotStart _ (BAKCactus_nextM s) ∧
-          ∀ x, BAKCactus_nodeM x = BAKCactus_nodeM s → BAslotStart _ s < BAslotStart _ x →
-            BAslotStart _ (BAKCactus_nextM s) ≤ BAslotStart _ x) ∨
-        ((∀ x, BAKCactus_nodeM x = BAKCactus_nodeM s → BAslotStart _ x ≤ BAslotStart _ s) ∧
-          ∀ x, BAKCactus_nodeM x = BAKCactus_nodeM s → BAslotStart _ (BAKCactus_nextM s) ≤ BAslotStart _ x)) := by
-  decide
-
-private theorem BAKCactus_next_eq (s : BAslot BAKCactus_F02set) :
-    BAnextSlot BAKCactus_F02set s = BAKCactus_nextM s := by
-  obtain ⟨hnode, h | h⟩ := BAKCactus_tableM s
-  · rw [← BAKCactus_nodeM_eq] at hnode h
-    exact BAnextSlot_eq_of_above BAKCactus_F02 (by norm_num) hnode h.1 h.2
-  · rw [← BAKCactus_nodeM_eq] at hnode h
-    exact BAnextSlot_eq_of_wrap BAKCactus_F02 (by norm_num) hnode h.1 h.2
-
-/-- The two cycles of `F = {(0,2)}`, computed: the root `(0,3)` is `out(0,2) → leaf 2 → leaf 3 → out(0,2)`, the node
-`(0,2)` is `leaf 0 → leaf 1 → in(0,2) → leaf 0`. -/
-example :
-    BAnextSlot BAKCactus_F02set (BAslotOut _ ⟨_, BAKCactus_F02mem⟩) = BAslotLeaf _ 2 ∧
-    BAnextSlot BAKCactus_F02set (BAslotLeaf _ 2) = BAslotLeaf _ 3 ∧
-    BAnextSlot BAKCactus_F02set (BAslotLeaf _ 3) = BAslotOut _ ⟨_, BAKCactus_F02mem⟩ ∧
-    BAnextSlot BAKCactus_F02set (BAslotLeaf _ 0) = BAslotLeaf _ 1 ∧
-    BAnextSlot BAKCactus_F02set (BAslotLeaf _ 1) = BAslotIn _ ⟨_, BAKCactus_F02mem⟩ ∧
-    BAnextSlot BAKCactus_F02set (BAslotIn _ ⟨_, BAKCactus_F02mem⟩) = BAslotLeaf _ 0 := by
-  simp only [BAKCactus_next_eq]
-  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-/-- The charges of the six `M`-edges of `F = {(0,2)}` (D633: `σ_x`, `x` the first vertex of the next range), as in the
-figure of `A:552-583`: `M(σ_2), M(σ_3), M(σ_0)` on the root cycle, `M(σ_1), M(σ_2), M(σ_0)` on the node cycle. -/
-example (σ : Fin 4 → Bool) :
-    BAMcharge BAKCactus_F02set σ (BAslotOut _ ⟨_, BAKCactus_F02mem⟩) = σ 2 ∧
-    BAMcharge BAKCactus_F02set σ (BAslotLeaf _ 2) = σ 3 ∧
-    BAMcharge BAKCactus_F02set σ (BAslotLeaf _ 3) = σ 0 ∧
-    BAMcharge BAKCactus_F02set σ (BAslotLeaf _ 0) = σ 1 ∧
-    BAMcharge BAKCactus_F02set σ (BAslotLeaf _ 1) = σ 2 ∧
-    BAMcharge BAKCactus_F02set σ (BAslotIn _ ⟨_, BAKCactus_F02mem⟩) = σ 0 := by
-  simp only [BAMcharge_def, BAKCactus_next_eq]
-  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-/-- Two nodes, two cycles: `leaf 0` and `in(0,2)` lie in one cycle, `leaf 0` and `leaf 2` do not
-(`BAnextSlot_orbit`). -/
-example : (∃ k : ℕ, (BAnextSlot BAKCactus_F02set)^[k] (BAslotLeaf _ 0) = BAslotIn _ ⟨_, BAKCactus_F02mem⟩) ∧
-    ¬ ∃ k : ℕ, (BAnextSlot BAKCactus_F02set)^[k] (BAslotLeaf _ 0) = BAslotLeaf _ 2 := by
-  refine ⟨(BAnextSlot_orbit BAKCactus_F02 (by norm_num) _ _).1 ?_, fun h => ?_⟩
-  · rw [BAKCactus_nodeM_eq]; rfl
-  · have := (BAnextSlot_orbit BAKCactus_F02 (by norm_num) _ _).2 h
-    rw [BAKCactus_nodeM_eq] at this
-    exact absurd this (by decide)
-
-/-- The same in Mathlib's terms: the permutation `BAnextSlotPerm` of the six slots has exactly two cycles. -/
-example : (BAnextSlotPerm BAKCactus_F02 (by norm_num : 2 ≤ 4)).SameCycle (BAslotLeaf _ 0)
-      (BAslotIn _ ⟨_, BAKCactus_F02mem⟩) ∧
-    ¬ (BAnextSlotPerm BAKCactus_F02 (by norm_num : 2 ≤ 4)).SameCycle (BAslotLeaf _ 0) (BAslotLeaf _ 2) := by
-  refine ⟨(BAnextSlot_sameCycle_iff BAKCactus_F02 (by norm_num) _ _).2 ?_, fun h => ?_⟩
-  · rw [BAKCactus_nodeM_eq]; rfl
-  · have := (BAnextSlot_sameCycle_iff BAKCactus_F02 (by norm_num) _ _).1 h
-    rw [BAKCactus_nodeM_eq] at this
-    exact absurd this (by decide)
-
-example : Function.Bijective (BAnextSlot BAKCactus_F02set) := BAnextSlot_bijective BAKCactus_F02 (by norm_num)
-
-example : ∀ s t : BAslot BAKCactus_F02set, BAslotNode _ s = BAslotNode _ t → BAslotStart _ s = BAslotStart _ t →
-    s = t := fun _ _ h1 h2 => BAslot_start_inj BAKCactus_F02 (by norm_num) h1 h2
 
 /-! ### The slots and cycles of `F = {(1,3)}`, `n = 4` (the diagonal in the middle of the root cycle) -/
 
-private abbrev BAKCactus_F13set : Finset (Fin 4 × Fin 4) := {((1 : Fin 4), (3 : Fin 4))}
-
-private theorem BAKCactus_F13mem : ((1 : Fin 4), (3 : Fin 4)) ∈ BAKCactus_F13set :=
-  Finset.mem_singleton_self _
-
-private theorem BAKCactus_leafPar13_0 : KLleafPar BAKCactus_F13set 0 = KLwholeP 4 :=
-  KLleafPar_eq (KLwholeP_mem_nodes _) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar13_1 : KLleafPar BAKCactus_F13set 1 = ((1 : Fin 4), (3 : Fin 4)) :=
-  KLleafPar_eq (by decide) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar13_2 : KLleafPar BAKCactus_F13set 2 = ((1 : Fin 4), (3 : Fin 4)) :=
-  KLleafPar_eq (by decide) (by decide) (by decide)
-
-private theorem BAKCactus_leafPar13_3 : KLleafPar BAKCactus_F13set 3 = KLwholeP 4 :=
-  KLleafPar_root _ rfl
-
-private theorem BAKCactus_nodePar13 : KLnodePar BAKCactus_F13set ((1 : Fin 4), (3 : Fin 4)) = KLwholeP 4 :=
-  KLnodePar_eq (by decide) (KLwholeP_mem_nodes _) (KLarcLe_wholeP _) (by decide) (by decide)
-
-private def BAKCactus_nodeM13 : BAslot BAKCactus_F13set → Fin 4 × Fin 4
-  | Sum.inl v => if v.val = 1 ∨ v.val = 2 then (1, 3) else (0, 3)
-  | Sum.inr (Sum.inl _) => (0, 3)
-  | Sum.inr (Sum.inr _) => (1, 3)
-
-private theorem BAKCactus_nodeM13_eq : BAslotNode BAKCactus_F13set = BAKCactus_nodeM13 := by
-  funext s
-  rcases s with v | J | J
-  · fin_cases v
-    · exact BAKCactus_leafPar13_0
-    · exact BAKCactus_leafPar13_1
-    · exact BAKCactus_leafPar13_2
-    · exact BAKCactus_leafPar13_3
-  · obtain ⟨J, hJ⟩ := J
-    obtain rfl := Finset.mem_singleton.1 hJ
-    exact BAKCactus_nodePar13
-  · obtain ⟨J, hJ⟩ := J
-    obtain rfl := Finset.mem_singleton.1 hJ
-    rfl
-
-/-- The successor table of `F = {(1,3)}`: the root `(0,3)` is `leaf 0 → out(1,3) → leaf 3 → leaf 0`, the node `(1,3)`
-is `leaf 1 → leaf 2 → in(1,3) → leaf 1`. -/
-private def BAKCactus_nextM13 : BAslot BAKCactus_F13set → BAslot BAKCactus_F13set
-  | Sum.inl v => if v.val = 0 then Sum.inr (Sum.inl ⟨_, BAKCactus_F13mem⟩) else if v.val = 1 then Sum.inl 2
-      else if v.val = 2 then Sum.inr (Sum.inr ⟨_, BAKCactus_F13mem⟩) else Sum.inl 0
-  | Sum.inr (Sum.inl _) => Sum.inl 3
-  | Sum.inr (Sum.inr _) => Sum.inl 1
-
-private theorem BAKCactus_tableM13 : ∀ s : BAslot BAKCactus_F13set,
-    BAKCactus_nodeM13 (BAKCactus_nextM13 s) = BAKCactus_nodeM13 s ∧
-      ((BAslotStart _ s < BAslotStart _ (BAKCactus_nextM13 s) ∧
-          ∀ x, BAKCactus_nodeM13 x = BAKCactus_nodeM13 s → BAslotStart _ s < BAslotStart _ x →
-            BAslotStart _ (BAKCactus_nextM13 s) ≤ BAslotStart _ x) ∨
-        ((∀ x, BAKCactus_nodeM13 x = BAKCactus_nodeM13 s → BAslotStart _ x ≤ BAslotStart _ s) ∧
-          ∀ x, BAKCactus_nodeM13 x = BAKCactus_nodeM13 s →
-            BAslotStart _ (BAKCactus_nextM13 s) ≤ BAslotStart _ x)) := by
-  decide
-
-private theorem BAKCactus_next13_eq (s : BAslot BAKCactus_F13set) :
-    BAnextSlot BAKCactus_F13set s = BAKCactus_nextM13 s := by
-  obtain ⟨hnode, h | h⟩ := BAKCactus_tableM13 s
-  · rw [← BAKCactus_nodeM13_eq] at hnode h
-    exact BAnextSlot_eq_of_above BAKCactus_F13 (by norm_num) hnode h.1 h.2
-  · rw [← BAKCactus_nodeM13_eq] at hnode h
-    exact BAnextSlot_eq_of_wrap BAKCactus_F13 (by norm_num) hnode h.1 h.2
-
-/-- The two cycles of `F = {(1,3)}` and their charges (figure of `A:552-583`, D633): the root cycle
-`leaf 0 -M(σ_1)→ out(1,3) -M(σ_3)→ leaf 3 -M(σ_0)→ leaf 0`, the node cycle
-`leaf 1 -M(σ_2)→ leaf 2 -M(σ_3)→ in(1,3) -M(σ_1)→ leaf 1`. -/
-example (σ : Fin 4 → Bool) :
-    (BAnextSlot BAKCactus_F13set (BAslotLeaf _ 0) = BAslotOut _ ⟨_, BAKCactus_F13mem⟩ ∧
-      BAnextSlot BAKCactus_F13set (BAslotOut _ ⟨_, BAKCactus_F13mem⟩) = BAslotLeaf _ 3 ∧
-      BAnextSlot BAKCactus_F13set (BAslotLeaf _ 3) = BAslotLeaf _ 0 ∧
-      BAnextSlot BAKCactus_F13set (BAslotLeaf _ 1) = BAslotLeaf _ 2 ∧
-      BAnextSlot BAKCactus_F13set (BAslotLeaf _ 2) = BAslotIn _ ⟨_, BAKCactus_F13mem⟩ ∧
-      BAnextSlot BAKCactus_F13set (BAslotIn _ ⟨_, BAKCactus_F13mem⟩) = BAslotLeaf _ 1) ∧
-    (BAMcharge BAKCactus_F13set σ (BAslotLeaf _ 0) = σ 1 ∧
-      BAMcharge BAKCactus_F13set σ (BAslotOut _ ⟨_, BAKCactus_F13mem⟩) = σ 3 ∧
-      BAMcharge BAKCactus_F13set σ (BAslotLeaf _ 3) = σ 0 ∧
-      BAMcharge BAKCactus_F13set σ (BAslotLeaf _ 1) = σ 2 ∧
-      BAMcharge BAKCactus_F13set σ (BAslotLeaf _ 2) = σ 3 ∧
-      BAMcharge BAKCactus_F13set σ (BAslotIn _ ⟨_, BAKCactus_F13mem⟩) = σ 1) := by
-  simp only [BAMcharge_def, BAKCactus_next13_eq]
-  exact ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-example : Function.Bijective (BAnextSlot BAKCactus_F13set) := BAnextSlot_bijective BAKCactus_F13 (by norm_num)
-
 /-! ### The API lemmas at the data -/
-
-/-- `BAThetaOf_BAMsigma`, `BAMssOf_BAMsigma` at the block Anderson flow point `P` of `(d, L) = (3, 4)`, `t = 1/2`:
-`Γ` of `BATreeRep` is a function of `(Bool → Matrix, t)` only. -/
-example : BAThetaOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) true false =
-    BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false := BAThetaOf_BAMsigma P.g0 P.E P.m0 (1 / 2) true false
-
-example : BAMssOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) true false =
-    BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) true false := BAMssOf_BAMsigma _ true false
-
-/-- The block Anderson `M(σ) = BAMsigma (BAMB ..) σ` is symmetric (`BAMB_symm`): the hypothesis of the symmetry
-lemmas, discharged at `P`. -/
-private theorem BAKCactus_Msym : ∀ σ, (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) σ)ᵀ =
-    BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) σ := by
-  intro σ
-  ext a b
-  cases σ
-  · simp only [Matrix.transpose_apply, BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply,
-      BAMB_symm 3 4 P.g0 (P.E : ℂ) P.m0 a b]
-  · exact BAMB_symm 3 4 P.g0 (P.E : ℂ) P.m0 b a
-
-example : (BAThetaOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) true false)ᵀ =
-    BAThetaOf (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) true false :=
-  BAThetaOf_isSymm BAKCactus_Msym (1 / 2) true false
-
-example : (BAMssOf BAMLoop_witM true false)ᵀ = BAMssOf BAMLoop_witM true false :=
-  BAMssOf_isSymm RBM.BA.KBaseInst.witM_symm true false
-
-/-- `BACactusVal_orient` at the block Anderson data `P`, `t = 1/2`, `n = 4`, `F = {(0,2)}`: every edge reversed. -/
-example : BACactusVal 3 4 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) BAKCactus_F02set
-    ![true, true, false, true] ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]] =
-    KLgval 3 4 ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]]
-      (BACactusValLeafW (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) ![true, true, false, true])
-      (BAslotLeaf _)
-      (BACactusValEdgeW (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2) BAKCactus_F02set ![true, true, false, true])
-      (fun e => BACactusValTgt _ e) (fun e => BACactusValSrc _ e) :=
-  BACactusVal_orient BAKCactus_Msym (1 / 2) _ _ _ (fun _ => true)
-
-/-- `BACactusVal_orient` at the K00 witness (symmetric), `F = {(1,3)}`: the `M`-edges are reversed, the chord is kept. -/
-example : BACactusVal 1 3 BAMLoop_witM (1 / 10) BAKCactus_F13set ![true, true, false, true] ![![0], ![1], ![2], ![1]] =
-    KLgval 1 3 ![![0], ![1], ![2], ![1]] (BACactusValLeafW BAMLoop_witM (1 / 10) ![true, true, false, true])
-      (BAslotLeaf _) (BACactusValEdgeW BAMLoop_witM (1 / 10) BAKCactus_F13set ![true, true, false, true])
-      (fun e => if e.isRight then BACactusValTgt _ e else BACactusValSrc _ e)
-      (fun e => if e.isRight then BACactusValSrc _ e else BACactusValTgt _ e) :=
-  BACactusVal_orient RBM.BA.KBaseInst.witM_symm (1 / 10) _ _ _ (fun e => e.isRight)
-
-/-- `BACactusVal_congr` with a nontrivial relabelling: the six slots of `F = {(0,2)}` are numbered by `Fin 6` and its
-seven edges (one chord, six `M`-edges) by `Fin 7`. -/
-example :
-    let eN : BAslot BAKCactus_F02set ≃ Fin 6 := Fintype.equivFinOfCardEq (by rw [BAslot_card]; rfl)
-    let eE : (↥BAKCactus_F02set ⊕ BAslot BAKCactus_F02set) ≃ Fin 7 :=
-      Fintype.equivFinOfCardEq (by simp [Fintype.card_sum])
-    BACactusVal 1 3 BAMLoop_witM (1 / 10) BAKCactus_F02set ![true, true, false, true] ![![0], ![1], ![2], ![1]] =
-      KLgval 1 3 ![![0], ![1], ![2], ![1]] (BACactusValLeafW BAMLoop_witM (1 / 10) ![true, true, false, true])
-        (fun v => eN (BAslotLeaf _ v))
-        (fun e => BACactusValEdgeW BAMLoop_witM (1 / 10) BAKCactus_F02set ![true, true, false, true] (eE.symm e))
-        (fun e => eN (BACactusValSrc _ (eE.symm e))) (fun e => eN (BACactusValTgt _ (eE.symm e))) := by
-  intro eN eE
-  exact BACactusVal_congr BAMLoop_witM (1 / 10) _ _ _ eN eE (fun _ => rfl) (fun e => by simp)
-    (fun e => by simp) (fun e => by simp)
-
-/-- `BACactusVal_empty` at `n = 4` and `BACactusVal_three` (the one-tree formula `(Kn3sol)`), `t = 1/10`. -/
-example : BACactusVal 1 3 BAMLoop_witM (1 / 10) (∅ : Finset (Fin 4 × Fin 4)) ![true, true, false, true]
-    ![![0], ![1], ![2], ![1]] =
-    ∑ b : Fin 4 → Zd 1 3, (∏ v, BAThetaOf BAMLoop_witM (1 / 10) (![true, true, false, true] v)
-        (![true, true, false, true] (v + 1)) (![![0], ![1], ![2], ![1]] v) (b v)) *
-      ∏ v, BAMLoop_witM (![true, true, false, true] (v + 1)) (b v) (b (v + 1)) :=
-  BACactusVal_empty (by norm_num) _ _ _ _
-
-example : BACactusVal 1 3 BAMLoop_witM (1 / 10) (∅ : Finset (Fin 3 × Fin 3)) ![true, true, false]
-    ![![0], ![1], ![2]] =
-    ∑ b₀, ∑ b₁, ∑ b₂,
-      (BAThetaOf BAMLoop_witM (1 / 10) true true ![0] b₀ * BAThetaOf BAMLoop_witM (1 / 10) true false ![1] b₁ *
-        BAThetaOf BAMLoop_witM (1 / 10) false true ![2] b₂) *
-      (BAMLoop_witM true b₂ b₀ * BAMLoop_witM true b₀ b₁ * BAMLoop_witM false b₁ b₂) :=
-  BACactusVal_three BAMLoop_witM (1 / 10) _ _
-
-/-- `(Kn3sol)` against the K00 carrier at `W = 1`. -/
-example : (((1 : ℕ) : ℂ) ^ 1)⁻¹ ^ 2 * BACactusVal 1 3 BAMLoop_witM (1 / 10) (∅ : Finset (Fin 3 × Fin 3))
-    ![true, true, false] ![![0], ![1], ![2]] =
-    ∑ b₀, ∑ b₁, ∑ b₂, BAThetaOf BAMLoop_witM (1 / 10) true true ![0] b₀ *
-      BAThetaOf BAMLoop_witM (1 / 10) true false ![1] b₁ * BAThetaOf BAMLoop_witM (1 / 10) false true ![2] b₂ *
-        BAMLoop 1 3 1 BAMLoop_witM (KLloopOf 1 3 ![true, true, false] ![b₀, b₁, b₂]) :=
-  BACactusVal_three_BAMLoop 1 BAMLoop_witM (1 / 10) _ _
-
-example : BAGamma 1 3 3 BAMLoop_witM (1 / 10) ∅ ![true, true, false] ![![0], ![1], ![2]] =
-    BACactusVal 1 3 BAMLoop_witM (1 / 10) ∅ ![true, true, false] ![![0], ![1], ![2]] :=
-  BAGamma_of_mem_TSP 1 3 3 BAMLoop_witM (1 / 10) (by rw [TSP_three]; simp) _ _
-
-/-- The star at `n = 4` (one node, four leaf slots in the order `0, 1, 2, 3`, wrapping `3 ↦ 0`) and its charges
-(`σ_{v+1}` on the `M`-edge from the leaf `v`). -/
-example : BAnextSlot (∅ : Finset (Fin 4 × Fin 4)) (BAslotLeaf _ 3) = BAslotLeaf _ 0 :=
-  BAnextSlot_empty (by norm_num) 3
-
-example : BAnextSlot (∅ : Finset (Fin 4 × Fin 4)) (BAslotLeaf _ 1) = BAslotLeaf _ 2 :=
-  BAnextSlot_empty (by norm_num) 1
-
-example (σ : Fin 4 → Bool) : BAMcharge (∅ : Finset (Fin 4 × Fin 4)) σ (BAslotLeaf _ 3) = σ 0 :=
-  BAMcharge_empty (by norm_num) σ 3
-
-/-- Generic facts of `BAnextSlot` at the leaf `1` of `F = {(0,2)}`: it stays in the node, and it is the least start above
-(`BAnextSlot_spec`, `BAslotNode_nextSlot`, `BAslotNode_mem_nodes`, injectivity). -/
-example : BAslotNode BAKCactus_F02set (BAnextSlot BAKCactus_F02set (BAslotLeaf _ 1)) =
-    KLleafPar BAKCactus_F02set 1 := BAslotNode_nextSlot _ _
-
-example : BAslotStart _ (BAslotLeaf BAKCactus_F02set 1) <
-    BAslotStart _ (BAnextSlot BAKCactus_F02set (BAslotLeaf _ 1)) := by
-  rcases BAnextSlot_spec BAKCactus_F02set (BAslotLeaf _ 1) with ⟨h, -⟩ | ⟨hmax, -⟩
-  · exact h
-  · have := hmax (BAslotIn _ ⟨_, BAKCactus_F02mem⟩) (by rw [BAKCactus_nodeM_eq]; rfl)
-    exact absurd this (by decide)
-
-example : BAslotNode BAKCactus_F02set (BAslotLeaf _ 3) ∈ KLnodes BAKCactus_F02set := BAslotNode_mem_nodes _ _
-
-example : Function.Injective (BAnextSlot BAKCactus_F13set) := BAnextSlot_injective BAKCactus_F13 (by norm_num)
-
-/-- `Θ_0 = 1`, `BACactusVal_empty_zero` and `BACactusVal_zero_of_nonempty` at the witness. -/
-example : BAThetaOf BAMLoop_witM 0 true false = 1 := BAThetaOf_zero _ _ _
-
-example : BACactusVal 1 3 BAMLoop_witM 0 (∅ : Finset (Fin 3 × Fin 3)) ![true, true, false] ![![0], ![1], ![2]] = 15 := by
-  rw [BACactusVal_empty_zero (by norm_num), Fin.prod_univ_three]
-  have h1 : BAMLoop_witM true (![0] : Zd 1 3) ![1] = 1 := rfl
-  have h2 : BAMLoop_witM false (![1] : Zd 1 3) ![2] = 5 := rfl
-  have h3 : BAMLoop_witM true (![2] : Zd 1 3) ![0] = 3 := rfl
-  change BAMLoop_witM true ![0] ![1] * BAMLoop_witM false ![1] ![2] * BAMLoop_witM true ![2] ![0] = 15
-  rw [h1, h2, h3]; norm_num
 
 /-! ### A chord tree with `t ≠ 0` and a nonzero value: the directed datum
 
@@ -1197,67 +651,5 @@ every `t` and the value of `F = {(0,2)}` at `n = 4` counts the labels `b` of the
 chord `b(in J) = b(out J)` (weight `t`) and every `M`-edge `s → BAnextSlot s` going from `x` to `x + 1`.  For
 `a = (0,1,0,1)` the root cycle `out → leaf 2 → leaf 3 → out` reads `b_out → 0 → 1 → b_out`, the node cycle
 `leaf 0 → leaf 1 → in → leaf 0` reads `0 → 1 → b_in → 0`: the only solution is `b_out = b_in = 2`, so the value is `t`. -/
-
-private def BAKCactus_Msh (_ : Bool) : Matrix (Zd 1 3) (Zd 1 3) ℂ :=
-  Matrix.of fun x y => if y 0 = x 0 + 1 then 1 else 0
-
-private theorem BAKCactus_Mss_zero (σ₁ σ₂ : Bool) : BAMssOf BAKCactus_Msh σ₁ σ₂ = 0 := by
-  ext x y
-  simp only [BAMssOf, BAKCactus_Msh, Matrix.of_apply, Matrix.zero_apply]
-  generalize x 0 = u
-  generalize y 0 = w
-  have key : ∀ u w : ZMod 3, u = w + 1 → w = u + 1 → False := by decide
-  by_cases h1 : u = w + 1
-  · by_cases h2 : w = u + 1
-    · exact (key u w h1 h2).elim
-    · simp [h2]
-  · simp [h1]
-
-private theorem BAKCactus_Theta_one (t : ℝ) (σ₁ σ₂ : Bool) : BAThetaOf BAKCactus_Msh t σ₁ σ₂ = 1 := by
-  simp [BAThetaOf, PropThetaQ, BAKCactus_Mss_zero]
-
-private instance BAKCactus_uniqueF02 : Unique ↥BAKCactus_F02set :=
-  ⟨⟨⟨_, BAKCactus_F02mem⟩⟩, fun J => Subtype.ext (Finset.mem_singleton.1 J.2)⟩
-
-set_option maxRecDepth 100000 in
-private theorem BAKCactus_card_F02 :
-    (Finset.univ.filter fun x : BAslot BAKCactus_F02set → Zd 1 3 =>
-      (∀ ℓ : Fin 4, ![![0], ![1], ![0], ![1]] ℓ = x (BAslotLeaf BAKCactus_F02set ℓ)) ∧
-        x (BAslotIn BAKCactus_F02set default) = x (BAslotOut BAKCactus_F02set default) ∧
-          ∀ s, x (BAKCactus_nextM s) 0 = x s 0 + 1).card = 1 := by
-  decide
-
-/-- **A chord tree has a nonzero value at `t = 1/2`**: `Γ_M({(0,2)}) = t = 1/2` at the directed datum (the label sum is
-the single term `b_out = b_in = 2`; the six `M`-edges and the chord are the ones of `BAnextSlot`, `BAKCactus_next_eq`). -/
-private theorem BAKCactus_val_F02 : BACactusVal 1 3 BAKCactus_Msh (1 / 2) BAKCactus_F02set
-    ![true, true, false, true] ![![0], ![1], ![0], ![1]] = 1 / 2 := by
-  unfold BACactusVal KLgval
-  simp only [BACactusValLeafW, BAKCactus_Theta_one, BACactusValEdgeW]
-  have hsum : ∀ x : BAslot BAKCactus_F02set → Zd 1 3,
-      (∏ ℓ, (1 : Matrix (Zd 1 3) (Zd 1 3) ℂ) (![![0], ![1], ![0], ![1]] ℓ) (x (BAslotLeaf BAKCactus_F02set ℓ))) *
-        ∏ e, ((fun J => ((1 / 2 : ℝ) : ℂ) • (1 : Matrix (Zd 1 3) (Zd 1 3) ℂ)) ⊕ᵥ
-          fun s => BAKCactus_Msh (BAMcharge BAKCactus_F02set ![true, true, false, true] s))
-            e (x (BACactusValSrc BAKCactus_F02set e)) (x (BACactusValTgt BAKCactus_F02set e)) =
-      if (∀ ℓ : Fin 4, ![![0], ![1], ![0], ![1]] ℓ = x (BAslotLeaf BAKCactus_F02set ℓ)) ∧
-          x (BAslotIn BAKCactus_F02set default) = x (BAslotOut BAKCactus_F02set default) ∧
-          ∀ s, x (BAKCactus_nextM s) 0 = x s 0 + 1 then (1 / 2 : ℂ) else 0 := by
-    intro x
-    rw [Fintype.prod_sum_type]
-    simp only [Fintype.prod_unique, Sum.elim_inl, Sum.elim_inr, BACactusValSrc, BACactusValTgt, BAKCactus_next_eq,
-      Matrix.one_apply, BAKCactus_Msh, Matrix.of_apply, id, Matrix.smul_apply, smul_eq_mul]
-    simp only [Finset.prod_boole, Finset.mem_univ, forall_true_left]
-    split_ifs <;> simp_all
-  rw [Finset.sum_congr rfl fun x _ => hsum x, Finset.sum_ite, Finset.sum_const_zero, add_zero, Finset.sum_const,
-    BAKCactus_card_F02, one_smul]
-
-example : BACactusVal 1 3 BAKCactus_Msh (1 / 2) BAKCactus_F02set ![true, true, false, true]
-    ![![0], ![1], ![0], ![1]] = 1 / 2 := BAKCactus_val_F02
-
-example : BAGamma 1 3 4 BAKCactus_Msh (1 / 2) BAKCactus_F02set ![true, true, false, true]
-    ![![0], ![1], ![0], ![1]] ≠ 0 := by
-  rw [BAGamma_eq, BAKCactus_val_F02]
-  norm_num
-
-end KCactusInst
 
 end RBM.BA

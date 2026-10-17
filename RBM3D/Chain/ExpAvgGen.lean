@@ -37,8 +37,6 @@ Every other helper is `private` or prefixed `ExpAvgGen_`.
 open private expAvg_integral_slice expAvg_integrable_of_cont_bdd expAvg_integrable_coord_smul expAvg_norm_trace_mul3_le
   from RBM3D.Induction.ExpAvg
 
-open private Step6KitGen_K1_band from RBM3D.Chain.Step6KitGen
-
 noncomputable section
 
 open MeasureTheory ProbabilityTheory Filter Matrix
@@ -109,15 +107,6 @@ def STImproveCoregL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
       ∀ u : ℕ → ℝ, (∀ n, 0 ≤ u n) → (∀ n, u n ≤ T0 sz z n) →
         LWAvgLawgL (mk sz z) (law sz) u → STLKgL (mk sz z) (law sz) u → ExpAvgGen_W1iii (mk sz z) (law sz) u →
           STExpAvgAtgL (mk sz z) (law sz) u
-
-/-- **Family row 15** (target 16b only): W1 (iii) follows from `LWAvgLawgL` at the same time.  Band: `ExpAvgGen_band_W1iiiOfLW`; BA: not read (BA goes
-through 16a, V1-BA). -/
-def ExpAvgGen_W1iiiOfLW (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
-    (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
-    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
-  ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → Flow sz κ ε 𝔠 𝔡 z →
-    ∀ u : ℕ → ℝ, (∀ n, 0 ≤ u n) → (∀ n, u n ≤ T0 sz z n) →
-      LWAvgLawgL (mk sz z) (law sz) u → ExpAvgGen_W1iii (mk sz z) (law sz) u
 
 /-! ## 2. Transport between the fine lattice and the block-product index -/
 
@@ -873,12 +862,6 @@ private theorem ExpAvgGen_prob (hR : CltRepg C μ H₀ g' E) : IsProbabilityMeas
   rw [hR.1]
   exact Sizes.isProbabilityMeasure_seqP (sz.withLam g')
 
-/-- A bounded measurable function is integrable. -/
-private theorem ExpAvgGen_int_of_bdd (hR : CltRepg C μ H₀ g' E) {f : sz.SeqΩ → ℂ} (hm : Measurable f) {B : ℝ} (hB : ∀ ω, ‖f ω‖ ≤ B) :
-    Integrable f μ := by
-  have := ExpAvgGen_prob hR
-  exact Integrable.of_bound hm.aestronglyMeasurable B (Filter.Eventually.of_forall hB)
-
 /-- Average of `W^d` terms bounded by `B`. -/
 private theorem ExpAvgGen_avg_le {ι : Type*} (W : ℕ) [NeZero W] (S : Finset ι) (hS : S.card = W ^ d) {f : ι → ℂ} {B : ℝ}
     (hB : ∀ x ∈ S, ‖f x‖ ≤ B) : ‖(((W : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ S, f x‖ ≤ B := by
@@ -1402,186 +1385,11 @@ theorem stImproveCoregL_of {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
     exact hmain a
   · simpa using hmain a
 
-/-- **Target 16b** (`stImproveExpAvergL_of`): the merged row-a pin `STImproveExpAvergL` from the family texts rows 9 + 14 and row 15 (W1 (iii) from
-`LWAvgLawgL`; band-type carriers). -/
-theorem stImproveExpAvergL_of {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
-    {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop} {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz}
-    {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ} (hFF : Step5CasesGen_FlowFacts d Flow mk T0) :
-    ExpAvgGen_W1fam d law Flow mk → ExpAvgGen_W1iiiOfLW d law Flow mk T0 → STImproveExpAvergL d law Flow mk T0 :=
-  fun hW1 hrow hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 huT hLW hLK =>
-    stImproveCoregL_of hFF hW1 hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 huT hLW hLK (hrow κ ε 𝔠 𝔡 sz z hκ hflow u hu0 huT hLW)
-
-/-- **Target 16c** (`stExpAvgUgL_of_core`): `(res_ELK_n=1)` uniformly in `u ∈ [s,t]` from the per-time core at the flow and W1 (iii) at every `u ∈ [s,t]`
-(`st6_expAvgU_of_ping` with `hAvg` replaced by `STImproveCoregL` and the premise `hiii`; the hook V1-BA feeds from TL1). -/
-theorem stExpAvgUgL_of_core {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
-    {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop} {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz}
-    {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ} (hCore : STImproveCoregL d law Flow mk T0) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ)
-    (hε : 0 < ε) (h𝔡 : 0 < 𝔡) {sz : Sizes d} {z : ℕ → ℂ} (hflow : Flow sz κ ε 𝔠 𝔡 z) (hμ : IsProbabilityMeasure (law sz)) (hsz : sz.SizeTendsto)
-    (hK1 : ∀ (n : ℕ) (τ : ℝ) (a : Zd d (sz.L n)), 0 ≤ τ → τ < 1 →
-      (mk sz z).K n τ (fun _ : Fin 1 => true) (fun _ => a) = (mk sz z).m n)
-    {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (htT : ∀ n, t n ≤ T0 sz z n) (ht1 : ∀ n, t n < 1)
-    (hS2 : STStep2CoregL (mk sz z) (law sz) s t) (hLKU : STLKUgL (mk sz z) (law sz) s t)
-    (hiii : ∀ u : ℕ → ℝ, (∀ n, s n ≤ u n) → (∀ n, u n ≤ t n) → ExpAvgGen_W1iii (mk sz z) (law sz) u) :
-    STExpAvgUgL (mk sz z) (law sz) s t := by
-  refine st6_precU_of_forall_seqg sz (law sz) hμ hsz (fun n => (hst n).le) (W := fun n => Bool × Zd d (sz.L n))
-    (fun n u w => ‖(∫ ω, (mk sz z).L n u (fun _ : Fin 1 => w.1) (fun _ => w.2) ω ∂(law sz)) -
-      (if w.1 then (mk sz z).m n else (starRingEnd ℂ) ((mk sz z).m n))‖) (fun n u _ => (sz.Bctl n u) ^ 2) ?_
-  intro u hsu hut
-  exact hCore hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u (fun n => (hs0 n).trans (hsu n)) (fun n => (hut n).trans (htT n))
-    (LWAvgLawgL_of_STAvgUgL_at (mk sz z) hsu hut hK1 hs0 ht1 hS2.2) (STLKgL_of_STLKUgL_at (mk sz z) hsu hut hLKU) (hiii u hsu hut)
-
 /-! ## 9. The band discharge of the family texts (`bandFM`, `H₀ = 0`, `g' = sz.lam`) and the band pin through 16b -/
-
-section Band
-
-variable {d : ℕ}
-
-private theorem ExpAvgGen_band_W1i (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| ≤ 2) (n : ℕ) :
-    ExpAvgGen_W1i (bandFM sz E) (fun _ => 0) sz.lam E n := by
-  have hW : ((sz.W n : ℕ) : ℂ) ^ d ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.2 (NeZero.ne _))
-  refine ⟨rfl, ?_, fun a => ?_⟩
-  · have hM : (Matrix.of fun x y : Idx d (sz.L n) (sz.W n) => (bandFM sz E).M n x y) =
-        mE (E n) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) := by
-      ext x y; by_cases h : x = y <;> simp [bandFM, h, Matrix.one_apply]
-    rw [hM, show (bandFM sz E).m n = mE (E n) from rfl]
-    show ((0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) - ((E n : ℂ) + mE (E n)) • 1) * (mE (E n) • 1) = 1
-    have := spectralM_mul (hE n)
-    have h1 : -(((E n : ℂ) + mE (E n)) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) *
-        (mE (E n) • 1) = (-(((E n : ℂ) + mE (E n)) * mE (E n))) • 1 := by
-      simp [Matrix.smul_mul, Matrix.mul_smul, smul_smul, neg_smul, mul_comm]
-    rw [zero_sub, h1, show -((↑(E n) + mE (E n)) * mE (E n)) = 1 by linear_combination -this, one_smul]
-  · simp only [bandFM, ite_true, Finset.sum_const, nsmul_eq_mul]
-    rw [card_Iblk]
-    push_cast
-    field_simp
-
-private theorem ExpAvgGen_band_flowE {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) : |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (z := z n) (lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (h.2 n).2.1)).trans (h.2 n).1
-
-/-- **Family rows 9 + 14 with (iv) at the band tuple** `(seqP, STFlow, bandFM ∘ STflowE)`, every flow: `Cs` is `ekSameRow_holds d 𝔡⁻¹ (√(2κ)/2)`, `CM = 1`. -/
-theorem ExpAvgGen_band_W1fam (d : ℕ) :
-    ExpAvgGen_W1fam d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨C, hC, H⟩ := ekSameRow_holds d 𝔡⁻¹ (Real.sqrt (2 * κ) / 2) hd (inv_pos.2 h𝔡) (by positivity)
-  refine ⟨C, 1, hC, one_pos, fun 𝔠 sz z h => ⟨fun _ => 0, sz.lam, STflowE z, cltRepg_band sz _,
-    fun n => ExpAvgGen_band_W1i sz _ (fun n => (ExpAvgGen_band_flowE h n).trans (by linarith)) n, ?_, ?_⟩⟩
-  · filter_upwards [(h.1.2.2.2.2 : sz.WO 𝔡)] with n hn σ s t hs hst ht a
-    have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
-    have hm : ‖mE (STflowE z n)‖ = 1 := norm_mE (by linarith [ExpAvgGen_band_flowE h n])
-    rw [Step2Kern_uKer_band]
-    have h' := H (sz.L n) (sz.three_le_L n) (sz.lam n) (lt_of_lt_of_le (Real.rpow_pos_of_pos hW _) hn.1) hn.2 (mE (STflowE z n)) hm
-      (st6_mE_im_ge hκ (ExpAvgGen_band_flowE h n)) σ s t hs hst ht
-    exact (RBM.sum_norm_row_le _ a).trans (by simpa [mSigma, PropSpin] using h')
-  · refine Filter.Eventually.of_forall fun n a => ?_
-    have hm : ‖mE (STflowE z n)‖ = 1 := norm_mE (by linarith [ExpAvgGen_band_flowE h n])
-    have hMB : ∀ q, ExpAvgGen_MB (bandFM sz (STflowE z)) n a q = if a = q then mE (STflowE z n) else 0 := fun q => by
-      simp [ExpAvgGen_MB, bandFM, Equiv.apply_eq_iff_eq]
-    simp only [hMB, apply_ite norm, norm_zero, Finset.sum_ite_eq, Finset.mem_univ, ite_true, hm, le_refl]
-
-/-- Band (`M = m • 1`): `t_{aq} - M^{(++)}_{aq} = δ_{aq} m (ḡ_a - m)`, `ḡ_a = W^{-d} Σ_{x∈[a]} G_xx`. -/
-private theorem ExpAvgGen_band_collapse (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) (a q : Zd d (sz.L n)) :
-    ExpAvgGen_tM (bandFM sz E) n u ω a q - Step2Kern_Mss (bandFM sz E) n true true a q =
-      if a = q then mE (E n) * ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, (bandFM sz E).G n u ω x x - mE (E n)) else 0 := by
-  have hMss := congrFun (congrFun (Step2Kern_Mss_band sz E n true true) a) q
-  simp only [mSigma, ite_true, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero] at hMss
-  unfold ExpAvgGen_tM
-  by_cases haq : a = q
-  · subst haq
-    rw [hMss]
-    simp only [↓reduceIte]
-    have : ∀ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) a, (bandFM sz E).M n x y * (bandFM sz E).G n u ω y x =
-        mE (E n) * (bandFM sz E).G n u ω x x := fun x hx => by
-      rw [Finset.sum_eq_single x (fun y _ hy => by simp [bandFM, Ne.symm hy]) (fun h => absurd hx h)]
-      simp [bandFM]
-    rw [Finset.sum_congr rfl this, ← Finset.mul_sum]
-    ring
-  · rw [hMss]
-    simp only [haq, ↓reduceIte, sub_zero]
-    refine mul_eq_zero_of_right _ (Finset.sum_eq_zero fun x hx => Finset.sum_eq_zero fun y hy => ?_)
-    have hxy : x ≠ y := fun h => haq (by rw [← (Finset.mem_filter.1 hx).2, ← (Finset.mem_filter.1 hy).2, h])
-    simp [bandFM, hxy]
-
-/-- **Family row 15 at the band tuple**: `LWAvgLawgL` gives W1 (iii) (`t_{aq} - M^{(++)}_{aq} = δ_{aq} m (ḡ_a - m)`, `‖m‖ = 1`, `ḡ_a = 𝓛^{(1)}_{+,a}`). -/
-theorem ExpAvgGen_band_W1iiiOfLW (d : ℕ) :
-    ExpAvgGen_W1iiiOfLW d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z))
-      (fun _ z n => lemT (z n)) := by
-  intro κ ε 𝔠 𝔡 sz z hκ h u hu0 huT hLW
-  have hLW' := StochDomAt.precomp_param hLW (fun n (p : Zd d (sz.L n) × Zd d (sz.L n)) => p.1)
-  refine StochDomAt.of_subset hLW' fun τ hτ => ⟨τ, hτ, Filter.Eventually.of_forall fun n ω ⟨⟨a, q⟩, hp⟩ => ⟨⟨a, q⟩, ?_⟩⟩
-  beta_reduce at hp ⊢
-  have hm : ‖mE (STflowE z n)‖ = 1 := norm_mE (by linarith [ExpAvgGen_band_flowE h n])
-  have hc := ExpAvgGen_band_collapse sz (STflowE z) n (u n) ω a q
-  by_cases hpq : a = q
-  · subst hpq
-    have hMB : ‖ExpAvgGen_MB (bandFM sz (STflowE z)) n a a‖ = 1 := by
-      simp [ExpAvgGen_MB, bandFM, hm]
-    have hR := cltRepg_band sz (STflowE z)
-    have hg : (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, (bandFM sz (STflowE z)).G n (u n) ω x x =
-        (bandFM sz (STflowE z)).L n (u n) (fun _ : Fin 1 => true) (fun _ => a) ω := by
-      rw [ExpAvgGen_L_eq hR n (u n) ω a]
-      simp only [(hR.2.2 n (u n) ω).1]
-      rfl
-    simp only [↓reduceIte] at hc
-    rw [hc, hMB, norm_mul, hm, one_mul, hg, one_mul] at hp
-    exact hp
-  · have hMB : ExpAvgGen_MB (bandFM sz (STflowE z)) n a q = 0 := by
-      simp [ExpAvgGen_MB, bandFM, hpq]
-    simp only [hpq, ↓reduceIte] at hc
-    rw [hc, hMB] at hp
-    simp at hp
-
-/-- The band pin `STImproveExpAver` (`stImproveExpAver_holds`) re-derived through 16b at the band tuple. -/
-theorem stImproveExpAver_of_gL (d : ℕ) : STImproveExpAver d :=
-  fun hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hut hLW hLK =>
-    stImproveExpAvergL_of (step5CasesGen_flowFacts_band d) (ExpAvgGen_band_W1fam d) (ExpAvgGen_band_W1iiiOfLW d)
-      hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hut hLW hLK
-
-end Band
 
 /-! ## 10. Compiled nonempty instances at `d = 3`, the band tuple `(sz0, z0)`, `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`, `u ≡ 1/16`
 
 Every deterministic premise is discharged (`3 ≤ 3`, `0 < 1/10`, `flow_z0`, `0 ≤ 1/16 ≤ lemT`, the band texts); the stochastic pins `LWAvgLawgL`,
 `STLKgL`, `ExpAvgGen_W1iii` (16a) and `STStep2CoregL`, `STLKUgL` (16c) stay hypotheses of the examples. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- The family texts rows 9 + 14 with (iv) at `(sz0, z0)`: `Cs, CM > 0`, `CltRepg`, (i) for every `n`, (ii), (iv). -/
-example : ∃ Cs CM : ℝ, 0 < Cs ∧ 0 < CM ∧ ∃ (H₀ : ∀ n, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) (g' E : ℕ → ℝ),
-    CltRepg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) H₀ g' E ∧ (∀ n, ExpAvgGen_W1i (bandFM sz0 (STflowE z0)) H₀ g' E n) ∧
-      ExpAvgGen_W1ii (bandFM sz0 (STflowE z0)) Cs ∧ ExpAvgGen_W1iv (bandFM sz0 (STflowE z0)) CM := by
-  obtain ⟨Cs, CM, hCs, hCM, H⟩ := ExpAvgGen_band_W1fam 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨Cs, CM, hCs, hCM, H (1 / 6) sz0 z0 flow_z0⟩
-
-/-- **Target 16a**, `stImproveCoregL_of` at `(sz0, z0, u ≡ 1/16)`. -/
-example (hLW : LWAvgLawgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) (hLK : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst)
-    (hiii : ExpAvgGen_W1iii (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) :
-    STExpAvgAtgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst :=
-  stImproveCoregL_of (step5CasesGen_flowFacts_band 3) (ExpAvgGen_band_W1fam 3) (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sz0_ht hLW hLK hiii
-
-/-- **Target 16b**, `stImproveExpAvergL_of` at `(sz0, z0, u ≡ 1/16)` (W1 (iii) from row 15). -/
-example (hLW : LWAvgLawgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) (hLK : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) :
-    STExpAvgAtgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst :=
-  stImproveExpAvergL_of (step5CasesGen_flowFacts_band 3) (ExpAvgGen_band_W1fam 3) (ExpAvgGen_band_W1iiiOfLW 3) (by norm_num) (1 / 10) (1 / 10)
-    (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sz0_ht hLW hLK
-
-/-- **Target 16c**, `stExpAvgUgL_of_core` at `(sz0, z0, 0, 1/16)`: the core is 16a at the band, W1 (iii) at every `u ∈ [0, 1/16]` is row 15. -/
-example (hS2 : STStep2CoregL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hLKU : STLKUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    STExpAvgUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst :=
-  stExpAvgUgL_of_core (stImproveCoregL_of (step5CasesGen_flowFacts_band 3) (ExpAvgGen_band_W1fam 3)) (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 inferInstance sz0_tendsto (Step6KitGen_K1_band sz0 (STflowE z0))
-    sz0_hs0 sz0_hst sz0_ht (fun n => by simp only [tInst]; norm_num) hS2 hLKU
-    (fun u hsu hut => ExpAvgGen_band_W1iiiOfLW 3 (1 / 10) (1 / 10) (1 / 6) (1 / 10) sz0 z0 (by norm_num) flow_z0 u
-      (fun n => (sz0_hs0 n).trans (hsu n)) (fun n => (hut n).trans (sz0_ht n))
-      (LWAvgLawgL_of_STAvgUgL_at (bandFM sz0 (STflowE z0)) hsu hut (Step6KitGen_K1_band sz0 (STflowE z0)) sz0_hs0
-        (fun n => by simp only [tInst]; norm_num) hS2.2))
-
-/-- The band pin `STImproveExpAver` at `d = 3` through 16b. -/
-example : STImproveExpAver 3 := stImproveExpAver_of_gL 3
-
-end Instances
 
 end RBM.BA

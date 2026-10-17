@@ -102,29 +102,7 @@ private theorem la2_card_ball_le (a : Zd d L) :
     _ = T.card ^ d := by simp [Fintype.card_piFinset]
     _ ≤ 3 ^ d := Nat.pow_le_pow_left hT d
 
-/-- Trace cyclicity: `𝓛_{(-,+),(a,b)} = 𝓛_{(+,-),(b,a)}`. -/
-private theorem la2_loopFine_mp_eq_pm (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
-    (a b : Zd d L) :
-    loopFine d L W H z ![false, true] ![a, b] = loopFine d L W H z ![true, false] ![b, a] := by
-  unfold loopFine loopM
-  simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one,
-    Matrix.cons_val_zero, Matrix.cons_val_succ]
-  exact Matrix.trace_mul_comm _ _
-
 end Toolbox
-
-section Det
-
-variable {d : ℕ} (sz : Sizes d)
-
-/-- Trace cyclicity at the model level: `‖𝓛_{(+,-),(a,b)}‖ = ‖𝓛_{(-,+),(b,a)}‖`: this is how
-the `(+,-)` charge of `STgexRHS` reduces to the `(-,+)` of `(eq:L2_decay)`. -/
-private theorem la2_loop_pm (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (a b : Zd d (sz.L n)) :
-    sz.Lloop n E u ![true, false] ![a, b] ω = sz.Lloop n E u ![false, true] ![b, a] ω := by
-  unfold Lloop
-  rw [la2_loopFine_mp_eq_pm]
-
-end Det
 
 section DetG
 
@@ -309,52 +287,6 @@ theorem localAvg2_entry_leG (n : ℕ) (u ε₀ : ℝ) (ω : sz.SeqΩ) (x y : Idx
 
 end DetG
 
-section DetB
-
-variable {d : ℕ} (sz : Sizes d)
-
-/-- **The right side of `(GijGEX)` is `≤ C · X · W^{-d} B_{u,|a-b|}`**: the band case of `localAvg2_rhs_leG`. -/
-theorem localAvg2_rhs_le (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (a b : Zd d (sz.L n)) {X cB : ℝ}
-    (hX : 1 ≤ X) (hcB : 0 < cB) (hlow : cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u)
-    (hL : ∀ a' b' : Zd d (sz.L n), ‖Lloop sz n E u ![false, true] ![a', b'] ω‖ ≤
-      X * STWB sz n u (zdistInf d (sz.L n) (a' - b'))) :
-    STgexRHS sz n E u ω a b ≤
-      (2 * 3 ^ d * 3 ^ d * 3 ^ (d - 2) + 2 ^ (d - 2) * cB⁻¹) * X *
-        STWB sz n u (zdistInf d (sz.L n) (a - b)) :=
-  localAvg2_rhs_leG (bandFM sz fun _ => E) n u ω a b hX hcB hlow (fun a b => la2_loop_pm sz n E u ω a b) hL
-
-/-- `STGM` off the diagonal is the resolvent entry. -/
-private theorem la2_stGM_ne (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) {x y : Idx d (sz.L n) (sz.W n)}
-    (h : x ≠ y) : STGM sz n E τ ω x y = Gt sz n E τ true ω x y := by
-  simp [STGM, h]
-
-/-- **The pointwise bound `|(G_u - M)_{xy}|² ≤ Y · C X · W^{-d} B_{u,|[x]-[y]|}`** on the intersection
-of the four events (`Ω`, `(GijGEX)`, `(GiiGEX)`, `(eq:L2_decay)`), the indicator being `1` on
-`Ω`: off the diagonal by `(GijGEX)` and `localAvg2_rhs_le`, on the diagonal by `(GiiGEX)` and
-`max_{a,b} ‖𝓛^{(2)}‖ ≤ X W^{-d} B_{u,0}`. -/
-theorem localAvg2_entry_le (n : ℕ) (E u ε₀ : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n))
-    {X Y cB : ℝ} (hX : 1 ≤ X) (hY : 0 ≤ Y) (hcB : 0 < cB)
-    (hlow : cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u)
-    (hΩ : ∀ x y : Idx d (sz.L n) (sz.W n), ‖STGM sz n E u ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀))
-    (hij : ∀ p : {p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) // p.1 ≠ p.2},
-      STindMax sz n E u (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω * ‖Gt sz n E u true ω p.1.1 p.1.2‖ ^ 2 ≤
-        Y * STgexRHS sz n E u ω (STblk sz n p.1.1) (STblk sz n p.1.2))
-    (hii : ∀ p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
-      STindMax sz n E u (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω * ‖STGM sz n E u ω p.1 p.2‖ ^ 2 ≤
-        Y * STmaxLoop2 sz n E u ω)
-    (hL : ∀ a b : Zd d (sz.L n), ‖Lloop sz n E u ![false, true] ![a, b] ω‖ ≤
-      X * STWB sz n u (zdistInf d (sz.L n) (a - b))) :
-    ‖STGM sz n E u ω x y‖ ^ 2 ≤
-      Y * ((2 * 3 ^ d * 3 ^ d * 3 ^ (d - 2) + 2 ^ (d - 2) * cB⁻¹) * X) *
-        STWB sz n u (zdistInf d (sz.L n) (STblk sz n x - STblk sz n y)) :=
-  localAvg2_entry_leG (bandFM sz fun _ => E) n u ε₀ ω x y hX hY hcB hlow hΩ
-    (fun p => by
-      have h := hij p
-      rw [← la2_stGM_ne sz n E u ω p.2] at h
-      exact h) hii (fun a b => la2_loop_pm sz n E u ω a b) hL
-
-end DetB
-
 /-! ## 2. Item 3: `(Gt_bound_flow)` per time -/
 
 section Item3
@@ -434,29 +366,6 @@ theorem stStep2LocalPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Meas
   exact localAvg1_perTime_of_stoch (hPrec.precomp_param
     (V := fun n => Unit × (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))) (fun n p => p.2))
 
-/-- **`(Gt_bound_flow)` per time** (`3_5:455–460`): `|(G_u - M)_{xy}|² ≺ W^{-d} B_{u,|[x]-[y]|}`,
-uniformly in `u ∈ [s,t]` (per time), from `(GiiGEX)`, `(GijGEX)` of `lem_GbEXP`
-(`stGbEXP_holds`), `(eq:L2_decay)` (`STL2decayPT`) and the weak law `(Gtmwc)` (`STStep1Weak`, which
-removes the indicator `1(Ω(u, ε₀))`).  At a time section `u` and `τ > 0` the four events (`Ω`,
-`(GijGEX)`, `(GiiGEX)`, `(eq:L2_decay)`, the last three at the exponent `τ/3`) hold simultaneously
-w.h.p.; on them `|(G_u - M)_{xy}|² ≤ N^{τ/3} (C N^{τ/3}) W^{-d} B_{u,|[x]-[y]|}` with the constant
-`C = 2·3^d·3^d·3^{d-2} + 2^{d-2} cB⁻¹` of `localAvg2_rhs_le` (`localAvg2_entry_le`), which is
-`≤ N^τ W^{-d} B_{u,|[x]-[y]|}` once `C ≤ N^{τ/3}`.  The hypothesis `3 ≤ d` is that of
-`stGbEXP_holds` (DECISIONS §36).  The band case of `stStep2LocalPT_of_L2decayG`. -/
-theorem stStep2LocalPT_of_L2decay (hd : 3 ≤ d) {κ ε 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
-    {𝔠 : ℝ} {sz : Sizes d} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
-    {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (htl : ∀ n, t n ≤ lemT (z n))
-    (hweak : STStep1Weak sz (STflowE z) s t) (hL2 : STL2decayPT sz (STflowE z) s t) :
-    STStep2LocalPT sz (STflowE z) s t := by
-  have hd0 : 0 < d := by omega
-  obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data hd0 hκ hε h𝔡 𝔠
-  exact stStep2LocalPT_of_L2decayG (bandStep2Data sz z) sz.seqP hd0 hflow hs hst htl
-    ⟨cB, c, hcB, hc, hdat sz z hflow⟩
-    (fun u hu0 hul ε₀ hε₀ => (Green.stGbEXP_holds hd).1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (fun u hu0 hul ε₀ hε₀ => (bandFM_STGijGEX sz (STflowE z) u ε₀).1
-      ((Green.stGbEXP_holds hd).2.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀))
-    hweak hL2
-
 end Item3
 
 /-! ## 3. Item 4: the pin `STLocalAvgOfL2` -/
@@ -514,113 +423,3 @@ end RBM.Gauss.Sizes
 As in `LocalAvg1.lean`: the merged flow instance `(sz0, z0)`, the window `s ≡ 0`, `t ≡ 1/16`; the
 random hypotheses `STStep1Weak`, `STL2decayPT` stay hypotheses (other gates' outputs), and the other
 pins of `ST_step2_of_pins'` stay hypotheses of the last example. -/
-
-namespace RBM.Gauss.LocalAvg2Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.Step2IterateInst RBM.Gauss.Step2DefsInst RBM.BA Filter
-
-/-- **Item 3 at the data**: `(Gt_bound_flow)` per time on `[0, 1/16]`. -/
-example (hweak : STStep1Weak sz0 (STflowE z0) sInst tInst)
-    (hL2 : STL2decayPT sz0 (STflowE z0) sInst tInst) :
-    STStep2LocalPT sz0 (STflowE z0) sInst tInst :=
-  stStep2LocalPT_of_L2decay (by norm_num : 3 ≤ 3) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 hs0 hst htT hweak hL2
-
-/-- **Item 4 at the data**: the pin `STLocalAvgOfL2 3` applied at `(sz0, z0, s ≡ 0, t ≡ 1/16)`. -/
-example (hweak : STStep1Weak sz0 (STflowE z0) sInst tInst)
-    (hL2 : STL2decayPT sz0 (STflowE z0) sInst tInst) :
-    STStep2LocalPT sz0 (STflowE z0) sInst tInst ∧ STStep2AvgPT sz0 (STflowE z0) sInst tInst :=
-  stLocalAvgOfL2_holds (by norm_num : 3 ≤ 3) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 sInst tInst hs0 hst htT hweak hL2
-
-/-- **`ST_step2_of_pins'` with `stLocalAvgOfL2_holds`** at `d = 3`: the pin `STLocalAvgOfL2` is no
-longer a hypothesis of Step 2 (the other pins stay hypotheses). -/
-example (hNew : STNewKLK 3) (hLWT : STLWT 3) (hEMe : STEMn2Exp 3) (hMart : STGridMart 3)
-    (hOpt : STOptL2 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_of_pins' hNew hLWT hEMe hMart hOpt (stLocalAvgOfL2_holds (by norm_num)))
-
-/-- The consumer is under `3 ≤ d` for every `d` (DECISIONS §36 (ii)): `STStep2 d := 3 ≤ d → …`. -/
-example {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d) (hMart : STGridMart d)
-    (hOpt : STOptL2 d) : STStep2 d := fun hd3 =>
-  ST_step2_of_pins' hNew hLWT hEMe hMart hOpt (stLocalAvgOfL2_holds hd3) hd3
-
-/-- **Item 3 over the carrier `bandStep2Data sz0 z0`** (`stStep2LocalPT_of_L2decayG`): `hdat`, `(GiiGEX)` and `(GijGEX)`
-(`stGbEXP_holds` at `d = 3`, the latter converted by `bandFM_STGijGEX`) are discharged. -/
-example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
-    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :
-    STStep2LocalPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst :=
-  stStep2LocalPT_of_L2decayG (bandStep2Data sz0 z0) sz0.seqP (by norm_num : 0 < 3) flow_z0 hs0 hst htT
-    RBM.Gauss.LocalAvg1Inst.localAvg1_inst_hdat
-    (fun u hu0 hul ε₀ hε₀ => (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).1 (1 / 10) (1 / 10) (1 / 10)
-      (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 u hu0 hul ε₀ hε₀)
-    (fun u hu0 hul ε₀ hε₀ => (bandFM_STGijGEX sz0 (STflowE z0) u ε₀).1
-      ((Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).2.1 (1 / 10) (1 / 10) (1 / 10)
-        (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 u hu0 hul ε₀ hε₀))
-    hweak hL2
-
-/-- **Item 4 over the carriers `bandStep2Data`** (`stLocalAvgOfL2_holdsG`): the pin `STLocalAvgOfL2gL 3` at the band law,
-setting and horizon, applied at `(sz0, z0, s ≡ 0, t ≡ 1/16)`; the weak law and `(eq:L2_decay)` stay hypotheses. -/
-example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
-    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :
-    STStep2LocalPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst ∧
-      STStep2AvgPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst :=
-  stLocalAvgOfL2_holdsG (by norm_num : 0 < 3) (fun sz => sz.seqP) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Data sz z) (fun _ _ _ _ _ _ h => h)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow => by
-      obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data (by norm_num : 0 < 3) hκ hε h𝔡 𝔠
-      exact ⟨cB, c, hcB, hc, hdat sz z hflow⟩)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ => (bandFM_STGijGEX sz (STflowE z) u ε₀).1
-      ((Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).2.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀))
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 sInst tInst hs0 hst htT
-    hweak hL2
-
-/-- **`localAvg2_rhs_leG`** over `bandStep2Data sz0 z0` at `n = 0`, `u = 1/32`: `hL` (`localAvg1_inst_hL`), the trace cyclicity
-(`L_swap`) and `hlow` (`cB := W^d B_{u,0}`) are discharged for every sample `ω` and every `a, b`. -/
-example (ω : sz0.SeqΩ) (a b : Zd 3 (sz0.L 0)) :
-    ∃ X cB : ℝ, 1 ≤ X ∧ 0 < cB ∧ STgexRHSg (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω a b ≤
-      (2 * 3 ^ 3 * 3 ^ 3 * 3 ^ (3 - 2) + 2 ^ (3 - 2) * cB⁻¹) * X *
-        STWB sz0 0 (1 / 32) (zdistInf 3 (sz0.L 0) (a - b)) := by
-  obtain ⟨X, hX, hL⟩ := RBM.Gauss.LocalAvg1Inst.localAvg1_inst_hL (bandStep2Data sz0 z0).toFlowFM 0
-    (by norm_num : (1 / 32 : ℝ) < 1) ω
-  have hB := STBctl_pos sz0 0 (by norm_num : (1 / 32 : ℝ) < 1)
-  have hW : (0 : ℝ) < ((sz0.W 0 : ℕ) : ℝ) ^ 3 := by have := sz0.W_pos 0; positivity
-  exact ⟨X, sz0.Bctl 0 (1 / 32) * ((sz0.W 0 : ℕ) : ℝ) ^ 3, hX, by positivity,
-    localAvg2_rhs_leG (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω a b hX (by positivity)
-      (by rw [mul_assoc, mul_inv_cancel₀ hW.ne', mul_one])
-      (fun a b => (bandStep2Data sz0 z0).L_swap 0 (1 / 32) a b ω) hL⟩
-
-/-- **`localAvg2_entry_leG`** over `bandStep2Data sz0 z0` at `n = 0`, `u = 1/32`: `hX`, `hcB`, `hlow`, `hswap`, `hL` are discharged;
-the three event hypotheses `hΩ`, `hij`, `hii` (the outputs of `lem_GbEXP` and the weak law at the sample) stay hypotheses. -/
-example (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) (ε₀ Y : ℝ) (hY : 0 ≤ Y)
-    (hΩ : ∀ x y : Idx 3 (sz0.L 0) (sz0.W 0),
-      ‖(bandStep2Data sz0 z0).toFlowFM.GM 0 (1 / 32) ω x y‖ ≤ ((sz0.W 0 : ℕ) : ℝ) ^ (-ε₀))
-    (hij : ∀ p : {p : Idx 3 (sz0.L 0) (sz0.W 0) × Idx 3 (sz0.L 0) (sz0.W 0) // p.1 ≠ p.2},
-      STindMaxg (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) (((sz0.W 0 : ℕ) : ℝ) ^ (-ε₀)) ω *
-          ‖(bandStep2Data sz0 z0).toFlowFM.GM 0 (1 / 32) ω p.1.1 p.1.2‖ ^ 2 ≤
-        Y * STgexRHSg (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω (STblk sz0 0 p.1.1) (STblk sz0 0 p.1.2))
-    (hii : ∀ p : Idx 3 (sz0.L 0) (sz0.W 0) × Idx 3 (sz0.L 0) (sz0.W 0),
-      STindMaxg (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) (((sz0.W 0 : ℕ) : ℝ) ^ (-ε₀)) ω *
-          ‖(bandStep2Data sz0 z0).toFlowFM.GM 0 (1 / 32) ω p.1 p.2‖ ^ 2 ≤
-        Y * STmaxLoop2g (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω) :
-    ∃ X cB : ℝ, 1 ≤ X ∧ 0 < cB ∧ ‖(bandStep2Data sz0 z0).toFlowFM.GM 0 (1 / 32) ω x y‖ ^ 2 ≤
-      Y * ((2 * 3 ^ 3 * 3 ^ 3 * 3 ^ (3 - 2) + 2 ^ (3 - 2) * cB⁻¹) * X) *
-        STWB sz0 0 (1 / 32) (zdistInf 3 (sz0.L 0) (STblk sz0 0 x - STblk sz0 0 y)) := by
-  obtain ⟨X, hX, hL⟩ := RBM.Gauss.LocalAvg1Inst.localAvg1_inst_hL (bandStep2Data sz0 z0).toFlowFM 0
-    (by norm_num : (1 / 32 : ℝ) < 1) ω
-  have hB := STBctl_pos sz0 0 (by norm_num : (1 / 32 : ℝ) < 1)
-  have hW : (0 : ℝ) < ((sz0.W 0 : ℕ) : ℝ) ^ 3 := by have := sz0.W_pos 0; positivity
-  exact ⟨X, sz0.Bctl 0 (1 / 32) * ((sz0.W 0 : ℕ) : ℝ) ^ 3, hX, by positivity,
-    localAvg2_entry_leG (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ε₀ ω x y hX hY (by positivity)
-      (by rw [mul_assoc, mul_inv_cancel₀ hW.ne', mul_one]) hΩ hij hii
-      (fun a b => (bandStep2Data sz0 z0).L_swap 0 (1 / 32) a b ω) hL⟩
-
-end RBM.Gauss.LocalAvg2Inst

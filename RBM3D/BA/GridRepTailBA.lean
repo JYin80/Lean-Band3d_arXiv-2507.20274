@@ -668,16 +668,6 @@ theorem gridRepTailBA_AbCN_measurable (σ : Fin 2 → Bool) (j : ℕ) {η : ℝ}
   obtain ⟨-, hAm, -, -⟩ := stepDecompCN (sz.withLam 0) s t K n j hΦ hC₂ hΔ (fun _ a => κ a) b₀ hIntRe hIntIm
   exact hAm
 
-theorem gridRepTailBA_stepZCN_re (szz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
-    (Φ : ι → GridRepTailBA_Mat szz n → ℂ) (U : ι → ι → ℂ) (b₀ : ι) (ω : PathΩ szz) :
-    (stepZCN szz s t K n j Φ U b₀ ω).re = stepZCN_re szz s t K n j Φ U b₀ ω := by
-  simp [stepZCN]
-
-theorem gridRepTailBA_stepZCN_im (szz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
-    (Φ : ι → GridRepTailBA_Mat szz n → ℂ) (U : ι → ι → ℂ) (b₀ : ι) (ω : PathΩ szz) :
-    (stepZCN szz s t K n j Φ U b₀ ω).im = stepZCN_im szz s t K n j Φ U b₀ ω := by
-  simp [stepZCN]
-
 /-- `Re Σ_{bb'} κ_b κ̄_{b'} T_{bb'} ≤ (Σ|κ|)² M` when `|T_{bb'}| ≤ M`. -/
 theorem gridRepTailBA_quad_le {ι : Type*} [Fintype ι] (κ : ι → ℂ) (T : ι → ι → ℂ) {M : ℝ} (hM : 0 ≤ M)
     (hT : ∀ b b', ‖T b b'‖ ≤ M) :
@@ -1063,9 +1053,6 @@ theorem baStep2_STEEMg_eq {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : �
     STEEMg (baStep2Mat sz lam0 E) n u H σ a = STeeMg (baStep2Mat sz lam0 E) n u H σ a a :=
   gridRepTailBA_STEEMg_eq _ (gridRepTailBA_F1_ba sz lam0 E) n u H σ a
 
-/-- `filt (sz.withLam 0) j = filt sz j` (TL's `twMartInc` reads the former, `martIncNg` the latter). -/
-theorem baStep2_filt_withLam {d : ℕ} (sz : Sizes d) (j : ℕ) : filt (sz.withLam 0) j = filt sz j := rfl
-
 /-! ## 7. Target 6: the assembly `baGridRepNAt2_of_bridge` and `baGridRepNAt2_holds`
 
 Clause 1 holds at every `n` for `Mart_k = Σ_{j<k} ξ_{j+1}` and `Rem_k` the residual `A_k − A_0 − Δ Σ Drift − Mart_k` (UN-C5, CONTROL H256 (3):
@@ -1243,11 +1230,6 @@ end Assembly
 
 end RBM.BA
 
-namespace RBM.BA.GridRepTailBAInst
-
-open MeasureTheory ProbabilityTheory Filter RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
-  RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
 /-! ## 8. Target 7: compiled nonempty instances at `d = 3`
 
 The size data are the merged admissible sequence `sz0` (`d = 3`, `L_n = 4 (n+1)`, `W_n = (2 (n+1))^5`, `N_0 = 2097152`), the BA flow `zSeq` with
@@ -1255,142 +1237,5 @@ The size data are the merged admissible sequence `sz0` (`d = 3`, `L_n = 4 (n+1)`
 `Ker`, `Window`, `Inc`, `Hyp` hold at the BA carrier; target 4 gives `CK`, the grid `K_n = ⌈N_n^{CK}⌉ + 1` and the weighted tail bound `≤ N^{-1}`;
 target 6 gives the four clauses of the full loop-length-2 pin (with the bridge `baGridBridge_holds`); target 5 is applied at concrete labels.
 Every deterministic hypothesis is discharged; no hypothesis stays open. -/
-
-/-- The window `s ≡ 1/10`. -/
-def sI : ℕ → ℝ := fun _ => 1 / 10
-
-/-- The window `t ≡ 1/2`. -/
-def tI : ℕ → ℝ := fun _ => 1 / 2
-
-theorem hsI : ∀ n, 0 ≤ sI n := fun _ => by unfold sI; norm_num
-
-theorem hstI : ∀ n, sI n ≤ tI n := fun _ => by unfold sI tI; norm_num
-
-theorem htI : ∀ n, tI n ≤ BAflowT0 sz0 zSeq n := fun n => (half_lt_t0 n).le
-
-theorem hN1I (n : ℕ) : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast sz0.one_le_size n
-
-/-- `N_n^{1/10} ≥ 1 ≥ 1/4 = 1/(8 κ)` at `κ = 1/2`. -/
-theorem hεnI (n : ℕ) : 1 / (8 * (1 / 2 : ℝ)) ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) := by
-  have := Real.one_le_rpow (hN1I n) (by norm_num : (0 : ℝ) ≤ 1 / 10)
-  norm_num
-  linarith
-
-/-- The BA carrier of the instances. -/
-abbrev CmI : Step2Mat sz0 := baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)
-
-/-- **Targets 1 / 4 (the classes) at the data**: `GridRepTailGen_Ker` at the BA carrier along `zSeq`, every `n`. -/
-example : ∀ n, GridRepTailGen_Ker CmI.toFlowFM n := fun n =>
-  gridRepTailGen_ker_BA sz0 _ _ n (by norm_num : (0 : ℝ) < 1 / 2) (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n)
-
-/-- `GridRepTailGen_Window` at the BA carrier with `t ≡ 1/2`, every `n`. -/
-example (n : ℕ) : GridRepTailGen_Window CmI tI n :=
-  gridRepTailGen_window_BA (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 tI n (htI n) (by linarith [hN1I n]) (hεnI n)
-
-/-- `GridRepTailGen_Inc` at the BA carrier with `s ≡ 1/10`, `t ≡ 1/2`, every grid `K` and every `n`: the `Z`/`Y` split, the cross-label
-variance proxy and the two bounds of `STeeMg`. -/
-example (K : ℕ → ℕ) (n : ℕ) : GridRepTailGen_Inc CmI sI tI K n :=
-  gridRepTailGen_inc_BA sz0 _ _ sI tI K n
-    (BAm_norm_le_one 3 (sz0.L n) _ ((BAflowEs sz0 zSeq n : ℝ) : ℂ) _ (by simp)
-      (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n).1)
-    (hsI n) (hstI n)
-    (gridRepTailBA_eta (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 tI n (htI n) (by linarith [hN1I n]) (hεnI n))
-
-/-- `GridRepTailGen_Hyp` at the BA carrier along every flow datum (target 4's BA discharge), `d = 3`. -/
-example : GridRepTailGen_Hyp 3 BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 :=
-  gridRepTailGen_hyp_BA 3
-
-/-- **Target 4 at the data** (`sz0`, `zSeq`, `s ≡ 1/10`, `t ≡ 1/2`, `D = 1`, `ε' = 1/10`): the grid exponent `CK` it returns, the grid
-`K_n = ⌈N_n^{CK}⌉ + 1`, and the weighted two-slot tail bound `≤ N^{-1}` eventually, for every label `(σ, a)`; no hypothesis. -/
-theorem inst_baGridWTail2 :
-    ∃ CK : ℝ, 0 ≤ CK ∧ ∃ K : ℕ → ℕ, (∀ n, K n ≠ 0) ∧
-      (∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ CK ≤ K n) ∧
-      (∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)),
-        CmI.Pp {ω | ∃ k, k ≤ K n ∧
-          ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) *
-              (∑ j ∈ Finset.range k, gridStep sI tI K n *
-                ‖STeeUMg CmI n (gridTime sI tI K n j) (gridTime sI tI K n k) (CmI.Hpath sI tI K n j ω) i.1 i.2‖ +
-                ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ (1 / 2 : ℝ) <
-            ‖∑ j ∈ Finset.range k,
-              Step2Gen_UN CmI.toFlowFM n i.1 (gridTime sI tI K n j) (gridTime sI tI K n k)
-                (fun b => (∑ j' ∈ Finset.range (j + 1), martIncNg CmI sI tI K n j' i.1 ω b) -
-                  ∑ j' ∈ Finset.range j, martIncNg CmI sI tI K n j' i.1 ω b) i.2‖} ≤
-          ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)))) := by
-  obtain ⟨CK, hCK, h⟩ := baGridWTail2_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 sI tI hsI hstI htI 1 one_pos
-  have hK0 : ∀ n, ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1 ≠ 0 := fun n => Nat.succ_ne_zero _
-  have hKN : ∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ CK ≤ ((⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1 : ℕ) : ℝ) :=
-    Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _)
-  exact ⟨CK, hCK, fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1, hK0, hKN,
-    h (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) hK0 hKN (1 / 10) (by norm_num)⟩
-
-/-- **Target 5 at concrete labels** (`n = 0`, `σ = (false, true)`, `a ≡ 0`, `k = 2`, the grid `K ≡ 4`): the three list identities. -/
-example (ω : PathΩ sz0) :
-    STgAg CmI sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω = STgANg CmI sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω :=
-  baStep2_STgAg_eq sz0 _ _ sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω
-
-example (ω : PathΩ sz0) :
-    STgDriftg CmI sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω =
-      STgDriftNg CmI sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω :=
-  baStep2_STgDriftg_eq sz0 _ _ sI tI (fun _ => 4) 0 ![false, true] (fun _ => 0) 2 ω
-
-example (H : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :
-    STEEMg CmI 0 (1 / 4) H ![false, true] (fun _ => 0) = STeeMg CmI 0 (1 / 4) H ![false, true] (fun _ => 0) (fun _ => 0) :=
-  baStep2_STEEMg_eq sz0 _ _ 0 (1 / 4) H ![false, true] (fun _ => 0)
-
-/-- `filt (sz0.withLam 0) j = filt sz0 j`. -/
-example (j : ℕ) : filt (sz0.withLam 0) j = filt sz0 j := baStep2_filt_withLam sz0 j
-
-/-- **Target 6 at the data** (`d = 3`; `sz0`, `zSeq`, `s ≡ 1/10`, `t ≡ 1/2`, `D = 1`, `ε' = 1/10`): the four clauses of the full loop-length-2 pin
-(`baGridRepNAt2_holds 3`, with T2460's bridge): the constants `C₀`, `CK`, the grid `K_n = ⌈N_n^{CK}⌉ + 1`, a martingale and a remainder. -/
-theorem inst_baGridRepNAt2 :
-    ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∃ CK : ℝ, 0 ≤ CK ∧ ∃ K : ℕ → ℕ, (∀ n, K n ≠ 0) ∧
-      (∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ CK ≤ K n) ∧
-      ∃ Mart Rem : ∀ n, ((Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n))) → ℕ → PathΩ sz0 → ℂ,
-        (∀ (n : ℕ) (i : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n))), ∀ᵐ ω ∂CmI.Pp, ∀ k, k ≤ K n →
-          STgANg CmI sI tI K n i.1 i.2 k ω = STgANg CmI sI tI K n i.1 i.2 0 ω +
-            ((gridStep sI tI K n : ℝ) : ℂ) * ∑ j ∈ Finset.range k, STgDriftNg CmI sI tI K n i.1 i.2 j ω +
-            Rem n i k ω + Mart n i k ω) ∧
-        (∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)), ∀ᵐ ω ∂CmI.Pp, ∀ k, k ≤ K n →
-          ‖Rem n i k ω‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ C₀ * Real.sqrt (gridStep sI tI K n)) ∧
-        (∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)),
-          CmI.Pp {ω | ∃ k, k ≤ K n ∧
-            ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) *
-                (∑ j ∈ Finset.range k, gridStep sI tI K n *
-                  ‖STeeMg CmI n (gridTime sI tI K n j) (CmI.Hpath sI tI K n j ω) i.1 i.2 i.2‖ +
-                  ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ (1 / 2 : ℝ) < ‖Mart n i k ω‖} ≤
-            ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)))) ∧
-        (∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)),
-          CmI.Pp {ω | ∃ k, k ≤ K n ∧
-            ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) *
-                (∑ j ∈ Finset.range k, gridStep sI tI K n *
-                  ‖STeeUMg CmI n (gridTime sI tI K n j) (gridTime sI tI K n k) (CmI.Hpath sI tI K n j ω) i.1 i.2‖ +
-                  ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ (1 / 2 : ℝ) <
-              ‖∑ j ∈ Finset.range k,
-                Step2Gen_UN CmI.toFlowFM n i.1 (gridTime sI tI K n j) (gridTime sI tI K n k)
-                  (fun b => Mart n (i.1, b) (j + 1) ω - Mart n (i.1, b) j ω) i.2‖} ≤
-            ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)))) := by
-  obtain ⟨C₀, hC₀, h⟩ := baGridRepNAt2_holds 3
-  obtain ⟨CK, hCK, hK⟩ := h (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    sI tI hsI hstI htI 1 one_pos
-  have hK0 : ∀ n, ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1 ≠ 0 := fun n => Nat.succ_ne_zero _
-  have hKN : ∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ CK ≤ ((⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1 : ℕ) : ℝ) :=
-    Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _)
-  obtain ⟨Mart, Rem, h1, h2, h3, h4⟩ := hK (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) hK0 hKN
-  exact ⟨C₀, hC₀, CK, hCK, fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1, hK0, hKN, Mart, Rem, h1, h2,
-    h3 (1 / 10) (by norm_num), h4 (1 / 10) (by norm_num)⟩
-
-/-- **Target 6 (a) at `d = 3`**: the assembly applied to T2460's merged bridge `baGridBridge_holds 3` (the inline hypothesis of exact type is
-discharged). -/
-example : ∃ C₀ : ℝ, 0 ≤ C₀ ∧
-    STGridRepNAtgL 3 2 C₀ BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 :=
-  baGridRepNAt2_of_bridge 3 (baGridBridge_holds 3)
-
-/-- **Target 6 (b) at `d = 3`** (TN-C2, `T2459_P1`): the full pin, from the merged bridge. -/
-example : ∃ C₀ : ℝ, 0 ≤ C₀ ∧
-    STGridRepNAtgL 3 2 C₀ BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 :=
-  baGridRepNAt2_holds 3
-
-end RBM.BA.GridRepTailBAInst
 
 end

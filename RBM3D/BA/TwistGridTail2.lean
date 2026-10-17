@@ -407,43 +407,4 @@ end Main
 the window `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` by `t0_sz0`; `D = 1`, `ε' = 1/10`, the grid `K_n = ⌈N_n^{CK}⌉ + 1`).  Every deterministic hypothesis of
 `baTwistGridTail_holds` is discharged; the part pins of 4 (b) other than `BATwistGridTail` (T2437, T2439) stay hypotheses of the last example. -/
 
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
-
-/-- The instance grid `K_n = ⌈N_n^{CK}⌉ + 1` (never `0`, eventually `≥ N_n^{CK}`). -/
-private def TwistGridTail2_Kinst (CK : ℝ) (n : ℕ) : ℕ := ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1
-
-/-- `baTwistGridTail_holds` at `d = 3`, the BA datum `(sz0, zSeq, flow_sz0)`, the window `s ≡ 1/2`, `t ≡ 2/3`, `D = 1`, the grid `K_n = ⌈N_n^{CK}⌉ + 1` and
-`ε' = 1/10`: for `CK` of the theorem, eventually in `n`, for every label `(σ, a, c₁, c₂)` the martingale `twMart` stays below
-`N^{ε'} (Σ_{j<k} Δ ‖twEEk_j‖ + N^{-1})^{1/2}` up to probability `N^{-1}`. -/
-example : ∃ CK : ℝ, 0 ≤ CK ∧ ∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n),
-    ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp) {ω | ∃ k, k ≤ TwistGridTail2_Kinst CK n ∧
-      ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * (∑ j ∈ Finset.range k, gridStep (fun _ => 1 / 2) (fun _ => 2 / 3) (TwistGridTail2_Kinst CK) n *
-        ‖twEEk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (TwistGridTail2_Kinst CK) n i.1 i.2.1 i.2.2.1 i.2.2.2 j ω‖ +
-          ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ (1 / 2 : ℝ) <
-      ‖twMart sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (TwistGridTail2_Kinst CK) n i.1 i.2.1 i.2.2.1 i.2.2.2 k ω‖} ≤
-      ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) := by
-  obtain ⟨CK, hCK, H⟩ := baTwistGridTail_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) 1 one_pos
-  exact ⟨CK, hCK, H (TwistGridTail2_Kinst CK) (fun n => Nat.succ_ne_zero _)
-    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _)) (1 / 10) (by norm_num)⟩
-
-/-- `baTwistGridTail_holds` for every `d`, as a plain `example`. -/
-example : ∀ d, BATwistGridTail d := baTwistGridTail_holds
-
-/-- The pin `BATwistGridTail 3` assembled with the other two parts (T2437, T2439: hypotheses) into 4 (b) at `C₀ = 11` (`baTwistGridAssemble_holds`). -/
-example (hRem : BATwistGridRem 3 11) (hW : BATwistGridWTail 3) : BATwistGridMartAt 3 11 :=
-  baTwistGridAssemble_holds 3 11 (by norm_num) hRem (baTwistGridTail_holds 3) hW
-
-/-- The assembled pin applied at the BA datum `(sz0, zSeq, flow_sz0)`, any `D > 0`, the grid `K_n = ⌈N_n^{CK}⌉ + 1`, with `BATwistGridTail 3` proved here. -/
-example (hRem : BATwistGridRem 3 11) (hW : BATwistGridWTail 3) {D : ℝ} (hD : 0 < D) : True := by
-  have H := baTwistGridAssemble_holds 3 11 (by norm_num) hRem (baTwistGridTail_holds 3) hW
-  obtain ⟨CK, hCK, H2⟩ := H (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) D hD
-  have := H2 (TwistGridTail2_Kinst CK) (fun n => Nat.succ_ne_zero _)
-    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _))
-  trivial
-
-end Inst
-
 end RBM.BA

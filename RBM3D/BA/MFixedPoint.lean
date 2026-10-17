@@ -544,25 +544,6 @@ def BAmUniqReal : Prop :=
     haveI : NeZero L := ⟨by omega⟩
     BASelf d L g (E : ℂ) m → BASelf d L g (E : ℂ) m' → m = m'
 
-/-- **Pin BA-2, the boundary value** (`1_2:715`).  Owed: BA-D6. -/
-def BAmBoundary : Prop :=
-  ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → ∀ E : ℝ,
-    haveI : NeZero L := ⟨by omega⟩
-    (∀ m : ℂ, BASelf d L g (E : ℂ) m →
-      Tendsto (fun η : ℝ => BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)) (𝓝[>] (0 : ℝ)) (𝓝 m)) ∧
-    ((¬ ∃ m : ℂ, BASelf d L g (E : ℂ) m) →
-      Tendsto (fun η : ℝ => (BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)).im) (𝓝[>] (0 : ℝ)) (𝓝 0))
-
-/-- **Pin BA-1, Ward's identity row by row** (`(eq:WardM)`, `7_8:1869`), translation invariance, `M_aa = m`.
-Owed: BA-D3. -/
-def BAWard : Prop :=
-  ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → ∀ (z m : ℂ),
-    haveI : NeZero L := ⟨by omega⟩
-    0 ≤ z.im → BASelf d L g z m →
-      (∀ a b r : Zd d L, BAMB d L g z m (a + r) (b + r) = BAMB d L g z m a b) ∧
-      (∀ a : Zd d L, BAMB d L g z m a a = m) ∧
-      ∀ a : Zd d L, (m.im + z.im) * ∑ b, ‖BAMB d L g z m a b‖ ^ 2 = m.im
-
 /-- **`lem:propM`** (`7_8:1847-1912`) in the bulk `κ ≤ Im m`.  Owed: BA-D3 (items (1)(2)), BA-D4 (item (3)). -/
 def BAPropM (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ →
@@ -578,26 +559,6 @@ def BAPropM (Λ κ : ℝ) : Prop :=
               ‖BAMB d L g (E : ℂ) m a b‖ ≤ (C * g) ^ zdistD d L (a - b)) ∧
           ((2 * C)⁻¹ ≤ g → ∀ a b : Zd d L,
             ‖BAMB d L g (E : ℂ) m a b‖ ≤ c⁻¹ * Real.exp (-c * (zdistD d L (a - b) : ℝ)))
-
-/-- **`(eq:off_diagM)`** (`A:32-34`).  Owed: BA-D3. -/
-def BAoffDiag (Λ κ : ℝ) : Prop :=
-  3 ≤ d → 0 < Λ → 0 < κ →
-    ∃ ε : ℝ, 0 < ε ∧
-      ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
-        haveI : NeZero L := ⟨by omega⟩
-        BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
-          ε ≤ ‖1 - (t : ℂ) * m ^ 2‖ ∧
-          ∑ a ∈ Finset.univ.erase (0 : Zd d L), ‖BAMss d L (BAMB d L g (E : ℂ) m) true true 0 a‖
-            ≤ (1 - ε) * ‖1 - (t : ℂ) * m ^ 2‖
-
-/-- **The bridge of the bulk forms** (`[LeeSchSteYau2015, Lemma 3.5]`, internal).  Owed: BA-D7. -/
-def BAImmLower (Λ κ : ℝ) : Prop :=
-  3 ≤ d → 0 < Λ → 0 < κ →
-    ∃ c : ℝ, 0 < c ∧
-      ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
-        haveI : NeZero L := ⟨by omega⟩
-        BAReal d L g κ E m → ∀ η : ℝ, 0 < η → η ≤ 1 →
-          c ≤ (BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)).im
 
 end DetPins2
 
@@ -811,15 +772,6 @@ theorem BAm_self (d L : ℕ) [NeZero L] :
   intro g z hz
   exact BAm_spec (BASelf_exists d L g z hz)
 
-/-- `m(z, g)` is the merged free-convolution Stieltjes transform `freeConvST` of `v = BAspec d L g`,
-`t = 1` (`[32] (2.5)`). -/
-theorem BAm_eq_freeConvST (d L : ℕ) [NeZero L] :
-    ∀ (g : ℝ) (z : ℂ), 0 < z.im → BAm d L g z = RBM.Univ.freeConvST (BAspec d L g) 1 z := by
-  intro g z hz
-  have h := RBM.Univ.isFreeConv51_freeConvST (BAspec d L g) (t := 1) zero_le_one z hz
-  exact BASelf_unique d L g z _ _ hz.le (BAm_self d L g z hz)
-    ((BASelf_iff_freeConv d L g z _ hz.le).mpr h)
-
 /-- Unconditional form of the probe's `BAm_real_eq` (`:1740`): `m(E, g)` is any real-axis solution. -/
 theorem BAm_real_eq_of_self (d L : ℕ) [NeZero L] :
     ∀ (g E : ℝ) (m : ℂ), BASelf d L g (E : ℂ) m → BAm d L g (E : ℂ) = m := by
@@ -889,107 +841,11 @@ theorem exists_flowPt (L : ℕ) [NeZero L] {g : ℝ} (hg : 0 < g) : Nonempty (Fl
     Real.sqrt (BAt0 (zS L g) (mS L g)) * g, ?_, BAg0_le hg.le (zS_im_pos L g) hm, hself0, le_rfl⟩⟩
   exact mul_pos (Real.sqrt_pos.mpr ht0) hg
 
-/-- The flow point of `(L, g) = (4, 10)`. -/
-def P : FlowPt 4 10 := (exists_flowPt 4 (g := 10) (by norm_num)).some
-
 /-! ### The pins `BAmExists`, `BAmUniqReal` at the data -/
-
-/-- `baMExists_holds` at `(d, L, g, z) = (3, 4, 10, i)`: the solution of `(self_m)` exists and is unique. -/
-example : ∃! m : ℂ, BASelf 3 4 10 Complex.I m :=
-  baMExists_holds 3 4 (by norm_num) 10 (by norm_num) Complex.I (by simp)
-
-/-- `baMUniqReal_holds` at the flow point `P` (real axis, `E = P.E`, `g = P.g0`). -/
-example : BAm 3 4 P.g0 (P.E : ℂ) = P.m0 :=
-  baMUniqReal_holds 3 4 (by norm_num) P.g0 P.g0_pos P.E _ _ (BAm_spec ⟨P.m0, P.real.1⟩) P.real.1
 
 /-! ### The new theorems at `(L, g, z) = (4, 10, i)` -/
 
-example : ∃ m : ℂ, BASelf 3 4 10 Complex.I m := BASelf_exists 3 4 10 Complex.I (by simp)
-
-example : BASelf 3 4 10 Complex.I (BAm 3 4 10 Complex.I) := BAm_self 3 4 10 Complex.I (by simp)
-
-example : BAm 3 4 10 Complex.I = RBM.Univ.freeConvST (BAspec 3 4 10) 1 Complex.I :=
-  BAm_eq_freeConvST 3 4 10 Complex.I (by simp)
-
-/-- `BAMB_trace_eq_sum` at `m = m(i, 10)`: `(z + m).im = 1 + Im m > 0`. -/
-example : (BAMB 3 4 10 Complex.I (BAm 3 4 10 Complex.I)).trace
-    = ∑ i, ((BAspec 3 4 10 i : ℂ) - (Complex.I + BAm 3 4 10 Complex.I))⁻¹ := by
-  refine BAMB_trace_eq_sum 3 4 10 Complex.I _ ?_
-  have h := (BAm_self 3 4 10 Complex.I (by simp)).1
-  rw [Complex.add_im]
-  simp only [Complex.I_im]
-  linarith
-
-example : 0 < (BAm 3 4 10 Complex.I).im ∧ BAm 3 4 10 Complex.I
-    = ((Fintype.card (Zd 3 4) : ℕ) : ℂ)⁻¹ * ∑ i, ((BAspec 3 4 10 i : ℂ) - Complex.I
-      - ((1 : ℝ) : ℂ) * BAm 3 4 10 Complex.I)⁻¹ :=
-  (BASelf_iff_freeConv 3 4 10 Complex.I _ (by simp)).mp (BAm_self 3 4 10 Complex.I (by simp))
-
-/-- `BASelf_unique` at `z = z_S` (`Im z > 0`). -/
-example : mS 4 10 = BAm 3 4 10 (zS 4 10) :=
-  BASelf_unique 3 4 10 (zS 4 10) _ _ (zS_im_pos 4 10).le (selfS 4 10)
-    (BAm_self 3 4 10 _ (zS_im_pos 4 10))
-
-/-- `BASelf_unique` at the flow point `(g₀, E)` (`Im z = 0`). -/
-example : P.m0 = BAm 3 4 P.g0 (P.E : ℂ) :=
-  BASelf_unique 3 4 P.g0 (P.E : ℂ) _ _ (by simp) P.real.1 (BAm_spec ⟨P.m0, P.real.1⟩)
-
-example : BAm 3 4 P.g0 (P.E : ℂ) = P.m0 := BAm_real_eq_of_self 3 4 P.g0 P.E P.m0 P.real.1
-
-/-- `BAbulk_iff_exists` at `P`, `κ = Im m₀ / π`: no uniqueness hypothesis. -/
-example : BAbulk 3 4 P.g0 (P.m0.im / Real.pi) P.E :=
-  (BAbulk_iff_exists 3 4 P.g0 (P.m0.im / Real.pi) P.E (div_pos P.real.1.1 Real.pi_pos)).mpr
-    ⟨P.m0, P.real.1, le_of_eq (by field_simp)⟩
-
 /-! ### The copied theorems of the proved base, through the data -/
-
-example : (Ring.inverse ((10 : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) 0 0).im
-    = wI.im * ∑ k, ‖Ring.inverse ((10 : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) k 0‖ ^ 2 :=
-  BAimInv_diag (BAPsi_isHermitian 3 4 10) (by rw [MFixedPoint_wI_im]; norm_num) 0
-
-example : ∑ k, ‖Ring.inverse ((10 : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) k 0‖ ^ 2
-    ≤ (wI.im ^ 2)⁻¹ :=
-  BAcolSq_le (BAPsi_isHermitian 3 4 10) (by rw [MFixedPoint_wI_im]; norm_num) 0
-
-example : 1 ≤ (∑ k, ‖((10 : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) 0 k‖ ^ 2) *
-    ∑ k, ‖Ring.inverse ((10 : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) k 0‖ ^ 2 :=
-  BAcolSq_ge (BAPsi_isHermitian 3 4 10) (by rw [MFixedPoint_wI_im]; norm_num) 0
-
-example : Fintype.card (Zd 3 4) = 64 := by rw [BAcard_Zd]; norm_num
-
-example : ∑ k, ‖(((10 : ℝ) : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) 0 k‖ ^ 2
-    ≤ ‖wI‖ ^ 2 + (10 : ℝ) ^ 2 * (4 ^ 3 : ℕ) :=
-  BArow_le 3 4 10 wI 0
-
-example : (((10 : ℝ) : ℂ) • PsiB 3 4).IsHermitian := BAPsi_isHermitian 3 4 10
-
-example : (BAmSubord 3 4 10 wI).im = (((4 ^ 3 : ℕ) : ℝ))⁻¹ * ∑ i, (wI.im *
-    ∑ k, ‖Ring.inverse (((10 : ℝ) : ℂ) • PsiB 3 4 - wI • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)) k i‖ ^ 2) :=
-  BAmSubord_im 3 4 10 (by rw [MFixedPoint_wI_im]; norm_num)
-
-example := BASelf_subord 3 4 10 one_lt_wI
-
-example := BAt0_pos (zS_im_pos 4 10) (selfS 4 10).1
-
-example := BAt0_lt_one (zS_im_pos 4 10) (selfS 4 10).1
-
-example := BAt0_mul (zS_im_pos 4 10) (selfS 4 10).1
-
-example := BAzztE_data 3 4 10 (zS_im_pos 4 10) (selfS 4 10)
-
-example := BAward_avg 3 4 10 (zS_im_pos 4 10).le (selfS 4 10)
-
-example : BASelf 3 4 10 (zS 4 10) (BAm 3 4 10 (zS 4 10)) := BAm_spec ⟨_, selfS 4 10⟩
-
-example : BAbulk 3 4 P.g0 (P.m0.im / Real.pi) P.E :=
-  (BAbulk_iff (div_pos P.real.1.1 Real.pi_pos) (fun m m' hm hm' =>
-    BASelf_unique 3 4 P.g0 (P.E : ℂ) m m' (by simp) hm hm')).mpr
-    ⟨P.m0, P.real.1, le_of_eq (by field_simp)⟩
-
-example := BAdom_real (g := 10) (κ := (BAm 3 4 10 (zS 4 10)).im) (zS_im_pos 4 10)
-  (BAm_spec ⟨_, selfS 4 10⟩) le_rfl
-
-example := BAg0_le (g := 10) (by norm_num) (zS_im_pos 4 10) (selfS 4 10).1
 
 end RBM.BA.MFixedPointInst
 

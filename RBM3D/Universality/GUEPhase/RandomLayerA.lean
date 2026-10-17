@@ -143,34 +143,6 @@ theorem RandomLayer_rows_flow (sz : Sizes d) {c τD : ℝ} {t t0 η E' : ℕ →
   · filter_upwards [r4] with n hN
     exact le_trans (mul_le_mul_of_nonneg_left (hdiff1 n) (by positivity)) hN
 
-/-- **`RandomLayer_rows`** (the form of the source, `RandomLayerA.lean:137`): the sequence
-`z_n = e_n + i η_n`, `|e_n| ≤ 2 - κ`, `0 < η_n ≤ 1`, `t₀ = lemT z_n`, `E' = lemE z_n`, `t₁ = (1 - ζ(t_n)) t₀`.
-The size-level conditions `r1..r4` (`c = c_κ = √(κ(4-κ))/8`) give, in this order, `|E' n| ≤ 2 - κ`,
-`0 ≤ t₁`, `t₁ ≤ t₀`, `t₀ < 1` (every `n`), `h730`, `hscale`, `hell`, `hell1` (eventually): the
-hypotheses of `gueGrid_pathBounds` (the source's range condition and its hypothesis `r5` have no twin). -/
-theorem RandomLayer_rows (sz : Sizes d) {κ τD : ℝ} (hκ : 0 < κ) {e η t : ℕ → ℝ} (z : ℕ → ℂ)
-    (hz : ∀ n, z n = (e n : ℂ) + (η n : ℂ) * Complex.I) (he : ∀ n, |e n| ≤ 2 - κ)
-    (hη0 : ∀ n, 0 < η n) (hη1 : ∀ n, η n ≤ 1) (ht : ∀ n, 0 ≤ t n)
-    (r1 : ∀ᶠ n in atTop, t n ≤ Nsz sz n ^ (-τD) * (η n / 4))
-    (r2 : ∀ᶠ n in atTop, 4 * (Nsz sz n * η n)⁻¹ ≤ Nsz sz n ^ (-τD))
-    (r3 : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (η n / (Real.sqrt (κ * (4 - κ)) / 8) + t n) ≤
-      sz.lam n ^ 2)
-    (r4 : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (η n / (Real.sqrt (κ * (4 - κ)) / 8) + t n) ≤ 1) :
-    (∀ n, |lemE (z n)| ≤ 2 - κ) ∧ (∀ n, 0 ≤ (1 - ouZeta (t n)) * lemT (z n)) ∧
-      (∀ n, (1 - ouZeta (t n)) * lemT (z n) ≤ lemT (z n)) ∧ (∀ n, lemT (z n) < 1) ∧
-      (∀ᶠ n in atTop, lemT (z n) - (1 - ouZeta (t n)) * lemT (z n) ≤
-        Nsz sz n ^ (-τD) * etaT (lemE (z n)) (lemT (z n))) ∧
-      (∀ᶠ n in atTop, (gueScale sz (fun n => lemE (z n)) n (lemT (z n)))⁻¹ ≤ Nsz sz n ^ (-τD)) ∧
-      (∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - (1 - ouZeta (t n)) * lemT (z n)) ≤ sz.lam n ^ 2) ∧
-      (∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - (1 - ouZeta (t n)) * lemT (z n)) ≤ 1) := by
-  have hκ2 : κ ≤ 2 := by linarith [abs_nonneg (e 0), he 0]
-  have L28 := fun n => RandomLayer_lem28 hκ (he n) (hη0 n) (hη1 n) (hz n)
-  obtain ⟨hnn, hle, h730, hscale, hell, hell1⟩ := RandomLayer_rows_flow sz (c := Real.sqrt (κ * (4 - κ)) / 8)
-    (τD := τD) (t := t) (t0 := fun n => lemT (z n)) (η := η) (E' := fun n => lemE (z n)) ht hη0
-    (fun n => (L28 n).2.2.1) (fun n => (L28 n).2.2.2.1) (fun n => (L28 n).2.2.2.2.1)
-    (fun n => (L28 n).2.2.2.2.2.2.2) r1 r2 r3 r4
-  exact ⟨fun n => (L28 n).2.1, hnn, hle, fun n => (L28 n).2.2.2.1, h730, hscale, hell, hell1⟩
-
 /-! ### Size-level facts -/
 
 /-- `L^d N^{-1+a} = N^a / W^d` (`N = W^d L^d`). -/
@@ -508,74 +480,6 @@ theorem RandomLayer_etaQ_le_one (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admiss
 `τ_U = ouTauMax (1/6) (1/10) = 1/720`, the times `t_n = ouTStar sz0 τ_U n = N^{-1+τ_U} > 0` (so `ζ(t_n) > 0`
 and `t₁ < t₀`), the flow data of `RandomLayer_lem28` at `z_n = i η_LL`, `E = 0`; every hypothesis is
 discharged. -/
-
-namespace RandomLayerInst
-
-open RBM.Gauss.SizesInst
-
-private theorem tau_eq : ouTauMax (1 / 6) (1 / 10) = 1 / 720 := by
-  unfold ouTauMax; norm_num [min_def]
-
-private theorem tau_pos : 0 < ouTauMax (1 / 6) (1 / 10) := by rw [tau_eq]; norm_num
-
-private def zLL (n : ℕ) : ℂ :=
-  ((0 : ℝ) : ℂ) + ((ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) n : ℝ) : ℂ) * Complex.I
-
-private theorem hc0 : 0 < Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8 :=
-  div_pos (Real.sqrt_pos.2 (by norm_num)) (by norm_num)
-
-/-- `RandomLayer_lem28` at `e = 0`, `η = 1/2`, `κ = 1/10`. -/
-theorem inst_lem28 : ∃ z : ℂ, z = ((0 : ℝ) : ℂ) + ((1 / 2 : ℝ) : ℂ) * Complex.I ∧ 0 < z.im ∧
-    |lemE z| ≤ 2 - 1 / 10 ∧ 1 / 16 ≤ lemT z ∧ lemT z < 1 ∧
-    etaT (lemE z) (lemT z) = Real.sqrt (lemT z) * (1 / 2) ∧ (1 / 2 : ℝ) / 4 ≤ etaT (lemE z) (lemT z) ∧
-    etaT (lemE z) (lemT z) ≤ 1 / 2 ∧
-    1 - lemT z ≤ (1 / 2 : ℝ) / (Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8) :=
-  ⟨_, rfl, RandomLayer_lem28 (κ := 1 / 10) (e := 0) (η := 1 / 2) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) rfl⟩
-
-/-- `RandomLayer_rowsLL` and `RandomLayer_rowsQ` at `sz0`, `t = ouTStar`. -/
-theorem inst_rowsLL :
-    (∀ᶠ n in atTop, ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n ≤
-      Nsz sz0 n ^ (-(ouTauMax (1 / 6) (1 / 10) / 2)) * (ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) n / 4)) ∧
-    (∀ᶠ n in atTop, 4 * (Nsz sz0 n * ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) n)⁻¹ ≤
-      Nsz sz0 n ^ (-(ouTauMax (1 / 6) (1 / 10) / 2))) ∧
-    (∀ᶠ n in atTop, ((sz0.L n : ℕ) : ℝ) ^ 3 * (ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) n /
-      (Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8) + ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n) ≤
-      sz0.lam n ^ 2) ∧
-    (∀ᶠ n in atTop, ((sz0.L n : ℕ) : ℝ) ^ 3 * (ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) n /
-      (Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8) + ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n) ≤ 1) :=
-  RandomLayer_rowsLL sz0 (le_refl 3) sz0_admissible tau_pos le_rfl hc0 (fun _ => le_rfl)
-
-theorem inst_rowsQ :
-    (∀ᶠ n in atTop, ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n ≤
-      Nsz sz0 n ^ (-ouTauMax (1 / 6) (1 / 10)) * (ouEtaQ sz0 (1 / 10) n / 4)) ∧
-    (∀ᶠ n in atTop, 4 * (Nsz sz0 n * ouEtaQ sz0 (1 / 10) n)⁻¹ ≤ Nsz sz0 n ^ (-ouTauMax (1 / 6) (1 / 10))) ∧
-    (∀ᶠ n in atTop, ((sz0.L n : ℕ) : ℝ) ^ 3 * (ouEtaQ sz0 (1 / 10) n /
-      (Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8) + ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n) ≤
-      sz0.lam n ^ 2) ∧
-    (∀ᶠ n in atTop, ((sz0.L n : ℕ) : ℝ) ^ 3 * (ouEtaQ sz0 (1 / 10) n /
-      (Real.sqrt ((1 / 10 : ℝ) * (4 - 1 / 10)) / 8) + ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)) n) ≤ 1) :=
-  RandomLayer_rowsQ sz0 (le_refl 3) sz0_admissible tau_pos le_rfl hc0 (fun _ => le_rfl)
-
-/-- `RandomLayer_rows` at the flow data of `RandomLayer_lem28` at `z_n = i η_LL` (`E = 0`),
-`τ_D = τ_U/2`, `t_n = ouTStar`: the conclusions are the hypotheses of `gueGrid_pathBounds`. -/
-example :=
-  RandomLayer_rows sz0 (κ := 1 / 10) (τD := ouTauMax (1 / 6) (1 / 10) / 2) (e := fun _ => 0)
-    (η := ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10))) (t := ouTStar sz0 (ouTauMax (1 / 6) (1 / 10)))
-    (by norm_num) zLL (fun n => rfl) (fun n => by norm_num) (RandomLayer_etaLL_pos sz0 _)
-    (RandomLayer_etaLL_le_one sz0 (by rw [tau_eq]; norm_num)) (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _)
-    inst_rowsLL.1 inst_rowsLL.2.1 inst_rowsLL.2.2.1 inst_rowsLL.2.2.2
-
-/-- The scales at `sz0`. -/
-theorem inst_etaLL : 0 < ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) 0 ∧
-    ouEtaLL sz0 (ouTauMax (1 / 6) (1 / 10)) 0 ≤ 1 :=
-  ⟨RandomLayer_etaLL_pos sz0 _ 0, RandomLayer_etaLL_le_one sz0 (by rw [tau_eq]; norm_num) 0⟩
-
-theorem inst_etaQ : 0 < ouEtaQ sz0 (1 / 10) 0 ∧ ∀ᶠ n in atTop, ouEtaQ sz0 (1 / 10) n ≤ 1 :=
-  ⟨RandomLayer_etaQ_pos sz0 _ (by change 0 < ((2 * (((0 : ℕ) : ℝ) + 1)) ^ 6)⁻¹; norm_num),
-    RandomLayer_etaQ_le_one sz0 sz0_admissible⟩
-
-end RandomLayerInst
 
 end RBM.Univ.GUEPhase
 

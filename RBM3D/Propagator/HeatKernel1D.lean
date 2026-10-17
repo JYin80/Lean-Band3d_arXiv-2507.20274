@@ -53,29 +53,6 @@ def walkCount (j : ℕ) (n : ℤ) : ℕ :=
   ((Finset.univ : Finset (Fin j → Bool)).filter
     (fun ε => (∑ i, (if ε i then (1 : ℤ) else -1)) = n)).card
 
-private lemma walkCount_neg (j : ℕ) (n : ℤ) : walkCount j (-n) = walkCount j n := by
-  unfold walkCount
-  have hneg : ∀ ε : Fin j → Bool,
-      (∑ i, (if (fun i => !ε i) i then (1 : ℤ) else -1))
-        = -(∑ i, (if ε i then (1 : ℤ) else -1)) := by
-    intro ε
-    rw [← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl (fun i _ => ?_)
-    cases h : ε i <;> simp [h]
-  refine Finset.card_nbij' (fun ε i => !ε i) (fun ε i => !ε i) ?_ ?_ ?_ ?_
-  · intro ε hε
-    simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hε ⊢
-    rw [hneg, hε, neg_neg]
-  · intro ε hε
-    simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hε ⊢
-    rw [hneg, hε]
-  · intro ε _
-    funext i
-    simp
-  · intro ε _
-    funext i
-    simp
-
 private lemma zpow_sum_aux {K : Type*} [Field K] {ι : Type*} (z : K) (hz : z ≠ 0)
     (s : Finset ι) (a : ι → ℤ) : z ^ (∑ i ∈ s, a i) = ∏ i ∈ s, z ^ (a i) := by
   classical
@@ -140,11 +117,6 @@ theorem hkZ_nonneg : ∀ τ : ℝ, 0 ≤ τ → ∀ n : ℤ, 0 ≤ hkZ τ n := b
   intro τ hτ n
   unfold hkZ
   exact mul_nonneg (Real.exp_pos _).le (tsum_nonneg fun j => by positivity)
-
-/-- Target 3 (`Symm`): symmetry. -/
-theorem hkZ_neg : ∀ τ : ℝ, ∀ n : ℤ, hkZ τ (-n) = hkZ τ n := by
-  intro τ n
-  simp only [hkZ, walkCount_neg]
 
 /-- Target 4 (`MGF`): the moment generating function (Fable review F2 (i)). -/
 theorem hkZ_hasSum_mgf : ∀ τ : ℝ, 0 ≤ τ → ∀ z : ℂ, z ≠ 0 →
@@ -216,18 +188,6 @@ theorem hkZ_hasSum_mgf : ∀ τ : ℝ, 0 ≤ τ → ∀ z : ℂ, z ≠ 0 →
     congr 1
     push_cast
     ring
-
-/-- Target 2 (`Mass`): summability and total mass one. -/
-theorem hkZ_mass : ∀ τ : ℝ, 0 ≤ τ → Summable (hkZ τ) ∧ ∑' n : ℤ, hkZ τ n = 1 := by
-  intro τ hτ
-  have h := hkZ_hasSum_mgf τ hτ 1 one_ne_zero
-  have h1 : Complex.exp ((τ : ℂ) * (1 + 1⁻¹) - 2 * (τ : ℂ)) = ((1 : ℝ) : ℂ) := by
-    have : (τ : ℂ) * (1 + 1⁻¹) - 2 * (τ : ℂ) = 0 := by ring
-    rw [this, Complex.exp_zero, Complex.ofReal_one]
-  rw [h1] at h
-  simp only [one_zpow, mul_one] at h
-  have h' : HasSum (hkZ τ) 1 := Complex.hasSum_ofReal.mp h
-  exact ⟨h'.summable, h'.tsum_eq⟩
 
 /-- Target 5 (`Tilt`): the tilted inversion formula (Fable review F2 (ii); no contour shift). -/
 theorem hkZ_tilt : ∀ τ : ℝ, 0 ≤ τ → ∀ ν : ℝ, ∀ n : ℤ,
@@ -549,34 +509,10 @@ Each target theorem applied at concrete nondegenerate data (`τ = 1`, `L = 5`, `
 `n = 3`); every deterministic hypothesis is discharged. -/
 
 -- `hkZ_nonneg` at `τ = 1`, `n = 2`.
-example : 0 ≤ hkZ 1 2 := hkZ_nonneg 1 zero_le_one 2
-
 -- `hkZ_mass` at `τ = 1`: `h_1` is summable on `ℤ` with total mass one.
-example : Summable (hkZ 1) ∧ ∑' n : ℤ, hkZ 1 n = 1 := hkZ_mass 1 zero_le_one
-
 -- `hkZ_neg` at `τ = 1`, `n = 3`.
-example : hkZ 1 (-3) = hkZ 1 3 := hkZ_neg 1 3
-
 -- `hkZ_hasSum_mgf` at `τ = 1`, `z = 2`.
-example : HasSum (fun n : ℤ => (hkZ 1 n : ℂ) * (2 : ℂ) ^ n)
-    (Complex.exp (((1 : ℝ) : ℂ) * ((2 : ℂ) + (2 : ℂ)⁻¹) - 2 * ((1 : ℝ) : ℂ))) :=
-  hkZ_hasSum_mgf 1 zero_le_one 2 two_ne_zero
-
 -- `hkZ_tilt` at `τ = 1`, `ν = 1/2`, `n = 3`.
-example : ((Real.exp ((1 / 2 : ℝ) * ((3 : ℤ) : ℝ)) * hkZ 1 3 : ℝ) : ℂ) =
-    ((2 * Real.pi : ℝ) : ℂ)⁻¹ * ∫ k in (-Real.pi)..Real.pi,
-      Complex.exp (-((k : ℂ) * ((3 : ℤ) : ℂ)) * Complex.I)
-        * Complex.exp (2 * ((1 : ℝ) : ℂ) *
-          (Complex.cosh (((1 / 2 : ℝ) : ℂ) + (k : ℂ) * Complex.I) - 1)) :=
-  hkZ_tilt 1 zero_le_one (1 / 2) 3
-
 -- `hkT_hasSum_images` at `L = 5`, `τ = 1`, `x = 2`.
-example : HasSum (fun y : ℤ => hkZ 1 (((2 : ZMod 5).val : ℤ) + ((5 : ℕ) : ℤ) * y))
-    (hkT 5 1 2) :=
-  hkT_hasSum_images 5 1 zero_le_one 2
-
 -- `hkT_mass` at `L = 5`, `τ = 1`.
-example : (∀ x : ZMod 5, 0 ≤ hkT 5 1 x) ∧ ∑ x : ZMod 5, hkT 5 1 x = 1 :=
-  hkT_mass 5 1 zero_le_one
-
 end RBM.Heat

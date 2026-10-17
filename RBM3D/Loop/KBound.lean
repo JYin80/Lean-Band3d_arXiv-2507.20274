@@ -3,7 +3,7 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.TreeThree
+import RBM3D.Loop.Unique
 
 /-!
 # `ML:Kbound`, and the "additional modifications to handle `d ≥ 3`"
@@ -56,26 +56,6 @@ namespace RBM.Loop
 open Finset
 
 /-! ### The statement -/
-
-variable (d L : ℕ) [NeZero L] (W : ℕ) (g : ℝ)
-
-/-- **`ML:Kbound`**: for every `n` and every `t ∈ [0,1)`,
-`max_σ max_a |K^(n)_{t,σ,a}| ≺ (W^{-d} B_{t,0})^{n-1}`.
-
-`≺` is read as in `RBM.DetDom`: for every `τ > 0` there is a constant `C` with
-`… ≤ C L^τ (W^{-d} B_{t,0})^{n-1}`, uniformly in `L`, `t`, `σ` and `a` (the paper's `≺`
-for deterministic quantities, Definition 2.1(ii), in the uniform form of
-`docs/paper-deltas.md`).  The constant may depend on `d`, `n`, `g` and `τ`.
-
-Carried as a hypothesis, in the repository's usual form: the proof in Appendix A.5 runs
-through the molecule decomposition `(eq:wtKpi)` and the sum-zero property
-`(eq:Sigma-empty-sum-zero)`, neither of which is formalized.  It is an *owed* premise, not
-a borrowed one: the paper gives the proof. -/
-def KLoopBound (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
-  ∀ n : ℕ, 1 ≤ n → ∀ τ : ℝ, 0 < τ → ∃ C > (0 : ℝ),
-    ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ : List Bool) (a : List (Zd d L)),
-      σ.length = n → a.length = n →
-      ‖K t ⟨σ, a⟩‖ ≤ C * (L : ℝ) ^ τ * ((((W : ℝ) ^ d)⁻¹ * Bparam d L g t 0) ^ (n - 1))
 
 variable {d L W g}
 
@@ -139,16 +119,5 @@ theorem inv_pow_pair_le (k : ℕ) {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     have hkey := key _ _ hxy' hpos (half y x hy hx h)
     rw [hcomm, hcomm']
     linarith
-
-/-- **Negative test: one term of the split does not suffice.**  At `d = 3`, `x = 3`,
-`y = 0` the first term of `inv_pow_pair_le` is already too small, so the case distinction
-`x ≤ y` / `y ≤ x` is not cosmetic. -/
-theorem not_inv_pow_pair_le_single :
-    ¬ ∀ (k : ℕ) (x y : ℝ), 0 ≤ x → 0 ≤ y →
-        ((x ^ (k + 1) + 1) * (y ^ (k + 1) + 1))⁻¹
-          ≤ 2 * ((x ^ (k + 2) + 1) * (y ^ k + 1))⁻¹ := by
-  intro h
-  have := h 1 3 0 (by norm_num) (by norm_num)
-  norm_num at this
 
 end RBM.Loop

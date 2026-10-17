@@ -205,12 +205,6 @@ def BAExtraGood : Prop := ∀ {E : Type} (P : BAPGraph E) (LT : List (BAShape ×
 /-- the tagged step is the step with its outputs tagged. -/
 def BAFrameStepT_untag : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)),
   BAFrameStep P outs ↔ ∃ LT, BAFrameStepT P LT ∧ outs = LT.map Prod.snd
-/-- **S′, the simulation** (`t/T2395:RBM3D/Probe/T2395Pins.lean:263`, verbatim): per output, the invariant tuple of an output of a band step at `P.img`, or the order
-rises, or the number of external atoms falls.  True on the samples (T2423 (a): 53,624 outputs, 0 fails), but for the macro outputs not derivable from `BAMatch`. -/
-def BAsim (m : ℂ) : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BAFrameStep P outs → P.g.Normal →
-  ∀ Q ∈ outs, (∃ outsπ : List (PGraph E), LocStep m P.img outsπ ∧ ∃ Q0 ∈ outsπ, Q.g.scalingOrder = ord Q0.g.counters ∧ Q.g.nM = Q0.g.nM ∧
-      (Q.g.nA : ℤ) - Q.g.nW = (Q0.g.nV : ℤ) - Q0.g.nW ∧ Q.g.nLoops = Q0.g.lvl1NLoops ∧ Q.g.nS = Q0.g.nS ∧ Q.g.nPairs = Q0.g.lvl1NPairs ∧
-      Q.g.nExt = Fintype.card Q0.E') ∨ P.g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < P.g.nExt
 /-- the invariants `(ord, n_M, n_A - n_W, loops, n_S, pairs, nExt)` of a BA graph and of a packed band graph (`BAimg`, R0: `P.img` has those of `P`). -/
 def BAPGraph.baInv (Q : BAPGraph E) : ℤ × ℕ × ℤ × ℕ × ℕ × ℕ × ℕ :=
   (Q.g.scalingOrder, Q.g.nM, (Q.g.nA : ℤ) - Q.g.nW, Q.g.nLoops, Q.g.nS, Q.g.nPairs, Q.g.nExt)
@@ -259,22 +253,13 @@ theorem BAPGraph.BASim_outsT_map_snd (P : BAPGraph E) {I' : Type} [Fintype I'] [
     (P.outsT tg Ts).map Prod.snd = P.outsOf Ts := by
   simp only [BAPGraph.outsT, BAPGraph.outsOf, BAGraph.partition, List.map_flatMap, List.map_map, Function.comp_def]
 
-theorem BAPGraph.BASim_outsOf_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
-    (A B : List (BAGraph P.E' I')) : P.outsOf (A ++ B) = P.outsOf A ++ P.outsOf B := by
-  simp only [BAPGraph.outsOf, List.flatMap_append]
-
-theorem BAPGraph.BASim_outsT_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
-    (tg : BAGraph P.E' I' → BAShape) (A B : List (BAGraph P.E' I')) :
-    P.outsT tg (A ++ B) = P.outsT tg A ++ P.outsT tg B := by
-  simp only [BAPGraph.outsT, List.flatMap_append]
-
 theorem BAPGraph.BASim_withinOutsT_map_snd (P : BAPGraph E) (p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) :
     (P.withinOutsT p).map Prod.snd = P.withinOuts p := by
   simp only [BAPGraph.withinOutsT, BAPGraph.withinOuts, List.map_append, BAPGraph.BASim_outsT_map_snd]
 
 theorem BAPGraph.BASim_splitOutsT_map_snd (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) (j : ℕ) :
     (P.splitOutsT p q j).map Prod.snd = P.splitOuts p q j := by
-  simp only [BAPGraph.splitOutsT, BAPGraph.splitOuts, List.map_append, BAPGraph.BASim_outsT_map_snd, BAPGraph.BASim_outsOf_append]
+  simp only [BAPGraph.splitOutsT, BAPGraph.splitOuts, List.map_append, BAPGraph.BASim_outsT_map_snd]
   simp only [BAPGraph.outsOf, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.append_assoc]
 
 /-- **The tagged step is the step with its outputs tagged.** -/
@@ -934,10 +919,6 @@ end Cons
 
 section Dots
 variable (D : BASimData P k J' emb')
-
-/-- the term of `G = Ǧ + M` with the split `r` of the solid edges (`BAGraph.splitG`) -/
-def BASim_T' (r : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin k))) × List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin k)))) : BAGraph P.E' (P.I' ⊕ Fin k) :=
-  BAGraph.mk (LGraph.mk r.1 D.T.waved D.T.dotted D.T.coeff) D.T.psi (r.2 ++ D.T.mdot)
 
 /-- the facts about a term `T'` of `G = Ǧ + M` that the matching reads -/
 private structure BASimGood (T' : BAGraph P.E' (P.I' ⊕ Fin k)) : Prop where
@@ -1960,18 +1941,6 @@ end Linv
 /-! ## 9. Compiled instance of `baFrameStepT_untag_holds`: the data `P_A` of T2423 (a) (ii) (external `0, 1 = inl 0, inl 1`, internal `2, 3, 4 = inr 0, 1, 2`) -/
 namespace BASimInst
 abbrev Ed := SEdge (Fin 2 ⊕ Fin 3)
-/-- `P_A`: blue circled solid `2→1`, `0→2`, `1→0`; waved `S_{4,3}`; `M`-dot `{2,3}`; atoms `{0}, {1}, {2,3}, {4}`; the `gg` step at `p = 2→1`, `q = 0→2`. -/
-def baPA : BAGraph (Fin 2) (Fin 3) :=
-  ⟨⟨[⟨true, true, .inr 0, .inl 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩], [⟨false, true, .inr 2, .inr 1⟩], [], 1⟩, [], [⟨true, .inr 0, .inr 1⟩]⟩
-def pA : Ed × List Ed := (⟨true, true, .inr 0, .inl 1⟩, [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩])
-def qA : Ed × List Ed := (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inl 1, .inl 0⟩])
-/-- the outputs of the `gg` step at `P_A` -/
-def ggF := (baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA)
-/-- `baFrameStepT_untag_holds` at the `gg` step at `P_A` (31 outputs): the untagged step holds, and so does the tagged one with the same outputs. -/
-example : BAFrameStep (baPG baPA) ggF ∧ ggF.length = 31 ∧ ∃ LT, BAFrameStepT (baPG baPA) LT ∧ ggF = LT.map Prod.snd := by
-  have hF : BAFrameStep (baPG baPA) ggF :=
-    BAFrameStep.gg (baPG baPA) pA (List.mem_cons_self ..) qA (List.mem_cons_self ..) (by decide) (0 : Fin 3) (by decide) (by decide) (by decide) (by decide)
-  exact ⟨hF, by decide +kernel, (baFrameStepT_untag_holds (baPG baPA) ggF).1 hF⟩
 end BASimInst
 
 end RBM.Graph

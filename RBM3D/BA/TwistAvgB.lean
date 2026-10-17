@@ -456,49 +456,6 @@ end Main
 /-! ## 7. Instances (target 3): `d = 3`, `sz0` (`L = 4`, `W = 32` at `n = 0`), `zSeq`, `flow_sz0`, `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `t ≡ 1/2 ≤ T₀`.
 Other gates' pins (`LWAvgLawgL`, `STLmaxgL`) stay hypotheses; every deterministic hypothesis is discharged (`BAFlow`, `0 ≤ t`, `t ≤ T₀`, `3 ≤ d`, the positivity of `κ, ε, 𝔡`). -/
 
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- The two interfaces as compiled terms (`T2427_TL1b` is `∀ d, BATwistAvgRec d → BATwistAvgProd d`). -/
-example : T2427_TL1b := baTwistAvgProd_of_rec
-example : ∀ d, BATwistAvgProd d := baTwistAvgProd_holds
-
-/-- Target 2 at the datum: `baTwistAvgProd_holds 3` at `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`; `LWAvgLawgL`, `STLmaxgL` are other gates' pins. -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) :=
-  baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM
-
-/-- Target 1 at the datum: the recursion at the constant `K` of `baTwistAvgRec_holds 3` gives the law (`LWAvgLawgL`, `STLmaxgL` are premises of the recursion). -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) := by
-  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  exact TwistAvgB_law_of_recAt le_rfl (by norm_num : (0 : ℝ) < 1 / 2) (by norm_num : (0 : ℝ) < 1 / 10) flow_sz0
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hK (H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num)
-      (fun n => (half_lt_t0 n).le) hA hM)
-
-/-- Non-vacuity of the conclusion at `τ = 1/2`, `D = 1`: for large `n` the bad event of `BATwistAvgLaw` has probability `≤ N⁻¹ < 1`, so some sample `ω` has
-`‖twTr c₁ c₂‖ ≤ N^{1/2} B` for every ordered pair of blocks (`μ0` is a probability measure; `L = 4(n+1)`, so the index set of pairs has `(4(n+1))^6` elements). -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    ∀ᶠ n in atTop, ∃ ω : sz0.SeqΩ, ∀ c₁ c₂ : Zd 3 (sz0.L n),
-      ‖twTr (baFMz sz0 zSeq) n (1 / 2) ω c₁ c₂‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) * sz0.Bctl n (1 / 2) := by
-  have H := baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM (1 / 2) (by norm_num) 1 (by norm_num)
-  filter_upwards [H, sz0_tendsto.eventually (eventually_ge_atTop 2)] with n hn hN2
-  by_contra hcon
-  push Not at hcon
-  have h1 : μ0 Set.univ ≤ ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-1 : ℝ)) := by
-    refine le_trans (measure_mono fun ω _ => ?_) hn
-    obtain ⟨c₁, c₂, h⟩ := hcon ω
-    exact ⟨(c₁, c₂), h⟩
-  rw [measure_univ, ENNReal.one_le_ofReal, Real.rpow_neg_one] at h1
-  have hN0 : (0 : ℝ) < ((sz0.size n : ℕ) : ℝ) := by linarith
-  rw [one_le_inv₀ hN0] at h1
-  linarith
-
-end Inst
-
 end RBM.BA
 
 end

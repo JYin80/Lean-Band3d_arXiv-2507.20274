@@ -697,21 +697,4 @@ theorem ST_step5_caseII_of_pins (hE : STEtermsMid d) (hD : STDuhamelII d) (hI : 
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Path Filter
-
 /-! ### The skeletons at the data (ingredients as hypotheses) -/
-
-/-- Case (ii) from its ingredients, at `(szB, zB, 15/16, 31/32)`. -/
-theorem inst_skeletonII (hE : STEtermsMid 3) (hD : STDuhamelII 3) (hI : STIniTermII 3) (hW : STWardII 3)
-    (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_step5II (ST_step5_caseII_of_pins hE hD hI hW) Cd hCd
-
-/-- Case (iii) from `lem:pf_step5`, at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_skeletonIII (hPf : STPfStep5 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_step5III (ST_step5_caseIII_of_pf hPf) Cd hCd
-
-end RBM.Gauss.Step5Inst

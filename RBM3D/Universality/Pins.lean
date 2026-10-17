@@ -5,7 +5,6 @@ Authors: Jun Yin
 -/
 import RBM3D.Defs.Sizes
 import RBM3D.Defs.StochDomAt
-import RBM3D.Defs.SemicircleIntegral
 import RBM3D.Gauss.BlockAnderson
 import RBM3D.Induction.Defs
 import RBM3D.Propagator.Gap
@@ -724,21 +723,6 @@ end Band
 
 section Rows
 
-/-- **Row `UNInfty1Row`**: `(1infyuniv)` for every `τ_U ∈ (0, τ₁]`, `τ₁` depending on `𝔠, 𝔡, k, E, E', O`,
-from `UNL32`, the weak GUE local law, the density and the local law of the model (conditioning on `H`, GUE
-unitary invariance, `UNStep1Good`, dilation `ρ_fc → ρ_n` by Lipschitz dependence, GUE translation from
-energy `0` to `E'`).  RBM2D `Infty1Row` (`Pins.lean:438`, amended there for `τ_s ≤ 𝔠`).  Registry class:
-**owed** (UN: `Step1Cond`, `Step1Band`, `Step1Regularity*`, `GUEInvariance`, `GUETranslation`,
-`FreeConv*`, `GUELocal*`). Consumer (RBM2D `c9a24cf`): `Main/BUniv.lean:42` (`bUniv_of_rows`, `Pins.lean:526`). -/
-def UNInfty1Row : Prop :=
-  UNL32 → UNGUELocal →
-    ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-      ∀ (M : UNModel sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
-        UNDens m E ρ δ → UNTrLocal sz M m E δ → (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz M CV₀) →
-          ∀ E' : ℝ, |E'| < 2 →
-          ∀ k : ℕ, ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
-            ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ → UNInfty1 sz M ρ E E' k O τU
-
 /-- **Row `UNUnivMainRow`**: `(univ-main)` from the Claim `(417)`, the local law and density (a priori bound
 `UNApriori`) and `UNGreenCorrAll`, for every `τ_U ∈ (0, τ₀]`, `τ₀` independent of `O`.  RBM2D
 `UnivMainRow` (`Pins.lean:454`).  Registry class: **owed** (UN: `Apriori`, `UnivMain`). Consumer (RBM2D `c9a24cf`): `Main/BUniv.lean:42` (`bUniv_of_rows`, `Pins.lean:526`). -/
@@ -749,35 +733,6 @@ def UNUnivMainRow : Prop :=
         UNDens m E ρ δ → UNTrLocal sz M m E δ → UNClaimAll sz M E →
           ∀ k : ℕ, ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
             ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O → UNUnivMain sz M ρ E k O τU
-
-/-- **The core pin `UNCore` (target 2(b)): universality from inputs**, for an abstract model and an abstract
-density.  Inputs: the external `UNL32`; the internal `UNGUELocal` and `UNGreenCorrAll`; for the model, the
-tracial local law `UNTrLocal` at `m n` near `E`, the regularity of the density `UNDens` (positive lower
-bound, Lipschitz), the polynomial norm bound `UNNormBound` (`(2.3)` of [32]), and the Claim `(417)` `UNClaimAll` for its OU path.  Conclusion: the dilated universality
-`UNUnivDilAt` for every GUE energy `|E'| < 2` and every `𝒪 ∈ C_c^∞(ℝ^k)`, `k ≥ 1` (DECISIONS §11).  Band
-(`m = msc`, `ρ = ρ_sc(E)`) and block Anderson (`m = m(·, λ_n)`, `ρ = ρ_N(E)`, bulk condition = `UNDens`) both
-consume it.  Registry class: **owed** (UN). Consumer (RBM2D `c9a24cf`): `Pins.lean:497` (`bUnivOfInputs_of_rows`) and BA-D1. -/
-def UNCore : Prop :=
-  UNL32 → UNGUELocal → UNGreenCorrAll →
-    ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-      ∀ (M : UNModel sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
-        UNDens m E ρ δ → UNTrLocal sz M m E δ → (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz M CV₀) →
-          UNClaimAll sz M E →
-          ∀ E' : ℝ, |E'| < 2 → ∀ k : ℕ, 1 ≤ k → ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
-            UNUnivDilAt sz M ρ E E' k O
-
-/-- **The two limits compose** (RBM2D paper `1-2:341-345`: `(univ-main)` and `(1infyuniv)` at the same `t*`):
-`UNInfty1Row` and `UNUnivMainRow` give `UNCore` (`τ_U := min τ₀ τ₁`).  RBM2D `bUnivOfInputs_of_rows`
-(`Pins.lean:497`). -/
-theorem un_core_of_rows (h1 : UNInfty1Row) (h2 : UNUnivMainRow) : UNCore := by
-  intro h32 hGL hGC d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hN hC E' hE' k _ O hO
-  obtain ⟨τ₀, hτ₀, hU⟩ := h2 hGC d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hC k
-  obtain ⟨τ₁, hτ₁, hI⟩ := h1 h32 hGL d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hN E' hE' k O hO
-  have hpos : 0 < min τ₀ τ₁ := lt_min hτ₀ hτ₁
-  have h3 := (hU _ hpos (min_le_left _ _) O hO).add (hI _ hpos (min_le_right _ _))
-  rw [add_zero] at h3
-  refine h3.congr fun n => ?_
-  ring
 
 end Rows
 
@@ -859,27 +814,6 @@ theorem un_claimAll_of_rows (rC : UNClaimRow) (rE : UNEMCTE2Row) (rJ : UNJakUywR
   have hJU := h2 τU h0 (hle.trans (min_le_right _ _))
   exact ⟨h1 τU h0 (hle.trans (min_le_left _ _)), hJU.1, hJU.2⟩
 
-/-- **Target 5: `Thm: B_Univ` (band, `UNBUniv`) from the UN pins and the consumed inputs.**  The leaves that
-remain hypotheses are the external `UNL32`; the consumed MA/ST-6 inputs `UNMLOut`, `UNLocAvgBand`,
-`UNQueBand`; the internal pins `UNGUELocal`, `UNGreenCorrAll`; and the rows.  The band model is the dilated
-statement at `ρ_n = ρ_sc(E)`, `E' = E` (`unBUniv_diff_eq`).  RBM2D `bUniv_of_rows` (`Pins.lean:526`). -/
-theorem un_bUniv_of_rows (rI : UNInfty1Row) (rU : UNUnivMainRow) (rC : UNClaimRow)
-    (rE : UNEMCTE2Row) (rJ : UNJakUywRow) (rO : UNOURow) (rD : UNDensBandRow)
-    (rT : UNTrLocalBandRow) (rN : UNNormBandRow) :
-    UNL32 → (∀ d : ℕ, UNMLOut d) → UNLocAvgBand → UNQueBand → UNGUELocal → UNGreenCorrAll →
-      UNBUniv := by
-  intro h32 hML hLoc hQ hGL hGC d hd 𝔠 𝔡 sz hA k hk κ hκ E hE O hO
-  have hE2 : |E| < 2 := by linarith
-  obtain ⟨δ, hδκ, hDens⟩ := rD κ hκ E hE
-  have hTr := rT hLoc d hd 𝔠 𝔡 sz hA κ hκ E hE δ hDens.1 hδκ
-  have hCl := un_claimAll_of_rows rC rE rJ rO hML hLoc hQ d hd 𝔠 𝔡 sz hA κ hκ E hE
-  have hO' : IsTestFun (fun β => O ((rhoSC E)⁻¹ • β)) :=
-    isTestFun_comp_smul hO (inv_ne_zero (rhoSC_pos hE2).ne')
-  have hcore := un_core_of_rows rI rU h32 hGL hGC d hd 𝔠 𝔡 sz hA (UNModel.band sz)
-    (fun _ => msc) E (fun _ => rhoSC E) δ hDens hTr (rN d hd 𝔠 𝔡 sz hA) hCl E hE2 k hk _ hO'
-  refine hcore.congr fun n => ?_
-  exact unBUniv_diff_eq (UNModel.band sz) hE2 k O n
-
 end BandRows
 
 /-! ## 5. The exponents of `1_2:570-578` and the limit computations at `d ≥ 3` (target 3)
@@ -894,12 +828,6 @@ section Arith
 theorem un_que_exponent {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) :
     -(min (2 * (𝔡 / 3)) (2 * 𝔡 / 5)) + 2 * (𝔡 / 6) = -(𝔡 / 15) := by
   rw [min_eq_right (by linarith)]; ring
-
-/-- The parameters `ε₀ = 𝔡/3`, `c = 𝔡/6` satisfy the constraints of `(Meq:QUE)` (`1_2:407-410`):
-`ε₀ ∈ (0, 𝔡/2)`, `0 < c < ε₀ ∧ 𝔡/5`; the slacks are `𝔡/6` and `𝔡/30`. -/
-theorem un_que_params {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) :
-    0 < 𝔡 / 3 ∧ 𝔡 / 3 < 𝔡 / 2 ∧ 0 < 𝔡 / 6 ∧ 𝔡 / 6 < 𝔡 / 3 ∧ 𝔡 / 6 < 𝔡 / 5 :=
-  ⟨by positivity, by linarith, by positivity, by linarith, by linarith⟩
 
 /-- **The `𝓑(y)`-window lies in `𝓘_E(𝔡/3)`** (`1_2:575`: `|λ_α - E| ≤ N^{-1}W^{𝔡/3}` against
 `𝓘_E(ε₀)`, `ε₀ = 𝔡/3`, `(eq:defIE)`): from `(eq:WO)`, `ilambda ≥ W^{-d/2+𝔡}`, `W ≥ 1`, the half-width
@@ -932,27 +860,6 @@ theorem un_W_neg_le {W N 𝔠 x : ℝ} (hN : 0 < N) (hW : 0 < W) (hx : 0 ≤ x) 
     rw [Real.rpow_mul hN.le]; exact Real.rpow_le_rpow (Real.rpow_nonneg hN.le _) hb hx
   rw [Real.rpow_neg hW.le, Real.rpow_neg hN.le]
   exact inv_anti₀ (Real.rpow_pos_of_pos hN _) h1
-
-/-- **The design exponent `c'` of `(jaklsdufowe)`/`(uywy7723r3rf)` at `d ≥ 3`** (target 3): the good-event
-factor is `θ = W^{-𝔡/6} ≤ N^{-𝔠𝔡/6}` and the bad event has `ℙ(𝓑) ≤ W^{-𝔡/15+τ_Q} ≤ N^{-𝔠(𝔡/15-τ_Q)}`;
-at `τ_Q = 𝔡/30` the minimum of the two exponents is `𝔠𝔡/30` and it is `ℙ(𝓑)` that binds (RBM2D `𝔠/36`:
-there `θ` binds, `Jak.lean:831`). -/
-theorem un_cprime {𝔠 𝔡 : ℝ} (h𝔠 : 0 < 𝔠) (h𝔡 : 0 < 𝔡) :
-    min (𝔠 * 𝔡 / 6) (𝔠 * (𝔡 / 15 - 𝔡 / 30)) = 𝔠 * 𝔡 / 30 := by
-  have : 0 < 𝔠 * 𝔡 := mul_pos h𝔠 h𝔡
-  rw [min_eq_right (by nlinarith)]; ring
-
-/-- The exponent of the right side of `(417)` is negative: `τ_U ≤ c'/(2(C_n+1))` gives `-c' + C_n τ_U ≤
--c'/2`.  At the design point `(𝔠, 𝔡) = (1/6, 1/10)`, `c' = 1/1800`, `C_n' = 21` (`n_f = 1`: `C_n = 1`,
-`C = 19`, `+1`), `τ_U ≤ 1/79200` (RBM2D: `GreenCorr.lean:46-48`, `UnivMain.lean:355-363`). -/
-theorem un_claim_exponent {c' Cn τ : ℝ} (hc : 0 < c') (hCn : 0 ≤ Cn) (hτ : τ ≤ c' / (2 * (Cn + 1))) :
-    -c' + Cn * τ ≤ -(c' / 2) := by
-  have hCn1 : 0 < Cn + 1 := by linarith
-  have h1 : Cn * τ ≤ Cn * (c' / (2 * (Cn + 1))) := mul_le_mul_of_nonneg_left hτ hCn
-  have h2 : Cn * (c' / (2 * (Cn + 1))) ≤ c' / 2 := by
-    rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]
-    nlinarith
-  linarith
 
 /-- **`Bctl` at the energy scale `η`**: `W^{-d}B_{1-η,0} ≤ W^{-2𝔡}`-floor `+ (Nη)⁻¹` (`(eq:calBetaK)` at
 `K = 0` and `(eq:WO)`: `A = W^{2𝔡} ≤ lam² W^d`).  This is the local-law precision of `UNTrLocal`; its floor
@@ -1023,102 +930,6 @@ theorem un_dc_lt_one {d L W : ℕ} (_hd : 1 ≤ d) (hL : 3 ≤ L) (hW : 1 ≤ W)
     calc (W : ℝ) * L = ((W : ℝ) * L) ^ (1 : ℝ) := (Real.rpow_one _).symm
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hWL h1
   nlinarith
-
-/-- **`𝔡 < d/2`**: for `W ≥ 1`, `(eq:WO)` `W^{-d/2+𝔡} ≤ lam ≤ 𝔡⁻¹` forces `𝔡 < d/2` (`𝔡 ≥ d/2` gives
-`1 ≤ W^{-d/2+𝔡} ≤ lam ≤ 𝔡⁻¹ ≤ 2/d < 1`).  This is why `ε₀ = 𝔡/3 < 𝔡/2 < d/4` is always an allowed
-exponent of `(Meq:QUE)`. -/
-theorem un_d_lt_half {d : ℕ} (hd : 3 ≤ d) {W lam 𝔡 : ℝ} (hW : 1 ≤ W) (_h𝔡 : 0 < 𝔡)
-    (h1 : W ^ (-(d : ℝ) / 2 + 𝔡) ≤ lam) (h2 : lam ≤ 𝔡⁻¹) : 𝔡 < (d : ℝ) / 2 := by
-  by_contra hcon
-  have h3 : (d : ℝ) / 2 ≤ 𝔡 := not_lt.mp hcon
-  have h4 : 1 ≤ W ^ (-(d : ℝ) / 2 + 𝔡) :=
-    Real.one_le_rpow hW (show (0 : ℝ) ≤ -(d : ℝ) / 2 + 𝔡 by linarith)
-  have hd3 : (3 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) < (d : ℝ) / 2 := by linarith
-  have h5 : 𝔡⁻¹ ≤ ((d : ℝ) / 2)⁻¹ := inv_anti₀ hd0 h3
-  have h6 : ((d : ℝ) / 2)⁻¹ < 1 := inv_lt_one_of_one_lt₀ (by linarith)
-  linarith
-
-/-- **The window of `𝓑(y)` in the `N`-scale** (target 3, `1_2:575`: `N^{-1} W^{𝔡/3}`; RBM2D `N^{-1+𝔠/6}`):
-`N^{-1+𝔠𝔡/3} ≤ N^{-1}W^{𝔡/3} ≤ N^{-1+𝔡/(3d)}` from `W ≥ N^𝔠` and `W^d ≤ N`; the exponent `-1+𝔡/(3d) < 0`, so
-the window is `o(1)` and the bulk stays a bulk, and `-1+𝔠𝔡/3 > -1` so it contains `≫ N^{-1}` many levels. -/
-theorem un_window_N_scale {W N 𝔠 𝔡 : ℝ} {d : ℕ} (hd : 1 ≤ d) (hN : 1 ≤ N) (hW : 0 < W) (h𝔡 : 0 < 𝔡)
-    (hb : N ^ 𝔠 ≤ W) (hWd : W ^ d ≤ N) :
-    N ^ (-1 + 𝔠 * 𝔡 / 3) ≤ N⁻¹ * W ^ (𝔡 / 3) ∧ N⁻¹ * W ^ (𝔡 / 3) ≤ N ^ (-1 + 𝔡 / (3 * d)) := by
-  have hN0 : 0 < N := lt_of_lt_of_le one_pos hN
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  constructor
-  · have : N ^ (𝔠 * 𝔡 / 3) ≤ W ^ (𝔡 / 3) := by
-      have h := Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _) hb (by positivity : 0 ≤ 𝔡 / 3)
-      rwa [← Real.rpow_mul hN0.le, show 𝔠 * (𝔡 / 3) = 𝔠 * 𝔡 / 3 by ring] at h
-    rw [Real.rpow_add hN0, Real.rpow_neg_one]
-    exact mul_le_mul_of_nonneg_left this (by positivity)
-  · have : W ^ (𝔡 / 3) ≤ N ^ (𝔡 / (3 * d)) := by
-      have h := Real.rpow_le_rpow (by positivity) hWd (by positivity : 0 ≤ 𝔡 / (3 * d))
-      rwa [← Real.rpow_natCast, ← Real.rpow_mul hW.le,
-        show (d : ℝ) * (𝔡 / (3 * d)) = 𝔡 / 3 by field_simp] at h
-    rw [Real.rpow_add hN0, Real.rpow_neg_one]
-    exact mul_le_mul_of_nonneg_left this (by positivity)
-
-/-- **The density of the semicircle on the bulk** (limit check of `UNDens` at `ρ = ρ_sc`, DECISIONS §11):
-`ρ_sc(E) ≥ √(4κ - κ²)/(2π)` for `|E| ≤ 2 - κ`, with equality at the edge `|E| = 2 - κ`. -/
-theorem un_rhoSC_lower {κ E : ℝ} (_hκ : 0 < κ) (hE : |E| ≤ 2 - κ) :
-    Real.sqrt (4 * κ - κ ^ 2) / (2 * Real.pi) ≤ rhoSC E := by
-  unfold rhoSC
-  have h1 : E ^ 2 ≤ (2 - κ) ^ 2 := by
-    have := abs_le.mp hE
-    nlinarith [this.1, this.2]
-  exact div_le_div_of_nonneg_right (Real.sqrt_le_sqrt (by nlinarith)) (by positivity)
-
-theorem un_rhoSC_edge {κ : ℝ} : rhoSC (2 - κ) = Real.sqrt (4 * κ - κ ^ 2) / (2 * Real.pi) := by
-  unfold rhoSC; congr 2; ring
-
-/-- **`ρ_sc` is Lipschitz on the bulk**: for `|x|, |y| ≤ 2 - κ`, `0 < κ`:
-`|ρ_sc(x) - ρ_sc(y)| ≤ |x - y| / (π √(4κ - κ²))`. -/
-theorem un_rhoSC_lip {κ x y : ℝ} (hκ : 0 < κ) (hx : |x| ≤ 2 - κ) (hy : |y| ≤ 2 - κ) :
-    |rhoSC x - rhoSC y| ≤ |x - y| / (Real.pi * Real.sqrt (4 * κ - κ ^ 2)) := by
-  have hκ2 : κ ≤ 2 := by
-    have := abs_nonneg x; linarith
-  have h4 : 0 < 4 * κ - κ ^ 2 := by nlinarith
-  set s := Real.sqrt (4 * κ - κ ^ 2) with hs
-  have hs0 : 0 < s := Real.sqrt_pos.2 h4
-  have hax : 4 * κ - κ ^ 2 ≤ 4 - x ^ 2 := by
-    have := abs_le.mp hx; nlinarith [this.1, this.2]
-  have hay : 4 * κ - κ ^ 2 ≤ 4 - y ^ 2 := by
-    have := abs_le.mp hy; nlinarith [this.1, this.2]
-  have hsx : s ≤ Real.sqrt (4 - x ^ 2) := Real.sqrt_le_sqrt hax
-  have hsy : s ≤ Real.sqrt (4 - y ^ 2) := Real.sqrt_le_sqrt hay
-  have hsxy : 0 < Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2) := by linarith
-  have hkey : (Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)) *
-      (Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2)) = (y - x) * (y + x) := by
-    have e1 := Real.sq_sqrt (show 0 ≤ 4 - x ^ 2 by linarith)
-    have e2 := Real.sq_sqrt (show 0 ≤ 4 - y ^ 2 by linarith)
-    nlinarith
-  have hxy : |y + x| ≤ 4 := by
-    have := abs_le.mp hx; have := abs_le.mp hy
-    rw [abs_le]; constructor <;> linarith
-  have hdiff : |Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)| ≤ 2 * |x - y| / s := by
-    rw [le_div_iff₀ hs0]
-    have habs : |Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)| *
-        (Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2)) = |y - x| * |y + x| := by
-      calc |Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)| *
-            (Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2))
-          = |Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)| *
-              |Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2)| := by rw [abs_of_pos hsxy]
-        _ = |(Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)) *
-              (Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2))| := (abs_mul _ _).symm
-        _ = |(y - x) * (y + x)| := by rw [hkey]
-        _ = |y - x| * |y + x| := abs_mul _ _
-    have h2 : 2 * s ≤ Real.sqrt (4 - x ^ 2) + Real.sqrt (4 - y ^ 2) := by linarith
-    have h3 : |y - x| * |y + x| ≤ 4 * |x - y| := by
-      rw [abs_sub_comm y x]
-      exact mul_le_mul_of_nonneg_left hxy (abs_nonneg _) |>.trans (by nlinarith [abs_nonneg (x - y)])
-    nlinarith [abs_nonneg (Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)), abs_nonneg (x - y)]
-  unfold rhoSC
-  rw [← sub_div, abs_div, abs_of_pos (by positivity : (0 : ℝ) < 2 * Real.pi)]
-  calc |Real.sqrt (4 - x ^ 2) - Real.sqrt (4 - y ^ 2)| / (2 * Real.pi)
-      ≤ (2 * |x - y| / s) / (2 * Real.pi) := by gcongr
-    _ = |x - y| / (Real.pi * s) := by field_simp
 
 end Arith
 
@@ -1341,17 +1152,6 @@ theorem unBadY_measure_le {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) (h
         gcongr
         exact_mod_cast unBadY_card_le hL lam a
 
-/-- The constant `2d + 1` is absorbed by `W^{τ/2}` once `W^{τ/2} ≥ 2d + 1` (eventually, `W → ∞`):
-`(2d+1) W^{-𝔡/15+τ/2} ≤ W^{-𝔡/15+τ}`, i.e. `ℙ(𝓑) ≤ W^{-𝔡/15+τ}` as in `1_2:577`. -/
-theorem un_const_absorb {W x τ : ℝ} {d : ℕ} (hW : 1 ≤ W) (_hτ : 0 < τ)
-    (h : (2 * d + 1 : ℝ) ≤ W ^ (τ / 2)) :
-    (2 * d + 1 : ℝ) * W ^ (-x + τ / 2) ≤ W ^ (-x + τ) := by
-  have hW0 : 0 < W := lt_of_lt_of_le one_pos hW
-  have : W ^ (-x + τ) = W ^ (τ / 2) * W ^ (-x + τ / 2) := by
-    rw [← Real.rpow_add hW0]; congr 1; ring
-  rw [this]
-  exact mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hW0.le _)
-
 end BadYProb
 
 /-! ## 5d. The density hypothesis `UNDens` is satisfiable at `ρ = ρ_sc`: `m = msc`, `E = 0` (limit check)
@@ -1360,132 +1160,6 @@ The Stieltjes bounds `c ≤ Im m ≤ C` on `|x| ≤ 1/2`, `0 < η ≤ 10`, the L
 limit `Im m(iη)/π → ρ_sc(0)` are proved from the quadratic equation `m (m + z) = -1` (`msc_mul`, `:118`),
 `‖m‖ < 1` (`norm_msc_lt_one`, `:152`) and `Im m > 0` (`msc_im_pos`, `:123`) of `Defs/Semicircle.lean`, with
 `c = 9/100`, `C = 1`, `Lp = 10000/81`.  (The row `UNDensBandRow` asks the same for every bulk `E`.) -/
-
-section DensBand
-
-private theorem un_msc_eqs {z : ℂ} :
-    (msc z).re * ((msc z).re + z.re) - (msc z).im * ((msc z).im + z.im) = -1 ∧
-    (msc z).re * ((msc z).im + z.im) + (msc z).im * ((msc z).re + z.re) = 0 := by
-  have h := msc_mul z
-  have h1 := congrArg Complex.re h
-  have h2 := congrArg Complex.im h
-  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.neg_re,
-    Complex.neg_im, Complex.one_re, Complex.one_im] at h1 h2
-  exact ⟨by linarith, by linarith⟩
-
-/-- **Lower bound of `Im msc` near the real axis in the bulk window**: `|Re z| ≤ 1/2`, `0 < Im z ≤ 10`
-give `Im msc z ≥ 9/100` (from `1 = b² + bη - a² - ax ≤ b² + bη + x²/4`). -/
-theorem un_msc_im_ge {z : ℂ} (hz : 0 < z.im) (hz10 : z.im ≤ 10) (hx : |z.re| ≤ 1 / 2) :
-    9 / 100 ≤ (msc z).im := by
-  obtain ⟨h1, _⟩ := un_msc_eqs (z := z)
-  have hb : 0 < (msc z).im := msc_im_pos hz
-  have hx2 : z.re ^ 2 ≤ 1 / 4 := by
-    have := abs_le.mp hx
-    nlinarith [this.1, this.2]
-  by_contra hlt
-  push Not at hlt
-  set a := (msc z).re
-  set b := (msc z).im
-  have e1 : 1 = b ^ 2 + b * z.im - a ^ 2 - a * z.re := by nlinarith
-  have e2 : -a ^ 2 - a * z.re ≤ z.re ^ 2 / 4 := by nlinarith [sq_nonneg (a + z.re / 2)]
-  have e3 : b * z.im ≤ 9 / 100 * 10 := by nlinarith
-  nlinarith
-
-/-- **Lipschitz dependence of `msc` on `z` where `Im msc ≥ 9/100`**: from `(m₁ - m₂)(1 - m₁m₂) = (z₁ - z₂) m₁ m₂`
-and `Re(1 - m₁m₂) ≥ Im m₁ Im m₂ ≥ (9/100)²`, `‖m_i‖ < 1`. -/
-theorem un_msc_lip {z₁ z₂ : ℂ} (h1 : 0 < z₁.im) (h2 : 0 < z₂.im) (hb1 : 9 / 100 ≤ (msc z₁).im)
-    (hb2 : 9 / 100 ≤ (msc z₂).im) : ‖msc z₁ - msc z₂‖ ≤ (10000 / 81) * ‖z₁ - z₂‖ := by
-  set m₁ := msc z₁
-  set m₂ := msc z₂
-  have e1 : m₁ ^ 2 + z₁ * m₁ + 1 = 0 := by have := msc_mul z₁; linear_combination this
-  have e2 : m₂ ^ 2 + z₂ * m₂ + 1 = 0 := by have := msc_mul z₂; linear_combination this
-  have key : (m₁ - m₂) * (1 - m₁ * m₂) = (z₁ - z₂) * (m₁ * m₂) := by
-    linear_combination (-m₂) * e1 + m₁ * e2
-  have hn1 : ‖m₁‖ < 1 := norm_msc_lt_one h1
-  have hn2 : ‖m₂‖ < 1 := norm_msc_lt_one h2
-  have ha1 : |m₁.re| ≤ 1 := (Complex.abs_re_le_norm m₁).trans hn1.le
-  have ha2 : |m₂.re| ≤ 1 := (Complex.abs_re_le_norm m₂).trans hn2.le
-  have hre : (81 : ℝ) / 10000 ≤ (1 - m₁ * m₂).re := by
-    simp only [Complex.sub_re, Complex.one_re, Complex.mul_re]
-    have : |m₁.re * m₂.re| ≤ 1 := by
-      rw [abs_mul]; calc |m₁.re| * |m₂.re| ≤ 1 * 1 := mul_le_mul ha1 ha2 (abs_nonneg _) zero_le_one
-        _ = 1 := one_mul 1
-    have h3 : m₁.re * m₂.re ≤ 1 := (le_abs_self _).trans this
-    nlinarith [mul_le_mul hb1 hb2 (by norm_num) (by linarith)]
-  have hnorm : (81 : ℝ) / 10000 ≤ ‖1 - m₁ * m₂‖ := hre.trans ((Complex.re_le_norm _))
-  have hprod : ‖m₁ - m₂‖ * ‖1 - m₁ * m₂‖ = ‖z₁ - z₂‖ * (‖m₁‖ * ‖m₂‖) := by
-    rw [← norm_mul, key, norm_mul, norm_mul]
-  have hle : ‖z₁ - z₂‖ * (‖m₁‖ * ‖m₂‖) ≤ ‖z₁ - z₂‖ := by
-    have : ‖m₁‖ * ‖m₂‖ ≤ 1 := by
-      calc ‖m₁‖ * ‖m₂‖ ≤ 1 * 1 := mul_le_mul hn1.le hn2.le (norm_nonneg _) zero_le_one
-        _ = 1 := one_mul 1
-    calc ‖z₁ - z₂‖ * (‖m₁‖ * ‖m₂‖) ≤ ‖z₁ - z₂‖ * 1 := mul_le_mul_of_nonneg_left this (norm_nonneg _)
-      _ = ‖z₁ - z₂‖ := mul_one _
-  have h4 : ‖m₁ - m₂‖ * (81 / 10000) ≤ ‖z₁ - z₂‖ := by
-    calc ‖m₁ - m₂‖ * (81 / 10000) ≤ ‖m₁ - m₂‖ * ‖1 - m₁ * m₂‖ :=
-          mul_le_mul_of_nonneg_left hnorm (norm_nonneg _)
-      _ = ‖z₁ - z₂‖ * (‖m₁‖ * ‖m₂‖) := hprod
-      _ ≤ ‖z₁ - z₂‖ := hle
-  linarith
-
-/-- On the imaginary axis `msc(iη) = i (√(η²+4) - η)/2`. -/
-theorem un_msc_imag_axis {η : ℝ} (hη : 0 < η) :
-    (msc ⟨0, η⟩).im = (Real.sqrt (η ^ 2 + 4) - η) / 2 := by
-  have hz : 0 < (⟨0, η⟩ : ℂ).im := hη
-  obtain ⟨h1, h2⟩ := un_msc_eqs (z := (⟨0, η⟩ : ℂ))
-  have hb : 0 < (msc ⟨0, η⟩).im := msc_im_pos hz
-  simp only [] at h1 h2
-  set a := (msc (⟨0, η⟩ : ℂ)).re
-  set b := (msc (⟨0, η⟩ : ℂ)).im
-  have ha : a = 0 := by
-    have : a * (2 * b + η) = 0 := by nlinarith
-    rcases mul_eq_zero.mp this with h | h
-    · exact h
-    · linarith
-  rw [ha] at h1
-  have hbb : b ^ 2 + b * η = 1 := by nlinarith
-  have hsq : η ^ 2 + 4 = (2 * b + η) ^ 2 := by nlinarith
-  have : Real.sqrt (η ^ 2 + 4) = 2 * b + η := by
-    rw [hsq, Real.sqrt_sq (by linarith)]
-  rw [this]; ring
-
-/-- **`UNDens` at the semicircle, `E = 0`, `δ = 1/2`**: `m n = msc`, `ρ_n = ρ_sc(0) = 1/π`:
-`9/100 ≤ Im msc ≤ 1` on `|x| ≤ 1/2`, `0 < η ≤ 10`; `Im msc(·+iη)` is `10000/81`-Lipschitz there; and
-`Im msc(iη)/π → 1/π = ρ_sc(0)` as `η ↓ 0`.  The non-vacuity of the density hypothesis of `UNCore` at `ρ_sc`. -/
-theorem un_dens_msc_zero : UNDens (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) := by
-  refine ⟨by norm_num, 9 / 100, 1, 10000 / 81, by norm_num, by norm_num, by norm_num,
-    Eventually.of_forall fun n => ⟨?_, ?_, ?_⟩⟩
-  · intro x η hx hη hη10
-    have hx' : |(⟨x, η⟩ : ℂ).re| ≤ 1 / 2 := by simpa using hx
-    refine ⟨un_msc_im_ge hη hη10 hx', ?_⟩
-    exact (Complex.im_le_norm _).trans (norm_msc_lt_one hη).le
-  · intro x y η hx hy hη hη10
-    have hx' : |(⟨x, η⟩ : ℂ).re| ≤ 1 / 2 := by simpa using hx
-    have hy' : |(⟨y, η⟩ : ℂ).re| ≤ 1 / 2 := by simpa using hy
-    have hl := un_msc_lip (z₁ := ⟨x, η⟩) (z₂ := ⟨y, η⟩) hη hη (un_msc_im_ge hη hη10 hx')
-      (un_msc_im_ge hη hη10 hy')
-    have hnz : ‖(⟨x, η⟩ : ℂ) - ⟨y, η⟩‖ = |x - y| := by
-      have : ((⟨x, η⟩ : ℂ) - ⟨y, η⟩) = ((x - y : ℝ) : ℂ) := by
-        apply Complex.ext <;> simp
-      rw [this, Complex.norm_real, Real.norm_eq_abs]
-    calc |(msc ⟨x, η⟩).im - (msc ⟨y, η⟩).im| = |((msc ⟨x, η⟩) - (msc ⟨y, η⟩)).im| := by simp
-      _ ≤ ‖msc ⟨x, η⟩ - msc ⟨y, η⟩‖ := Complex.abs_im_le_norm _
-      _ ≤ (10000 / 81) * ‖(⟨x, η⟩ : ℂ) - ⟨y, η⟩‖ := hl
-      _ = 10000 / 81 * |x - y| := by rw [hnz]
-  · have hcont : Continuous fun η : ℝ => ((Real.sqrt (η ^ 2 + 4) - η) / 2) / Real.pi := by fun_prop
-    have h0 : ((Real.sqrt ((0 : ℝ) ^ 2 + 4) - 0) / 2) / Real.pi = rhoSC 0 := by
-      unfold rhoSC
-      norm_num
-      ring_nf
-    have ht : Tendsto (fun η : ℝ => ((Real.sqrt (η ^ 2 + 4) - η) / 2) / Real.pi) (𝓝[>] 0)
-        (𝓝 (rhoSC 0)) := by
-      rw [← h0]
-      exact (hcont.tendsto 0).mono_left nhdsWithin_le_nhds
-    refine ht.congr' ?_
-    filter_upwards [self_mem_nhdsWithin] with η hη
-    rw [un_msc_imag_axis hη]
-
-end DensBand
 
 /-! ## 7. Compiled nonempty instances at `d = 3` (CLAUDE.md §4 step 2) and extreme inputs
 
@@ -1504,331 +1178,19 @@ def bump : ContDiffBump (0 : Fin 1 → ℝ) := ⟨1, 2, one_pos, one_lt_two⟩
 theorem bump_testFun : IsTestFun (bump : (Fin 1 → ℝ) → ℝ) :=
   ⟨bump.contDiff, bump.hasCompactSupport⟩
 
-theorem bump_nondegenerate :
-    (bump : (Fin 1 → ℝ) → ℝ) 0 = 1 ∧ (bump : (Fin 1 → ℝ) → ℝ) (fun _ => 3) = 0 := by
-  refine ⟨bump.one_of_mem_closedBall (by simp [bump]), bump.zero_of_le_dist ?_⟩
-  simp only [bump, dist_zero_right]
-  have : ‖(fun _ : Fin 1 => (3 : ℝ))‖ = 3 := by
-    rw [pi_norm_const]; norm_num
-  rw [this]; norm_num
-
 /-! ### 7.1 The shared hypotheses -/
-
-/-- `d = 3`, `𝔠 = 1/6`, `𝔡 = 1/10`: the instance sequence is admissible (merged). -/
-theorem sz0_adm : sz0.Admissible (1 / 6) (1 / 10) := sz0_admissible
-
-/-- `𝔠 d < 1` at the instance (`3 · 1/6 = 1/2 < 1`) and `𝔡 < d/2` (`1/10 < 3/2`): the two ranges of the
-exponent table, from the instance's own `W ≥ N^𝔠` (`n = 0`) and `(eq:WO)`. -/
-theorem inst_dc_lt_one : (3 : ℝ) * (1 / 6) < 1 :=
-  un_dc_lt_one (d := 3) (L := 4) (W := 32) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by
-      have h := sz0_bandwidth_at 0
-      have e : sz0.size 0 = ((32 * 4) ^ 3 : ℕ) := by norm_num [Sizes.size, sz0]
-      rw [e] at h
-      have e2 : sz0.W 0 = 32 := rfl
-      rw [e2] at h
-      simpa using h)
-
-theorem inst_d_lt_half : (1 / 10 : ℝ) < (3 : ℝ) / 2 :=
-  un_d_lt_half (d := 3) (W := 32) (lam := 1 / 64) (𝔡 := 1 / 10) (by norm_num) (by norm_num)
-    (by norm_num)
-    (by
-      have : ((32 : ℝ)) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = 1 / 128 := by
-        have h32 : (32 : ℝ) = (2 : ℝ) ^ (5 : ℕ) := by norm_num
-        rw [h32, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]
-        have : ((5 : ℕ) : ℝ) * (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = -7 := by norm_num
-        rw [this, Real.rpow_neg (by norm_num)]
-        norm_num
-      rw [this]; norm_num)
-    (by norm_num)
 
 /-! ### 7.2 The limit computation of `UNL32` at the instance and at extreme `τ` -/
 
-theorem two_le_rpow_quarter {N : ℝ} (h : 16 ≤ N) : 2 ≤ N ^ (1 / 4 : ℝ) := by
-  have h2 : ((2 : ℝ) ^ (4 : ℕ)) ^ ((4 : ℕ)⁻¹ : ℝ) = 2 := Real.pow_rpow_inv_natCast (by norm_num) (by norm_num)
-  calc (2 : ℝ) = ((2 : ℝ) ^ (4 : ℕ)) ^ ((4 : ℕ)⁻¹ : ℝ) := h2.symm
-    _ ≤ N ^ ((4 : ℕ)⁻¹ : ℝ) :=
-        Real.rpow_le_rpow (by norm_num) (by rw [show ((2 : ℝ) ^ (4 : ℕ)) = 16 by norm_num]; exact h)
-          (by norm_num)
-    _ = N ^ (1 / 4 : ℝ) := by norm_num
-
-/-- `un_L32_arith` at `N = sz0.size 0 = 2097152`, `τ = 1/2` (`τ_s` at the extreme of `(0, 1)`): all six
-premises of `UNL32`. -/
-theorem inst_L32_arith_half :
-    let N : ℝ := 2097152
-    let σ := min ((1 / 2 : ℝ) / 4) ((1 - 1 / 2) / 3)
-    let g := N ^ (-1 + (1 / 2 : ℝ) / 4)
-    let G := N ^ (-σ)
-    let t := 1 - Real.exp (-(N ^ (-1 + (1 / 2 : ℝ))))
-    N ^ σ / N ≤ g ∧ g ≤ N ^ (-σ) ∧ G ≤ N ^ (-σ) ∧ g * N ^ σ ≤ t ∧ t ≤ N ^ (-σ) * G ^ 2 ∧
-      |(0 : ℝ)| ≤ (1 / 2) * G :=
-  un_L32_arith (N := 2097152) (τ := 1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    (by
-      have := two_le_rpow_quarter (N := 2097152) (by norm_num)
-      norm_num at this ⊢
-      exact this)
-
-/-- `un_L32_arith` at a small `τ = 1/8` and `N = 2^{16}`: `N^{τ/2} = 2^{1} = 2`, the threshold is attained
-(`N = 2^{2/τ}` exactly): the arithmetic is sharp at the stated threshold. -/
-theorem inst_L32_arith_sharp :
-    let N : ℝ := 65536
-    let σ := min ((1 / 8 : ℝ) / 4) ((1 - 1 / 8) / 3)
-    let g := N ^ (-1 + (1 / 8 : ℝ) / 4)
-    let G := N ^ (-σ)
-    let t := 1 - Real.exp (-(N ^ (-1 + (1 / 8 : ℝ))))
-    N ^ σ / N ≤ g ∧ g ≤ N ^ (-σ) ∧ G ≤ N ^ (-σ) ∧ g * N ^ σ ≤ t ∧ t ≤ N ^ (-σ) * G ^ 2 ∧
-      |(0 : ℝ)| ≤ (1 / 2) * G :=
-  un_L32_arith (N := 65536) (τ := 1 / 8) (by norm_num) (by norm_num) (by norm_num)
-    (by
-      have h : (65536 : ℝ) = (2 : ℝ) ^ (16 : ℕ) := by norm_num
-      rw [h, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]
-      have : ((16 : ℕ) : ℝ) * ((1 / 8 : ℝ) / 2) = 1 := by norm_num
-      rw [this, Real.rpow_one])
-
 /-! ### 7.3 The exponent lemmas at the instance -/
-
-/-- `ε₀ = 𝔡/3`, `c = 𝔡/6`, exponent `-𝔡/15`: at `𝔡 = 1/10`, `-1/150`. -/
-theorem inst_que_exponent : -(min (2 * ((1 / 10 : ℝ) / 3)) (2 * (1 / 10 : ℝ) / 5)) + 2 * ((1 / 10 : ℝ) / 6) = -((1 / 10 : ℝ) / 15) :=
-  un_que_exponent (by norm_num)
-
-theorem inst_que_params : 0 < (1 / 10 : ℝ) / 3 ∧ (1 / 10 : ℝ) / 3 < (1 / 10 : ℝ) / 2 ∧ 0 < (1 / 10 : ℝ) / 6 ∧
-    (1 / 10 : ℝ) / 6 < (1 / 10 : ℝ) / 3 ∧ (1 / 10 : ℝ) / 6 < (1 / 10 : ℝ) / 5 :=
-  un_que_params (by norm_num)
-
-/-- `c' = 𝔠𝔡/30 = 1/1800` at `(𝔠, 𝔡) = (1/6, 1/10)`: `ℙ(𝓑)` binds (`1/1800 < 𝔠𝔡/6 = 1/360`). -/
-theorem inst_cprime : min ((1 / 6 : ℝ) * (1 / 10) / 6) ((1 / 6 : ℝ) * ((1 / 10) / 15 - (1 / 10) / 30)) =
-    (1 / 6 : ℝ) * (1 / 10) / 30 := un_cprime (by norm_num) (by norm_num)
-
-/-- `τ_U ≤ 1/79200` at `c' = 1/1800`, `C_n' = 21`: the exponent of `(417)` is `≤ -c'/2`. -/
-theorem inst_claim_exponent : -(1 / 1800 : ℝ) + 21 * (1 / 79200) ≤ -((1 / 1800 : ℝ) / 2) :=
-  un_claim_exponent (by norm_num) (by norm_num) (by norm_num)
-
-/-- The window of `𝓑(y)` lies in `𝓘_E(𝔡/3)` at the instance, at the lower edge of `(eq:WO)`
-`lam = W^{-d/2+𝔡} = 1/128` and at `lam = 1/64` (the instance's own coupling). -/
-theorem pow32 : ((32 : ℝ)) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = 1 / 128 := by
-  have h32 : (32 : ℝ) = (2 : ℝ) ^ (5 : ℕ) := by norm_num
-  rw [h32, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]
-  have : ((5 : ℕ) : ℝ) * (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = -7 := by norm_num
-  rw [this, Real.rpow_neg (by norm_num)]
-  norm_num
-
-theorem inst_window_sub_lower_edge : (2097152 : ℝ)⁻¹ * (32 : ℝ) ^ ((1 / 10 : ℝ) / 3) ≤
-    (32 : ℝ) ^ (-((1 / 10 : ℝ) / 3)) * ((1 / 128) * (32 : ℝ) ^ (((3 : ℕ) : ℝ) / 2) / 2097152) :=
-  un_window_sub (d := 3) (by norm_num) (by norm_num) (by norm_num) (by rw [pow32])
-
-theorem inst_window_sub_inst : (2097152 : ℝ)⁻¹ * (32 : ℝ) ^ ((1 / 10 : ℝ) / 3) ≤
-    (32 : ℝ) ^ (-((1 / 10 : ℝ) / 3)) * ((1 / 64) * (32 : ℝ) ^ (((3 : ℕ) : ℝ) / 2) / 2097152) :=
-  un_window_sub (d := 3) (by norm_num) (by norm_num) (by norm_num) (by rw [pow32]; norm_num)
-
-/-- At the upper edge `lam = 𝔡⁻¹ = 10` of `(eq:WO)` (extreme input): the window is larger, the inclusion holds. -/
-theorem inst_window_sub_upper_edge : (2097152 : ℝ)⁻¹ * (32 : ℝ) ^ ((1 / 10 : ℝ) / 3) ≤
-    (32 : ℝ) ^ (-((1 / 10 : ℝ) / 3)) * ((10 : ℝ) * (32 : ℝ) ^ (((3 : ℕ) : ℝ) / 2) / 2097152) :=
-  un_window_sub (d := 3) (by norm_num) (by norm_num) (by norm_num) (by rw [pow32]; norm_num)
-
-/-- `W^{-x} ≤ N^{-𝔠x}` at the instance (`W = 32`, `N = 2097152 = 32^{21/5}`, `𝔠 = 1/6`, `x = 1/5`). -/
-theorem inst_W_neg_le : (32 : ℝ) ^ (-(1 / 5 : ℝ)) ≤ (2097152 : ℝ) ^ (-((1 / 6 : ℝ) * (1 / 5))) :=
-  un_W_neg_le (by norm_num) (by norm_num) (by norm_num)
-    (by
-      have h := sz0_bandwidth_at 0
-      have e : sz0.size 0 = 2097152 := sz0_values.2.2.1
-      have e2 : sz0.W 0 = 32 := rfl
-      rw [e, e2] at h
-      simpa using h)
-
-/-- The floor of Step 1 at the instance, `τ_s = 𝔠𝔡 = 1/60` (the extreme of the range `τ_s ≤ 𝔠𝔡`). -/
-theorem inst_step1_floor : (32 : ℝ) ^ ((1 / 60 : ℝ) / 8) * (32 : ℝ) ^ (-(2 * (1 / 10 : ℝ))) ≤
-    (2097152 : ℝ) ^ (-(15 * (1 / 60 : ℝ) / 16)) :=
-  un_step1_floor (N := 2097152) (W := 32) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (τs := 1 / 60)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-    (by
-      have h := sz0_bandwidth_at 0
-      have e : sz0.size 0 = 2097152 := sz0_values.2.2.1
-      have e2 : sz0.W 0 = 32 := rfl
-      rw [e, e2] at h
-      simpa using h)
-
-/-- The window in the `N`-scale at the instance: `N^{-1+𝔠𝔡/3} ≤ N^{-1}W^{𝔡/3} ≤ N^{-1+𝔡/(3d)}`. -/
-theorem inst_window_N_scale : (2097152 : ℝ) ^ (-1 + (1 / 6 : ℝ) * (1 / 10) / 3) ≤ (2097152 : ℝ)⁻¹ * (32 : ℝ) ^ ((1 / 10 : ℝ) / 3) ∧
-    (2097152 : ℝ)⁻¹ * (32 : ℝ) ^ ((1 / 10 : ℝ) / 3) ≤ (2097152 : ℝ) ^ (-1 + (1 / 10 : ℝ) / (3 * ((3 : ℕ) : ℝ))) :=
-  un_window_N_scale (d := 3) (N := 2097152) (W := 32) (𝔠 := 1 / 6) (𝔡 := 1 / 10)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by
-      have h := sz0_bandwidth_at 0
-      have e : sz0.size 0 = 2097152 := sz0_values.2.2.1
-      have e2 : sz0.W 0 = 32 := rfl
-      rw [e, e2] at h
-      simpa using h)
-    (by norm_num)
-
-/-- The local-law precision at the instance: `W^{-d}B_{1-η,0} ≤ W^{-2𝔡} + (Nη)⁻¹`, `W^{2𝔡} = 2 ≤ lam² W^d = 8`. -/
-theorem inst_Bctl_le : sz0.Bctl 0 (1 - 1 / 100) ≤ (2 : ℝ)⁻¹ + (((sz0.size 0 : ℕ) : ℝ) * (1 / 100))⁻¹ :=
-  un_Bctl_le sz0 0 (A := 2) (by norm_num) (by norm_num)
-    (by
-      have h := sz0_values
-      rw [Sizes.size] at *
-      simp only [sz0] at *
-      norm_num)
-
-/-- The constant `2d + 1 = 7` is absorbed by `W^{τ/2}` once `W^{τ/2} ≥ 7`: at `W = 2^{200}`, `τ = 1/10`
-(an asymptotic statement: not instantiable at the instance's own `W = 32`, where `32^{1/20} < 7`). -/
-theorem inst_const_absorb : (2 * 3 + 1 : ℝ) * ((2 : ℝ) ^ (200 : ℝ)) ^ (-(1 / 150 : ℝ) + (1 / 10 : ℝ) / 2) ≤
-    ((2 : ℝ) ^ (200 : ℝ)) ^ (-(1 / 150 : ℝ) + 1 / 10) :=
-  un_const_absorb (d := 3) (by norm_num) (by norm_num)
-    (by
-      have : ((2 : ℝ) ^ (200 : ℝ)) ^ ((1 / 10 : ℝ) / 2) = (2 : ℝ) ^ (10 : ℝ) := by
-        rw [← Real.rpow_mul (by norm_num)]; norm_num
-      rw [this]; norm_num)
 
 /-! ### 7.4 The density: `ρ_sc` on the bulk, extreme `|E| = 2 - κ` -/
 
-theorem inst_rhoSC_lower : Real.sqrt (4 * (1 / 10 : ℝ) - (1 / 10) ^ 2) / (2 * Real.pi) ≤ rhoSC 0 :=
-  un_rhoSC_lower (by norm_num) (by norm_num)
-
-/-- At the edge `|E| = 2 - κ` the lower bound is an equality. -/
-theorem inst_rhoSC_edge : rhoSC (2 - 1 / 10) = Real.sqrt (4 * (1 / 10 : ℝ) - (1 / 10) ^ 2) / (2 * Real.pi) :=
-  un_rhoSC_edge
-
-theorem inst_rhoSC_lip : |rhoSC 0 - rhoSC (19 / 10)| ≤ |(0 : ℝ) - 19 / 10| / (Real.pi * Real.sqrt (4 * (1 / 10 : ℝ) - (1 / 10) ^ 2)) :=
-  un_rhoSC_lip (by norm_num) (by norm_num) (by norm_num)
-
-/-- `UNDens` at `ρ_sc`, `E = 0` (proved in 5d). -/
-theorem inst_dens_msc : UNDens (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) := un_dens_msc_zero
-
 /-! ### 7.5 The `d ≥ 3` step of `(2.22)`, `(2.23)`: `𝓑(y)` at `(d, L, W) = (3, 4, 32)` -/
-
-/-- `M_{y,y}` of the standard basis vector `e_y`: `N (S_yy - N⁻¹)`. -/
-theorem unMy_single_self (d L W : ℕ) [NeZero L] [NeZero W] (lam : ℝ) (y : Idx d L W) :
-    unMy d L W lam (Pi.single y 1) y =
-      (((W * L) ^ d : ℕ) : ℝ) * (((W : ℝ) ^ d)⁻¹ * (1 + 2 * (d : ℝ) * lam ^ 2)⁻¹ -
-        ((((W * L) ^ d : ℕ) : ℝ))⁻¹) := by
-  unfold unMy
-  rw [Finset.sum_eq_single y]
-  · simp [svarF_diag]
-  · intro x _ hx
-    simp [hx]
-  · intro h; exact absurd (Finset.mem_univ y) h
-
-/-- The standard basis is an orthonormal eigenbasis of the zero matrix. -/
-theorem isOrthoEigenbasis_zero {ι : Type*} [Fintype ι] [DecidableEq ι] :
-    IsOrthoEigenbasis (0 : Matrix ι ι ℂ) (fun _ => 0) (fun k => Pi.single k 1) := by
-  refine ⟨fun k k' => ?_, fun k => ?_⟩
-  · simp [Pi.single_apply, eq_comm]
-  · rw [Matrix.zero_mulVec]; simp
-
-/-- **A nondegenerate bad event**: the zero matrix on `Idx 3 4 32` (`n = 0` of `sz0`) with eigenbasis the
-standard basis has `𝓑(y)` for `y = 0`, `E = 0`: `|M_{y,y}| = L^d/(1+2d lam²) - 1 ≈ 62.9 ≥ 1 ≥ W^{-𝔡/6}`. -/
-theorem badY_zero : UNBadY 3 4 32 (1 / 64) (1 / 10) 0 (0 : Idx 3 4 32) 0 := by
-  refine ⟨fun _ => 0, fun k => Pi.single k 1, isOrthoEigenbasis_zero, 0, ?_, ?_⟩
-  · simp only [sub_self, abs_zero]; positivity
-  · rw [unMy_single_self]
-    have h1 : ((32 : ℕ) : ℝ) ^ (-((1 / 10 : ℝ) / 6)) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by norm_num)
-    refine h1.trans ?_
-    norm_num
-
-/-- **`unBadY_subset` at the instance** (all deterministic hypotheses discharged: `3 ≤ L`, `W ≥ 1`, `𝔡 > 0`,
-`(eq:WO)` `lam ≥ W^{-d/2+𝔡}`): some block `b` in the support of the weights has the QUE bad event. -/
-theorem inst_badY_subset : ∃ b : Zd 3 4, SBR 3 4 (1 / 64) b (split 3 4 32 (0 : Idx 3 4 32)).1 ≠ 0 ∧
-    queBadMat 3 4 32 (1 / 64) (1 / 10 / 3) (1 / 10 / 6) 0 b (0 : Matrix (Idx 3 4 32) (Idx 3 4 32) ℂ) :=
-  unBadY_subset (d := 3) (L := 4) (W := 32) (by norm_num) (by norm_num) (by norm_num)
-    (by rw [Nat.cast_ofNat, pow32]; norm_num) _ _ badY_zero
-
-/-- **`unBadY_measure_le` at the instance**: the law `δ_*` on a point with the zero matrix: every block bad
-event has probability `1`, `p = 1`, so `ℙ(𝓑(y)) ≤ (2d+1) · 1 = 7`; the bound is not sharp here (the point of
-the instance is that every hypothesis is discharged and the event is nonempty, `badY_zero`). -/
-theorem inst_badY_measure : (Measure.dirac ()) {_ω : Unit | UNBadY 3 4 32 (1 / 64) (1 / 10) 0 (0 : Idx 3 4 32)
-      (0 : Matrix (Idx 3 4 32) (Idx 3 4 32) ℂ)} ≤ ((2 * 3 + 1 : ℕ) : ℝ≥0∞) * 1 :=
-  unBadY_measure_le (d := 3) (L := 4) (W := 32) (Measure.dirac ()) (by norm_num) (by norm_num)
-    (by norm_num) (by rw [Nat.cast_ofNat, pow32]; norm_num) _ (fun _ => 0) 1
-    (fun b => prob_le_one)
-
-/-- The support of the weights has at most `2d + 1 = 7` blocks (here: for `lam = 1/64`, `L = 4`). -/
-theorem inst_badY_card (a : Zd 3 4) : (Finset.univ.filter fun b : Zd 3 4 => SBR 3 4 (1 / 64) b a ≠ 0).card ≤ 2 * 3 + 1 :=
-  unBadY_card_le (by norm_num) _ a
-
 
 /-! ### 7.6 The skeleton: `Thm: B_Univ` (band) and the block Anderson form from `UNCore` (target 5) -/
 
-/-- **Target 5(a): `Thm: B_Univ` for the band model at the instance** (`sz0`, `d = 3`, `𝔠 = 1/6`, `𝔡 = 1/10`,
-`k = 1`, `κ = 1/10`, `E = 0`, `𝒪 = bump`) from the UN pins and the consumed inputs: every deterministic hypothesis is
-discharged; the hypotheses are the external `UNL32`, the consumed `UNMLOut`, `UNLocAvgBand`, `UNQueBand`
-(MA/ST-6 pins to be frozen), the internal `UNGUELocal`, `UNGreenCorrAll` and the rows of the UN proof tickets. -/
-theorem inst_bUniv_band (rI : UNInfty1Row) (rU : UNUnivMainRow) (rC : UNClaimRow) (rE : UNEMCTE2Row)
-    (rJ : UNJakUywRow) (rO : UNOURow) (rD : UNDensBandRow) (rT : UNTrLocalBandRow)
-    (rN : UNNormBandRow) (h32 : UNL32) (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand)
-    (hQ : UNQueBand) (hGL : UNGUELocal) (hGC : UNGreenCorrAll) :
-    Tendsto (fun n =>
-      (∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
-          (Sizes.seqXmat_isHermitian sz0 n ω).eigenvalues ∂(Sizes.seqP sz0)) -
-      (∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
-          (Xmat_isHermitian 3 (sz0.L n) (sz0.W n) ω).eigenvalues ∂(gueP 3 (sz0.L n) (sz0.W n))))
-      atTop (𝓝 0) :=
-  un_bUniv_of_rows rI rU rC rE rJ rO rD rT rN h32 hML hLoc hQ hGL hGC 3 le_rfl (1 / 6) (1 / 10) sz0
-    sz0_adm 1 le_rfl (1 / 10) (by norm_num) 0 (by norm_num) bump bump_testFun
-
-/-- **Target 5(a'): the core at `ρ = ρ_sc`, `E = 0`, `E' = 0`** for the band model: `UNDens` at `msc` is discharged
-(`un_dens_msc_zero`, so the hypothesis set of `UNCore` is nonempty at `ρ = ρ_sc`); the remaining hypotheses are the
-local law `UNTrLocal` and the Claim `(417)` of the model (MA and UN rows) and the external/internal pins. -/
-theorem inst_core_band (hcore : UNCore) (h32 : UNL32) (hGL : UNGUELocal) (hGC : UNGreenCorrAll)
-    (hT : UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2))
-    (hN : ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀)
-    (hC : UNClaimAll sz0 (UNModel.band sz0) 0) :
-    UNUnivDilAt sz0 (UNModel.band sz0) (fun _ => rhoSC 0) 0 0 1 (bump : (Fin 1 → ℝ) → ℝ) :=
-  hcore h32 hGL hGC 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0) (fun _ => msc) 0
-    (fun _ => rhoSC 0) (1 / 2) un_dens_msc_zero hT hN hC 0 (by norm_num) 1 le_rfl bump bump_testFun
-
-/-- **Target 5(b): the block Anderson form of DECISIONS §11 from `UNCore`**: the model `UNModel.ba sz0`
-(`H = V + ilambda Ψ`, law `seqP (sz0.withLam 0)`), the data `m n = m(·, λ_n)` of `(self_m)`, the density
-`ρ_N(E) = π⁻¹ Im m_n(E + i0)` and the bulk condition (= `UNDens`) are supplied by BA-D1 and stay hypotheses; the
-conclusion is the dilated universality `ρ_N(E)^{-k} p_H^{(k)}(E + α/(Nρ_N(E)))` against GUE at an arbitrary
-`|E'| < 2` with density `ρ_sc(E')`. -/
-theorem inst_core_ba (hcore : UNCore) (h32 : UNL32) (hGL : UNGUELocal) (hGC : UNGreenCorrAll)
-    (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ) (hD : UNDens m E ρ δ)
-    (hT : UNTrLocal sz0 (UNModel.ba sz0) m E δ)
-    (hN : ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.ba sz0) CV₀)
-    (hC : UNClaimAll sz0 (UNModel.ba sz0) E) (E' : ℝ) (hE' : |E'| < 2) :
-    UNUnivDilAt sz0 (UNModel.ba sz0) ρ E E' 1 (bump : (Fin 1 → ℝ) → ℝ) :=
-  hcore h32 hGL hGC 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.ba sz0) m E ρ δ hD hT hN hC E' hE' 1
-    le_rfl bump bump_testFun
-
-/-- Target 5(c): the Claim `(417)` for the band model from the four band rows, at the instance (`κ = 1/10`,
-`E = 0`). -/
-theorem inst_claimAll_band (rC : UNClaimRow) (rE : UNEMCTE2Row) (rJ : UNJakUywRow) (rO : UNOURow)
-    (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNClaimAll sz0 (UNModel.band sz0) 0 :=
-  un_claimAll_of_rows rC rE rJ rO hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (1 / 10)
-    (by norm_num) 0 (by norm_num)
-
 /-! ### 7.7 Extreme inputs -/
-
-/-- `k = 0`: `kPoint 0 O E λ = O 0` (no injection needed): the statement is vacuous, which is why the pins have
-`1 ≤ k` (RBM2D `PinsCheck.kPoint_zero`, `Pins.lean:569`). -/
-theorem kPoint_zero {ι : Type*} [Fintype ι] [DecidableEq ι] (O : (Fin 0 → ℝ) → ℝ) (E : ℝ)
-    (lam : ι → ℝ) : kPoint 0 O E lam = O 0 := by
-  simp only [kPoint, pow_zero, Nat.descFactorial_zero, Nat.cast_one, div_one, one_mul]
-  rw [Fintype.sum_unique]
-  exact congrArg O (Subsingleton.elim _ _)
-
-/-- `k > N`: no injection `Fin k ↪ ι`, `kPoint = 0` (RBM2D `PinsCheck.kPoint_eq_zero_of_card_lt`, `:560`). -/
-theorem kPoint_eq_zero_of_card_lt {ι : Type*} [Fintype ι] [DecidableEq ι] (k : ℕ)
-    (O : (Fin k → ℝ) → ℝ) (E : ℝ) (lam : ι → ℝ) (hk : Fintype.card ι < k) :
-    kPoint k O E lam = 0 := by
-  have hemp : IsEmpty (Fin k ↪ ι) :=
-    ⟨fun f => absurd (Fintype.card_le_of_embedding f) (by simpa using hk.not_ge)⟩
-  simp [kPoint]
-
-/-- At `k = 0` the dilated statement is trivially true, for every model, density and energies. -/
-theorem unUnivDilAt_zero {d : ℕ} (sz : Sizes d) (M : UNModel sz) (ρ : ℕ → ℝ) (E E' : ℝ)
-    (O : (Fin 0 → ℝ) → ℝ) : UNUnivDilAt sz M ρ E E' 0 O := by
-  unfold UNUnivDilAt
-  have h : ∀ n, ((∫ ω, kPoint 0 (fun α => O (ρ n • α)) E (M.herm n ω).eigenvalues ∂M.μ) -
-      ∫ ω, kPoint 0 (fun α => O (rhoSC E' • α)) E'
-        (Xmat_isHermitian d (sz.L n) (sz.W n) ω).eigenvalues ∂(gueP d (sz.L n) (sz.W n))) = 0 := by
-    intro n
-    simp [kPoint_zero]
-  simp_rw [h]
-  exact tendsto_const_nhds
 
 /-- `(EMCTE2)` at `n_f = 0` holds (both products are `1`); `0 ≤ B` is needed: without it the pin would claim
 `0 ≤ N^ε N^{…} B` for every `B`, which is false (RBM2D report extreme input E5, `Pins.lean:577-608`). -/
@@ -1838,62 +1200,6 @@ theorem un_emcte2_zero {d : ℕ} (sz : Sizes d) (E τU Cn : ℝ) : UNEMCTE2 sz E
   simp only [Finset.univ_eq_empty, Finset.prod_empty, sub_self, abs_zero]
   have : 0 ≤ Nsz sz n ^ ε * Nsz sz n ^ (-1 + Cn * τU) := by positivity
   exact mul_nonneg this hB
-
-/-- `Claim417` at `n_f = 0` holds (RBM2D extreme input E6). -/
-theorem un_claim417_zero {d : ℕ} (sz : Sizes d) (M : UNModel sz) (E τU c' Cn : ℝ) :
-    UNClaim417 sz M E 0 τU c' Cn := by
-  intro C₀ _
-  refine Eventually.of_forall fun n z _ t _ _ => ?_
-  simp only [Finset.univ_eq_empty, Finset.prod_empty, sub_self, abs_zero]
-  positivity
-
-/-- `Uyw` at `n_f = 1` holds (no pair `i ≠ j`; RBM2D extreme input E7). -/
-theorem un_uyw_one {d : ℕ} (sz : Sizes d) (E τU C c' : ℝ) : UNUyw sz E 1 τU C c' := by
-  intro C₀ ε _ _
-  exact Eventually.of_forall fun n z _ t _ _ s i j hij y b₁ b₂ =>
-    absurd (Subsingleton.elim i j) hij
-
-
-/-- The negative check behind `un_emcte2_zero`: the `n_f = 0` instance of `UNEMCTE2` **without** `0 ≤ B` is
-false for every size sequence (take `B = -1`); the hypotheses on the `L₁`, `L₂` kernels are empty at `n_f = 0`
-and are dropped.  RBM2D `PinsCheck.not_emcte2_zero_noB` (`Pins.lean:585`). -/
-theorem un_not_emcte2_zero_noB {d : ℕ} (sz : Sizes d) (E τU Cn : ℝ) :
-    ¬ (∀ C₀ ε : ℝ, 0 < C₀ → 0 < ε → ∀ᶠ n in atTop, ∀ z : Fin 0 → ℂ,
-      (∀ i, InWindow sz E C₀ τU n (z i)) → ∀ B : ℝ,
-        ∀ t : ℝ, 0 ≤ t → t ≤ ouTStar sz τU n →
-          |(∫ ω, ∏ i, (stieltjesN (ouMat (UNModel.band sz) n t ω) (z i)).im
-              ∂(ouP (UNModel.band sz) n)) -
-            ∫ ω, ∏ i, (stieltjesN (ouMat (UNModel.band sz) n (ouTStar sz τU n) ω) (z i)).im
-              ∂(ouP (UNModel.band sz) n)| ≤
-            Nsz sz n ^ ε * Nsz sz n ^ (-1 + Cn * τU) * B) := by
-  intro h
-  obtain ⟨n, hn⟩ := (h 1 1 one_pos one_pos).exists
-  have ht : (0 : ℝ) ≤ ouTStar sz τU n := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have key := hn Fin.elim0 (fun i => i.elim0) (-1) 0 le_rfl ht
-  simp only [Finset.univ_eq_empty, Finset.prod_empty, sub_self, abs_zero] at key
-  have hN : (0 : ℝ) < Nsz sz n := by
-    have : 0 < sz.size n := by
-      simp only [Sizes.size]
-      have := sz.three_le_L n
-      have := sz.W_pos n
-      positivity
-    exact_mod_cast this
-  have h1 := Real.rpow_pos_of_pos hN 1
-  have h2 := Real.rpow_pos_of_pos hN (-1 + Cn * τU)
-  nlinarith [mul_pos h1 h2]
-
-
-/-- **`un_core_of_rows` at the instance**: the two limit rows give the core, which is then applied at
-`sz0`, `E = 0`, `E' = 0`, `ρ = ρ_sc(0)`, `𝒪 = bump` (the density hypothesis is discharged by `un_dens_msc_zero`). -/
-theorem inst_core_of_rows (rI : UNInfty1Row) (rU : UNUnivMainRow) (h32 : UNL32) (hGL : UNGUELocal)
-    (hGC : UNGreenCorrAll) (hT : UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2))
-    (hN : ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀)
-    (hC : UNClaimAll sz0 (UNModel.band sz0) 0) :
-    UNUnivDilAt sz0 (UNModel.band sz0) (fun _ => rhoSC 0) 0 0 1 (bump : (Fin 1 → ℝ) → ℝ) :=
-  un_core_of_rows rI rU h32 hGL hGC 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0)
-    (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) un_dens_msc_zero hT hN hC 0 (by norm_num) 1 le_rfl
-    bump bump_testFun
-
 
 end UNInst
 

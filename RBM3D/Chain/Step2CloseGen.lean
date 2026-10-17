@@ -69,19 +69,9 @@ def Step2IterGen_ListLink {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz) : Prop :=
     ∀ (n : ℕ) (u : ℝ) (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
       Cm.KI n u (KLloopOf d (sz.L n) σ a) = Cm.K n u σ a
 
-/-- **Band discharge of `Step2IterGen_ListLink`** (`STLM_eq_STLIM`, `Step2Iterate.lean:1594`; `𝒦_I` at `KLloopOf` is `STKloop` by definition). -/
-theorem step2IterGen_listLink_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) :
-    Step2IterGen_ListLink (bandStep2Mat sz E) :=
-  ⟨fun n u H k σ a => STLM_eq_STLIM sz n (E n) u H σ a, fun n u k σ a => rfl⟩
-
 section Ident
 
 variable {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz)
-
-/-- `Θ^{(2)}` of `Step2Defs` §1 is the `ThetaN` of `Chain/Step2Gen` at `m = 2` (band `STthetaOp_eq_ThetaN`, `Step2Iterate.lean:1608`); definitional. -/
-theorem STthetaOpg_eq_ThetaN (n : ℕ) (u : ℝ) (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (sz.L n)) → ℂ)
-    (a : Fin 2 → Zd d (sz.L n)) :
-    STthetaOpg Cm n u σ A a = Step2Gen_ThetaN Cm.toFlowFM n σ u A a := rfl
 
 variable (hL : Step2IterGen_ListLink Cm)
 include hL
@@ -132,34 +122,6 @@ theorem STEGtMg_eq_STegtMg (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W
   simp only [Finset.sum_add_distrib, KLloopOf_cutGlue1, KLloopOf_cutGlue2, Step2CloseGen_STavgMg_eq Cm hL,
     STLMg_eq_STLIMg Cm hL]
   congr 1
-
-/-- `(ℰ⊗ℰ)^{M,(2)}` is the general-`n` quadratic-variation loop at the loop length `2`, `a' = a` (band `STEEM_eq_STeeM`, `Step2Iterate.lean:1698`). -/
-theorem STEEMg_eq_STeeMg (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    STEEMg Cm n u H σ a = STeeMg Cm n u H σ a a := by
-  unfold STEEMg STEEkMg STeeMg
-  have h1 : Finset.Icc 1 2 = {1, 2} := by decide
-  rw [h1, Finset.sum_pair (by norm_num : (1 : ℕ) ≠ 2), mul_add]
-  simp only [STeeLoop_one, STeeLoop_two, STLMg_eq_STLIMg Cm hL]
-  rfl
-
-/-- The observable of the grid walk at the loop length `2` (band `STgA_eq_STgAN`, `Step2Iterate.lean:1602`). -/
-theorem STgAg_eq_STgANg (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ)
-    (ω : PathΩ sz) : STgAg Cm s t K n σ a k ω = STgANg Cm s t K n σ a k ω :=
-  STLKMg_eq_STLKIMg Cm hL n _ _ σ a
-
-/-- The drift of §2.3 is the general-`n` drift at the loop length `2` (`Σ_{l=3}^{2}` is empty; band `STgDrift_eq_STgDriftN`, `Step2Iterate.lean:1709`). -/
-theorem STgDriftg_eq_STgDriftNg (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
-    STgDriftg Cm s t K n σ a k ω = STgDriftNg Cm s t K n σ a k ω := by
-  unfold STgDriftg STgDriftNg
-  rw [STthetaOpg_eq_ThetaN Cm, STELKLKMg_eq_STelklkMg Cm hL, STEGtMg_eq_STegtMg Cm hL]
-  have h3 : Finset.Icc 3 2 = (∅ : Finset ℕ) := by decide
-  rw [h3, Finset.sum_empty, add_zero]
-  have hf : (STLKMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) σ) =
-      fun a' => STLKIMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) (KLloopOf d (sz.L n) σ a') :=
-    funext fun a' => STLKMg_eq_STLKIMg Cm hL n _ _ σ a'
-  rw [hf]
 
 end Ident
 
@@ -804,117 +766,12 @@ theorem stLocalAvgOfL2_holdsDecG {d : ℕ} (hd : 0 < d) (law : ∀ sz : Sizes d,
 
 /-! ## 3. Target 11: the band corollary, the band re-derivation of target 9 and compiled nonempty instances -/
 
-/-- **Band re-derivation of target 9** (`3 ≤ d`): the merged `stLocalAvgOfL2_holds` (`LocalAvg2:482`) from `stLocalAvgOfL2_holdsDecG` at the band
-family `(seqP, STFlow, bandStep2Data, ·)`; the Green input is `bandFM_STGijDecgL_of_three_le` (`Evolution/FarEntry.lean:1724`), `(GiiGEX)` and
-`(GavLGEX)` are the merged `stGbEXP_holds`, the size data `localAvg1_data`. -/
-theorem step2CloseGen_stLocalAvgOfL2_band {d : ℕ} (hd : 3 ≤ d) : STLocalAvgOfL2 d := by
-  have hd0 : 0 < d := by omega
-  exact stLocalAvgOfL2_holdsDecG hd0 (fun sz => sz.seqP) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Data sz z) (fun _ _ _ _ _ _ h => h)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow => by
-      obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data hd0 hκ hε h𝔡 𝔠
-      exact ⟨cB, c, hcB, hc, hdat sz z hflow⟩)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds hd).1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul =>
-      bandFM_STGijDecgL_of_three_le hd hκ hε h𝔡 hflow hu0 hul)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds hd).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-
-example : type_of% @RBM.Gauss.Sizes.stLocalAvgOfL2_holds := by
-  intro d hd
-  exact step2CloseGen_stLocalAvgOfL2_band hd
-
-/-- **Target 11, the band corollary** (the statement of `STStep2 d` for `3 ≤ d`; the band `ST_step2_of_pinsLW'`, `Step2Iterate.lean:1793`, read through
-`ST_step2_of_pinsg`): every pin of `step2IterGen_step2_of_pins_band` is discharged by a producer inside the cone of this file, namely `STNewKLK`
-(`stNewKLK_holds`), `STK2decay`, `STNetLift2`, `STScaleExists`, `ST_Bdata_holds`, `STOptL2` (by `stOptL2_of_pinsg`, through
-`optL2Gen_stOptL2_of_pins_band`, from `STLWB` of `LWterm`) and `STLocalAvgOfL2` (by `stLocalAvgOfL2_holdsDecG`, through
-`step2CloseGen_stLocalAvgOfL2_band`).  What remains are the two light-weight inputs `LWterm d`, `LWtermExp d` (no `Graph/LWTermHolds` import) and two
-pins whose merged producers are not imported here: `STEMn2Exp d` (`stEMn2Exp_holds`, `Induction/EMn2Exp2`: its import cone contains `RBM3D.BA.FlowPins`
-and `RBM3D.BA.MFixedPoint`) and `STGridMart d` (`stGridMart_holds`, `Path/DifREP2`: a BA-free cone, but 22 further modules, among them `StepDecompN`,
-`LoopC2N`, `HierarchyN`, `GridDriftN`, `AzumaProxyN`, which the ticket keeps out of this row).  The band terminal (`Induction/MainIndHolds`) plugs in all four producers. -/
-theorem step2CloseGen_step2_of_pinsLW' {d : ℕ} (hd : 3 ≤ d) (hLW : LWterm d) (hLWE : LWtermExp d)
-    (hEMe : STEMn2Exp d) (hMart : STGridMart d) : STStep2 d :=
-  step2IterGen_step2_of_pins_band d (STLWT_of_LWtermExp hd hLWE) hEMe hMart
-    (optL2Gen_stOptL2_of_pins_band hd (STLWB_of_LWterm hd hLW) hMart) (step2CloseGen_stLocalAvgOfL2_band hd)
-
 /-! ### Compiled nonempty instances (targets 9-11; CLAUDE.md §4 step 2)
 
 Data: the band carrier `bandStep2Data sz0 z0` (`d = 3`, `sz0`: `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; flow `z0`,
 `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), the law `seqP sz0`, the window `[0, 1/16]`.  Discharged: the setting `flowOK`, the size data, `(GiiGEX)`, `(GavLGEX)`,
 `STGijDecgL` (`bandFM_STGijDecgL_of_three_le`), the time ranges.  What stays a hypothesis is a stochastic premise (the weak law of Step 1 and
 `(eq:L2_decay)`) or a pin of another gate (`LWterm`, `LWtermExp`, `STEMn2Exp`, `STGridMart`). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step2DefsInst RBM.Gauss.Step2IterateInst
-
-/-- **Target 9 at the data**: `(Gt_bound_flow)` per time on `[0, 1/16]` over `bandStep2Data sz0 z0` from `STGijDecgL`. -/
-example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
-    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :
-    STStep2LocalPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst :=
-  stStep2LocalPT_of_L2decayDecG (bandStep2Data sz0 z0) sz0.seqP (by norm_num : 0 < 3) flow_z0 hs0 hst htT
-    RBM.Gauss.LocalAvg1Inst.localAvg1_inst_hdat
-    (fun u hu0 hul ε₀ hε₀ => (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).1 (1 / 10) (1 / 10) (1 / 10)
-      (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 u hu0 hul ε₀ hε₀)
-    (fun u hu0 hul => bandFM_STGijDecgL_of_three_le (by norm_num : 3 ≤ 3) (by norm_num : (0 : ℝ) < 1 / 10)
-      (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 hu0 hul)
-    hweak hL2
-
-/-- **Target 9, the closing pin at the data**: `stLocalAvgOfL2_holdsDecG` at the band carrier, applied at `(sz0, z0, s ≡ 0, t ≡ 1/16)`. -/
-example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
-    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :
-    STStep2LocalPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst ∧
-      STStep2AvgPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst :=
-  stLocalAvgOfL2_holdsDecG (by norm_num : 0 < 3) (fun sz => sz.seqP) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Data sz z) (fun _ _ _ _ _ _ h => h)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow => by
-      obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data (by norm_num : 0 < 3) hκ hε h𝔡 𝔠
-      exact ⟨cB, c, hcB, hc, hdat sz z hflow⟩)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul =>
-      bandFM_STGijDecgL_of_three_le (by norm_num : 3 ≤ 3) hκ hε h𝔡 hflow hu0 hul)
-    (fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀ =>
-      (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
-    (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 sInst tInst hs0 hst htT
-    hweak hL2
-
-/-- **Target 10 at the data**: the class at the band carrier of `(sz0, z0)` and the identities of section 12.2 at `n = 100`, `u = 1/32`. -/
-example : Step2IterGen_ListLink (bandStep2Mat sz0 (STflowE z0)) := step2IterGen_listLink_band sz0 _
-
-example (H : Matrix (Idx 3 (sz0.L 100) (sz0.W 100)) (Idx 3 (sz0.L 100) (sz0.W 100)) ℂ) (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd 3 (sz0.L 100)) :
-    STEGtMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H σ a =
-        STegtMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H (KLloopOf 3 (sz0.L 100) σ a) ∧
-      STEEMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H σ a =
-        STeeMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H σ a a ∧
-      STELKLKMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H σ a =
-        STelklkMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H (KLloopOf 3 (sz0.L 100) σ a) ∧
-      STLKMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H σ a =
-        STLKIMg (bandStep2Mat sz0 (STflowE z0)) 100 (1 / 32) H (KLloopOf 3 (sz0.L 100) σ a) :=
-  have hL := step2IterGen_listLink_band sz0 (STflowE z0)
-  ⟨STEGtMg_eq_STegtMg _ hL 100 _ H σ a, STEEMg_eq_STeeMg _ hL 100 _ H σ a, STELKLKMg_eq_STelklkMg _ hL 100 _ H σ a,
-    STLKMg_eq_STLKIMg _ hL 100 _ H σ a⟩
-
-example (s t : ℕ → ℝ) (K : ℕ → ℕ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L 100)) (k : ℕ) (ω : PathΩ sz0) :
-    STgDriftg (bandStep2Mat sz0 (STflowE z0)) s t K 100 σ a k ω =
-        STgDriftNg (bandStep2Mat sz0 (STflowE z0)) s t K 100 σ a k ω ∧
-      STgAg (bandStep2Mat sz0 (STflowE z0)) s t K 100 σ a k ω =
-        STgANg (bandStep2Mat sz0 (STflowE z0)) s t K 100 σ a k ω :=
-  have hL := step2IterGen_listLink_band sz0 (STflowE z0)
-  ⟨STgDriftg_eq_STgDriftNg _ hL s t K 100 σ a k ω, STgAg_eq_STgANg _ hL s t K 100 σ a k ω⟩
-
-/-- **Target 11 at the data**: the band corollary at `d = 3`, read through `inst_step2` (the premises `STLKgL`, `STDecaygL` at `s` and Step 1's
-conclusions stay hypotheses; the four pins stay hypotheses). -/
-example (hLW : LWterm 3) (hLWE : LWtermExp 3) (hEMe : STEMn2Exp 3) (hMart : STGridMart 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (step2CloseGen_step2_of_pinsLW' (by norm_num : 3 ≤ 3) hLW hLWE hEMe hMart)
-
-end Instances
 
 end RBM.BA
 

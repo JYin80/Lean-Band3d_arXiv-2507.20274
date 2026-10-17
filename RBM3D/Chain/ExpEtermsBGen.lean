@@ -33,7 +33,6 @@ set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 
 open private expDr_first_moment expDr_floor expDr_decay_step expDr_W_le_size from RBM3D.Induction.ExpEtermsB
-open private ExpEtermsAGen_band_col from RBM3D.Chain.ExpEtermsAGen
 open private walk_measurable_seqHflow from RBM3D.Path.Walk
 
 open MeasureTheory ProbabilityTheory Filter
@@ -858,170 +857,11 @@ theorem stExpDriftDecaygL_of (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ
 
 /-! ## 8. The band re-derivations -/
 
-section Band
-
-/-- **Row 19 (`K^{(1)} = m_σ`) at the band** (copy of `step2IterGen_oneLoop_band` `.1`, `Chain/Step2IterGen:129`; `ST_Kloop_one`, `Induction/Step2Iterate:1237`). -/
-private theorem ExpEtermsBGen_band_K1 {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) :
-    ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u < 1 → ∀ (τ : Bool) (x : Zd d (sz.L n)),
-      (bandFM sz E).K n u (fun _ : Fin 1 => τ) (fun _ => x) =
-        if τ then (bandFM sz E).m n else (starRingEnd ℂ) ((bandFM sz E).m n) := by
-  refine Eventually.of_forall fun n u _ _ σ a => ?_
-  change STKloop sz n (E n) u (fun _ : Fin 1 => σ) (fun _ => a) = _
-  rw [ST_Kloop_one sz n (E n) u σ a]
-  cases σ <;> simp [mSigma, bandFM]
-
-/-- **Row 18 at the band** (family discharge): `stDecayLoopU_of_step2` (band `ExpEtermsB:973`) through `bandFM_STDecayLoopU`, and `stEtermDecay` (`DecayLoopB:2209`) at `k = 2` with the labels `STegt`,
-`STelklk` rewritten to `STEGtg`, `STELKLKg` of `bandFM` (`STEGtM_eq_STegtM`, `STELKLKM_eq_STelklkM`, `STegtM_seqHflow`, `STelklkM_seqHflow`; the copies of the private `expDr_EGt_eq_egt`,
-`expDr_ELKLK_eq_elklk`, `ExpEtermsB:925, 931`). -/
-private theorem ExpEtermsBGen_band_decay {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
-    {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n)
-    (htT : ∀ n, t n ≤ lemT (z n)) :
-    (∀ Cd : ℝ, STGdecayWgL (bandFM sz (STflowE z)) (Sizes.seqP sz) s t Cd →
-      STDecayLoopUgL (bandFM sz (STflowE z)) (Sizes.seqP sz) s t) ∧
-    (STDecayLoopUgL (bandFM sz (STflowE z)) (Sizes.seqP sz) s t → ∀ σ : Fin 2 → Bool,
-      STEKDecaygL (Sizes.seqP sz) s t
-        (fun n v ω (a : Fin 2 → Zd d (sz.L n)) => STELKLKg (bandFM sz (STflowE z)) n (v : ℝ) σ a ω) ∧
-      STEKDecaygL (Sizes.seqP sz) s t
-        (fun n v ω (a : Fin 2 → Zd d (sz.L n)) => STEGtg (bandFM sz (STflowE z)) n (v : ℝ) σ a ω)) := by
-  refine ⟨fun Cd hGd => (bandFM_STDecayLoopU sz (STflowE z) s t).1
-    (stDecayLoopU_of_step2 hd sz hκ hε hz hs0 hst htT Cd hGd), fun hU σ => ?_⟩
-  have hDE := stEtermDecay hd sz hκ (st6_flowE_le sz hz) hz.1 hs0 hst (st5_t_lt_one sz hz htT)
-    ((bandFM_STDecayLoopU sz (STflowE z) s t).2 hU) 2 le_rfl σ
-  refine ⟨?_, ?_⟩
-  · have e : (fun n (v : TimeIcc s t n) (ω : sz.SeqΩ) (a : Fin 2 → Zd d (sz.L n)) =>
-          STELKLKg (bandFM sz (STflowE z)) n (v : ℝ) σ a ω) =
-        fun n (v : TimeIcc s t n) (ω : sz.SeqΩ) (a : Fin 2 → Zd d (sz.L n)) =>
-          sz.STelklk n (STflowE z n) (v : ℝ) ω ⟨List.ofFn σ, List.ofFn a⟩ := by
-      funext n v ω a
-      exact (STELKLKM_eq_STelklkM sz n _ _ _ σ a).trans (STelklkM_seqHflow sz n _ _ ω _)
-    rw [e]
-    exact hDE.2.2.1
-  · have e : (fun n (v : TimeIcc s t n) (ω : sz.SeqΩ) (a : Fin 2 → Zd d (sz.L n)) =>
-          STEGtg (bandFM sz (STflowE z)) n (v : ℝ) σ a ω) =
-        fun n (v : TimeIcc s t n) (ω : sz.SeqΩ) (a : Fin 2 → Zd d (sz.L n)) =>
-          sz.STegt n (STflowE z n) (v : ℝ) ω ⟨List.ofFn σ, List.ofFn a⟩ := by
-      funext n v ω a
-      exact (STEGtM_eq_STegtM sz n _ _ _ σ a).trans (STegtM_seqHflow sz n _ _ ω _)
-    rw [e]
-    exact hDE.1
-
-/-- **Band re-derivation** (`stExpDriftLo_holds`, `ExpEtermsB:901`, through `STExpDriftLo_iff_gL`): the generic pin at the band tuple `(seqP, STFlow, bandFM ∘ STflowE, lemT)`, every family
-row discharged by a merged band fact (`Step2EventsGen_bandFlow`, `iniTermGen_cltFlow_band`, `stKbound_of_flow`, `sum_norm_SB_row`, `ExpEtermsBGen_band_K1`). -/
-theorem stExpDriftLo_of_gL (d : ℕ) : STExpDriftLo d := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  exact (STExpDriftLo_iff_gL d).2 (stExpDriftLogL_of d (fun sz => Sizes.seqP sz)
-    (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))
-    (fun sz => inferInstance) (Step2EventsGen_bandFlow d) (iniTermGen_cltFlow_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stKbound_of_flow sz hd hκ hz)
-    (fun sz _ _ _ _ z _ _ n y => ExpEtermsAGen_band_col sz (STflowE z) n y)
-    (fun sz _ _ _ _ z _ _ => ExpEtermsBGen_band_K1 sz (STflowE z))) hd κ ε 𝔡 hκ hε h𝔡
-
-/-- **Band re-derivation** (`stExpDriftDecay_holds`, `ExpEtermsB:1049`, through `STExpDriftDecay_iff_gL`): as `stExpDriftLo_of_gL`, and row 18 by `ExpEtermsBGen_band_decay`. -/
-theorem stExpDriftDecay_of_gL (d : ℕ) : STExpDriftDecay d := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  exact (STExpDriftDecay_iff_gL d).2 (stExpDriftDecaygL_of d (fun sz => Sizes.seqP sz)
-    (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))
-    (fun sz => inferInstance) (Step2EventsGen_bandFlow d) (iniTermGen_cltFlow_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stKbound_of_flow sz hd hκ hz)
-    (fun sz _ _ _ _ z _ _ n y => ExpEtermsAGen_band_col sz (STflowE z) n y)
-    (fun sz _ _ _ _ z _ _ => ExpEtermsBGen_band_K1 sz (STflowE z))
-    (fun hd sz κ ε 𝔠 𝔡 z hκ hε hz s t hs0 hst htT => ExpEtermsBGen_band_decay hd sz hκ hε hz hs0 hst htT)) hd κ ε 𝔡 hκ hε h𝔡
-
-end Band
-
 /-! ## 9. Compiled nonempty instances at `d = 3` (targets 3-5)
 
 Data: the merged ones of `Step5Pins`/`Step6Pins` (`κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`; flow `zB`): regime (iv) at `szG` (`L = 4`, `W_n = n + 4`, `lam = 5`), window `[5/8, 3/4]` (`szG_reg4`),
 regime (i) at `szB`, window `[7/8, 15/16]`.  Discharged: the flow, the admissibility, the time ranges, the representation `CltRepg` and the class `IniTermGen_CltFlow` (`iniTermGen_cltFlow_band`),
 `STKboundgL` (`stKbound_of_flow`), the column sums, `K^{(1)} = m_σ` (`ExpEtermsBGen_band_K1`), the law and, for target 5, row 18 (`ExpEtermsBGen_band_decay`).  Hypotheses: the stochastic
 premises `STLKUgL`, `STExpAvgUgL`, `STGdecayWgL … 0` of other gates (Step 2). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- Target 3: `expDr_EGtK_precg` at `(szG, zB, [5/8, 3/4])`: `STExpAvgUgL` stays a hypothesis (the other inputs are the band flow facts). -/
-example (hAvg : STExpAvgUgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4)) :
-    PrecL szG (Sizes.seqP szG) (U := STIdx2 szG (fun _ => 5 / 8) (fun _ => 3 / 4))
-      (fun n p _ => ‖ExpEtermsBGen_EGtK (bandFM szG (STflowE zB)) (Sizes.seqP szG) n (p.1 : ℝ) p.2.1 p.2.2‖)
-      (fun n p _ => ((szG.size n : ℕ) : ℝ) * (szG.Bctl n (p.1 : ℝ)) ^ 4) :=
-  expDr_EGtK_precg (bandFM szG (STflowE zB)) (Sizes.seqP szG) inferInstance flow_zG.1.2.2.1 (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) (stKbound_of_flow szG (by norm_num) (by norm_num) flow_zG)
-    (fun n y => ExpEtermsAGen_band_col szG _ n y) hAvg
-
-/-- Target 4, per carrier: `STExpDriftLoConclgL_of_LKU` at `(szG, zB, [5/8, 3/4])`; the stochastic premises `STLKUgL`, `STExpAvgUgL` stay hypotheses, every deterministic hypothesis is
-discharged (the regime `STReg5IV` is `szG_reg4`). -/
-example (hLKU : STLKUgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4))
-    (hAvg : STExpAvgUgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4)) :
-    STExpDriftLoConclgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4) := by
-  obtain ⟨κ', δ, hκ', -, hδ, H⟩ := iniTermGen_cltFlow_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num)
-  obtain ⟨H₀, g', E, hm, hrange, hrep, -⟩ := H (1 / 6) szG zB flow_zG
-  exact STExpDriftLoConclgL_of_LKU (bandFM szG (STflowE zB)) (Sizes.seqP szG) inferInstance flow_zG.1 hrep
-    hκ' hδ hm (fun _ => by norm_num) (fun _ => by norm_num) (fun n => szB_flow_ht (by norm_num) n)
-    (fun n => (Step2EventsGen_bandFlow 3).2 szG _ _ _ _ zB (by norm_num) flow_zG n) hrange
-    (stKbound_of_flow szG (by norm_num) (by norm_num) flow_zG) (fun n y => ExpEtermsAGen_band_col szG _ n y)
-    (ExpEtermsBGen_band_K1 szG (STflowE zB)) szG_reg4 hLKU hAvg
-
-/-- Target 4, per family: `stExpDriftLogL_of` at the band tuple, `d = 3`, every family row discharged. -/
-example : STExpDriftLogL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpDriftLogL_of 3 _ _ _ _ (fun sz => inferInstance) (Step2EventsGen_bandFlow 3) (iniTermGen_cltFlow_band 3)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stKbound_of_flow sz (by norm_num) hκ hz)
-    (fun sz _ _ _ _ z _ _ n y => ExpEtermsAGen_band_col sz (STflowE z) n y)
-    (fun sz _ _ _ _ z _ _ => ExpEtermsBGen_band_K1 sz (STflowE z))
-
-/-- Target 5, per carrier: `STExpDriftDecayConclgL_of_GdecayW` at `(szB, zB, [7/8, 15/16])`; the stochastic premise `STGdecayWgL … 0` stays a hypothesis, every deterministic hypothesis is
-discharged, and row 18 (`hDL`, `hDE`) by the band facts. -/
-example (hGd : STGdecayWgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) 0) :
-    STExpDriftDecayConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) := by
-  obtain ⟨κ', δ, hκ', -, hδ, H⟩ := iniTermGen_cltFlow_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num)
-  obtain ⟨H₀, g', E, hm, hrange, hrep, -⟩ := H (1 / 6) szB zB flow_zB
-  have hdec := ExpEtermsBGen_band_decay (by norm_num : 3 ≤ 3) szB (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) flow_zB (s := fun _ => 7 / 8) (t := fun _ => 15 / 16) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun n => szB_flow_ht (by norm_num) n)
-  exact STExpDriftDecayConclgL_of_GdecayW (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance (by norm_num)
-    flow_zB.1 hrep hκ' hδ hm (fun _ => by norm_num) (fun _ => by norm_num) (fun n => szB_flow_ht (by norm_num) n)
-    (fun n => (Step2EventsGen_bandFlow 3).2 szB _ _ _ _ zB (by norm_num) flow_zB n) hrange
-    (stKbound_of_flow szB (by norm_num) (by norm_num) flow_zB) (fun n y => ExpEtermsAGen_band_col szB _ n y)
-    (ExpEtermsBGen_band_K1 szB (STflowE zB)) hGd hdec.1 hdec.2
-
-/-- Target 5, per family: `stExpDriftDecaygL_of` at the band tuple, `d = 3`, every family row discharged (row 18 by `ExpEtermsBGen_band_decay`). -/
-example : STExpDriftDecaygL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpDriftDecaygL_of 3 _ _ _ _ (fun sz => inferInstance) (Step2EventsGen_bandFlow 3) (iniTermGen_cltFlow_band 3)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stKbound_of_flow sz (by norm_num) hκ hz)
-    (fun sz _ _ _ _ z _ _ n y => ExpEtermsAGen_band_col sz (STflowE z) n y)
-    (fun sz _ _ _ _ z _ _ => ExpEtermsBGen_band_K1 sz (STflowE z))
-    (fun hd sz κ ε 𝔠 𝔡 z hκ hε hz s t hs0 hst htT => ExpEtermsBGen_band_decay hd sz hκ hε hz hs0 hst htT)
-
-/-- Targets 4-5, the shape of the row (`T2506_RowAOf`, conjunct 2): from the family rows 1, 2, 9', 17, 19, 20 bundled as in `T2506_FamBase` (row 3 stays unused; row 19 is the added `K^{(1)} = m_σ`). -/
-example {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ} {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
-    {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
-    (hB : (∀ sz : Sizes d, IsProbabilityMeasure (law sz)) ∧ Step2EventsGen_Flow d Flow T0 ∧
-      Step5CasesGen_FlowFacts d Flow mk T0 ∧ IniTermGen_CltFlow d law Flow mk T0 ∧
-      ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → Flow sz κ ε 𝔠 𝔡 z → STKboundgL (mk sz z) (law sz) ∧
-        (∀ (n : ℕ) (x : Zd d (sz.L n)), ∑ y : Zd d (sz.L n), ‖(mk sz z).S n x y‖ ≤ 1) ∧
-        ∀ (n : ℕ) (y : Zd d (sz.L n)), ∑ x : Zd d (sz.L n), ‖(mk sz z).S n x y‖ ≤ 1)
-    (hOne : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → Flow sz κ ε 𝔠 𝔡 z →
-      ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u < 1 → ∀ (τ : Bool) (x : Zd d (sz.L n)),
-        (mk sz z).K n u (fun _ : Fin 1 => τ) (fun _ => x) =
-          if τ then (mk sz z).m n else (starRingEnd ℂ) ((mk sz z).m n)) :
-    STExpDriftLogL d law Flow mk T0 :=
-  stExpDriftLogL_of d law Flow mk T0 hB.1 hB.2.1 hB.2.2.2.1
-    (fun sz κ ε 𝔠 𝔡 z hκ hf => (hB.2.2.2.2 sz κ ε 𝔠 𝔡 z hκ hf).1)
-    (fun sz κ ε 𝔠 𝔡 z hκ hf => (hB.2.2.2.2 sz κ ε 𝔠 𝔡 z hκ hf).2.2) hOne
-
-/-- Target 4, band re-derivation at the data of regime (iv): `stExpDriftLo_of_gL` replaces the merged `stExpDriftLo_holds`. -/
-example : InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpDriftLoConcl sz E s t) szG zB
-    (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_expDriftLo (stExpDriftLo_of_gL 3)
-
-/-- Target 5, band re-derivation at the data of regime (i): `stExpDriftDecay_of_gL` replaces the merged `stExpDriftDecay_holds`. -/
-example : InstIng6Concl (fun sz E s t => STExpDriftDecayConcl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_expDriftDecay (stExpDriftDecay_of_gL 3)
-
-end Instances
 
 end RBM.BA

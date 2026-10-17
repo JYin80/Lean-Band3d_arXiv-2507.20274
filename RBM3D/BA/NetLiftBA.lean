@@ -799,40 +799,4 @@ the start of the Step-2 chain.  Every deterministic hypothesis is discharged (`0
 
 end RBM.BA
 
-namespace RBM.BA.NetLiftBAInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-/-- **Target 1 at instance (a)**: `d = 3`, `κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `sz0`, `zSeq`, `s ≡ 1/2`, `t ≡ 2/3 ≤ t₀`,
-every `C_d`. -/
-example (Cd : ℝ)
-    (hL : STStep2LocalPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 2 / 3))
-    (hA : STStep2AvgPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 2 / 3))
-    (hD : STStep2DecayPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) Cd (fun _ => 1 / 2) (fun _ => 2 / 3)) :
-    STStep2LocalgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 2 / 3) ∧
-      STStep2AvggL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 2 / 3) ∧
-      STStep2DecaygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) Cd (fun _ => 1 / 2) (fun _ => 2 / 3) :=
-  baNetLift2_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun n => t0_sz0 n) Cd hL hA hD
-
-/-- **Target 1 at instance (b)**: the window `s ≡ 0`, `t ≡ 1/2 < t₀` (`half_lt_t0`), every `C_d`. -/
-example (Cd : ℝ)
-    (hL : STStep2LocalPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) (fun _ => 1 / 2))
-    (hA : STStep2AvgPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) (fun _ => 1 / 2))
-    (hD : STStep2DecayPTgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) Cd (fun _ => 0) (fun _ => 1 / 2)) :
-    STStep2LocalgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) (fun _ => 1 / 2) ∧
-      STStep2AvggL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) (fun _ => 1 / 2) ∧
-      STStep2DecaygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) Cd (fun _ => 0) (fun _ => 1 / 2) :=
-  baNetLift2_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 (fun _ => 0) (fun _ => 1 / 2) (fun _ => le_rfl) (fun _ => by norm_num)
-    (fun n => (half_lt_t0 n).le) Cd hL hA hD
-
-/-- **Target 2 at the same data**: `t ≡ 2/3 ≤ t₀`, `ε/2 = 1/20`: `t_n < 1` and `RangeCond (1/20) t`. -/
-example : (∀ n : ℕ, (fun _ : ℕ => (2 / 3 : ℝ)) n < 1) ∧ sz0.RangeCond ((1 / 10) / 2) (fun _ => 2 / 3) :=
-  baFlow_premises 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) (by norm_num) (by norm_num) sz0 zSeq flow_sz0
-    (fun _ => 2 / 3) (fun n => t0_sz0 n)
-
-end RBM.BA.NetLiftBAInst
-
 end

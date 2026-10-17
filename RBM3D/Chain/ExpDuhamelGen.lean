@@ -466,117 +466,11 @@ theorem stExpDuhamelQgL_ev {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
   filter_upwards [stExpHiergL_ev law Flow mk mkM hmk hrep hcls sz κ ε 𝔠 𝔡 z hκ hf, hU sz κ ε 𝔠 𝔡 z hκ hf] with n hH hUn
   exact stExpDuhamelQgL_at (mk sz z) (law sz) n hUn hH
 
-/-- **Target 13, band re-derivation of `stExpDuhamelZ_holds`** (`ExpDuhamel:385`) from `stExpDuhamelZgL_at` at `bandFM sz (fun _ => E)`: the band window is
-`step2Gen_USemigroup_band`, the hierarchy is `stExpHiergL_at` at the band classes, `Ugen = Step2Gen_UN` is `bandStep2_Ugen`. -/
-theorem stExpDuhamelZ_of_gL (d : ℕ) : STExpDuhamelZ d := by
-  intro _ sz n E hE s t hs0 hst ht1 σ A a
-  have hH : STExpHierAtgL (bandFM sz (fun _ => E)) (Sizes.seqP sz) n :=
-    stExpHiergL_at (bandStep2Mat sz (fun _ => E)) (Sizes.seqP sz) (fun _ => 0) sz.lam (fun _ => E) n
-      (cltRepg_band sz _) (stepDecompGen_loopForm_band sz _ (fun _ => hE)) rfl
-      (hierDriftGen_kLoop_band sz _ (fun _ => hE) n) (hierDriftGen_kTwo_band sz _ (fun _ => hE) n)
-      (hierDriftGen_kLink_band sz _ n)
-  have h := stExpDuhamelZgL_at (bandFM sz (fun _ => E)) (Sizes.seqP sz) n
-    (step2Gen_USemigroup_band sz (fun _ => E) n hE.le) hH s t hs0 hst ht1 σ A a
-  simp only [bandStep2_Ugen sz (fun _ => E) n]
-  exact h
-
-/-- **Target 13, band re-derivation of `stExpDuhamelQ_holds`** (`ExpDuhamel:570`), through `bandStep2_Ugen` and `bandFM_STExpQsrc`. -/
-theorem stExpDuhamelQ_of_gL (d : ℕ) : STExpDuhamelQ d := by
-  intro _ sz n E hE Cq c ϑ hϑ s t hs0 hst ht1 σ a
-  have hH : STExpHierAtgL (bandFM sz (fun _ => E)) (Sizes.seqP sz) n :=
-    stExpHiergL_at (bandStep2Mat sz (fun _ => E)) (Sizes.seqP sz) (fun _ => 0) sz.lam (fun _ => E) n
-      (cltRepg_band sz _) (stepDecompGen_loopForm_band sz _ (fun _ => hE)) rfl
-      (hierDriftGen_kLoop_band sz _ (fun _ => hE) n) (hierDriftGen_kTwo_band sz _ (fun _ => hE) n)
-      (hierDriftGen_kLink_band sz _ n)
-  have h := stExpDuhamelQgL_at (bandFM sz (fun _ => E)) (Sizes.seqP sz) n
-    (step2Gen_USemigroup_band sz (fun _ => E) n hE.le) hH Cq c ϑ hϑ s t hs0 hst ht1 σ a
-  simp only [bandStep2_Ugen sz (fun _ => E) n, bandFM_STExpQsrc sz (fun _ => E) n]
-  exact h
-
 end Family
 
 /-! ## 5. Compiled nonempty instances (target 13)
 
 Data: `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `lam = 1/64`), the band carrier at `E = 1/2`, `H₀ = 0`, `g' = sz0.lam`, `[s,t] = [1/4, 1/2]`, `σ = (+,-)`, the loop label `a = (0, e₁)`,
 `A = {0,1}` (both indices); the `𝒬` form for a mollifier of `stMollifierEx_holds`.  The kernel window is the band theorem `step2Gen_USemigroup_band`, the hierarchy is `stExpHiergL_at_inst`; nothing stays a hypothesis. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst
-
-theorem stExpDuhamelZgL_at_inst : STExpDuhamelZAtgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) 0 :=
-  stExpDuhamelZgL_at _ _ 0 (step2Gen_USemigroup_band sz0 (fun _ => 1 / 2) 0 (by norm_num)) stExpHiergL_at_inst
-
-theorem stExpDuhamelQgL_at_inst : STExpDuhamelQAtgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) 0 :=
-  stExpDuhamelQgL_at _ _ 0 (step2Gen_USemigroup_band sz0 (fun _ => 1 / 2) 0 (by norm_num)) stExpHiergL_at_inst
-
-/-- The zero-mode identity at the data above (both indices, `Q^{(A)}` outside `𝒰`), applied: a statement with concrete numbers, not a restatement of the pin. -/
-example : zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-      (fun b => (∫ ω, (bandFM sz0 (fun _ => 1 / 2)).L 0 (1 / 2) ![true, false] b ω ∂(Sizes.seqP sz0)) -
-        (bandFM sz0 (fun _ => 1 / 2)).K 0 (1 / 2) ![true, false] b) ![0, Pi.single 0 1] =
-    zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-      (Step2Gen_UN (bandFM sz0 (fun _ => 1 / 2)) 0 ![true, false] (1 / 4) (1 / 2)
-        (fun b => (∫ ω, (bandFM sz0 (fun _ => 1 / 2)).L 0 (1 / 4) ![true, false] b ω ∂(Sizes.seqP sz0)) -
-          (bandFM sz0 (fun _ => 1 / 2)).K 0 (1 / 4) ![true, false] b)) ![0, Pi.single 0 1] +
-      ∫ u in (1 / 4 : ℝ)..(1 / 2 : ℝ), zeroModeSet 3 (sz0.L 0) (Finset.univ : Finset (Fin 2))
-        (Step2Gen_UN (bandFM sz0 (fun _ => 1 / 2)) 0 ![true, false] u (1 / 2)
-          (fun b => (∫ ω, STELKLKg (bandFM sz0 (fun _ => 1 / 2)) 0 u ![true, false] b ω ∂(Sizes.seqP sz0)) +
-            ∫ ω, STEGtg (bandFM sz0 (fun _ => 1 / 2)) 0 u ![true, false] b ω ∂(Sizes.seqP sz0))) ![0, Pi.single 0 1] :=
-  stExpDuhamelZgL_at_inst (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num) ![true, false] Finset.univ
-    ![0, Pi.single 0 1]
-
-/-- The `𝒬` form for some mollifier of `stMollifierEx_holds` at the same data. -/
-example : ∃ (Cq c : ℝ) (ϑ : ℝ → (Fin 2 → Zd 3 (sz0.L 0)) → ℂ), STMollifierProps (d := 3) (sz0.lam 0) Cq c ϑ ∧
-    STQop (d := 3) ϑ (1 / 2) (fun b => (∫ ω, (bandFM sz0 (fun _ => 1 / 2)).L 0 (1 / 2) ![true, false] b ω ∂(Sizes.seqP sz0)) -
-        (bandFM sz0 (fun _ => 1 / 2)).K 0 (1 / 2) ![true, false] b) ![0, Pi.single 0 1] =
-      Step2Gen_UN (bandFM sz0 (fun _ => 1 / 2)) 0 ![true, false] (1 / 4) (1 / 2)
-        (STQop (d := 3) ϑ (1 / 4) (fun b => (∫ ω, (bandFM sz0 (fun _ => 1 / 2)).L 0 (1 / 4) ![true, false] b ω ∂(Sizes.seqP sz0)) -
-          (bandFM sz0 (fun _ => 1 / 2)).K 0 (1 / 4) ![true, false] b)) ![0, Pi.single 0 1] +
-      ∫ u in (1 / 4 : ℝ)..(1 / 2 : ℝ), Step2Gen_UN (bandFM sz0 (fun _ => 1 / 2)) 0 ![true, false] u (1 / 2)
-        (STExpQsrcg (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) 0 u ![true, false] ϑ) ![0, Pi.single 0 1] := by
-  obtain ⟨C, c, hC, hc, hex⟩ := stMollifierEx_holds 3 (by norm_num) 1 1 one_pos
-  have hlam : 0 < sz0.lam 0 := by simp [sz0]
-  have hlam' : sz0.lam 0 ≤ 1 := by
-    have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-    rw [this]; norm_num
-  obtain ⟨ϑ, hϑ⟩ := hex (sz0.L 0) (sz0.three_le_L 0) (sz0.lam 0) hlam hlam'
-  exact ⟨C, c, ϑ, hϑ, stExpDuhamelQgL_at_inst C c ϑ hϑ (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    ![true, false] ![0, Pi.single 0 1]⟩
-
-/-- Target 13, the eventual forms at the band tuple, `Flow = True`, applied at `sz0`. -/
-theorem stExpDuhamelZgL_ev_inst : STExpDuhamelZgL 3 (fun sz => Sizes.seqP sz) (fun _ _ _ _ _ _ => True)
-    (fun sz _ => bandFM sz (fun _ => 1 / 2)) :=
-  stExpDuhamelZgL_ev (fun sz => Sizes.seqP sz) (fun _ _ _ _ _ _ => True) (fun sz _ => bandFM sz (fun _ => 1 / 2))
-    (fun sz _ => bandStep2Mat sz (fun _ => 1 / 2)) (fun _ _ => rfl)
-    (fun sz _ _ _ _ _ _ _ => ⟨fun _ => 0, sz.lam, fun _ => 1 / 2, cltRepg_band sz _,
-      stepDecompGen_loopForm_band sz _ (fun _ => by norm_num), fun _ => rfl⟩)
-    (fun sz _ _ _ _ _ _ _ => Filter.Eventually.of_forall fun n =>
-      ⟨hierDriftGen_kLoop_band sz _ (fun _ => by norm_num) n, hierDriftGen_kTwo_band sz _ (fun _ => by norm_num) n,
-        hierDriftGen_kLink_band sz _ n⟩)
-    (fun sz _ _ _ _ _ _ _ => Filter.Eventually.of_forall fun n => step2Gen_USemigroup_band sz (fun _ => 1 / 2) n (by norm_num))
-
-theorem stExpDuhamelQgL_ev_inst : STExpDuhamelQgL 3 (fun sz => Sizes.seqP sz) (fun _ _ _ _ _ _ => True)
-    (fun sz _ => bandFM sz (fun _ => 1 / 2)) :=
-  stExpDuhamelQgL_ev (fun sz => Sizes.seqP sz) (fun _ _ _ _ _ _ => True) (fun sz _ => bandFM sz (fun _ => 1 / 2))
-    (fun sz _ => bandStep2Mat sz (fun _ => 1 / 2)) (fun _ _ => rfl)
-    (fun sz _ _ _ _ _ _ _ => ⟨fun _ => 0, sz.lam, fun _ => 1 / 2, cltRepg_band sz _,
-      stepDecompGen_loopForm_band sz _ (fun _ => by norm_num), fun _ => rfl⟩)
-    (fun sz _ _ _ _ _ _ _ => Filter.Eventually.of_forall fun n =>
-      ⟨hierDriftGen_kLoop_band sz _ (fun _ => by norm_num) n, hierDriftGen_kTwo_band sz _ (fun _ => by norm_num) n,
-        hierDriftGen_kLink_band sz _ n⟩)
-    (fun sz _ _ _ _ _ _ _ => Filter.Eventually.of_forall fun n => step2Gen_USemigroup_band sz (fun _ => 1 / 2) n (by norm_num))
-
-/-- The consumer chain: row a's `st6_duhEq_of_ping` accepts `stExpDuhamelZgL_ev` (`STExpDuhEqgL` along the constant window `[1/4, 1/2]`, band tuple, `Flow = True`). -/
-example : STExpDuhEqgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) (fun _ => 1 / 4) (fun _ => 1 / 2) :=
-  st6_duhEq_of_ping stExpDuhamelZgL_ev_inst (sz := sz0) (κ := 1) (ε := 1) (𝔠 := 1) (𝔡 := 1) one_pos (z := fun _ => 0)
-    trivial (fun _ => by norm_num) (fun _ => by norm_num)
-
-example : ∃ n : ℕ, STExpDuhamelZAtgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) n :=
-  (stExpDuhamelZgL_ev_inst sz0 1 1 1 1 (fun _ => 0) one_pos trivial).exists
-
-/-- The band re-derivations at `d = 3`: the band pins `STExpDuhamelZ 3`, `STExpDuhamelQ 3` from the generic proofs. -/
-example : STExpDuhamelZ 3 ∧ STExpDuhamelQ 3 := ⟨stExpDuhamelZ_of_gL 3, stExpDuhamelQ_of_gL 3⟩
-
-end Instances
 
 end RBM.BA

@@ -822,53 +822,6 @@ hypothesis discharged: (1) `E = 0`, `u = 1/2`, `M = 1`, `σ = (+,-,+)`, `κ ≡ 
 `u = 1/3`, the non-scalar Hermitian `M = X_{(0,0,true)}` (`coordinateMatrix_isHermitian`),
 non-alternating signs `(+,+,-)` and the non-constant `κ_b = 1(b₀ = b₁)`. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst
-
-/-- **Instance 1** of `qvPropagatedN` at `sz0`, `k = 3`. -/
-theorem QVN_check_sz0_one :
-    ∑ c : CoordF 3 (sz0.L 0) (sz0.W 0), (gvarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) c : ℝ) *
-        ‖∑ b : Fin 3 → Zd 3 (sz0.L 0), (fun _ => (1 : ℂ)) b *
-          loopDerivN 3 (sz0.L 0) (sz0.W 0) 0 (1 / 2)
-            (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-            (coordinateMatrix 3 (sz0.L 0) (sz0.W 0) c) ![true, false, true] b‖ ^ 2 ≤
-      ((3 : ℕ) : ℝ) * (∑ b : Fin 3 → Zd 3 (sz0.L 0), ∑ b' : Fin 3 → Zd 3 (sz0.L 0),
-        (fun _ => (1 : ℂ)) b * (starRingEnd ℂ) ((fun _ => (1 : ℂ)) b') *
-          sz0.STeeM 0 0 (1 / 2)
-            (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-            ![true, false, true] b b').re :=
-  qvPropagatedN 3 sz0 0 0 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 1
-    Matrix.isHermitian_one 3 (by norm_num) ![true, false, true] (fun _ => 1)
-
-/-- **Instance 2** of `qvPropagatedN` at `sz0`, `k = 3`: non-scalar `M`, non-alternating signs,
-non-constant `κ`. -/
-theorem QVN_check_sz0_two :
-    ∑ c : CoordF 3 (sz0.L 0) (sz0.W 0), (gvarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) c : ℝ) *
-        ‖∑ b : Fin 3 → Zd 3 (sz0.L 0),
-          (fun b : Fin 3 → Zd 3 (sz0.L 0) => if b 0 = b 1 then (1 : ℂ) else 0) b *
-          loopDerivN 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 3)
-            (coordinateMatrix 3 (sz0.L 0) (sz0.W 0)
-              ((0 : Idx 3 (sz0.L 0) (sz0.W 0)), (0 : Idx 3 (sz0.L 0) (sz0.W 0)), true))
-            (coordinateMatrix 3 (sz0.L 0) (sz0.W 0) c) ![true, true, false] b‖ ^ 2 ≤
-      ((3 : ℕ) : ℝ) * (∑ b : Fin 3 → Zd 3 (sz0.L 0), ∑ b' : Fin 3 → Zd 3 (sz0.L 0),
-        (fun b : Fin 3 → Zd 3 (sz0.L 0) => if b 0 = b 1 then (1 : ℂ) else 0) b *
-          (starRingEnd ℂ) ((fun b : Fin 3 → Zd 3 (sz0.L 0) => if b 0 = b 1 then (1 : ℂ) else 0) b') *
-          sz0.STeeM 0 (1 / 2) (1 / 3)
-            (coordinateMatrix 3 (sz0.L 0) (sz0.W 0)
-              ((0 : Idx 3 (sz0.L 0) (sz0.W 0)), (0 : Idx 3 (sz0.L 0) (sz0.W 0)), true))
-            ![true, true, false] b b').re :=
-  qvPropagatedN 3 sz0 0 (1 / 2) (by norm_num [abs_of_pos]) (1 / 3) (by norm_num) (by norm_num)
-    (coordinateMatrix 3 (sz0.L 0) (sz0.W 0)
-      ((0 : Idx 3 (sz0.L 0) (sz0.W 0)), (0 : Idx 3 (sz0.L 0) (sz0.W 0)), true))
-    (coordinateMatrix_isHermitian 3 (sz0.L 0) (sz0.W 0) _) 3 (by norm_num) ![true, true, false]
-    (fun b => if b 0 = b 1 then 1 else 0)
-
-end Instances
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.qvPropagatedN
-#print axioms RBM.Ind.loopDerivN

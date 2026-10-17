@@ -1,0 +1,4 @@
+state: audit-pass
+reason: audit round 2 PASS (claude-opus-5-5, wf_bcbf2ad7-2c2) after the rule-(B) repair 89856dac under Amend 1; merging (rule A: git rm for the 17 deleted files, the 633 modified files from t/T2523, full lake build).
+updated: Sat Oct 17 07:55:58 UTC 2026
+reports: docs/reports/T2523-prove.md, docs/reports/T2523-audit.md

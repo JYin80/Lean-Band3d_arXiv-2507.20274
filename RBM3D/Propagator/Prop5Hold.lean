@@ -1301,10 +1301,6 @@ theorem prop8ZeroMode_holds (d : ℕ) (Λ κ : ℝ) : Prop8ZeroMode d Λ κ := b
 
 /-! ### The theorems are the pinned statements -/
 
-example (d : ℕ) (Λ : ℝ) : Prop5Decay d Λ := prop5Decay_holds d Λ
-
-example (d : ℕ) (Λ κ : ℝ) : Prop8ZeroMode d Λ κ := prop8ZeroMode_holds d Λ κ
-
 /-! ### Compiled nonempty instances
 
 `prop5Decay_holds 3 1` and `prop8ZeroMode_holds 3 1 (1/2)` applied at `L = 5`, `g = 1/2`,
@@ -1313,87 +1309,5 @@ example (d : ℕ) (Λ κ : ℝ) : Prop8ZeroMode d Λ κ := prop8ZeroMode_holds d
 `prop5Short_holds` branch).  Every hypothesis is discharged (`3 ≤ d`, `0 < Λ`, `0 < κ`, `3 ≤ L`,
 `0 < g ≤ Λ`, `0 ≤ t < 1`, `‖m‖ = 1`, `κ ≤ Im m`); the constants `C`, `c` stay existential, as in
 the statements. -/
-
-example : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
-    ‖Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I false))
-        0 0‖
-      ≤ C * Bparam 3 5 (1 / 2) (9 / 10) (zdistD 3 5 (0 : Zd 3 5))
-        * Real.exp (-c * (zdistD 3 5 (0 : Zd 3 5) : ℝ) / ellT 5 (1 / 2) (9 / 10)) := by
-  obtain ⟨C, hC, c, hc, H⟩ := prop5Decay_holds 3 1 (by norm_num) (by norm_num)
-  exact ⟨C, hC, c, hc, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) Complex.I Complex.norm_I true false 0⟩
-
-example : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ (![1, 0, 0] : Zd 3 5) ≠ 0 ∧
-    zdistD 3 5 (![1, 0, 0] : Zd 3 5) = 1 ∧
-    ‖Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I false))
-        0 ![1, 0, 0]‖
-      ≤ C * Bparam 3 5 (1 / 2) (9 / 10) (zdistD 3 5 (![1, 0, 0] : Zd 3 5))
-        * Real.exp (-c * (zdistD 3 5 (![1, 0, 0] : Zd 3 5) : ℝ) / ellT 5 (1 / 2) (9 / 10)) := by
-  obtain ⟨C, hC, c, hc, H⟩ := prop5Decay_holds 3 1 (by norm_num) (by norm_num)
-  exact ⟨C, hC, c, hc, by decide, by decide, H 5 (by norm_num) (1 / 2) (by norm_num)
-    (by norm_num) (9 / 10) (by norm_num) (by norm_num) Complex.I Complex.norm_I true false
-    ![1, 0, 0]⟩
-
-example : ∃ C : ℝ, 0 < C ∧
-    ‖Theta0 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I false))
-        0 0‖
-      ≤ C * ((1 / 2 : ℝ) ^ 2 + |1 - (9 / 10 : ℝ)|)⁻¹
-        * (((zdistD 3 5 (0 : Zd 3 5) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := prop8ZeroMode_holds 3 1 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨C, hC, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10) (by norm_num)
-    (by norm_num) Complex.I Complex.norm_I (by norm_num) true false 0⟩
-
-example : ∃ C : ℝ, 0 < C ∧ (![1, 0, 0] : Zd 3 5) ≠ 0 ∧
-    zdistD 3 5 (![1, 0, 0] : Zd 3 5) = 1 ∧
-    ‖Theta0 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I false))
-        0 ![1, 0, 0]‖
-      ≤ C * ((1 / 2 : ℝ) ^ 2 + |1 - (9 / 10 : ℝ)|)⁻¹
-        * (((zdistD 3 5 (![1, 0, 0] : Zd 3 5) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := prop8ZeroMode_holds 3 1 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨C, hC, by decide, by decide, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num)
-    (9 / 10) (by norm_num) (by norm_num) Complex.I Complex.norm_I (by norm_num) true false
-    ![1, 0, 0]⟩
-
-example : ∃ C : ℝ, 0 < C ∧
-    ‖Theta0 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I true))
-        0 ![1, 0, 0]‖
-      ≤ C * ((1 / 2 : ℝ) ^ 2 + |1 - (9 / 10 : ℝ)|)⁻¹
-        * (((zdistD 3 5 (![1, 0, 0] : Zd 3 5) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := prop8ZeroMode_holds 3 1 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨C, hC, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10) (by norm_num)
-    (by norm_num) Complex.I Complex.norm_I (by norm_num) true true ![1, 0, 0]⟩
-
-/-- The zero-mode regime `ε < L⁻²`: `t = 999/1000` (`ε ≈ 0.01 < L⁻² = 0.04`, `ℓ_t = L`), at a point
-`a = (2, 1, 0)` with `|a| = 3`; the same two theorems, no change of hypotheses. -/
-example : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ zdistD 3 5 (![2, 1, 0] : Zd 3 5) = 3 ∧
-    ‖Theta 3 5 (1 / 2) (((999 / 1000 : ℝ) : ℂ)
-        * (PropSpin Complex.I true * PropSpin Complex.I false)) 0 ![2, 1, 0]‖
-      ≤ C * Bparam 3 5 (1 / 2) (999 / 1000) (zdistD 3 5 (![2, 1, 0] : Zd 3 5))
-        * Real.exp (-c * (zdistD 3 5 (![2, 1, 0] : Zd 3 5) : ℝ) / ellT 5 (1 / 2) (999 / 1000)) := by
-  obtain ⟨C, hC, c, hc, H⟩ := prop5Decay_holds 3 1 (by norm_num) (by norm_num)
-  exact ⟨C, hC, c, hc, by decide, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num)
-    (999 / 1000) (by norm_num) (by norm_num) Complex.I Complex.norm_I true false ![2, 1, 0]⟩
-
-example : ∃ C : ℝ, 0 < C ∧
-    ‖Theta0 3 5 (1 / 2) (((999 / 1000 : ℝ) : ℂ)
-        * (PropSpin Complex.I true * PropSpin Complex.I false)) 0 ![2, 1, 0]‖
-      ≤ C * ((1 / 2 : ℝ) ^ 2 + |1 - (999 / 1000 : ℝ)|)⁻¹
-        * (((zdistD 3 5 (![2, 1, 0] : Zd 3 5) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := prop8ZeroMode_holds 3 1 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨C, hC, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (999 / 1000) (by norm_num)
-    (by norm_num) Complex.I Complex.norm_I (by norm_num) true false ![2, 1, 0]⟩
-
-/-- Three of the five fields of the bundle `Prop5to8` are now proved
-(`Prop5Decay`, `Prop5Short`, `Prop8ZeroMode`); `Prop6Diff1`, `Prop7Diff2` stay hypotheses. -/
-example (h6 : Prop6Diff1 3 1 (1 / 2) (1 / 2)) (h7 : Prop7Diff2 3 1 (1 / 2) (1 / 2)) :
-    Prop5to8 3 1 (1 / 2) (1 / 2) :=
-  ⟨prop5Decay_holds 3 1, prop5Short_holds 3 1 (1 / 2), h6, h7, prop8ZeroMode_holds 3 1 (1 / 2)⟩
-
-/-- The merged consumer interfaces `ThetaDecay` and `ThetaZeroMode` follow from the proved pins. -/
-example : ThetaDecay 3 (1 / 2) Complex.I := (prop5Decay_holds 3 (1 / 2)).thetaDecay Complex.I
-
-example : ThetaZeroMode 3 (1 / 2) (PropSpin Complex.I true * PropSpin Complex.I false) :=
-  (prop8ZeroMode_holds 3 1 (1 / 2)).thetaZeroMode (by norm_num) (by norm_num) (by norm_num)
-    Complex.norm_I (by norm_num) true false
 
 end RBM

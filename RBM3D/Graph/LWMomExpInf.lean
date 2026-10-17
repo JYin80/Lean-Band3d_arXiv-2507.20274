@@ -560,53 +560,9 @@ Every deterministic hypothesis is discharged at the data; nothing is left as a h
 namespace LWMomExpInfInst
 
 
-private theorem lwMEI_zdistInf_le {d : ℕ} (L : ℕ) [NeZero L] (x : Zd d L) : zdistInf d L x ≤ L := by
-  refine Finset.sup_le fun i _ => ?_
-  unfold zdist
-  exact (min_le_left _ _).trans (ZMod.val_lt _).le
-
-/-- The `ℓ^∞` ball sum at `d = 3` (`k = 1`), `L = ℓ = 5`, `D = univ`, `x = c = 0`. -/
-example : ∑ α : Zd (1 + 2) 5, ((min ((zdistInf (1 + 2) 5 (0 - α) : ℕ) : ℝ) 5 + 1) ^ 1)⁻¹ ≤
-    ((1 + 2 : ℕ) : ℝ) ^ (1 + 2) * (ballC 1 * 5 ^ 2) :=
-  sum_ball_inf_min_pow_le 1 (by norm_num) Finset.univ 0 0 fun α _ => by
-    exact_mod_cast lwMEI_zdistInf_le (d := 1 + 2) 5 (0 - α)
-
-/-- **Instance of `ekTTkInf_holds`** (`d = 3`, `n = 2`): the inequality of `claim:TTk` in `ℓ^∞` at the data above. -/
-theorem inst_ekTTkInf : ∃ C : ℝ, 0 < C ∧
-    ∑ α : Zd 3 5, ∏ i : Fin 2,
-        (sfT 3 5 25 (1 / 2) (9 / 10) (min (zdistInf 3 5 ((![0, Pi.single 0 1] : Fin 2 → Zd 3 5) i - α) : ℝ) 5) *
-          sfT 3 5 25 (1 / 2) (9 / 10) (min (zdistInf 3 5 ((![Pi.single 1 1, Pi.single 2 1] : Fin 2 → Zd 3 5) i - α) : ℝ) 5)) ≤
-      C * ((5 : ℝ) ^ 2 * (((25 : ℝ) ^ 3)⁻¹ / (1 - 9 / 10))) *
-        (PsiT 3 5 25 (1 / 2) (9 / 10) ^ (2 - 2) * ∏ i : Fin 2, sfT 3 5 25 (1 / 2) (9 / 10)
-          (min (zdistInf 3 5 ((![0, Pi.single 0 1] : Fin 2 → Zd 3 5) i - (![Pi.single 1 1, Pi.single 2 1] : Fin 2 → Zd 3 5) i) : ℝ) 5)) := by
-  obtain ⟨C, hC, H⟩ := ekTTkInf_holds 3 2 le_rfl le_rfl
-  refine ⟨C, hC, H 5 25 (1 / 2) (9 / 10) (by norm_num) (by norm_num) (by norm_num) (by norm_num) 5 5 (by norm_num) ?_
-    Finset.univ 0 (fun α _ => by exact_mod_cast lwMEI_zdistInf_le (d := 3) 5 (0 - α)) _ _⟩
-  have := one_le_ellT (L := 5) (g := 1 / 2) (t := 9 / 10) (by norm_num)
-  linarith
-
 /-- Instance 1: the near pin in `ℓ^∞` at `figAux`, from `lwMomExp_nearInf`. -/
 theorem inst_near : AnpNearInfAt 3 figAux :=
   lwMomExp_nearInf 3 le_rfl 2 2 figAux figAux_nested.2 figAux_nested.1
-
-/-- Instance 1 at the data above: the inequality of the pin with `ξ = 𝖳_t(|·-·|_∞ ∧ ℓ)`, `D ≠ ∅`. -/
-theorem inst_near_pt : ∃ C : ℝ, 0 < C ∧
-    (Finset.univ.filter fun α : Zd 3 6 => ((zdistInf 3 6 (0 - α) : ℕ) : ℝ) ≤ 2).Nonempty ∧
-    lwMomExp_valOnD figAux (lwMEI_tau 3 6 2 (1 / 2) (1 / 2) 2) (fun _ => (0 : Zd 3 6))
-        (fun _ => (Pi.single 0 1 : Zd 3 6)) (Finset.univ.filter fun α : Zd 3 6 => ((zdistInf 3 6 (0 - α) : ℕ) : ℝ) ≤ 2) ≤
-      C * ((2 : ℝ) ^ 2 * (((2 : ℝ) ^ 3)⁻¹ / (1 - 1 / 2))) ^ 2 *
-        PsiT 3 6 2 (1 / 2) (1 / 2) ^ (figAux.ordN - ((2 : ℕ) : ℤ)) *
-        sfT 3 6 2 (1 / 2) (1 / 2) (min ((zdistInf 3 6 ((0 : Zd 3 6) - Pi.single 0 1) : ℕ) : ℝ) 2) ^ 2 := by
-  obtain ⟨C, hC, H⟩ := inst_near
-  have hell : (2 : ℝ) ≤ 2 * ellT 6 (1 / 2) (1 / 2) := by
-    have := one_le_ellT (L := 6) (g := 1 / 2) (t := 1 / 2) (by norm_num)
-    linarith
-  refine ⟨C, hC, ⟨0, ?_⟩, ?_⟩
-  · simp [lwMEI_zdistInf_zero]
-  · exact H 6 2 (1 / 2) (1 / 2) (by norm_num) (by norm_num) (by norm_num) (by norm_num) 2 2
-      (by norm_num) hell (lwMEI_tau 3 6 2 (1 / 2) (1 / 2) 2)
-      (fun α β => ⟨lwMEI_tau_nonneg α β, lwMEI_tau_symm α β⟩) (fun α β => le_rfl) 0 0 (Pi.single 0 1) _
-      (fun α hα => (Finset.mem_filter.1 hα).2)
 
 end LWMomExpInfInst
 

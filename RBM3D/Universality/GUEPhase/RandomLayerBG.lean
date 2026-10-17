@@ -390,109 +390,11 @@ private theorem RandomLayerBG_eq747_seq {K : UNKind d} {P : UNOUProfile K} {Ed :
 
 /-! ### The kind-generic target (target 7, D2) -/
 
-/-- **`g1Rowk_of_inputsG`** (UN-51 repaired; band original `g1Rowk_of_inputs`, `RandomLayerB.lean:316`): `UNG1Rowk K P ML
-Loc Que` for every kind `K` and profile `P` from the primed inputs `RBG_Flow` (T1), `RBG_Dom` (T1'), `RBG_Comp`
-(D1, replaces T6), `RBG_Prod` (T2), `RandomLayerB_LL` (T3, unchanged), `RBG_Que` (T4) and `RandomLayerB_MLout`
-(T5, unchanged, under `ML`).  The kind's vocabulary is a parameter: the margin datum `Ed`, flow maps `fE`, `fT`, flow
-domain `Fl`, `G`-loop outputs `MO`, primitive family `KF`, path bounds `PB`.  `Loc`, `Que` are not used.  The padding
-is `RandomLayerBG_pad_subseq` with `comp_admissible` and `comp_size` (`Induction/SizesComp.lean:93`, `:68`). -/
-theorem g1Rowk_of_inputsG :
-    ∀ (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d)) (ML Loc Que : Prop)
-      (Ed : ∀ d : ℕ, ℝ → Sizes d → ℕ → ℂ → Prop) (fE fT : ∀ d : ℕ, Sizes d → ℕ → ℂ → ℝ)
-      (Fl : ∀ d : ℕ, Sizes d → ℝ → ℝ → ℝ → ℝ → (ℕ → ℂ) → Prop)
-      (MO : ∀ d : ℕ, Sizes d → (ℕ → ℂ) → (ℕ → ℝ) → Prop)
-      (KF PB : ∀ d : ℕ, ∀ sz : Sizes d, (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) →
-        (∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) → Prop),
-      (∀ d, 3 ≤ d → RBG_Flow (K d) (Ed d) (fT d)) →
-      (∀ d, 3 ≤ d → RBG_Dom (K d) (Fl d)) →
-      (∀ d, 3 ≤ d → RBG_Comp (K d) (P d)) →
-      (∀ d, 3 ≤ d → RBG_Prod (Ed d) (fE d) (fT d) (MO d) (KF d) (PB d)) →
-      (∀ d, 3 ≤ d → RandomLayerB_LL (K d) (fE d) (fT d) (PB d)) →
-      (∀ d, 3 ≤ d → RBG_Que (K d) (P d) (Ed d) (fE d) (fT d) (MO d) (KF d) (PB d)) →
-      (ML → ∀ d, 3 ≤ d → RandomLayerB_MLout (fT d) (Fl d) (MO d)) →
-      UNG1Rowk K P ML Loc Que := by
-  intro K P ML Loc Que Ed fE fT Fl MO KF PB hT1 hT1' hC hT2 hT3 hT4 hT5 hML _ _ d hd 𝔠 𝔡 sz hA τU hτU hτUm
-  refine ⟨fun κ hκ E t ht δ hδ p => ?_, fun κ hκ E t ht τ hτ => ?_⟩
-  · refine RandomLayerBG_pad_subseq (fun n => (K d).bulk sz κ (E n) n)
-      (fun n => RandomLayerB_LLAt (K d) sz τU n (E n) (t n) δ p) fun φ hφ hS => ?_
-    exact (RandomLayerBG_oull_seq hd (hT1 d hd) (hT1' d hd) (hT2 d hd) (hT3 d hd) (hT5 hML d hd)
-      (comp_admissible sz φ 𝔠 𝔡 hφ.tendsto_atTop hA) hτU hτUm hκ
-      (fun j => (hC d hd sz φ hφ j).1 κ _ (hS j)) (fun j => ht (φ j)) δ hδ p).mono
-      fun j hj => (hC d hd sz φ hφ j).2.1 τU _ _ δ p hj
-  · refine RandomLayerBG_pad_subseq (fun n => (K d).bulk sz κ (E n) n)
-      (fun n => RandomLayerB_QueAt (K d) (P d) sz 𝔡 n (E n) (t n) τ) fun φ hφ hS => ?_
-    exact (RandomLayerBG_eq747_seq hd (hT1 d hd) (hT1' d hd) (hT2 d hd) (hT4 d hd) (hT5 hML d hd)
-      (comp_admissible sz φ 𝔠 𝔡 hφ.tendsto_atTop hA) hτU hτUm hκ
-      (fun j => (hC d hd sz φ hφ j).1 κ _ (hS j)) (fun j => ht (φ j)) τ hτ).mono
-      fun j hj => (hC d hd sz φ hφ j).2.2 𝔡 _ _ τ hj
-
 end Generic
 
 /-! ### Band side (target 8): every premise of `g1Rowk_of_inputsG` at the band from the merged discharges
 
 This section uses the band vocabulary (`lemE`, `lemT`, `etaT`, `gueScale`, `|e| ≤ 2 - κ`). -/
-
-section Band
-
-variable {d : ℕ}
-
-/-- The band margin datum: `|lemE z| ≤ 2 - κ` and the T1 identity `etaT = √lemT · Im z`, which `RBG_Prod` at the band
-needs (`RBG_Prod` has no `Im z > 0`; the identity is the 4th conjunct of the merged T1; paper-delta candidate `T2475b`). -/
-def RandomLayerBG_bandEd (κ : ℝ) (_ : Sizes d) (_ : ℕ) (z : ℂ) : Prop :=
-  |lemE z| ≤ 2 - κ ∧ etaT (lemE z) (lemT z) = Real.sqrt (lemT z) * z.im
-
-/-- `RBG_Flow` at the band with the datum `RandomLayerBG_bandEd`: `κ' = κ`, `cT = 1/16`, `c` of the merged T1. -/
-theorem RandomLayerBG_flowG_of_band_id
-    (h : RandomLayerB_Flow (UNKind.band d) (fun _ _ z => lemE z) (fun _ _ z => lemT z)) :
-    RBG_Flow (UNKind.band d) RandomLayerBG_bandEd (fun _ _ z => lemT z) := by
-  intro κ hκ
-  obtain ⟨c, hc, hF⟩ := h κ hκ
-  refine ⟨κ, c, 1 / 16, hκ, hc, by norm_num, fun sz n z hb h0 h1 => ?_⟩
-  obtain ⟨a, b, e, f, g⟩ := hF sz n z hb h0 h1
-  exact ⟨⟨a, f⟩, b, e, g⟩
-
-/-- **Target 8, `flowG_of_band`**: the band keeps its merged T1; `RBG_Flow` at the plain datum `|lemE z| ≤ 2 - κ`. -/
-theorem flowG_of_band (h : RandomLayerB_Flow (UNKind.band d) (fun _ _ z => lemE z) (fun _ _ z => lemT z)) :
-    RBG_Flow (UNKind.band d) (fun κ _ _ z => |lemE z| ≤ 2 - κ) (fun _ _ z => lemT z) := fun κ hκ =>
-  let ⟨κ', c, cT, h1, h2, h3, H⟩ := RandomLayerBG_flowG_of_band_id h κ hκ
-  ⟨κ', c, cT, h1, h2, h3, fun sz n z hb h0 h1' => ⟨(H sz n z hb h0 h1').1.1, (H sz n z hb h0 h1').2⟩⟩
-
-/-- `RBG_Dom` at the band (`Fl = STFlow`, `κ' = κ`): the merged `RandomLayerB_dom_band`. -/
-theorem RandomLayerBG_dom_band : RBG_Dom (UNKind.band d) (RandomLayerB_Flband (d := d)) := fun κ hκ =>
-  ⟨κ, hκ, fun 𝔠 𝔡 ε sz hA hε E η hb h1 h2 => RandomLayerB_dom_band 𝔠 𝔡 κ ε sz hA hκ hε E η hb h1 h2⟩
-
-/-- D1 at the band, profile half: `profPMTilde`, `profPPTilde` read `sz.L n`, `sz.lam n`, `sz.W n` (`rfl`). -/
-theorem RandomLayerBG_profComp_band : RBG_ProfComp (UNKind.band d) (UNOUProfile.band d) :=
-  fun _ _ _ _ _ _ _ => ⟨rfl, rfl⟩
-
-/-- D1 at the band, kind half: the bulk is definitional, the integrals pass through `RandomLayerBG_Comp_of_law` with
-`R = reindex sz φ` (`measurePreserving_reindex`, `Induction/SizesComp.lean:245`). -/
-theorem RandomLayerBG_comp_band : RBG_Comp (UNKind.band d) (UNOUProfile.band d) :=
-  RandomLayerBG_Comp_of_law _ _ RandomLayerBG_profComp_band (fun _ _ _ _ _ h => h) fun sz φ hφ =>
-    ⟨reindex sz φ, measurePreserving_reindex sz φ hφ.injective, fun _ _ => rfl, fun _ => rfl⟩
-
-/-- `RBG_Prod` at the band: the merged `RandomLayerB_prod_band` after rewriting `etaT` by the identity carried in the
-datum and unfolding `gueScale`. -/
-theorem RandomLayerBG_prod_band (hd : 3 ≤ d) :
-    RBG_Prod RandomLayerBG_bandEd (fun _ _ z => lemE z) (fun _ _ z => lemT z) RandomLayerB_MOband
-      (RandomLayerB_KFam (d := d)) (RandomLayerB_PBband (d := d)) := by
-  intro 𝔠 𝔡 κ' τD sz hA hκ hτD z t1 hE ht1 ht10 ht0 h730 hscale hell hell1 hMO
-  exact RandomLayerB_prod_band hd 𝔠 𝔡 κ' τD sz hA hκ hτD z t1 (fun n => (hE n).1) ht1 ht10 ht0
-    (h730.mono fun n hn => by rwa [(hE n).2]) (hscale.mono fun n hn => by unfold gueScale; rwa [(hE n).2]) hell hell1 hMO
-
-/-- `RBG_Que` at the band: the merged `RandomLayerB_Que_band` at `min κ κ'` (the bulk is monotone in the margin; the
-first conjunct of the datum gives `|lemE| ≤ 2 - κ'`). -/
-theorem RandomLayerBG_Que_band (hd : 3 ≤ d) :
-    RBG_Que (UNKind.band d) (UNOUProfile.band d) RandomLayerBG_bandEd (fun _ _ z => lemE z)
-      (fun _ _ z => lemT z) RandomLayerB_MOband (RandomLayerB_KFam (d := d)) (RandomLayerB_PBband (d := d)) := by
-  intro 𝔠 𝔡 κ κ' τU sz hA hκ hκ' hτU hτUm E t hE ht z hz hgood Kt hKF hMO hPB τ hτ
-  have h1 := min_le_left κ κ'
-  have h2 := min_le_right κ κ'
-  exact RandomLayerB_Que_band hd 𝔠 𝔡 (min κ κ') τU sz hA (lt_min hκ hκ') hτU hτUm E t
-    (fun n => by have : |E n| ≤ 2 - κ := hE n; change |E n| ≤ 2 - min κ κ'; linarith) ht z hz
-    (fun n => ⟨by have := (hgood n).1.1; linarith, (hgood n).2⟩) Kt hKF hMO hPB τ hτ
-
-end Band
 
 /-! ## Compiled nonempty instance
 
@@ -501,25 +403,6 @@ end Band
 the merged `RandomLayerB_*_band`, at `d = 3`, `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`),
 `𝔠 = 1/6`, `𝔡 = 1/10`, `τ_U = ouTauMax (1/6) (1/10) = 1/720`: `UNMLOut`, `UNLocAvgBand`, `UNQueBand` (pins of other
 gates) stay hypotheses.  A nonvacuity instance: `g1Rowk_band` is not replaced. -/
-
-namespace RandomLayerBGInst
-
-open RBM.Gauss.SizesInst
-
-theorem inst_g1Rowk_of_inputsG (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULLk (UNKind.band 3) sz0 (ouTauMax (1 / 6) (1 / 10)) ∧
-      UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  g1Rowk_of_inputsG (fun d => UNKind.band d) (fun d => UNOUProfile.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand
-    UNQueBand (fun _ => RandomLayerBG_bandEd) (fun _ _ _ z => lemE z) (fun _ _ _ z => lemT z)
-    (fun d => RandomLayerB_Flband (d := d)) (fun d => RandomLayerB_MOband (d := d))
-    (fun d => RandomLayerB_KFam (d := d)) (fun d => RandomLayerB_PBband (d := d))
-    (fun _ _ => RandomLayerBG_flowG_of_band_id RandomLayerB_flow_band) (fun _ _ => RandomLayerBG_dom_band)
-    (fun _ _ => RandomLayerBG_comp_band) (fun _ hd => RandomLayerBG_prod_band hd)
-    (fun _ _ => RandomLayerB_LL_band) (fun _ hd => RandomLayerBG_Que_band hd)
-    (fun hML' _ hd => RandomLayerB_ML_band hML' hd) hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible _
-    (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-end RandomLayerBGInst
 
 end RBM.Univ.GUEPhase
 

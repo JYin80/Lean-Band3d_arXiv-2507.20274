@@ -415,9 +415,6 @@ theorem BAExp14a_Jm_nonneg {η CM S a b : ℝ} (hη : 0 < η) (hCM : 0 ≤ CM) (
     0 ≤ BAExp14a_Jm η CM S a b := by
   unfold BAExp14a_Jm; positivity
 
-theorem BAExp14a_X_le_a (n : ℕ) (ω : sz.SeqΩ) (c : Zd d (sz.L n)) :
-    ‖BAExp14a_X sz z n t ω c‖ ≤ BAExp14a_a sz z n t ω := BAExp14a_le_a n t ω c
-
 /-- **The pathwise sums of the four non-linear families** `k ∈ {T3A⁰, T3A¹, C1, C2}`: `|J_k(x,y)| ≤ a² K₃ (1 + b)/η`. -/
 theorem BAExp14a_J_path_le (hf : BAExp14a_Facts sz z n t CM S) (ω : sz.SeqΩ) (k : Fin 6) (hk : 2 ≤ k.val)
     (x y : Idx d (sz.L n) (sz.W n)) :
@@ -1716,55 +1713,6 @@ theorem baExp14a_S1_holds (d : ℕ) : BAExp14aS1 d := by
     rfl
 
 /-! ## B10. Compiled checks and nonempty instances -/
-
-section Checks
-variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (σ : Bool) (a b : Zd d (sz.L n))
-
-/-- The tags `0, …, 5` of `BAExp14a_F` are `F_MM, F_T1, F_T3A^{(0)}, F_T3A^{(1)}, F_C1, F_C2`. -/
-example : (BAExp14a_F sz z n t ω 0 σ a b, BAExp14a_F sz z n t ω 1 σ a b, BAExp14a_F sz z n t ω 2 σ a b, BAExp14a_F sz z n t ω 3 σ a b,
-    BAExp14a_F sz z n t ω 4 σ a b, BAExp14a_F sz z n t ω 5 σ a b) =
-    (BAExp14a_FMM sz z n t ω σ a b, BAExp14a_FT1 sz z n t ω σ a b, BAExp14a_FT3A sz z n t ω false σ a b,
-      BAExp14a_FT3A sz z n t ω true σ a b, BAExp14a_FC1 sz z n t ω σ a b, BAExp14a_FC2 sz z n t ω σ a b) := rfl
-
-/-- The matrix `M` inside `W` (`BAlwM` of `BAlwW`) is the `M` of the carrier that the families use. -/
-example : BAlwM d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) ((baFMz sz z).m n) = Matrix.of ((baFMz sz z).M n) := rfl
-end Checks
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- **Nonempty instance of the endpoint theorem `baExp14a_S1_holds`** at `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `λ = 1/64`),
-`zSeq`, `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2 ≤ BAflowT0`: every deterministic hypothesis is discharged; the Step 1/2
-bounds `STLocalEntrygL`, `LWAvgLawgL` (other gates' pins) stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  baExp14a_S1_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA
-
-/-- The index set `U_n` of S1 is nonempty for every `n` at these data: `λ_n² / L_n³ ≤ 1 - 1/2`. -/
-example (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - (1 / 2 : ℝ) := by
-  have h1 : sz0.lam n ≤ 1 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1
-    exact inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]))
-  have h2 : (4 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-    change (4 : ℝ) ≤ (((4 * (n + 1) : ℕ)) : ℝ)
-    push_cast
-    nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
-  have h3 : (64 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) ^ 3 := by
-    have := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 4) h2 3
-    norm_num at this ⊢
-    linarith
-  rw [div_le_iff₀ (by positivity)]
-  nlinarith [mul_le_mul h1 h1 (sz0_lam_pos n).le zero_le_one]
-
-/-- The deterministic facts hold along the flow `sz0` (`d = 3`, `k = 1`): the constants `CM`, `S` and the eventual `BAExp14a_Facts`. -/
-example : ∃ CM S : ℝ, 0 ≤ CM ∧ 1 ≤ S ∧ ∀ᶠ n in atTop, ∀ t : ℝ, 0 ≤ t → t ≤ BAflowT0 sz0 zSeq n →
-    BAExp14a_Facts sz0 zSeq n t CM S :=
-  BAExp14a_facts_of_flow (k := 1) le_rfl (sz := sz0) (z := zSeq) (κ := 1 / 2) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10)
-    (by norm_num) (by norm_num) flow_sz0
-
-end Inst
 
 end RBM.BA
 

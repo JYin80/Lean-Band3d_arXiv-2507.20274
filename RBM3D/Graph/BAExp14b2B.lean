@@ -1023,12 +1023,6 @@ section Assembly
 
 variable {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
 
-/-- The tags `4, 5, 6, 7` of `BAExp14b_FS2` are `T3B^{(0)}, T3B^{(1)}, T3C-Ḡ^{(0)}, T3C-Ḡ^{(1)}`. -/
-example {n : ℕ} {t : ℝ} {ω : sz.SeqΩ} {σ : Bool} {a b : Zd (k + 2) (sz.L n)} :
-    (BAExp14b_FS2 sz z n t ω 4 σ a b, BAExp14b_FS2 sz z n t ω 5 σ a b, BAExp14b_FS2 sz z n t ω 6 σ a b, BAExp14b_FS2 sz z n t ω 7 σ a b) =
-      (BAExp14b_FT3B sz z n t ω false σ a b, BAExp14b_FT3B sz z n t ω true σ a b, BAExp14b_FT3CG sz z n t ω false σ a b,
-        BAExp14b_FT3CG sz z n t ω true σ a b) := rfl
-
 /-- **The eight families**: `‖𝔼 F_j‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` uniformly in `(j, σ, a, b)`, from the seven premises of S2 (`STDecaygL` is not read). -/
 private theorem BAExp14b2B_core8 (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1087,87 +1081,6 @@ theorem baExp14bS2_holds (d : ℕ) : BAExp14bS2 d := by
     rfl
 
 /-! ## 6. Compiled instances (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`; target 7) -/
-
-section Inst
-
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-local notation "μ0" => BAExp14a_μ sz0
-
-/-- `λ_n² / L_n³ ≤ 1 - 1/2` at `sz0`, every `n`: the index set `U_n` of S2 at `t ≡ 1/2` is the whole index set. -/
-private theorem BAExp14b2B_U0 (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - (1 / 2 : ℝ) := by
-  have h1 : sz0.lam n ≤ 1 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1
-    exact inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]))
-  have h2 : (4 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-    change (4 : ℝ) ≤ (((4 * (n + 1) : ℕ)) : ℝ)
-    push_cast
-    nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
-  have h3 : (64 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) ^ 3 := by
-    have := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 4) h2 3
-    norm_num at this ⊢
-    linarith
-  rw [div_le_iff₀ (by positivity)]
-  nlinarith [mul_le_mul h1 h1 (sz0_lam_pos n).le zero_le_one]
-
-/-- The index set `U_n` of S2 (a subtype) is nonempty for every `n` at these data: the tag `D1t`, the charges `(+,+)`, the blocks `(0, 0)`. -/
-example (n : ℕ) : Nonempty {_p : Fin 8 × (Bool × Bool) × (Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) //
-    sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - (1 / 2 : ℝ)} :=
-  ⟨⟨(0, (true, true), (0, 0)), BAExp14b2B_U0 n⟩⟩
-
-/-- **Instance of the endpoint theorem `baExp14bS2_holds`** (target 6) at `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `λ = 1/64`), `zSeq`,
-`flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2 ≤ BAflowT0`: every deterministic hypothesis is discharged; the seven premises (the five
-Step 1/2 pins, `BATwistAvgLaw`, `BATwistLoopLaw`: other gates' pins) stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hLm : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hDec : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    PrecL sz0 μ0 (U := fun n => {_p : Fin 8 × (Bool × Bool) × (Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - (1 / 2 : ℝ)})
-      (fun n p _ => ‖∫ ω, BAExp14bS2Fam sz0 zSeq n (1 / 2) ω p.1.1 p.1.2.1.1 p.1.2.1.2 p.1.2.2.1 p.1.2.2.2 ∂μ0‖)
-      (fun n _ _ => (1 - 1 / 2 : ℝ)⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  baExp14bS2_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hLm hK hDec hT1 hT2
-
-/-- **The same with TL1 discharged by name**: `baTwistAvgProd_holds 3` gives `BATwistAvgLaw` from `LWAvgLawgL` and `STLmaxgL` at the same `t`
-(premises 2 and 3 of S2), so only `STLocalEntrygL`, `LWAvgLawgL`, `STLmaxgL`, `STLKgL`, `STDecaygL`, `BATwistLoopLaw` stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hLm : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hDec : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    PrecL sz0 μ0 (U := fun n => {_p : Fin 8 × (Bool × Bool) × (Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - (1 / 2 : ℝ)})
-      (fun n p _ => ‖∫ ω, BAExp14bS2Fam sz0 zSeq n (1 / 2) ω p.1.1 p.1.2.1.1 p.1.2.1.2 p.1.2.2.1 p.1.2.2.2 ∂μ0‖)
-      (fun n _ _ => (1 - 1 / 2 : ℝ)⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  baExp14bS2_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hLm hK hDec
-    (baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-      (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hLm) hT2
-
-/-- **Instance of target 4** (`T3B^{(kb)}`, private) at the same data; the four pins it reads stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hLm : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (kb : Bool) :
-    PrecL sz0 μ0 (U := fun n => Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p _ => ‖∫ ω, BAExp14b_FT3B sz0 zSeq n (1 / 2) ω kb p.1 p.2.1 p.2.2 ∂μ0‖)
-      (fun n _ _ => (1 - 1 / 2 : ℝ)⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  BAExp14b2B_T3B (k := 1) le_rfl (by norm_num) (by norm_num) (by norm_num) flow_sz0 (t := fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun n => (half_lt_t0 n).le) hE hA hLm hT1 kb
-
-/-- **Instance of target 5** (`T3C-Ḡ^{(kb)}`, private) at the same data; the five pins it reads stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (kb : Bool) :
-    PrecL sz0 μ0 (U := fun n => Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p _ => ‖∫ ω, BAExp14b_FT3CG sz0 zSeq n (1 / 2) ω kb p.1 p.2.1 p.2.2 ∂μ0‖)
-      (fun n _ _ => (1 - 1 / 2 : ℝ)⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  BAExp14b2B_T3CG (k := 1) le_rfl (by norm_num) (by norm_num) (by norm_num) flow_sz0 (t := fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun n => (half_lt_t0 n).le) hE hA hK hT1 hT2 kb
-
-/-- The deterministic decomposition of `T3C-Ḡ` (`BAExp14b2B_I41_eq`) at the instance data: `n = 0`, `t = 1/2`, the blocks `0`, `e₀`; the sample is arbitrary. -/
-example (ω : sz0.SeqΩ) (kb σ : Bool) :=
-  BAExp14b2B_I41_eq (z := zSeq) (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0) (n := 0) (t := 1 / 2) (by norm_num)
-    (by norm_num) kb σ 0 (Pi.single 0 1) ω
-
-end Inst
 
 end RBM.BA
 

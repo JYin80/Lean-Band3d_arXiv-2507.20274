@@ -193,13 +193,6 @@ def Step5CasesGen_WardIdent {d : ℕ} {sz : Sizes d} (C : FlowFM sz) : Prop :=
             C.K n u (fun _ : Fin 1 => true) (fun _ => a 1)).im : ℝ) : ℂ) /
           ((((sz.size n : ℕ) : ℂ)) * (C.eta n u : ℂ))
 
-/-- **Target 7, band result** (`T2462_WardIdent_band`): `bandFM sz E` satisfies the identity when `|E n| < 2` for every `n`
-(`stWardII_identity`, with `seqHflow_isHermitian`). -/
-theorem step5CasesGen_wardIdent_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) :
-    Step5CasesGen_WardIdent (bandFM sz E) := by
-  intro n u hu0 hu1 ω σ hσ a
-  exact stWardII_identity sz n (hE n) hu0 hu1 (sz.seqHflow_isHermitian n u ω) hσ a
-
 /-- **Target 7, the Ward term over a carrier tuple** (`T2462_stWardIIgL_of`; band `stWardII_holds`, `WardII:269`): the identity,
 the averaged local law `STAvgUgL` inside `STStep2ConclgL`, and `W^{-d}B_{u,0} ≤ 2 A⁻¹` in regime (ii) give `(zYU1)`. -/
 theorem stWardIIgL_of (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
@@ -709,76 +702,5 @@ case (ii) at `(15/16, 31/32)`, case (iv) at `(5/8, 3/4)` on `(szB/szG, zB)`.  Ev
 regime, `(con_st_ind)` for every `𝔠_d > 0`) is discharged by the merged `inst_*` theorems; what stays a hypothesis of an instance
 is a pin of another row: `STEtermsMid`, `STDuhamelI`, `STDuhamelII`, `STIniTermI`, `STIniTermII`, `STPfStep5` (owners U4s2, U4s3, U5)
 and the stochastic premises `STKbound ... STLKU` inside `InstIng5Concl`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst
-
-/-- Target 1 at the flow data `(szB, zB)`: the facts of `Step5CasesGen_FlowFacts` hold there. -/
-example : ∃ κm : ℝ, 0 < κm ∧ szB.Admissible (1 / 6) (1 / 10) ∧ (∀ n, lemT (zB n) < 1) ∧
-    (∀ n, κm ≤ ((bandFM szB (STflowE zB)).m n).im) ∧
-    ∀ (n : ℕ) (t : ℝ), (bandFM szB (STflowE zB)).eta n t = (1 - t) * ((bandFM szB (STflowE zB)).m n).im := by
-  obtain ⟨κm, hκm, H⟩ := step5CasesGen_flowFacts_band 3 (1 / 10) (by norm_num)
-  exact ⟨κm, hκm, H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB⟩
-
-/-- Target 7, the identity of the carrier datum, at the band carrier `(szB, E = 0)` (`|0| < 2`). -/
-example : Step5CasesGen_WardIdent (bandFM szB (fun _ => 0)) :=
-  step5CasesGen_wardIdent_band szB _ (fun _ => by norm_num)
-
-/-- Band re-derivation of target 7: `stWardIIgL_of` at the band tuple, with the identity from `stWardII_identity`
-(`|E(z_n)| ≤ 2 - κ < 2`); it re-derives `stWardII_holds`. -/
-private theorem Step5CasesGen_wardIIgL_band (d : ℕ) :
-    STWardIIgL d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stWardIIgL_of d _ _ _ _ (step5CasesGen_flowFacts_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hflow => step5CasesGen_wardIdent_band sz (STflowE z) (fun n => by
-      have := (Step5CasesGen_flow_dom hκ hflow n).2
-      change |lemE (z n)| < 2
-      linarith))
-
-example (d : ℕ) : STWardII d := (STWardII_iff_gL d).2 (Step5CasesGen_wardIIgL_band d)
-
-/-- Target 7 applied at `(szB, zB, 15/16, 31/32)`: the Ward term of case (ii) with no pin left (re-derives `inst_wardII`). -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STWardIIConcl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_wardII ((STWardII_iff_gL 3).2 (Step5CasesGen_wardIIgL_band 3)) Cd hCd
-
-/-- Target 2 at `(szB, zB, 7/8, 15/16)`: case (i) from the three ingredient pins (re-derives `inst_skeletonI`). -/
-example (hE : STEtermsMid 3) (hD : STDuhamelI 3) (hI : STIniTermI 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_step5I ((STStep5I_iff_gL 3).2 (ST_step5_caseI_of_pinsgL 3 _ _ _ _ (step5CasesGen_flowFacts_band 3)
-    ((STEtermsMid_iff_gL 3).1 hE) ((STDuhamelI_iff_gL 3).1 hD) ((STIniTermI_iff_gL 3).1 hI))) Cd hCd
-
-/-- Target 3 at `(szB, zB, 15/16, 31/32)`: case (ii) from the three ingredient pins and the Ward term of target 7 (re-derives
-`inst_skeletonII`; the pin `STWardII` is discharged). -/
-example (hE : STEtermsMid 3) (hD : STDuhamelII 3) (hI : STIniTermII 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_step5II ((STStep5II_iff_gL 3).2 (ST_step5_caseII_of_pinsgL 3 _ _ _ _ (step5CasesGen_flowFacts_band 3)
-    ((STEtermsMid_iff_gL 3).1 hE) ((STDuhamelII_iff_gL 3).1 hD) ((STIniTermII_iff_gL 3).1 hI)
-    (Step5CasesGen_wardIIgL_band 3))) Cd hCd
-
-/-- Target 4 at `(sz0, z0, 0, 1/16)`: case (iii) from `lem:pf_step5` (re-derives `inst_skeletonIII`). -/
-example (hPf : STPfStep5 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_step5III ((STStep5III_iff_gL 3).2 (ST_step5_caseIII_of_pfgL 3 _ _ _ _ (step5CasesGen_flowFacts_band 3)
-    ((STPfStep5_iff_gL 3).1 hPf))) Cd hCd
-
-/-- Target 5 at `(szG, zB, 5/8, 3/4)`: case (iv) with no ingredient pin (re-derives `inst_step5IV_proved`). -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) Cd :=
-  inst_step5IV ((STStep5IV_iff_gL 3).2 (stStep5IVgL_holds 3 _ _ _ _ (step5CasesGen_flowFacts_band 3))) Cd hCd
-
-/-- Target 6 at `(szG, zB, 5/8, 3/4)`, chained with target 5: the proved case (iv) and the assembly give `(Eq:Gdecay)` and
-`(Eq:Gdecay+s<g)` at `t = 3/4` (the stochastic premises of the instance stay hypotheses). -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E _ t => STDecaygL (bandFM sz E) (Sizes.seqP sz) t ∧
-      STDecayStronggL (bandFM sz E) (Sizes.seqP sz) t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) Cd := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := inst_step5IV
-    ((STStep5IV_iff_gL 3).2 (stStep5IVgL_holds 3 _ _ _ _ (step5CasesGen_flowFacts_band 3))) Cd hCd
-  exact ⟨𝔠d, h0, h1, fun a b c e f g h i j =>
-    ST_step5_assemblygL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4)
-      (fun n => by norm_num) ((bandFM_STStep5Concl szG (STflowE zB) _ _).1 (H a b c e f g h i j))⟩
-
-end Instances
 
 end RBM.BA

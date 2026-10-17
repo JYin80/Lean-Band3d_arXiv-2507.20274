@@ -429,13 +429,6 @@ theorem expWI_concl_prime {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (h : ST
     STExpWardIConcl' sz E s t :=
   fun C c _ _ ϑ hϑ => h C c ϑ hϑ
 
-/-- **The primed conclusion** from the flow, regime (i) and `(res_ELK_n=1)`. -/
-theorem expWI_core' {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d)
-    (z : ℕ → ℂ) (hflow : STFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
-    (htT : ∀ n, t n ≤ lemT (z n)) (hR : STReg5I sz s t) (hAvg : STExpAvgU sz (STflowE z) s t) :
-    STExpWardIConcl' sz (STflowE z) s t :=
-  expWI_concl_prime sz _ s t (expWI_core hd hκ hε h𝔡 sz z hflow s t hs0 hst htT hR hAvg)
-
 /-- **The merged pin `STExpWardI` (`Step6Pins.lean:361`), proved** (`𝔠_d = 1/100`: no premise of `STIngR6` beyond `STReg5I` and
 `STExpAvgU` is used). -/
 theorem stExpWardI_holds (d : ℕ) : STExpWardI d := by
@@ -459,92 +452,3 @@ Data (merged, `Step34Inst`, `Step5Inst`): `L = 4`, `W_n = n + 4`, `ilambda = 1`,
 `𝔠 = 1/6`; `1/16 = ilambda²/L² ≤ 1-t = 1/16 ≤ 1-s = 1/8 ≤ 1`.  Every deterministic hypothesis (flow, times, regime, mollifier
 family) is discharged; what stays a hypothesis is `STExpAvgU` at the instance (`(res_ELK_n=1)`, the conclusion of
 `stImproveExpAver_holds` through `st6_expAvgU_of_pin`) and the stochastic premises of `InstIng6Concl`. -/
-
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
-
-/-- `stExpWardI'_holds 3` at the data of regime (i): the Ward terms of regime (i) (primed). -/
-theorem inst_expWardI' :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl' sz E s t) szB zB
-      (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ (stExpWardI'_holds 3) szB_reg5I
-
-/-- `stExpWardI_holds 3` at the data of regime (i): the merged pin `STExpWardI`, proved (the hypothesis `h` of the merged
-`inst_expWardI`, `Step6Pins.lean:607`). -/
-theorem inst_expWardI_holds :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl sz E s t) szB zB
-      (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_expWardI (stExpWardI_holds 3)
-
-/-- `expWI_core'` at `szB`, `zB`, `(7/8, 15/16)` for the positive mollifier family `st6_mollifier_family` (`0 < C`, `0 < c`,
-`STMollifierProps` eventually, from the proved `stMollifierEx_holds`); the premise `(res_ELK_n=1)` stays a hypothesis. -/
-theorem inst_expWardI'_mixed :
-    STExpAvgU szB (STflowE zB) (fun _ => 7 / 8) (fun _ => 15 / 16) →
-      ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd 3 (szB.L n)) → ℂ,
-        (∀ᶠ n in atTop, STMollifierProps (d := 3) (szB.lam n) C c (ϑ n)) ∧
-        Prec szB (U := fun n => TimeIcc (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n ×
-            {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd 3 (szB.L n)))
-          (fun n q _ => ‖STPsum (d := 3) (fun b => STExpErr szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1 b) (q.2.2 0) *
-            ϑ n (q.1 : ℝ) q.2.2‖)
-          (fun n q _ => (szB.Bctl n (q.1 : ℝ)) ^ 3) ∧
-        Prec szB (U := fun n => TimeIcc (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n ×
-            {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd 3 (szB.L n)))
-          (fun n q _ =>
-            ‖STQop (d := 3) (ϑ n) (q.1 : ℝ) (STthetaOp szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1
-                (fun b => STExpErr szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1 b)) q.2.2 -
-              STthetaOp szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1
-                (STQop (d := 3) (ϑ n) (q.1 : ℝ) (fun b => STExpErr szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1 b)) q.2.2‖ +
-            ‖STPsum (d := 3) (fun b => STExpErr szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1 b) (q.2.2 0) *
-              deriv (fun τ => ϑ n τ q.2.2) (q.1 : ℝ)‖)
-          (fun n q _ => (1 - (q.1 : ℝ))⁻¹ * (szB.Bctl n (q.1 : ℝ)) ^ 3) := by
-  intro hAvg
-  obtain ⟨C, c, hC, hc, ϑ, hϑ⟩ := st6_mollifier_family szB (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10)
-    flow_zB.1.2.2.2.2
-  exact ⟨C, c, hC, hc, ϑ, hϑ, expWI_core' (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) szB zB flow_zB
-    (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5I hAvg C c hC hc ϑ hϑ⟩
-
-/-- `expWI_Psum_eq` at `szB`, `n = 0` (`W = 4`, `L = 4`), `E = 0`, `u = 7/8`, `σ = (+, -)`, `a₁ = 0`: Ward's identity in
-expectation; every hypothesis is discharged. -/
-theorem inst_expWI_Psum_eq :
-    STPsum (d := 3) (fun b => STExpErr szB 0 0 (7 / 8) ![true, false] b) (0 : Zd 3 (szB.L 0)) =
-      (2 * Complex.I * ((szB.W 0 : ℕ) : ℂ) ^ 3 * (etaT 0 (7 / 8) : ℂ))⁻¹ *
-        (((∫ ω, Lloop szB 0 0 (7 / 8) (fun _ : Fin 1 => true) (fun _ => (0 : Zd 3 (szB.L 0))) ω ∂(szB.seqP)) -
-            mSigma 0 true) -
-          ((∫ ω, Lloop szB 0 0 (7 / 8) (fun _ : Fin 1 => false) (fun _ => (0 : Zd 3 (szB.L 0))) ω ∂(szB.seqP)) -
-            mSigma 0 false)) :=
-  expWI_Psum_eq szB 0 (by norm_num) (by norm_num) (by norm_num) ![true, false] (by decide) 0
-
-/-- `expWI_Psum_prec` at `szB`, `zB`, `(7/8, 15/16)`: the premise `(res_ELK_n=1)` stays a hypothesis. -/
-theorem inst_expWI_Psum_prec (hAvg : STExpAvgU szB (STflowE zB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    Prec szB (U := fun n => TimeIcc (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n ×
-        {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × Zd 3 (szB.L n))
-      (fun n q _ => ‖STPsum (d := 3) (fun b => STExpErr szB n (STflowE zB n) (q.1 : ℝ) q.2.1.1 b) q.2.2‖)
-      (fun n q _ => (((szB.W n : ℕ) : ℝ) ^ 3 * etaT (STflowE zB n) (q.1 : ℝ))⁻¹ * (szB.Bctl n (q.1 : ℝ)) ^ 2) :=
-  expWI_Psum_prec (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) szB zB flow_zB (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) hAvg
-
-/-- `expWI_window` at `szB`, `(7/8, 15/16)`: every `u ∈ [7/8, 15/16]` has `1 ≤ 1/√(1-u) ≤ 4`. -/
-theorem inst_expWI_window (n : ℕ) (u : ℝ) (h1 : 7 / 8 ≤ u) (h2 : u ≤ 15 / 16) :
-    1 ≤ szB.lam n / Real.sqrt (1 - u) ∧ szB.lam n / Real.sqrt (1 - u) ≤ ((szB.L n : ℕ) : ℝ) :=
-  expWI_window szB (fun _ => 7 / 8) (fun _ => 15 / 16) szB_reg5I n u h1 h2 (by simp [szB])
-
-/-- `expWI_vth_le` at `d = 3`, `L = 4`, `g = 1`, `u = 3/4` (`ℓ_u = 2`), for the mollifier of `stMollifierEx_holds`
-(`C, c > 0`; `STMollifierProps … C c` holds). -/
-theorem inst_expWI_vth_le :
-    ∃ (C c : ℝ) (ϑ : ℝ → (Fin 2 → Zd 3 4) → ℂ), 0 < C ∧ 0 < c ∧ STMollifierProps (d := 3) 1 C c ϑ ∧
-      ∀ a, ‖ϑ (3 / 4) a‖ ≤
-        (C * Real.exp (|c| * (((3 : ℕ) : ℝ) / 2)) + 2 * C / ((3 : ℕ) : ℝ)) * ((ellT 4 1 (3 / 4)) ^ 3)⁻¹ := by
-  obtain ⟨C, c, hC, hc, hex⟩ := stMollifierEx_holds 3 (by norm_num) 1 1 one_pos
-  obtain ⟨ϑ, hϑ⟩ := hex 4 (by norm_num) 1 one_pos le_rfl
-  have hs : Real.sqrt (1 - 3 / 4 : ℝ) = 1 / 2 := by
-    rw [show (1 - 3 / 4 : ℝ) = (1 / 2) ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
-  refine ⟨C, c, ϑ, hC, hc, hϑ, fun a => ?_⟩
-  exact expWI_vth_le (d := 3) (L := 4) (g := 1) ϑ (by norm_num) (by norm_num) one_pos hϑ (3 / 4) (by norm_num)
-    (by norm_num) (by rw [hs]; norm_num) (by rw [hs]; norm_num) a
-
-end RBM.Gauss.Step6Inst

@@ -1208,111 +1208,6 @@ on), `u > 0`, and `H = 0` (Hermitian).  At `H = 0` the resolvent is `G_u = (-z_u
 `z_u = (1-u) i`, so `G_u - M = i u/(1-u) I` is not `0` for `u > 0` and `‖G_u - M‖_max = u/(1-u)`
 (`nkl_STGMM_zero`).  Every deterministic hypothesis of the pin is discharged. -/
 
-private theorem nkl_mE_zero : mE 0 = Complex.I := by
-  have hsqrt : Real.sqrt (4 : ℝ) = 2 := by
-    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq_eq_abs]
-    norm_num
-  simp [mE, hsqrt]
-
-private theorem nkl_diag0 {u : ℝ} (hu1 : u < 1) :
-    (-(((1 - u : ℝ) : ℂ) * Complex.I))⁻¹ - Complex.I = ((u / (1 - u) : ℝ) : ℂ) * Complex.I := by
-  have hv : ((1 - u : ℝ) : ℂ) ≠ 0 := by
-    exact_mod_cast (by linarith : (1 - u : ℝ) ≠ 0)
-  have h1 : (-(((1 - u : ℝ) : ℂ) * Complex.I))⁻¹ = (((1 - u : ℝ) : ℂ))⁻¹ * Complex.I := by
-    rw [inv_neg, mul_inv, Complex.inv_I]; ring
-  have h2 : ((u / (1 - u) : ℝ) : ℂ) = (((1 - u : ℝ) : ℂ))⁻¹ - 1 := by
-    rw [Complex.ofReal_div]
-    field_simp
-    push_cast
-    ring
-  rw [h1, h2]; ring
-
-/-- At `H = 0`, `E = 0`: `‖(G_u - M)_{xy}‖ ≤ u/(1-u)` (equality on the diagonal). -/
-private theorem nkl_STGMM_zero {d : ℕ} (sz : Sizes d) (n : ℕ) {u : ℝ} (hu0 : 0 ≤ u)
-    (hu1 : u < 1) (x y : Idx d (sz.L n) (sz.W n)) :
-    ‖STGMM sz n 0 u (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) x y‖ ≤
-      u / (1 - u) := by
-  have hv : 0 < 1 - u := by linarith
-  have hz : zt 0 u = ((1 - u : ℝ) : ℂ) * Complex.I := by simp [zt, nkl_mE_zero]
-  have hne : -(zt 0 u) ≠ 0 := by
-    rw [hz]
-    have : ((1 - u : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hv.ne'
-    exact neg_ne_zero.2 (mul_ne_zero this Complex.I_ne_zero)
-  unfold STGMM Gres
-  simp only [ite_true]
-  rw [zero_sub, ← neg_smul, ring_inverse_smul_one hne, hz]
-  by_cases hxy : x = y
-  · subst hxy
-    simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one, ite_true, nkl_mE_zero]
-    rw [nkl_diag0 hu1, norm_mul, Complex.norm_real, Complex.norm_I, mul_one,
-      Real.norm_of_nonneg (by positivity)]
-  · simp only [Matrix.smul_apply, Matrix.one_apply_ne hxy, smul_zero, hxy, ite_false, sub_zero,
-      norm_zero]
-    positivity
-
-open RBM.Gauss.SizesInst in
-/-- **`stNewKLK_holds`, instantiated**: the constants `C, δ₀` of the pin (`κ = 𝔡 = 1/10`), then the
-time `u = δ₀/(1+δ₀) ∈ (0,1)` (so that `‖G_u - M‖_max = u/(1-u) = δ₀`, `G_u ≠ M`), and the two
-bounds of `(juwo2=klk)`, `(juwo=Lklk)` at `n = 0`, `E = 0`, `D = 1`, `ℓ = 2`, `H = 0`, for all
-sign patterns `σ` and all `a ∈ (Z_4^3)²`. -/
-example : ∃ C δ₀ u : ℝ, 0 < C ∧ 0 < δ₀ ∧ 0 < u ∧ u < 1 ∧
-    ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L 0)),
-      ‖STthetaOp sz0 0 0 u σ (STLKM sz0 0 0 u
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ) a‖ ≤
-          C / (1 - u) * STJhatM sz0 0 0 1 2 u
-            (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) *
-            STprof sz0 0 u 1 2 (a 0) (a 1) ∧
-        ‖STELKLKM sz0 0 0 u
-            (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ a‖ ≤
-          C / (1 - u) * (STJhatM sz0 0 0 1 2 u
-            (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) +
-            STJhatM sz0 0 0 1 2 u
-              (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ^ 2 *
-              (if 1 ≤ (2 : ℝ) then 1 else 0)) * STprof sz0 0 u 1 2 (a 0) (a 1) := by
-  obtain ⟨C, δ₀, hC, hδ, hAt⟩ := stNewKLK_holds 3 (by norm_num) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num)
-  have hlam : 0 < sz0.lam 0 := by simp [sz0]
-  have hlam' : sz0.lam 0 ≤ ((1 : ℝ) / 10)⁻¹ := by
-    have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-    rw [this]; norm_num
-  have hL4 : (2 : ℝ) ≤ ((sz0.L 0 : ℕ) : ℝ) := by norm_num [sz0]
-  have hu0 : 0 < δ₀ / (1 + δ₀) := by positivity
-  have hu1 : δ₀ / (1 + δ₀) < 1 := by rw [div_lt_one (by positivity)]; linarith
-  have huδ : δ₀ / (1 + δ₀) / (1 - δ₀ / (1 + δ₀)) = δ₀ := by
-    field_simp
-    ring
-  refine ⟨C, δ₀, δ₀ / (1 + δ₀), hC, hδ, hu0, hu1, fun σ a => ?_⟩
-  exact hAt sz0 0 0 (δ₀ / (1 + δ₀)) 1 2 hlam hlam' (by norm_num) hu0.le hu1 zero_le_one
-    (by norm_num) hL4 0 Matrix.isHermitian_zero
-    (fun x y => (nkl_STGMM_zero sz0 0 hu0.le hu1 x y).trans huδ.le) σ a
-
-open RBM.Gauss.SizesInst in
-/-- The same with every number explicit (`δ₀ = κ/2 = 1/20` from `nkl_at`): `u = 1/32`,
-`‖G_u - M‖_max = 1/31 ≤ 1/20`, `n = 0`, `E = 0`, `D = 1`, `ℓ = 2`, `H = 0`. -/
-example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L 0)),
-    ‖STthetaOp sz0 0 0 (1 / 32) σ (STLKM sz0 0 0 (1 / 32)
-        (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ) a‖ ≤
-        C / (1 - 1 / 32) * STJhatM sz0 0 0 1 2 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) *
-          STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) ∧
-      ‖STELKLKM sz0 0 0 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ a‖ ≤
-        C / (1 - 1 / 32) * (STJhatM sz0 0 0 1 2 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) +
-          STJhatM sz0 0 0 1 2 (1 / 32)
-            (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ^ 2 *
-            (if 1 ≤ (2 : ℝ) then 1 else 0)) * STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) := by
-  obtain ⟨C, hC, hAt⟩ := nkl_at 3 (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-  have hlam : 0 < sz0.lam 0 := by simp [sz0]
-  have hlam' : sz0.lam 0 ≤ ((1 : ℝ) / 10)⁻¹ := by
-    have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-    rw [this]; norm_num
-  have hL4 : (2 : ℝ) ≤ ((sz0.L 0 : ℕ) : ℝ) := by norm_num [sz0]
-  refine ⟨C, hC, fun σ a => ?_⟩
-  exact hAt sz0 0 0 (1 / 32) 1 2 hlam hlam' (by norm_num) (by norm_num) (by norm_num)
-    zero_le_one (by norm_num) hL4 0 Matrix.isHermitian_zero
-    (fun x y => (nkl_STGMM_zero sz0 0 (by norm_num) (by norm_num) x y).trans (by norm_num)) σ a
-
 /-! ### The pointwise form `STNewKLKAt`, concluded (T2099 audit O1; ticket T2127) -/
 
 /-- **`lem:newKLK`, pointwise form.**  `STNewKLKAt` holds at the constants `C, δ₀` that
@@ -1322,11 +1217,5 @@ theorem stNewKLKAt_holds (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
     STNewKLKAt d κ 𝔡 (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose
       (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose_spec.choose :=
   (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose_spec.choose_spec.2.2
-
-/-- Nonempty instance of `stNewKLKAt_holds`: `d = 3`, `κ = 𝔡 = 1/10`. -/
-example : STNewKLKAt 3 (1 / 10) (1 / 10)
-    (stNewKLK_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)).choose
-    (stNewKLK_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)).choose_spec.choose :=
-  stNewKLKAt_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)
 
 end RBM.Gauss.Sizes

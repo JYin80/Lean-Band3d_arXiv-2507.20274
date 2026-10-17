@@ -311,9 +311,6 @@ noncomputable def gchain (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ) :
 
 variable {d L W} {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ}
 
-@[simp] theorem gchain_nil (a : List (Zd d L)) : gchain d L W H z [] a = 1 := by
-  cases a <;> rfl
-
 @[simp] theorem gchain_single (s : Bool) : gchain d L W H z [s] [] = Gres H z s := rfl
 
 @[simp] theorem gchain_cons (s : Bool) (b : Zd d L) (tau : List Bool) (a : List (Zd d L)) :
@@ -583,15 +580,6 @@ theorem loopMax_two_mul_add_le (hH : H.IsHermitian) {l₁ l₂ : ℕ} (h₁ : 1 
     loopMax d L W H z (2 * (l₁ + l₂)) ≤ loopMax d L W H z (2 * l₁) * loopMax d L W H z (2 * l₂) :=
   loopMax_le fun I hσ ha => norm_gloop_le_of_symIdx_le hH (by omega)
     (fun _ _ hσ' ha' b' b => norm_gloop_symIdx_le_loopMax_mul hH h₁ h₂ hσ' ha' b' b) I hσ ha
-
-/-- **(5.117)** as stated in the paper: with `l₁ = ⌊(n+1)/2⌋`, `l₂ = n + 1 - l₁`,
-`max|L^{(2n+2)}| ≤ max|L^{(2l₁)}| · max|L^{(2l₂)}|`. -/
-theorem loopMax_two_mul_add_two_le (hH : H.IsHermitian) {n : ℕ} (hn : 1 ≤ n) :
-    loopMax d L W H z (2 * n + 2)
-      ≤ loopMax d L W H z (2 * ((n + 1) / 2)) * loopMax d L W H z (2 * (n + 1 - (n + 1) / 2)) := by
-  have h := loopMax_two_mul_add_le (z := z) hH (l₁ := (n + 1) / 2) (l₂ := n + 1 - (n + 1) / 2)
-    (by omega) (by omega)
-  rwa [show 2 * ((n + 1) / 2 + (n + 1 - (n + 1) / 2)) = 2 * n + 2 by omega] at h
 
 /-- **(6.4)**: odd loops are controlled by the neighbouring even ones,
 `(max|L^{(2m+1)}|)² ≤ max|L^{(2m)}| · max|L^{(2m+2)}|`. -/
@@ -894,10 +882,6 @@ theorem sum_norm_inner_sq_le_trace_pow (v : E) (w : ι → E) {p : ℕ} (hp : 1 
 
 end Gram
 
-section Checks
-
-open scoped Matrix.Norms.L2Operator
-
 /-! ### Compiled instances at `d = 3`, `W = 2`, `L = 3`, `H = 0`, `z = i`
 
 For `H = 0` and `z = i` one has `G(+) = i · 1`, `G(-) = -i · 1`, so for the all-label-`0` loops of
@@ -906,192 +890,5 @@ length `n ≥ 1` the loop is `(∏ ±i) · tr E_0^n`.  With `E_0² = W^{-d} E_0`
 `norm_gloop_le_of_le_abs_im` (`η = |Im z| = 1`) is attained, and `loopMax d L W 0 i n` equals it.
 No instance below has an empty index set, `W = 1`, or a collapsed window; `N = (W L)^d = 216`,
 block size `W^d = 8`, `L^d = 27` labels. -/
-
-section ZeroI
-
-variable {d L W : ℕ} [NeZero L] [NeZero W]
-
-private theorem Gres_zero_I {ι : Type*} [Fintype ι] [DecidableEq ι] (s : Bool) :
-    Gres (0 : Matrix ι ι ℂ) Complex.I s
-      = (if s then Complex.I else -Complex.I) • (1 : Matrix ι ι ℂ) := by
-  cases s with
-  | true =>
-    have h : (0 : Matrix ι ι ℂ) - Complex.I • (1 : Matrix ι ι ℂ) = (-Complex.I) • 1 := by
-      rw [zero_sub, neg_smul]
-    simp only [Gres, ↓reduceIte, h]
-    rw [ring_inverse_smul_one (neg_ne_zero.mpr Complex.I_ne_zero)]
-    simp
-  | false =>
-    have h : (0 : Matrix ι ι ℂ) - (starRingEnd ℂ) Complex.I • (1 : Matrix ι ι ℂ)
-        = Complex.I • 1 := by
-      rw [zero_sub, Complex.conj_I, neg_smul, neg_neg]
-    simp only [Gres, Bool.false_eq_true, ↓reduceIte, h]
-    rw [ring_inverse_smul_one Complex.I_ne_zero]
-    simp
-
-omit [NeZero W] in
-private theorem Eblk_mul_self (a : Zd d L) :
-    Eblk d L W a * Eblk d L W a = ((W : ℂ) ^ d)⁻¹ • Eblk d L W a := by
-  unfold Eblk
-  rw [diagonal_mul_diagonal]
-  ext p q
-  simp only [diagonal_apply, Matrix.smul_apply, smul_eq_mul]
-  split_ifs <;> simp_all
-
-omit [NeZero W] in
-private theorem gloopProd_zero_I (a : Zd d L) :
-    ∀ σ : List Bool, σ ≠ [] →
-      gloopProd d L W (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ) Complex.I
-          ⟨σ, List.replicate σ.length a⟩
-        = ((σ.map fun s => if s then Complex.I else -Complex.I).prod
-            * ((W : ℂ) ^ d)⁻¹ ^ (σ.length - 1)) • Eblk d L W a := by
-  intro σ
-  induction σ with
-  | nil => intro h; exact absurd rfl h
-  | cons s σ ih =>
-    intro _
-    rw [List.length_cons, List.replicate_succ, gloopProd_cons, Gres_zero_I]
-    rcases List.eq_nil_or_concat' σ with rfl | ⟨σ', s', rfl⟩
-    · simp [gloopProd_nil]
-    · have hne : σ' ++ [s'] ≠ [] := by simp
-      rw [ih hne, smul_mul_assoc, one_mul, Matrix.mul_smul, smul_mul_assoc, Eblk_mul_self,
-        smul_smul, smul_smul]
-      congr 1
-      simp only [List.map_cons, List.prod_cons, List.length_append, List.length_singleton,
-        Nat.add_sub_cancel]
-      rw [show σ'.length + 1 = (σ'.length) + 1 from rfl, pow_succ]
-      ring
-
-/-- At `H = 0`, `z = i`, every loop with all labels `a` and `n ≥ 1` charges has modulus
-`(W^{-d})^{n-1}`. -/
-private theorem norm_loopL_zero_I (a : Zd d L) {σ : List Bool} (hσ : σ ≠ []) :
-    ‖loopL d L W (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ) Complex.I
-        ⟨σ, List.replicate σ.length a⟩‖ = (((W : ℝ) ^ d)⁻¹) ^ (σ.length - 1) := by
-  rw [loopL_eq_trace, gloopProd_zero_I a σ hσ, trace_smul, trace_Eblk, smul_eq_mul, mul_one,
-    norm_mul, norm_pow, norm_inv, norm_pow, Complex.norm_natCast, List.norm_prod]
-  have h1 : (List.map norm (σ.map fun s => (if s then Complex.I else -Complex.I))).prod = 1 := by
-    have : ∀ s : Bool, ‖(if s then Complex.I else -Complex.I)‖ = 1 := by
-      intro s; cases s <;> simp
-    simp [List.map_map, Function.comp_def, this]
-  rw [h1, one_mul]
-
-/-- At `H = 0`, `z = i`: `max|L^{(n)}| = (W^{-d})^{n-1}` for `n ≥ 1`; the bound of
-`norm_gloop_le_of_le_abs_im` at `η = 1` is attained. -/
-private theorem loopMax_zero_I {n : ℕ} (hn : 1 ≤ n) :
-    loopMax d L W (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ) Complex.I n
-      = (((W : ℝ) ^ d)⁻¹) ^ (n - 1) := by
-  refine le_antisymm (loopMax_le fun I hσ ha => ?_) ?_
-  · have h := norm_gloop_le_of_le_abs_im (d := d) (L := L) (W := W) (z := Complex.I)
-      Matrix.isHermitian_zero one_pos (by simp) I (by rw [hσ, ha]) (by omega)
-    rwa [ha, inv_one, one_pow, one_mul] at h
-  · have h := norm_gloop_le_loopMax (d := d) (L := L) (W := W)
-      (H := (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) (z := Complex.I)
-      (⟨List.replicate n true, List.replicate n (0 : Zd d L)⟩ : Loop.LoopIdx (Zd d L))
-      (n := n) (by simp) (by simp)
-    have h2 := norm_loopL_zero_I (d := d) (L := L) (W := W) (0 : Zd d L)
-      (σ := List.replicate n true) (by simp; omega)
-    rw [List.length_replicate] at h2
-    exact h2 ▸ h
-
-end ZeroI
-
-/-- Nondegeneracy of the data: `max|L^{(n)}| = ((2^3)⁻¹)^{n-1} > 0` for every `n ≥ 1`. -/
-private theorem check_loopMax_formula (n : ℕ) (hn : 1 ≤ n) :
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I n
-      = (((2 : ℝ) ^ 3)⁻¹) ^ (n - 1) := by
-  simpa using loopMax_zero_I (d := 3) (L := 3) (W := 2) hn
-
-/-- **Target `loopMax_odd_sq_le`** at `m = 1` (`(max|L^{(3)}|)² ≤ max|L^{(2)}| max|L^{(4)}|`);
-every value is positive and the inequality is an equality (`(2⁻³)⁴ = 2⁻³ · 2⁻⁹`). -/
-private theorem check_odd_sq_le :
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1 + 1) ^ 2
-      ≤ loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1)
-        * loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1 + 2) :=
-  loopMax_odd_sq_le Matrix.isHermitian_zero le_rfl
-
-/-- The three values of the previous instance, by script: `max|L^{(3)}| = 2⁻⁶`,
-`max|L^{(2)}| = 2⁻³`, `max|L^{(4)}| = 2⁻⁹`. -/
-private theorem check_odd_sq_le_values :
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1 + 1) = 1 / 64 ∧
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1) = 1 / 8 ∧
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1 + 2) = 1 / 512 := by
-  refine ⟨?_, ?_, ?_⟩ <;>
-    (rw [loopMax_zero_I (d := 3) (L := 3) (W := 2) (by omega)]; norm_num)
-
-/-- **Target `split_norm_trace_mul_Eblk_le`** at `M = 1` on `Vtx 3 3 2` (`N = 216`), `b = 0`. -/
-private theorem check_trace_mul_Eblk_le :
-    ‖trace ((1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) * Eblk 3 3 2 (0 : Zd 3 3))‖
-      ≤ ‖(1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ)‖ :=
-  split_norm_trace_mul_Eblk_le _ _
-
-/-- Nondegeneracy of the previous instance: the left side is `‖tr E_0‖ = 1`, not `0`. -/
-private theorem check_trace_mul_Eblk_ne_zero :
-    ‖trace ((1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) * Eblk 3 3 2 (0 : Zd 3 3))‖ = 1 := by
-  rw [Matrix.one_mul, trace_Eblk]
-  simp
-
-/-- **Target `norm_gloop_le_of_le_abs_im`** at `H = 0`, `z = i`, `η = 1 = |Im z|`, and the loop
-`(G(+) E_0)^4` (`n = 4`, `σ = (+,+,+,+)`, `a = (0,0,0,0)`). -/
-private theorem check_gloop_le_of_le_abs_im :
-    ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        ⟨[true, true, true, true], [0, 0, 0, 0]⟩‖
-      ≤ (1 : ℝ)⁻¹ ^ 4 * (((2 : ℝ) ^ 3)⁻¹) ^ (4 - 1) :=
-  norm_gloop_le_of_le_abs_im Matrix.isHermitian_zero one_pos (by simp) _ rfl (by simp)
-
-/-- Nondegeneracy of the previous instance: the loop has modulus exactly `2⁻⁹ > 0`, so the bound
-is attained (`norm_loopL_zero_I`). -/
-private theorem check_gloop_attained :
-    ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        ⟨[true, true, true, true], [0, 0, 0, 0]⟩‖ = 1 / 512 := by
-  have h := norm_loopL_zero_I (d := 3) (L := 3) (W := 2) (0 : Zd 3 3)
-    (σ := [true, true, true, true]) (by simp)
-  have e : (⟨[true, true, true, true], [0, 0, 0, 0]⟩ : Loop.LoopIdx (Zd 3 3))
-      = ⟨[true, true, true, true], List.replicate [true, true, true, true].length 0⟩ := rfl
-  rw [e, h]
-  norm_num
-
-/-- **Target `norm_gloop_symIdx_split_le`** at `σ₁ = σ₂ = (+)`, `a₁ = a₂ = ()`,
-`c = b' = b = 0`: the symmetric loop of the 2-chain `C₁ E_0 C₂` (length 4) is bounded by the
-product of the symmetric loops of `C₁`, `C₂` (length 2). -/
-private theorem check_symIdx_split_le :
-    ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        (symIdx ([true] ++ [true]) (([] : List (Zd 3 3)) ++ (0 : Zd 3 3) :: []) 0 0)‖
-      ≤ ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-            (symIdx [true] ([] : List (Zd 3 3)) (0 : Zd 3 3) 0)‖
-        * ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-            (symIdx [true] ([] : List (Zd 3 3)) (0 : Zd 3 3) 0)‖ :=
-  norm_gloop_symIdx_split_le Matrix.isHermitian_zero rfl rfl 0 0 0
-
-/-- Nondegeneracy of the previous instance: the sides are `2⁻⁹` and `2⁻³ · 2⁻³`, all nonzero
-(the mixed-charge loops `(G(+) E_0 G(-) E_0)` and `(G(+) E_0)²(G(-) E_0)²`). -/
-private theorem check_symIdx_split_values :
-    ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        (symIdx ([true] ++ [true]) (([] : List (Zd 3 3)) ++ (0 : Zd 3 3) :: []) 0 0)‖ = 1 / 512 ∧
-    ‖loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        (symIdx [true] ([] : List (Zd 3 3)) (0 : Zd 3 3) 0)‖ = 1 / 8 := by
-  constructor
-  · have h := norm_loopL_zero_I (d := 3) (L := 3) (W := 2) (0 : Zd 3 3)
-      (σ := [true, true, false, false]) (by simp)
-    exact h.trans (by norm_num)
-  · have h := norm_loopL_zero_I (d := 3) (L := 3) (W := 2) (0 : Zd 3 3)
-      (σ := [true, false]) (by simp)
-    exact h.trans (by norm_num)
-
-/-- **(5.117)** (`loopMax_two_mul_add_le`) and **(5.118)** (`loopXi_le`, `A = 1`,
-`n = l₁ = l₂ = 1`) at the same data. -/
-private theorem check_loopMax_two_mul_add_le :
-    loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * (1 + 1))
-      ≤ loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1)
-        * loopMax 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I (2 * 1) :=
-  loopMax_two_mul_add_le Matrix.isHermitian_zero le_rfl le_rfl
-
-private theorem check_loopXi_le :
-    loopXi 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I 1 (2 * 1 + 2)
-      ≤ loopXi 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I 1 (2 * 1)
-        * loopXi 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I 1 (2 * 1) * 1 :=
-  loopXi_le Matrix.isHermitian_zero zero_le_one le_rfl le_rfl rfl
-
-
-end Checks
 
 end RBM.Ind

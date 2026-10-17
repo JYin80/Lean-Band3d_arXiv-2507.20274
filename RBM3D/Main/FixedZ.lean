@@ -67,11 +67,6 @@ def QDiffFixed : Prop :=
         ‖(∫ ω, avg2 sz n (fun x y => sz.Gn n z ω x y * sz.Gn n z ω y x) a b ∂(Sizes.seqP sz)) -
             profPP sz n z a b‖ ≤ qdBoundExp sz n τ z.im
 
-/-- **`MAFixed`** (RBM2D `locSC_of_pins`, `QDiff_of_pins`, `RBM2D/Main/EndpointsFromSTO.lean`, `locSC_of_pins` `:518`,
-`QDiff_of_pins` `:565`): the fixed-`z` statements from the flow outputs `UNMLOut`.  Proved below (`fixed_of_ML`, from
-`locSCFixed_of_ML` and `QDiffFixed_of_ML`); owed by MA-03 as a port of this file. -/
-def MAFixed : Prop := (∀ d : ℕ, UNMLOut d) → locSCFixed ∧ QDiffFixed
-
 end Fixed
 
 section FixedProof
@@ -534,9 +529,6 @@ theorem QDiffFixed_of_ML (hML : ∀ d, UNMLOut d) : QDiffFixed := by
       rw [hint, hpf, ← mul_sub, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0.le]
       exact qd_exp_core sz n hd hκ hz hz1 hre hW8n (norm_nonneg _) (hbd ![true, true])
 
-/-- **`MAFixed` proved**: both fixed-`z` statements follow from the flow outputs `∀ d, UNMLOut d` (the one input owed by ST-6). -/
-theorem fixed_of_ML : MAFixed := fun hML => ⟨locSCFixed_of_ML hML, QDiffFixed_of_ML hML⟩
-
 end QDFixed
 
 
@@ -804,48 +796,5 @@ theorem decol_of_locSC : MADecol := by
   exact decol_core sz n ω hε1 hnot hsc.1 hsc.2 hbad
 
 end Decol
-
-namespace Inst
-
-open RBM.Gauss.SizesInst RBM.Univ.UNInst
-
-/-- **`decol` from `locSC`** at the instance (proved). -/
-theorem inst_decol_of_locSC (h : locSC) :
-    ∀ᶠ n in atTop, Sizes.seqP sz0 {ω | decolBad sz0 n (1 / 10) (1 / 10) ω} ≤
-      ENNReal.ofReal (Nsz sz0 n ^ (-(1 : ℝ))) :=
-  decol_of_locSC h 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 10) (1 / 10) 1 (by norm_num) (by norm_num)
-    (by norm_num)
-
-/-- **The fixed-`z` statements from `UNMLOut`** at the instance (proved, `locSCFixed_of_ML`; the flow outputs are the
-hypothesis). -/
-theorem inst_locSCFixed (hML : ∀ d : ℕ, UNMLOut d) :
-    ∀ᶠ n in atTop, ∀ z : ℂ, sz0.locDomain (1 / 10) (1 / 20) n z →
-      Sizes.seqP sz0 {ω | locBad1z sz0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz sz0 n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP sz0 {ω | locBad2z sz0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz sz0 n ^ (-(2 : ℝ))) :=
-  locSCFixed_of_ML hML 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 10) (1 / 20) (1 / 10) 2 (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num)
-
-/-- **The fixed-`z` statements of `QDiff` from `UNMLOut`** at the instance (proved, `QDiffFixed_of_ML`): both probability halves
-and both expectation halves, for every `z ∈ 𝐃_{1/10,1/20}` and every pair of blocks, `N₀` uniform. -/
-theorem inst_QDiffFixed (hML : ∀ d : ℕ, UNMLOut d) :
-    ∀ᶠ n in atTop, ∀ z : ℂ, sz0.locDomain (1 / 10) (1 / 20) n z →
-      (Sizes.seqP sz0 {ω | qd1Badz sz0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz sz0 n ^ (-(2 : ℝ))) ∧
-       Sizes.seqP sz0 {ω | qd2Badz sz0 (1 / 10) n z ω} ≤ ENNReal.ofReal (Nsz sz0 n ^ (-(2 : ℝ)))) ∧
-      ∀ a b : Zd 3 (sz0.L n),
-        ‖(∫ ω, avg2 sz0 n (fun x y => ((‖sz0.Gn n z ω x y‖ ^ 2 : ℝ) : ℂ)) a b ∂(Sizes.seqP sz0)) -
-            profPM sz0 n z a b‖ ≤ qdBoundExp sz0 n (1 / 10) z.im ∧
-        ‖(∫ ω, avg2 sz0 n (fun x y => sz0.Gn n z ω x y * sz0.Gn n z ω y x) a b ∂(Sizes.seqP sz0)) -
-            profPP sz0 n z a b‖ ≤ qdBoundExp sz0 n (1 / 10) z.im :=
-  QDiffFixed_of_ML hML 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 10) (1 / 20) (1 / 10) 2 (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num)
-
-/-- The scalars of `decol` at the instance (`τ = 1/10`). -/
-theorem inst_decol_scalars :
-    ∀ᶠ n in atTop, ((sz0.W n : ℕ) : ℝ) ^ (min (1 / 10 : ℝ) (((3 : ℕ) : ℝ) * min ((1 / 10 : ℝ) / 2) (1 / 2) / 2)) *
-        calB sz0 n (Nsz sz0 n ^ (-1 + min ((1 / 10 : ℝ) / 2) (1 / 2))) 0 ≤ 1 ∧
-      2 * Nsz sz0 n ^ (-1 + min ((1 / 10 : ℝ) / 2) (1 / 2)) ≤ Nsz sz0 n ^ (-1 + (1 / 10 : ℝ)) :=
-  decol_scalars (d := 3) sz0 (by norm_num) sz0_admissible (τ := 1 / 10) (by norm_num)
-
-end Inst
 
 end RBM.Endpoints

@@ -736,57 +736,7 @@ end Main
 
 /-! ## 4. The diagonal step and the pin `STNetLift` -/
 
-section Diagonal
-
-variable {Ω : Type*} [MeasurableSpace Ω]
-
-/-- **The diagonal step**: `≺` along every time *section* `u_n ∈ [s_n, t_n]`, the union over the
-rest of the index `V n` inside `P`, gives the per-time statement over `TimeIcc s t n × V n`
-(union over `(u, v)` outside `P`).  A bad `(u_n, v_n)` at infinitely many `n` is a bad section; the
-single event `{N^τ ζ(u_n, v_n) < ξ(u_n, v_n)}` is contained in the union over `v` at `u_n`.  No
-exponent is involved.  New (no RBM2D counterpart: RBM2D's net lift takes the per-time statement
-over `TimeIcc × V` as its hypothesis); via `perTimeDomAt_iff_forall_section`. -/
-private theorem perTime_of_sections (P : Measure Ω) (size : ℕ → ℕ) {s t : ℕ → ℝ}
-    (hst : ∀ n, s n ≤ t n) {V : ℕ → Type*} (hV : ∀ n, Nonempty (V n))
-    (ξ ζ : ∀ n, TimeIcc s t n × V n → Ω → ℝ)
-    (h : ∀ u : ∀ n, TimeIcc s t n,
-      StochDomAt P size (fun n (v : V n) ω => ξ n (u n, v) ω)
-        (fun n (v : V n) ω => ζ n (u n, v) ω)) :
-    PerTimeDomAt P size ξ ζ := by
-  refine (perTimeDomAt_iff_forall_section P size
-    (fun n => ⟨(⟨s n, le_refl _, hst n⟩, Classical.choice (hV n))⟩) ξ ζ).2 ?_
-  intro w
-  exact (h (fun n => (w n).1)).precomp_param (V := fun _ => Unit) (fun n _ => (w n).2)
-
-end Diagonal
-
 end RBM.Ind
-
-namespace RBM.Gauss.Sizes
-
-open RBM.Ind
-
-/-- **The net lift of Step 1 (`STNetLift`)** for every `d`: if the loop bound `(lRB1)` holds at
-every time sequence `u ∈ [s,t]` (the union over `(σ, a)` inside `P`), it holds uniformly in
-`u ∈ [s,t]`.  Proof: the diagonal step (`perTime_of_sections`) turns the hypothesis into
-`STStep1LoopPT`; `STFlow` and `t ≤ lemT z` give the premises of `step1NetLift`
-(`Green.v3_premises_of_stFlow`: `|E_n| < 2 - κ/2`, `t_n < 1`, `1 - t_n ≥ N^{-1+ε/2}`,
-`N → ∞` from `Admissible`), at `κ/2`, `τ = ε/2`.  Neither `Bandwidth` nor `(eq:WO)` nor
-`(con_st_ind)` is used.  The merged pin of `RBM3D/Induction/Defs.lean`; its owed registry line
-(`RBM3D/Test/Axioms.lean`, `STNetLift`) is discharged by this theorem (DECISIONS §22, S1-34). -/
-theorem stNetLift_holds (d : ℕ) : STNetLift d := by
-  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow s t hs0 hst ht hu
-  obtain ⟨hA, hE, hlt, hR⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow ht
-  have hPT : STStep1LoopPT sz (STflowE z) s t := by
-    intro k hk
-    refine perTime_of_sections sz.seqP sz.size hst
-      (fun n => ⟨(fun _ => true, fun _ => 0)⟩) _ _ ?_
-    intro u
-    exact hu (fun n => (u n : ℝ)) (fun n => (u n).2.1) (fun n => (u n).2.2) k hk
-  exact (step1NetLift sz (STflowE z) (κ / 2) (ε / 2) s t (half_pos hκ) (fun n => (hE n).le)
-    (half_pos hε) hs0 hst hlt hA.2.2.1 hR).1 hPT
-
-end RBM.Gauss.Sizes
 
 /-! ## 5. Compiled nonempty instances at `d = 3`
 
@@ -797,61 +747,3 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 (`RBM3D/Induction/Defs.lean`, section 3).  Every deterministic hypothesis is discharged; what stays
 a hypothesis is the stochastic premise of the theorem itself (`≺` of the loops at every time
 sequence, resp. per time). -/
-
-namespace RBM.Ind
-
-section Instances
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `gopbound` at `sz0`, `κ = 1/10`, `E ≡ 1/2`: `0 < κ`, `|E n| = 1/2 ≤ 2 - κ`, `N → ∞`
-(`sz0_tendsto`) are discharged; the output is the existence of `C'` for every `C > 0`. -/
-example (C : ℝ) (hC : 0 < C) :=
-  gopbound sz0 (1 / 10) (fun _ => (1 / 2 : ℝ)) (by norm_num) (fun _ => by norm_num) sz0_tendsto C hC
-
-/-- `Step1NetLift` at the flow of the instance (`κ = (1/10)/2`, `τ = (1/10)/2`, `s ≡ 0`,
-`t ≡ 1/16`): `step1NetLift` applies; the two per-time statements stay hypotheses of the two
-implications. -/
-example : Step1NetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst :=
-  step1NetLift sz0 _ _ _ _ _
-
-/-- `step1NetLift`, both halves, at the flow of the instance: every hypothesis of the net lift
-(`0 < κ`, `|E_n| ≤ 2 - κ`, `0 < τ`, `0 ≤ s ≤ t < 1`, `N → ∞`, `RangeCond`) is discharged; the
-per-time loop family `STStep1LoopPT` (resp. `STStep1WeakPT`) stays the hypothesis of the
-implication. -/
-example :
-    (STStep1LoopPT sz0 (STflowE z0) sInst tInst → STStep1Loop sz0 (STflowE z0) sInst tInst) ∧
-      (STStep1WeakPT sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst) :=
-  step1NetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst (by norm_num)
-    (fun n => (RBM.Green.Instance.premises.2.1 n).le) (by norm_num) (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) RBM.Green.Instance.premises.2.2.2.1
-    sz0_tendsto RBM.Green.Instance.premises.2.2.2.2
-
-/-- `stNetLift_holds` at `d = 3`, through the merged instance `inst_netLift` (which takes the pin
-as its hypothesis): the pin is now discharged, the loop bound at every time sequence in `[0, 1/16]`
-(`hu`) stays a hypothesis. -/
-example
-    (hu : ∀ u : ℕ → ℝ, (∀ n, sInst n ≤ u n) → (∀ n, u n ≤ tInst n) →
-      ∀ k : ℕ, 1 ≤ k →
-        Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-          (fun n p ω => ‖Lloop sz0 n (STflowE z0 n) (u n) p.1 p.2 ω‖)
-          (fun n _ _ => ((1 - sInst n) / (1 - u n)) ^ (k - 1) * (sz0.Bctl n (sInst n)) ^ (k - 1))) :
-    STStep1Loop sz0 (STflowE z0) sInst tInst :=
-  inst_netLift (stNetLift_holds 3) hu
-
-/-- `stNetLift_holds` applied directly: `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `sz0`, `z0`, `STFlow`
-(`flow_z0`), `0 ≤ s ≤ t ≤ lemT z_n` (`sixteenth_le_lemT`). -/
-example
-    (hu : ∀ u : ℕ → ℝ, (∀ n, sInst n ≤ u n) → (∀ n, u n ≤ tInst n) →
-      ∀ k : ℕ, 1 ≤ k →
-        Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-          (fun n p ω => ‖Lloop sz0 n (STflowE z0 n) (u n) p.1 p.2 ω‖)
-          (fun n _ _ => ((1 - sInst n) / (1 - u n)) ^ (k - 1) * (sz0.Bctl n (sInst n)) ^ (k - 1))) :
-    STStep1Loop sz0 (STflowE z0) sInst tInst :=
-  stNetLift_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) hu
-
-end Instances
-
-end RBM.Ind

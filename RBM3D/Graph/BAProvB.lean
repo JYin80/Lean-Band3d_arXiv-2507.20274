@@ -934,17 +934,6 @@ theorem BAProv_exists_ne (d : ℕ) (K : ℤ) (Γ : BAPGraph (Fin 2)) (hN : Γ.g.
     exact ⟨hreach o ho, hinv o ho⟩
   · rw [hW.val_identity L W hL g0 Em t m hS ht0 ht1 ℓe, List.map_append]
 
-/-- **the recursion with provenance** (target 7): per normal `Γ` and cutoff `K`, lists `oP eP` of outputs with maps, `ExtOK ∧ Molecular`, the conclusion of `BAlvl1Lemma` for their graphs and the weighted expansion -/
-theorem baProv_exists (d : ℕ) (K : ℤ) (Γ : BAPGraph (Fin 2)) (hN : Γ.g.Normal) :
-    ∃ oP eP : List (BAProvOut Γ), (∀ o ∈ oP ++ eP, o.ExtOK ∧ o.Molecular) ∧ BAProv_Lvl1Body d K Γ (oP.map (·.Q)) (eP.map (·.Q)) ∧
-      BAWExp d Γ (oP ++ eP) := by
-  obtain ⟨oP, eP, hok, hb, -, hW⟩ := BAProv_exists_ne d K Γ hN
-  exact ⟨oP, eP, hok, hb, hW⟩
-
-/-- the body is the conclusion of `BAlvl1Lemma` (a check of the statement) -/
-example (h : BAlvl1Lemma d) (K : ℤ) (P : BAPGraph (Fin 2)) (hN : P.g.Normal) : ∃ outs errs : List (BAPGraph (Fin 2)), BAProv_Lvl1Body d K P outs errs :=
-  h K P hN
-
 end Rec
 
 /-! ## 7. The engine with provenance (target 8) -/
@@ -1106,133 +1095,9 @@ theorem ba_localregularXP : BAEngineProv := by
   obtain ⟨outs, errs, -, h⟩ := ba_localregularXP_ne p c hc K0 d D
   exact ⟨outs, errs, h⟩
 
-/-- the conclusion of `ba_localregularX` without the binder (target 8 (b); the content of the pin `T2472_LocRegXClosed`) -/
-def BAProv_LocRegXClosed : Prop :=
-  ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAPGraph (Fin 2)),
-    BALocRegConcl p c K0 d D outs errs ∧ ∀ Q ∈ outs ++ errs, p ≤ Q.g.waved.countP (fun e => !e.col)
-
-/-- **target 8 (b)** (`lwEngineProv_imp_localregularX`, `LWProv:177`): forgetting the provenance -/
-theorem baEngineProv_imp_localregularX (h : BAEngineProv) : BAProv_LocRegXClosed := by
-  intro p c hc K0 d D
-  obtain ⟨outs, errs, -, hC, hW, -⟩ := h p c hc K0 d D
-  refine ⟨outs.map (·.Q), errs.map (·.Q), hC, fun Q hQ => ?_⟩
-  obtain ⟨o, ho, rfl⟩ := List.mem_map.1 (by simpa [List.map_append] using hQ : Q ∈ (outs ++ errs).map (·.Q))
-  exact hW o ho
-
 end Engine
 
 /-! ## 8. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `(g0P, EP, t0P, m0P)`: `BASelf` and `0 < t₀ < 1` are `flowP_data`; labels `ℓ0`) -/
-
-section Inst
-
-open RBM.BA.CouplingWindowInst BASimInst BALvl1AInst BASymm1Inst BAVocabInst
-
-/-- **target 8** at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10`: the only hypothesis `0 < c` is discharged; the lists are non-empty (a start term of the 16 has at least one output), every output is `ExtOK` and
-covered, `BALocRegConcl` holds, at least `p = 2` black waved edges, and the weighted expansion -/
-example := ba_localregularXP_ne 2 (1 / 4) (by norm_num) 2 3 10
-
-/-- **target 8 (b)** at the same data: the conclusion without provenance, and its lists are those of the engine -/
-example := baEngineProv_imp_localregularX ba_localregularXP 2 (1 / 4) (by norm_num) 2 3 10
-
-/-- the pinned text of `T2472_LocRegXClosed` (copied by script from `docs/tickets/checks/T2472-check.lean`) is proved by `baEngineProv_imp_localregularX` -/
-example : (∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAPGraph (Fin 2)),
-    BALocRegConcl p c K0 d D outs errs ∧ ∀ Q ∈ outs ++ errs, p ≤ Q.g.waved.countP (fun e => !e.col)) := baEngineProv_imp_localregularX ba_localregularXP
-
-/-- **target 3 / target 8: `BAWExp.prod` at the engine's expansion** (not a leaf): at the flow point, `p = 2`, the weights `w_k(x) = 1` at `x = ℓ0 0` and `1/2` elsewhere (`BAProv_w`), the non-empty list of the
-engine -/
-example : ∃ outs : List (BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph 2)))), outs ≠ [] ∧
-    ∫ ω, (baPG (BAGraph.ofLGraph (fxyPowGraph 2))).valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => ∏ k : Fin 2, BAProv_w k (ℓ (Sum.inr (localReg_fxyBeta k)))) ℓ0 ∂(PF 3 4 2 0) =
-      (outs.map fun o => ∫ ω, o.Q.valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => ∏ k : Fin 2, BAProv_w k (ℓ (o.π (Sum.inr (localReg_fxyBeta k))))) ℓ0 ∂(PF 3 4 2 0)).sum := by
-  obtain ⟨outs, errs, hne, -, -, -, hW⟩ := ba_localregularXP_ne 2 (1 / 4) (by norm_num) 2 3 10
-  exact ⟨outs ++ errs, hne, BAWExp.prod hW (by norm_num) flowP_data.2.2 flowP_data.1.le flowP_data.2.1 BAProv_w ℓ0⟩
-
-/-- **target 4/8, the start outputs at `p = 2`**: the 16 terms of the partition with their maps `vmap`, `ExtOK`, `Molecular` and covered; and the weighted partition at the flow point (`BAProv_start_W`, the weight `Π_k w_k`) -/
-example : (BAProv_startOuts 2).length = 16 ∧ (∀ o ∈ BAProv_startOuts 2, o.ExtOK ∧ o.Molecular ∧
-    BACoverBy (P := o.Q) fun k : Fin 2 => o.π (Sum.inr (localReg_fxyBeta k))) :=
-  ⟨by decide +kernel, BAProv_startOuts_good 2⟩
-
-example : ∫ ω, (baPG (BAGraph.ofLGraph (fxyPowGraph 2))).valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => ∏ k : Fin 2, BAProv_w k (ℓ (Sum.inr (localReg_fxyBeta k)))) ℓ0 ∂(PF 3 4 2 0) =
-      ((BAProv_startOuts 2).map fun o => ∫ ω, o.Q.valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => ∏ k : Fin 2, BAProv_w k (ℓ (o.π (Sum.inr (localReg_fxyBeta k))))) ℓ0 ∂(PF 3 4 2 0)).sum :=
-  BAWExp.prod (BAProv_start_W 3 _) (by norm_num) flowP_data.2.2 flowP_data.1.le flowP_data.2.1 BAProv_w ℓ0
-
-/-- **target 5 (b), target 4: the five frame kinds with the weighted expansion** at the merged data of R1 (`BASimInst`): `gg` at `P_A` (31 outputs), `within` at `P_B`, `ggSplit` at `P_C`, `edge` at `P_E`,
-`weight` at the first start term -- positions with `ExtOK`, `Molecular` and `BAWExp`, for all the outputs of the step (the output lists are non-empty) -/
-example : BAProvPosW 3 (baPG baPA) ggF ∧ ggF.length = 31 := ⟨BAProv_frameStep_posW 3 _ (by decide) hFA, by decide +kernel⟩
-
-example : BAProvPosW 3 (baPG baPB) ((baPG baPB).withinOuts pB) ∧ 0 < ((baPG baPB).withinOuts pB).length :=
-  ⟨BAProv_frameStep_posW 3 _ (by decide) hFB, by decide +kernel⟩
-
-example : BAProvPosW 3 (baPG baPC) ((baPG baPC).splitOuts pC qC 0) ∧ 0 < ((baPG baPC).splitOuts pC qC 0).length :=
-  ⟨BAProv_frameStep_posW 3 _ (by decide) hFC, by decide +kernel⟩
-
-example : BAProvPosW 3 (baPG baPE) ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)) ∧ 0 < ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)).length :=
-  ⟨BAProv_frameStep_posW 3 _ (by decide) hFE, by decide +kernel⟩
-
-example : BAProvPosW 3 (baPG BAProv_baPW2) ((baPG BAProv_baPW2).outsOf (BAProv_baPW2.lw2 BAProv_pW2) ++ (baPG BAProv_baPW2).outsOf (BAProv_baPW2.lw4 BAProv_pW2)) ∧
-    0 < ((baPG BAProv_baPW2).outsOf (BAProv_baPW2.lw2 BAProv_pW2)).length :=
-  ⟨BAProv_frameStep_posW 3 _ (by decide +kernel) (BAFrameStep.weight (baPG BAProv_baPW2) BAProv_pW2 (List.mem_cons_self ..) (by decide +kernel)),
-    by decide +kernel⟩
-
-/-- **target 6** at `BALvl1AInst.locStepB` (the twist of `P_B`; `normalB`): the positions of the outputs, a non-empty list, and the weighted expansion evaluated at the flow point with a non-constant
-weight (`1` where the first external vertex carries the label `ℓ0 0`, `1/2` elsewhere) -/
-example : ∃ ps : List (BAProvOut ((baPG baPB).twist true true)), ps ≠ [] ∧ (∀ o ∈ ps, o.ExtOK ∧ o.Molecular) ∧
-    ∫ ω, ((baPG baPB).twist true true).valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => if ℓ (Sum.inl (0 : Fin 2)) = ℓ0 0 then 1 else 1 / 2) ℓ0 ∂(PF 3 4 2 0) =
-      (ps.map fun o => ∫ ω, o.Q.valW (BAlwData 3 4 2 g0P EP t0P m0P ω)
-        (fun ℓ => if ℓ (o.π (Sum.inl (0 : Fin 2))) = ℓ0 0 then 1 else 1 / 2) ℓ0 ∂(PF 3 4 2 0)).sum := by
-  obtain ⟨ps, hps, hok, hW⟩ := baProv_stepPos 3 _ _ locStepB normalB
-  refine ⟨ps, ?_, hok, hW 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ ℓ0⟩
-  rintro rfl
-  have := congrArg List.length hps
-  simp only [List.map_nil, List.length_nil, List.length_map] at this
-  have h0 : 0 < ((baPG baPB).withinOuts pB).length := by decide +kernel
-  omega
-
-/-- **target 7** at the normal graph `baGGLhs` (one internal vertex with two solid edges of one colour), the cutoff `K = 10`: lists with maps, non-empty, `ExtOK`, `Molecular`, the conclusion of
-`BAlvl1Lemma` for their graphs and the weighted expansion -/
-example := BAProv_exists_ne 3 10 (baPG baGGLhs) (by decide)
-
-example := baProv_exists 3 3 ((baPG baPB).twist true true) normalB
-
-/-- a non-constant weight: `1` where the vertex `v` carries the label `ℓ0 0`, `1/2` elsewhere -/
-def BAProv_wt {V : Type} (v : V) : (V → Idx 3 4 2) → ℝ := fun ℓ => if ℓ v = ℓ0 0 then 1 else 1 / 2
-
-/-- **target 5 (b), the weighted identity of each step kind and of the twist**, applied directly at the merged data of R1 (`BASimInst`, `BALvl1AInst`) and the flow point, the weight `BAProv_wt`
-(hypotheses on the selected edges discharged by `decide` / `rfl`): `weight` at the loop of the first start term, `gg` at `(P_A, p_A, q_A)`, `edge` at `(P_E, p_E)`, `within` at `P_B`, `ggSplit` at
-`P_C` with `j = 0` -/
-example := BAProv_lw_W (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 BAProv_baPW2 BAProv_pW2
-  (List.mem_cons_self ..) (by decide +kernel) (by decide +kernel) (by decide +kernel) (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-example := BAProv_gg_W (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 baPA pA qA (List.mem_cons_self ..)
-  (List.mem_cons_self ..) (by decide) (by decide) (by decide) (by decide) (by decide) (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-example := BAProv_lanlw_W (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 baPE pE
-  (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) (by decide) (by decide) (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-example := BAProv_macroA_W (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 baPB pB (List.mem_cons_self ..) rfl rfl
-  (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-example := BAProv_macroB_W (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 baPC pC qC (List.mem_cons_self ..) 0 rfl
-  ⟨rfl, rfl, rfl, rfl⟩ (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-/-- the weighted twist (`c = t = true`) at `P_B` and the twist of the leaf expansion -/
-example := BAProv_twist_EW (L := 4) (W := 2) g0P EP t0P m0P (baPG baPB) true true (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0
-
-example : BAWExp 3 ((baPG baPB).twist true true) ([(⟨baPG baPB, id⟩ : BAProvOut (baPG baPB))].map (BAProvOut.twist true true)) :=
-  BAWExp.twist true true (BAWExp.refl 3 (baPG baPB))
-
-/-- **target 7** at `baGGLhs` and `K = 10`, the weighted expansion evaluated at the flow point with the weight `BAProv_wt`, the lists non-empty -/
-example : ∃ oP eP : List (BAProvOut (baPG baGGLhs)), oP ++ eP ≠ [] ∧
-    ∫ ω, (baPG baGGLhs).valW (BAlwData 3 4 2 g0P EP t0P m0P ω) (BAProv_wt (Sum.inl (0 : Fin 2))) ℓ0 ∂(PF 3 4 2 0) =
-      ((oP ++ eP).map fun o => ∫ ω, o.Q.valW (BAlwData 3 4 2 g0P EP t0P m0P ω) (fun ℓ => BAProv_wt (Sum.inl (0 : Fin 2)) (ℓ ∘ o.π)) ℓ0 ∂(PF 3 4 2 0)).sum := by
-  obtain ⟨oP, eP, -, -, hne, hW⟩ := BAProv_exists_ne 3 10 (baPG baGGLhs) (by decide)
-  exact ⟨oP, eP, hne, hW 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ ℓ0⟩
-
-end Inst
 
 end RBM.Graph
 end

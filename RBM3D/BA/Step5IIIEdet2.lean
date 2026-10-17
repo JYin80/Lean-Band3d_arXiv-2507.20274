@@ -1132,17 +1132,6 @@ theorem baStep5IIIE_dif (d : ℕ) (hd : 3 ≤ d) (sz : Sizes d) (lam0 E : ℕ �
     rw [hτh, hJ3]
     exact Step5IIIEdet2_final_far hΛ1 hτ0 hτ1 hω0 hS1 hN61 hE6 hJ1 (by positivity) hTr0 hΩ hWd (Step5IIIEdet2_const_far hs)
 
-/-- The near cut of `dif` is trivial at `a' = a` (`|a_i - a_i|_∞ = 0`). -/
-theorem Step5IIIEdet2_near_self {d : ℕ} {sz : Sizes d} {n : ℕ} {u D Λ K₀ J : ℝ} (hs : BAStep5IIIEScalar sz n u D Λ K₀ J)
-    (a : Fin 2 → Zd d (sz.L n)) :
-    ∀ i : Fin 2, (zdistInf d (sz.L n) (a i - a i) : ℝ) ≤ 2 * Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) := by
-  intro i
-  have hlog : 0 ≤ Real.log ((sz.W n : ℕ) : ℝ) := by linarith [Step5IIIEdet_log_ge_four hs]
-  rw [sub_self, Step5IIIEdet2_zdistInf_zero]
-  have := Real.rpow_nonneg hlog (3 / 2 : ℝ)
-  push_cast
-  linarith
-
 end Dif
 
 /-! ## 9. Target 7: the assembly -/
@@ -1174,104 +1163,6 @@ theorem baStep5IIIEdet_holds (d : ℕ) : BAStep5IIIEdet d := fun hd sz lam0 E n 
    fun σ a a' hnear => baStep5IIIE_dif d hd sz lam0 E n u D Λ K₀ J θ Cd H hθ hCd hs hm σ a a' hnear⟩
 
 /-! ## 10. Instances (target 8 (b)): `d = 3`, `sz0`, `u = 1/2`, `D = 40`, `Λ = K₀ = J = 1`, `θ = 1/10`, `Cd = 1` -/
-
-section Instances2
-
-private abbrev Step5IIIEdet2_C0 :=
-  baStep2Mat SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq)
-
-/-- Target 6 (a) at `d = 3`, `θ = 1/10`, along `sz0` (every `n`): `S_θ` is bounded by the explicit constant
-`(1 + 96/(θ/(2d))⁴)^d`, uniformly in `L = 4(n+1)`. -/
-example : ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ,
-    ∑ y : Zd 3 (SizesInst.sz0.L n), Real.exp (-((1 / 10 : ℝ) / 2 * Real.sqrt (zdistInf 3 (SizesInst.sz0.L n) y : ℝ))) ≤ C := by
-  obtain ⟨C, hC, h⟩ := baStep5IIIE_sumTheta 3 (by norm_num) (1 / 10) (by norm_num)
-  exact ⟨C, hC, fun n => h SizesInst.sz0 n⟩
-
-/-- Target 6 (a) as the pin: `∀ d, T2482_SumTheta d` has this shape. -/
-example : ∀ d : ℕ, 1 ≤ d → ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 < C ∧ ∀ (sz : Sizes d) (n : ℕ),
-    ∑ y : Zd d (sz.L n), Real.exp (-(θ / 2 * Real.sqrt (zdistInf d (sz.L n) y : ℝ))) ≤ C := baStep5IIIE_sumTheta
-
-/-- Target 6 (b) at the nondegenerate instance `n = 800` (`L = 3204`, `W ≈ 1.06·10¹⁶`, `6ℓ* ≤ L/2`: every window nonempty): the scalar part is
-discharged by `Step5IIIEdet_scalar_sz0_800`; the matrix part is the pin of U5c's good event (audit O2) and the near cut is the antecedent of
-the statement. -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H)
-    (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd 3 (SizesInst.sz0.L 800))
-    (hnear : ∀ i : Fin 2, (zdistInf 3 (SizesInst.sz0.L 800) (a i - a' i) : ℝ) ≤
-      2 * Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (3 / 2 : ℝ)) :=
-  baStep5IIIE_dif 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat σ a a' hnear
-
-/-- Target 6 (b) at `n = 800` with the near cut discharged (`a' = a`). -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (SizesInst.sz0.L 800)) :
-    ‖STeeMg Step5IIIEdet2_C0 800 (1 / 2) H σ a a‖ ≤ lossE2wG 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800) 1 1 *
-      (((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (2 * ((1 / 10 : ℝ) * (((3 : ℕ) : ℝ) * (1 + 1)))) *
-        ∑ y : Zd 3 (SizesInst.sz0.L 800), Real.exp (-((1 / 10 : ℝ) / 2 * Real.sqrt (zdistInf 3 (SizesInst.sz0.L 800) y : ℝ)))) *
-      ((1 - (1 / 2 : ℝ))⁻¹ * ((if (zdistInf 3 (SizesInst.sz0.L 800) (a 0 - a 1) : ℝ) ≤
-          6 * Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (3 / 2 : ℝ) then 1 else 0) +
-        (((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ 3 * |1 - (1 / 2 : ℝ)|)⁻¹ ^ (1 / 2 : ℝ) * (1 : ℝ) ^ (3 : ℝ)) *
-        STtailTD SizesInst.sz0 800 (1 / 2) 40 a ^ 2) := by
-  exact baStep5IIIE_dif 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat σ a a (Step5IIIEdet2_near_self Step5IIIEdet_scalar_sz0_800 a)
-
-/-- The concrete point of the far regime: blocks `a = (0, (1500, 0, 0))` on `Z_{3204}^3` (`n = 800`). -/
-private def Step5IIIEdet2_pt : Fin 2 → Zd 3 (SizesInst.sz0.L 800) := ![0, fun i => if i = 0 then 1500 else 0]
-
-private theorem Step5IIIEdet2_pt_dist :
-    zdistInf 3 (SizesInst.sz0.L 800) (Step5IIIEdet2_pt 0 - Step5IIIEdet2_pt 1) = 1500 := by
-  unfold Step5IIIEdet2_pt zdistInf
-  decide
-
-/-- `6ℓ* < 1500` at `n = 800` (`W < 2^55`, `log W < 38.2`, `ℓ* = (log W)^{3/2} = log W √(log W) < 38.2 · 6.19`). -/
-private theorem Step5IIIEdet2_pt_far : 6 * Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (3 / 2 : ℝ) < 1500 := by
-  have hW : ((SizesInst.sz0.W 800 : ℕ) : ℝ) < 2 ^ 55 := by norm_num [SizesInst.sz0]
-  have hW0 := Step5IIIEdet_W_pos SizesInst.sz0 800
-  have hx : Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) < 38.2 := by
-    have h1 := Real.log_lt_log hW0 hW
-    rw [Real.log_pow] at h1
-    have := Real.log_two_lt_d9
-    push_cast at h1
-    linarith
-  have hx0 := Step5IIIEdet_log_ge_four Step5IIIEdet_scalar_sz0_800
-  rw [Step5IIIEdet_rpow_three_halves (by linarith)]
-  have hs : Real.sqrt (Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ)) ≤ 6.19 :=
-    Real.sqrt_le_iff.2 ⟨by norm_num, by nlinarith⟩
-  nlinarith [Real.sqrt_nonneg (Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ))]
-
-/-- Target 6 (b) at the concrete far-regime point `a = a' = (0, (1500, 0, 0))`, charges `(+,-)`, `n = 800`: `|a₀ - a₁|_∞ = 1500 > 6ℓ*`
-(`Step5IIIEdet2_pt_dist`, `_pt_far`), so the indicator is `0` and the bound is the far-regime one. -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H) :
-    ‖STeeMg Step5IIIEdet2_C0 800 (1 / 2) H ![true, false] Step5IIIEdet2_pt Step5IIIEdet2_pt‖ ≤
-      lossE2wG 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800) 1 1 *
-        (((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (2 * ((1 / 10 : ℝ) * (((3 : ℕ) : ℝ) * (1 + 1)))) *
-          ∑ y : Zd 3 (SizesInst.sz0.L 800), Real.exp (-((1 / 10 : ℝ) / 2 * Real.sqrt (zdistInf 3 (SizesInst.sz0.L 800) y : ℝ)))) *
-        ((1 - (1 / 2 : ℝ))⁻¹ * (0 + (((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ 3 * |1 - (1 / 2 : ℝ)|)⁻¹ ^ (1 / 2 : ℝ) * (1 : ℝ) ^ (3 : ℝ)) *
-          STtailTD SizesInst.sz0 800 (1 / 2) 40 Step5IIIEdet2_pt ^ 2) := by
-  have h := baStep5IIIE_dif 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat ![true, false] Step5IIIEdet2_pt Step5IIIEdet2_pt
-    (Step5IIIEdet2_near_self Step5IIIEdet_scalar_sz0_800 _)
-  have hfar : ¬ ((zdistInf 3 (SizesInst.sz0.L 800) (Step5IIIEdet2_pt 0 - Step5IIIEdet2_pt 1) : ℝ) ≤
-      6 * Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (3 / 2 : ℝ)) := by
-    rw [Step5IIIEdet2_pt_dist]
-    push_cast
-    exact not_le.2 Step5IIIEdet2_pt_far
-  simp only [hfar, ↓reduceIte] at h
-  exact h
-
-/-- Target 7 at the instance `n = 800`: the three ℰ-bounds `lk`, `wG`, `dif` (the matrix part of the bundle is the hypothesis `hmat`). -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H) :=
-  baStep5IIIEdet_holds 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat
-
-end Instances2
 
 end RBM.BA
 end

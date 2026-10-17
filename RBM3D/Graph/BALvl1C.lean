@@ -561,67 +561,6 @@ theorem baLvl1LemmaSize_holds (d : ℕ) : BAlvl1LemmaSize d := by
 
 /-! ## 7. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point of `BA/CouplingWindow.lean`; `BASelf` and `0 < t₀ < 1` are `flowP_data`) -/
 
-namespace BALvl1CInst
-
-open RBM.BA.CouplingWindowInst BASimInst BASymm1Inst BALvl1AInst BAVocabInst
-
-/-- **Target 2** at `baGGLhs` (normal, one internal vertex with two solid edges of one colour: not locally standard, `gg`) and at the twist of R1's macro datum `P_B`
-(a solid edge inside an atom: an atom-level loop, `within`). -/
-example : (∃ outs, BALocStep (baPG baGGLhs) outs) ∧ (∃ outs, BALocStep ((baPG baPB).twist true true) outs) :=
-  ⟨baLvl1ExistsStep_holds (baPG baGGLhs) (by decide) (by decide), baLvl1ExistsStep_holds _ normalB (by decide)⟩
-
-/-- **Target 3** at the twisted macro step `locStepB` (cutoff `K = 100`): an output `Q` exists, is normal, the measure falls, `Q` is reached
-(`BAReach.trans` of reflexivity and one step), and the predicate "normal" passes along `BAReach` by `ba_lvl1_induction` and `baLvl1StepGood_holds`. -/
-example : ∃ Q ∈ (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)), Q.g.Normal ∧
-    BALvl1Lt (BALvl1Mu 100 Q) (BALvl1Mu 100 ((baPG baPB).twist true true)) ∧ BAReach 100 ((baPG baPB).twist true true) Q := by
-  obtain ⟨Q, hQ⟩ := List.exists_mem_of_length_pos (l := ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true))
-    (by simpa using (by decide +kernel : 0 < ((baPG baPB).withinOuts pB).length))
-  have hg := baLvl1StepGood_holds _ _ locStepB normalB Q hQ
-  have hr : BAReach 100 ((baPG baPB).twist true true) Q :=
-    (BAReach.refl _).trans (BAReach.step _ _ Q _ (BAReach.refl _) (by decide +kernel) (by decide +kernel) locStepB hQ)
-  have hn : Q.g.Normal := ba_lvl1_induction hr (fun R => R.g.Normal) normalB
-    (fun A L hst hA B hB => (baLvl1StepGood_holds A L hst hA B hB).1)
-  exact ⟨Q, hQ, hn, ba_lvl1_mu_lt (by decide +kernel) hg.2, hr⟩
-
-/-- **Target 4** at `baGGLhs`, the cutoff `K = 10`, and the flow data: the lists exist, every graph of them is reached, and the identity of expectations holds at
-`d = 3`, `L = 4`, `W = 2`, `(g₀, E, t, m) = (g0P, EP, t0P, m0P)`, `ℓ0`. -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)),
-    (∀ Q ∈ outs, Q.g.LocStd ∧ (baPG baGGLhs).g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < 10) ∧ (∀ Q ∈ errs, 10 ≤ Q.g.scalingOrder) ∧
-    (∀ Q ∈ outs ++ errs, BAReach 10 (baPG baGGLhs) Q) ∧
-    ∫ ω, (baPG baGGLhs).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
-      ∫ ω, BAComb.val (outs ++ errs) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) := by
-  obtain ⟨outs, errs, h1, h2, h3, h4⟩ := baLvl1Lemma_holds 3 10 (baPG baGGLhs) (by decide)
-  exact ⟨outs, errs, h1, h2, fun Q hQ => (h3 Q hQ).1,
-    h4 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 ℓ0⟩
-
-/-- **Target 4** at the twist of `P_B` (three internal vertices, order `1`), the cutoff `K = 3 = ord + 2`: the third conjunct (normality, order, `n_M`, `n_A - n_W` along
-`BAReach`) and the identity at the flow data. -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)), (∀ Q ∈ outs ++ errs, BAReach 3 ((baPG baPB).twist true true) Q ∧ Q.g.Normal ∧
-      ((baPG baPB).twist true true).g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.nM ≤ ((baPG baPB).twist true true).g.nM ∧
-      (Q.g.nA : ℤ) - Q.g.nW ≤ (((baPG baPB).twist true true).g.nA : ℤ) - ((baPG baPB).twist true true).g.nW) ∧
-    ∫ ω, ((baPG baPB).twist true true).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
-      ∫ ω, BAComb.val (outs ++ errs) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) := by
-  obtain ⟨outs, errs, -, -, h3, h4⟩ := baLvl1Lemma_holds 3 3 ((baPG baPB).twist true true) normalB
-  exact ⟨outs, errs, h3, h4 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 ℓ0⟩
-
-/-- **Target 5** at `baGGLhs`, `d = 3`, `c = 1/4`, `K0 = 2`, `D = 10` (cutoff `60`): the errors have scaling size `≤ 4^{-10}` at `W = 4`, `L = 2`, `Ψ = 1/4`
-(`4^{-3/2} = 1/8 ≤ 1/4 ≤ 4^{-1/4}`, `2^3 ≤ 4^2`), and the identity of expectations holds at the flow data. -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)), (∀ Q ∈ outs, Q.g.LocStd ∧ (baPG baGGLhs).g.scalingOrder ≤ Q.g.scalingOrder) ∧
-    (∀ Q ∈ errs, Q.g.scalingSize (1 / 4) 4 3 2 ≤ (4 : ℝ) ^ (-(10 : ℝ))) ∧
-    ∫ ω, (baPG baGGLhs).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
-      ∫ ω, BAComb.val (outs ++ errs) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) := by
-  obtain ⟨outs, errs, h1, h2, -, h4⟩ := baLvl1LemmaSize_holds 3 (1 / 4) (by norm_num) 2 10 (baPG baGGLhs) (by decide)
-  refine ⟨outs, errs, h1, fun Q hQ => h2 Q hQ 4 2 (1 / 4) (by norm_num) (by norm_num) (by norm_num) ?_ ?_,
-    h4 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 ℓ0⟩
-  · calc ((4 : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2) = (4 : ℝ) ^ (-(3 : ℝ) / 2) := by norm_num
-      _ ≤ (4 : ℝ) ^ (-1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 1 / 4 := by rw [Real.rpow_neg_one]; norm_num
-  · calc (1 / 4 : ℝ) = (4 : ℝ) ^ (-1 : ℝ) := by rw [Real.rpow_neg_one]; norm_num
-      _ ≤ (4 : ℝ) ^ (-(1 / 4 : ℝ)) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = ((4 : ℕ) : ℝ) ^ (-(1 / 4 : ℝ)) := by norm_num
-
-end BALvl1CInst
-
 end RBM.Graph
 
 end

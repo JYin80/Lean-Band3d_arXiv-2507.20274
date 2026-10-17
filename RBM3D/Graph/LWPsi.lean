@@ -237,21 +237,6 @@ theorem LWPhiB_psiRel (hd : 2 ≤ d) (c₀ : ℝ) (K : ℕ → ℕ) (t : ℕ →
       _ ≤ (2 * (ℓ₂ / ℓ₁)) ^ d := pow_le_pow_right₀ hy (by omega)
       _ = 2 ^ d * (ℓ₂ / ℓ₁) ^ d := mul_pow _ _ _
 
-/-- **`(eq:Psi)` for the B class with `(C₁, C₂) = (2, 2)` at `d = 3`** (the constants of the ticket;
-`√(2 x) ≤ 2 x²` for `x ≥ 1`). -/
-theorem LWPhiB_psiRel_three (hd : d = 3) (c₀ : ℝ) (K : ℕ → ℕ) (t : ℕ → ℝ) :
-    LWPsiRel 2 2 (fun C => Real.sqrt ((C + 1) ^ (d - 2))) (LWPhiB sz c₀ K t) := by
-  refine ⟨LWPhiB_antitone sz c₀ K t, by norm_num, by norm_num, fun C hC => ?_, ?_⟩
-  · exact Eventually.of_forall fun n ℓ hℓ hℓC => LWPhiB_zero_le sz c₀ K t n (by linarith) hℓ hℓC
-  · refine Eventually.of_forall fun n ℓ₁ ℓ₂ h1 h12 => ?_
-    have hℓ1 : 0 < ℓ₁ := by linarith
-    have hx : 1 ≤ ℓ₂ / ℓ₁ := (one_le_div hℓ1).2 h12
-    refine (LWPhiB_ratio sz c₀ K t n h1 h12).trans (mul_le_mul_of_nonneg_right ?_
-      (LWPhiB_nonneg sz c₀ K t n ℓ₂))
-    rw [Real.rpow_two, hd, show 3 - 2 = 1 from rfl, pow_one, Real.sqrt_le_left (by positivity)]
-    nlinarith [mul_nonneg (sub_nonneg.2 hx) (sub_nonneg.2 hx), pow_pos (by linarith : (0 : ℝ) < ℓ₂ / ℓ₁) 3,
-      pow_pos (by linarith : (0 : ℝ) < ℓ₂ / ℓ₁) 2]
-
 /-- The shift step, from the clauses of `(eq:Psi)` and `Ψ_t ≥ 0` (shared by `LWPsiAll.shift` and
 `LWPhiB_shift`): `c ≥ 1` by monotonicity; `c < 1`, `c r ≥ 1` by the ratio bound with `C₁ c^{-C₂}`;
 `c r < 1` by `Ψ_t(0) ≍ Ψ_t(ℓ)` for `ℓ ≤ max 2 c⁻¹`. -/
@@ -306,16 +291,6 @@ theorem LWPsiAll.shift {ε₀ C₁ C₂ C₃ : ℝ} {Cc : ℝ → ℝ} {Φ : ℕ
   obtain ⟨-, ⟨hpos, -, -⟩, hanti, hC₁, hC₂, hrel1, hrel2⟩ := h
   exact LWPsi_shift_aux (hpos.mono fun n hn r hr => (hn r hr).1.le) hanti hC₁ hC₂ hrel1 hrel2 hc
 
-/-- **`Ψ_t(c r) ≲ Ψ_t(r)` for the B class**, every fixed `c > 0`, with no hypothesis on the data and a
-constant independent of `n`: `K_c = max(2^d c^{-d}, ((max 2 c⁻¹ + 1)^{d-2})^{1/2})` (`c < 1`) and `1` (`c ≥ 1`);
-`d = 3`: `c = 1/4` gives `32`, `c = 1/2` gives `8`. -/
-theorem LWPhiB_shift (hd : 2 ≤ d) (c₀ : ℝ) (K : ℕ → ℕ) (t : ℕ → ℝ) {c : ℝ} (hc : 0 < c) :
-    ∃ Kc : ℝ, 0 < Kc ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-      LWPhiB sz c₀ K t n (c * r) ≤ Kc * LWPhiB sz c₀ K t n r := by
-  obtain ⟨-, hC₁, hC₂, hrel1, hrel2⟩ := LWPhiB_psiRel sz hd c₀ K t
-  exact LWPsi_shift_aux (Eventually.of_forall fun n r _ => LWPhiB_nonneg sz c₀ K t n r)
-    (LWPhiB_antitone sz c₀ K t) hC₁ hC₂ hrel1 hrel2 hc
-
 /-! ## 3. The window `W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}` (paper-delta T2040a)
 
 `7_8:65` takes `Ψ_t = (W^{-d}B_{t,0})^{1/2}`, but `W^{-d/2} ≤ (W^{-d}B_{t,0})^{1/2}` holds iff `B_{t,0} ≥ 1`
@@ -348,17 +323,6 @@ theorem LWWindow_max_Bctl {ε₀ : ℝ} (hε : ε₀ ≤ (d : ℝ) / 2) (t : ℕ
   filter_upwards [h] with n hn
   rw [Real.sqrt_le_left (Real.rpow_nonneg (Nat.cast_nonneg _) _), LWPsi_rpow_sq (Nat.cast_nonneg _), show (2 : ℝ) * -ε₀ = -2 * ε₀ by ring]
   exact hn
-
-/-- `Ψ_t ≍ Φ(0)`: with `LWClass` (the constant `C₃`), `max(W^{-d/2}, Φ(0)) ≤ max(1, C₃) Φ(0)`. -/
-theorem LWPsiMax_asymp {ε₀ C₃ : ℝ} {Φ : ℕ → ℝ → ℝ} (h : LWClass sz ε₀ C₃ Φ) :
-    ∀ᶠ n in atTop, Φ n 0 ≤ max (((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2)) (Φ n 0) ∧
-      max (((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2)) (Φ n 0) ≤ max 1 C₃ * Φ n 0 := by
-  obtain ⟨h1, -, h3⟩ := h
-  filter_upwards [h1, h3] with n hn1 hn3
-  have hp : 0 < Φ n 0 := (hn1 0 le_rfl).1
-  refine ⟨le_max_right _ _, max_le ?_ ?_⟩
-  · exact hn3.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hp.le)
-  · exact le_mul_of_one_le_left hp.le (le_max_left _ _)
 
 /-- **The B class satisfies `LWClass` for `c₀ ≤ d`** (positivity, `Ψ_t ≤ W^{-ε₀}`, `W^{-d/2} ≤ C₃ Ψ_t(0)`):
 with `0 ≤ t ≤ 1`, `0 < g ≤ Λ` (eventually) and the data hypothesis `W^{-c₀} B_{t,0} ≤ W^{-2ε₀}`
@@ -509,16 +473,6 @@ theorem tailT_regime2_bounds {d L : ℕ} {g t : ℝ} (hg : 0 ≤ g) (ht : t < 1)
   · nlinarith [mul_le_mul_of_nonneg_left hex hB]
   · nlinarith [mul_le_mul_of_nonneg_left hle hB]
 
-/-- Truncated form of regime `1 - t ≤ g²/L²`, `0 ≤ ℓ ≤ L`, any `r ≥ 0`:
-`max(e⁻¹ B_{t,r∧ℓ}, W^{-D}) ≤ wT^ℓ_{t,D}(r) ≤ max(B_{t,r∧ℓ}, W^{-D})`. -/
-theorem tailW_regime2_bounds {d L : ℕ} {W g t ℓ D : ℝ} (hg : 0 ≤ g) (ht : t < 1) (hL : 1 ≤ (L : ℝ))
-    (h : 1 - t ≤ g ^ 2 / (L : ℝ) ^ 2) (hℓ0 : 0 ≤ ℓ) (hℓL : ℓ ≤ L) {r : ℝ} (hr : 0 ≤ r) :
-    max (Real.exp (-1) * BparamR d L g t (min r ℓ)) (W ^ (-D)) ≤ tailW d L g t ℓ W D r ∧
-      tailW d L g t ℓ W D r ≤ max (BparamR d L g t (min r ℓ)) (W ^ (-D)) := by
-  obtain ⟨h1, h2⟩ := tailT_regime2_bounds (d := d) (L := L) hg ht hL h (le_min hr hℓ0)
-    ((min_le_right _ _).trans hℓL)
-  exact ⟨max_le_max h1 le_rfl, max_le_max h2 le_rfl⟩
-
 end RBM
 
 /-! ## 5. Compiled nonempty instances at `d = 3`
@@ -530,284 +484,8 @@ ticket: `t ≡ 1/16` (`tInst`) and `t = 1 - W^{-2}` (`tW`).  Every deterministic
 (`1 - t ≥ g²/L²`) holds at both times for all `n`; regime 2 (`1 - t ≤ g²/L²`) is empty at both
 (`1 - t ≥ W^{-2} > g²/L²`), so its instance is at `n = 0` (`L = 4`, `g = 1/64`) with `t = 1 - 2^{-17}`. -/
 
-namespace RBM.Gauss.LWPsiInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst Filter
-
-/-- The second time of the ticket: `t_n = 1 - W_n^{-2}`. -/
-def tW : ℕ → ℝ := fun n => 1 - (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹
-
-theorem W_pos' (n : ℕ) : (0 : ℝ) < ((sz0.W n : ℕ) : ℝ) := by have := W_ge_32 n; linarith
-
-theorem lam_pos (n : ℕ) : 0 < sz0.lam n := by
-  change 0 < ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹; positivity
-
-theorem two_le_x (n : ℕ) : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
-  have := Nat.cast_nonneg (α := ℝ) n; linarith
-
-theorem lam_le_64 (n : ℕ) : sz0.lam n ≤ 1 / 64 := by
-  change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-  have h : (64 : ℝ) ≤ (2 * ((n : ℝ) + 1)) ^ 6 :=
-    calc (64 : ℝ) = 2 ^ 6 := by norm_num
-      _ ≤ _ := pow_le_pow_left₀ (by norm_num) (two_le_x n) 6
-  calc ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ (64 : ℝ)⁻¹ := inv_anti₀ (by norm_num) h
-    _ = 1 / 64 := by norm_num
-
-theorem lam_le_Winv (n : ℕ) : sz0.lam n ≤ ((sz0.W n : ℕ) : ℝ)⁻¹ := by
-  have hW : ((sz0.W n : ℕ) : ℝ) = (2 * ((n : ℝ) + 1)) ^ 5 := by simp [sz0]
-  change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ _
-  rw [hW]
-  exact inv_anti₀ (by have := two_le_x n; positivity)
-    (pow_le_pow_right₀ (by have := two_le_x n; linarith) (by norm_num))
-
-theorem L_ge_4 (n : ℕ) : (4 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-  have : 4 ≤ sz0.L n := by change 4 ≤ 4 * (n + 1); omega
-  exact_mod_cast this
-
-theorem Winv_sq_le (n : ℕ) : (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ ≤ 1 / 1024 := by
-  have h := W_ge_32 n
-  calc (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ ≤ ((32 : ℝ) ^ 2)⁻¹ :=
-        inv_anti₀ (by norm_num) (pow_le_pow_left₀ (by norm_num) h 2)
-    _ = 1 / 1024 := by norm_num
-
-/-- `0 ≤ t ≤ 1` and `W^{-2} ≤ |1-t|` at `t ≡ 1/16`. -/
-theorem tInst_ok (n : ℕ) :
-    0 ≤ tInst n ∧ tInst n ≤ 1 ∧ (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ ≤ |1 - tInst n| := by
-  have := Winv_sq_le n
-  refine ⟨by simp [tInst], by simp [tInst]; norm_num, ?_⟩
-  simp only [tInst]; rw [abs_of_pos (by norm_num)]; linarith
-
-/-- `0 ≤ t ≤ 1` and `W^{-2} ≤ |1-t|` at `t = 1 - W^{-2}` (equality). -/
-theorem tW_ok (n : ℕ) :
-    0 ≤ tW n ∧ tW n ≤ 1 ∧ (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ ≤ |1 - tW n| := by
-  have := Winv_sq_le n
-  have hp : 0 ≤ (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ := by have := W_pos' n; positivity
-  refine ⟨by simp only [tW]; linarith, by simp only [tW]; linarith, ?_⟩
-  simp only [tW, sub_sub_cancel]; rw [abs_of_nonneg hp]
-
-theorem B0_le {d L : ℕ} {g t w : ℝ} (hL : 1 ≤ (L : ℝ)) (hw : 0 < w) (hu : w ≤ |1 - t|) :
-    Bparam d L g t 0 ≤ 2 * w⁻¹ := by
-  have hu0 : 0 < |1 - t| := hw.trans_le hu
-  have h1 : (g ^ 2 + |1 - t|)⁻¹ ≤ w⁻¹ :=
-    inv_anti₀ hw (by nlinarith [sq_nonneg g])
-  have h2 : ((L : ℝ) ^ d * |1 - t|)⁻¹ ≤ w⁻¹ :=
-    inv_anti₀ hw (by nlinarith [one_le_pow₀ (n := d) hL])
-  have : Bparam d L g t 0 = (g ^ 2 + |1 - t|)⁻¹ + ((L : ℝ) ^ d * |1 - t|)⁻¹ := by simp [Bparam]
-  linarith
-
-/-- `W^{-3} B_{t,0} ≤ W^{-2/5}` at `sz0`, for every `n` and every `t` with `W^{-2} ≤ |1-t|`. -/
-theorem upper_core (n : ℕ) {t : ℝ} (hu : (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ ≤ |1 - t|) :
-    ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ)) * Bparam 3 (sz0.L n) (sz0.lam n) t 0 ≤
-      ((sz0.W n : ℕ) : ℝ) ^ (-2 * (1 / 5 : ℝ)) := by
-  have hW0 := W_pos' n
-  have h32 := W_ge_32 n
-  have hL : (1 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by have := L_ge_4 n; linarith
-  have hB := B0_le (d := 3) (g := sz0.lam n) hL (inv_pos.2 (pow_pos hW0 2)) hu
-  rw [inv_inv] at hB
-  have h35 : (2 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) ^ (3 / 5 : ℝ) :=
-    calc (2 : ℝ) ≤ Real.sqrt 32 := Real.le_sqrt_of_sq_le (by norm_num)
-      _ = (32 : ℝ) ^ (1 / 2 : ℝ) := Real.sqrt_eq_rpow 32
-      _ ≤ (32 : ℝ) ^ (3 / 5 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ ≤ ((sz0.W n : ℕ) : ℝ) ^ (3 / 5 : ℝ) := Real.rpow_le_rpow (by norm_num) h32 (by norm_num)
-  have e : ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ)) * ((sz0.W n : ℕ) : ℝ) ^ 2 =
-      ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
-    rw [← Real.rpow_natCast ((sz0.W n : ℕ) : ℝ) 2, ← Real.rpow_add hW0]; norm_num
-  have e2 : ((sz0.W n : ℕ) : ℝ) ^ (3 / 5 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) =
-      ((sz0.W n : ℕ) : ℝ) ^ (-2 * (1 / 5 : ℝ)) := by
-    rw [← Real.rpow_add hW0]; norm_num
-  have hpos : 0 < ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) := Real.rpow_pos_of_pos hW0 _
-  calc ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ)) * Bparam 3 (sz0.L n) (sz0.lam n) t 0
-      ≤ ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ)) * (2 * ((sz0.W n : ℕ) : ℝ) ^ 2) :=
-        mul_le_mul_of_nonneg_left hB (Real.rpow_nonneg hW0.le _)
-    _ = 2 * ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by rw [← e]; ring
-    _ ≤ ((sz0.W n : ℕ) : ℝ) ^ (3 / 5 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) :=
-        mul_le_mul_of_nonneg_right h35 hpos.le
-    _ = _ := e2
-
-theorem Bctl_eq (n : ℕ) (t : ℝ) :
-    sz0.Bctl n t = ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ)) * Bparam 3 (sz0.L n) (sz0.lam n) t 0 := by
-  unfold Sizes.Bctl
-  congr 1
-  rw [Real.rpow_neg (W_pos' n).le, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-
-theorem hgt_tInst (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ 1 - tInst n := by
-  have hL := L_ge_4 n
-  rw [div_le_iff₀ (by positivity)]
-  have h1 : sz0.lam n ^ 2 ≤ 1 / 4096 := by nlinarith [lam_le_64 n, lam_pos n]
-  have h2 : 16 ≤ ((sz0.L n : ℕ) : ℝ) ^ 2 := by nlinarith
-  simp only [tInst]; nlinarith
-
-theorem hgt_tW (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ 1 - tW n := by
-  have hL := L_ge_4 n
-  have hW := W_pos' n
-  rw [div_le_iff₀ (by positivity)]
-  have h1 : sz0.lam n ^ 2 ≤ (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ := by
-    rw [← inv_pow]; exact pow_le_pow_left₀ (lam_pos n).le (lam_le_Winv n) 2
-  have h2 : 1 ≤ ((sz0.L n : ℕ) : ℝ) ^ 2 := by nlinarith
-  have hp : 0 ≤ (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ := by positivity
-  simp only [tW, sub_sub_cancel]; nlinarith
-
 /-! ### `(eq:Psi)` for the B class (every `K`, every `t`) -/
-
-theorem inst_psiRel (t : ℕ → ℝ) (K : ℕ → ℕ) :
-    LWPsiRel ((2 : ℝ) ^ 3) ((3 : ℕ) : ℝ) (fun C => Real.sqrt ((C + 1) ^ (3 - 2)))
-      (LWPhiB sz0 3 K t) :=
-  LWPhiB_psiRel sz0 (by norm_num) 3 K t
-
-theorem inst_psiRel_tInst : LWPsiRel ((2 : ℝ) ^ 3) ((3 : ℕ) : ℝ)
-    (fun C => Real.sqrt ((C + 1) ^ (3 - 2))) (LWPhiB sz0 3 (fun n => sz0.L n) tInst) :=
-  inst_psiRel tInst _
-
-theorem inst_psiRel_tW : LWPsiRel ((2 : ℝ) ^ 3) ((3 : ℕ) : ℝ)
-    (fun C => Real.sqrt ((C + 1) ^ (3 - 2))) (LWPhiB sz0 3 (fun n => sz0.L n) tW) :=
-  inst_psiRel tW _
-
-theorem inst_psiRel_three_tInst : LWPsiRel 2 2 (fun C => Real.sqrt ((C + 1) ^ (3 - 2)))
-    (LWPhiB sz0 3 (fun n => sz0.L n) tInst) :=
-  LWPhiB_psiRel_three sz0 rfl 3 _ tInst
-
-theorem inst_psiRel_three_tW : LWPsiRel 2 2 (fun C => Real.sqrt ((C + 1) ^ (3 - 2)))
-    (LWPhiB sz0 3 (fun n => sz0.L n) tW) :=
-  LWPhiB_psiRel_three sz0 rfl 3 _ tW
-
-/-- `Ψ_t(r/4) ≲ Ψ_t(r)`, `Ψ_t(2r) ≲ Ψ_t(r)` for the B class at both times. -/
-theorem inst_shift_tInst :
-    (∃ Kc : ℝ, 0 < Kc ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-      LWPhiB sz0 3 (fun n => sz0.L n) tInst n (1 / 4 * r) ≤
-        Kc * LWPhiB sz0 3 (fun n => sz0.L n) tInst n r) ∧
-    (∃ Kc : ℝ, 0 < Kc ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-      LWPhiB sz0 3 (fun n => sz0.L n) tInst n (2 * r) ≤
-        Kc * LWPhiB sz0 3 (fun n => sz0.L n) tInst n r) :=
-  ⟨LWPhiB_shift sz0 (by norm_num) 3 _ tInst (by norm_num),
-    LWPhiB_shift sz0 (by norm_num) 3 _ tInst (by norm_num)⟩
-
-theorem inst_shift_tW :
-    (∃ Kc : ℝ, 0 < Kc ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-      LWPhiB sz0 3 (fun n => sz0.L n) tW n (1 / 2 * r) ≤
-        Kc * LWPhiB sz0 3 (fun n => sz0.L n) tW n r) :=
-  LWPhiB_shift sz0 (by norm_num) 3 _ tW (by norm_num)
 
 /-! ### The window of T2040a -/
 
-theorem inst_window_tInst : LWWindow sz0 (1 / 5) (fun n =>
-    max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (Real.sqrt (sz0.Bctl n (tInst n)))) :=
-  LWWindow_max_Bctl sz0 (by norm_num) tInst (Eventually.of_forall fun n => by
-    rw [Bctl_eq]; exact upper_core n (tInst_ok n).2.2)
-
-theorem inst_window_tW : LWWindow sz0 (1 / 5) (fun n =>
-    max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (Real.sqrt (sz0.Bctl n (tW n)))) :=
-  LWWindow_max_Bctl sz0 (by norm_num) tW (Eventually.of_forall fun n => by
-    rw [Bctl_eq]; exact upper_core n (tW_ok n).2.2)
-
-theorem inst_class_tInst : LWClass sz0 (1 / 5) (Real.sqrt (1 + 1 ^ 2))
-    (LWPhiB sz0 3 (fun n => sz0.L n) tInst) :=
-  LWClass_B sz0 _ tInst (by norm_num)
-    (Eventually.of_forall fun n => ⟨lam_pos n, (lam_le_64 n).trans (by norm_num)⟩)
-    (Eventually.of_forall fun n => ⟨(tInst_ok n).1, (tInst_ok n).2.1⟩)
-    (Eventually.of_forall fun n => upper_core n (tInst_ok n).2.2)
-
-theorem inst_class_tW : LWClass sz0 (1 / 5) (Real.sqrt (1 + 1 ^ 2))
-    (LWPhiB sz0 3 (fun n => sz0.L n) tW) :=
-  LWClass_B sz0 _ tW (by norm_num)
-    (Eventually.of_forall fun n => ⟨lam_pos n, (lam_le_64 n).trans (by norm_num)⟩)
-    (Eventually.of_forall fun n => ⟨(tW_ok n).1, (tW_ok n).2.1⟩)
-    (Eventually.of_forall fun n => upper_core n (tW_ok n).2.2)
-
-theorem inst_psiAll_tInst : LWPsiAll sz0 (1 / 5) ((2 : ℝ) ^ 3) ((3 : ℕ) : ℝ) (Real.sqrt (1 + 1 ^ 2))
-    (fun C => Real.sqrt ((C + 1) ^ (3 - 2))) (LWPhiB sz0 3 (fun n => sz0.L n) tInst) :=
-  LWPhiB_psiAll sz0 (by norm_num) _ tInst (by norm_num) (by norm_num)
-    (Eventually.of_forall fun n => ⟨lam_pos n, (lam_le_64 n).trans (by norm_num)⟩)
-    (Eventually.of_forall fun n => ⟨(tInst_ok n).1, (tInst_ok n).2.1⟩)
-    (Eventually.of_forall fun n => upper_core n (tInst_ok n).2.2)
-
-theorem inst_psiAll_tW : LWPsiAll sz0 (1 / 5) ((2 : ℝ) ^ 3) ((3 : ℕ) : ℝ) (Real.sqrt (1 + 1 ^ 2))
-    (fun C => Real.sqrt ((C + 1) ^ (3 - 2))) (LWPhiB sz0 3 (fun n => sz0.L n) tW) :=
-  LWPhiB_psiAll sz0 (by norm_num) _ tW (by norm_num) (by norm_num)
-    (Eventually.of_forall fun n => ⟨lam_pos n, (lam_le_64 n).trans (by norm_num)⟩)
-    (Eventually.of_forall fun n => ⟨(tW_ok n).1, (tW_ok n).2.1⟩)
-    (Eventually.of_forall fun n => upper_core n (tW_ok n).2.2)
-
-/-- `LWPsiAll.shift` (the probe's lemma) applied to the proved `LWPsiAll` of the B class. -/
-theorem inst_shift_all_tInst : ∃ K : ℝ, 0 < K ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-    LWPhiB sz0 3 (fun n => sz0.L n) tInst n (1 / 4 * r) ≤
-      K * LWPhiB sz0 3 (fun n => sz0.L n) tInst n r :=
-  LWPsiAll.shift sz0 inst_psiAll_tInst (c := 1 / 4) (by norm_num)
-
-theorem inst_shift_all_tW : ∃ K : ℝ, 0 < K ∧ ∀ᶠ n in atTop, ∀ r : ℝ, 0 ≤ r →
-    LWPhiB sz0 3 (fun n => sz0.L n) tW n (2 * r) ≤
-      K * LWPhiB sz0 3 (fun n => sz0.L n) tW n r :=
-  LWPsiAll.shift sz0 inst_psiAll_tW (c := 2) (by norm_num)
-
-theorem inst_asymp_tInst : ∀ᶠ n in atTop,
-    LWPhiB sz0 3 (fun n => sz0.L n) tInst n 0 ≤
-        max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (LWPhiB sz0 3 (fun n => sz0.L n) tInst n 0) ∧
-      max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (LWPhiB sz0 3 (fun n => sz0.L n) tInst n 0) ≤
-        max 1 (Real.sqrt (1 + 1 ^ 2)) * LWPhiB sz0 3 (fun n => sz0.L n) tInst n 0 :=
-  LWPsiMax_asymp sz0 inst_class_tInst
-
-theorem inst_asymp_tW : ∀ᶠ n in atTop,
-    LWPhiB sz0 3 (fun n => sz0.L n) tW n 0 ≤
-        max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (LWPhiB sz0 3 (fun n => sz0.L n) tW n 0) ∧
-      max (((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℕ) / 2 : ℝ)) (LWPhiB sz0 3 (fun n => sz0.L n) tW n 0) ≤
-        max 1 (Real.sqrt (1 + 1 ^ 2)) * LWPhiB sz0 3 (fun n => sz0.L n) tW n 0 :=
-  LWPsiMax_asymp sz0 inst_class_tW
-
 /-! ### `W^{-d} 𝒯̃ ≍ [s𝒯]²` at `r = 2`, `ℓ = 3`, `D = 1` -/
-
-theorem inst_tail1_tInst (n : ℕ) :
-    sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tInst n) 2 ^ 2 ≤
-        (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailT 3 (sz0.L n) (sz0.lam n) (tInst n) 2 ∧
-      (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailT 3 (sz0.L n) (sz0.lam n) (tInst n) 2 ≤
-        (1 + 2 ^ (3 - 1)) * sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tInst n) 2 ^ 2 :=
-  tailT_regime1_bounds (by norm_num) (by have := L_ge_4 n; linarith) (by simp [tInst]; norm_num)
-    (W_pos' n) (hgt_tInst n) (by norm_num) (by have := L_ge_4 n; linarith)
-
-theorem inst_tail1_tW (n : ℕ) :
-    sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tW n) 2 ^ 2 ≤
-        (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailT 3 (sz0.L n) (sz0.lam n) (tW n) 2 ∧
-      (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailT 3 (sz0.L n) (sz0.lam n) (tW n) 2 ≤
-        (1 + 2 ^ (3 - 1)) * sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tW n) 2 ^ 2 :=
-  tailT_regime1_bounds (by norm_num) (by have := L_ge_4 n; linarith)
-    (by have := W_pos' n; simp only [tW]; have : 0 < (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ := by positivity
-        linarith)
-    (W_pos' n) (hgt_tW n) (by norm_num) (by have := L_ge_4 n; linarith)
-
-theorem inst_tailW1_tInst (n : ℕ) :
-    (1 / 2) * (sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tInst n) (min 2 3) ^ 2 +
-        (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) ≤
-      (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailW 3 (sz0.L n) (sz0.lam n) (tInst n) 3
-        ((sz0.W n : ℕ) : ℝ) 1 2 :=
-  (tailW_regime1_bounds (by norm_num) (by have := L_ge_4 n; linarith) (by simp [tInst]; norm_num)
-    (W_pos' n) (hgt_tInst n) (by norm_num) (by have := L_ge_4 n; linarith) (by norm_num)).1
-
-theorem inst_tailW1_tW (n : ℕ) :
-    (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailW 3 (sz0.L n) (sz0.lam n) (tW n) 3 ((sz0.W n : ℕ) : ℝ) 1 2 ≤
-      (1 + 2 ^ (3 - 1)) * (sfT 3 (sz0.L n) ((sz0.W n : ℕ) : ℝ) (sz0.lam n) (tW n) (min 2 3) ^ 2 +
-        (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) :=
-  (tailW_regime1_bounds (by norm_num) (by have := L_ge_4 n; linarith)
-    (by have := W_pos' n; simp only [tW]; have : 0 < (((sz0.W n : ℕ) : ℝ) ^ 2)⁻¹ := by positivity
-        linarith)
-    (W_pos' n) (hgt_tW n) (by norm_num) (by have := L_ge_4 n; linarith) (by norm_num)).2
-
-/-- Regime 2 at `sz0`, `n = 0` (`L = 4`, `g = 1/64`), `t = 1 - 2^{-17}`, `r = 2`, `ℓ = 3`, `D = 1`. -/
-theorem inst_tail2 :
-    Real.exp (-1) * BparamR 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 2 ≤
-        tailT 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 2 ∧
-      tailT 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 2 ≤
-        BparamR 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 2 :=
-  tailT_regime2_bounds (lam_pos 0).le (by norm_num) (by have := L_ge_4 0; linarith)
-    (by rw [sz0_values.1, sz0_values.2.2.2]; norm_num) (by norm_num)
-    (by rw [sz0_values.1]; norm_num)
-
-theorem inst_tailW2 :
-    max (Real.exp (-1) * BparamR 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) (min 2 3))
-        (((sz0.W 0 : ℕ) : ℝ) ^ (-(1 : ℝ))) ≤
-      tailW 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 3 ((sz0.W 0 : ℕ) : ℝ) 1 2 ∧
-    tailW 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) 3 ((sz0.W 0 : ℕ) : ℝ) 1 2 ≤
-      max (BparamR 3 (sz0.L 0) (sz0.lam 0) (1 - 1 / 131072) (min 2 3))
-        (((sz0.W 0 : ℕ) : ℝ) ^ (-(1 : ℝ))) :=
-  tailW_regime2_bounds (lam_pos 0).le (by norm_num) (by have := L_ge_4 0; linarith)
-    (by rw [sz0_values.1, sz0_values.2.2.2]; norm_num) (by norm_num)
-    (by rw [sz0_values.1]; norm_num) (by norm_num)
-
-end RBM.Gauss.LWPsiInst

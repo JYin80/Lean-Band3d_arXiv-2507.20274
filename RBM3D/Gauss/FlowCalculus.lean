@@ -41,9 +41,6 @@ namespace RBM.Gauss
 
 section Spectral
 
-/-- `RBM2D/Gauss/SpectralWindow.lean:24` (`spectralM_im`), `spectralM = mE`. -/
-theorem spectralM_im (E : ℝ) : (mE E).im = Real.sqrt (4 - E ^ 2) / 2 := mE_im E
-
 /-- `RBM2D/Gauss/SpectralWindow.lean:27` (`spectralM_im_pos`). -/
 theorem spectralM_im_pos {E : ℝ} (hE : |E| < 2) : 0 < (mE E).im := mE_im_pos hE
 
@@ -62,23 +59,6 @@ theorem spectralZ_im_gap {E s t : ℝ} (hE : |E| < 2) (ht : t < 1)
     (1 - t) * (mE E).im ≤ |(zt E u).im| := by
   rw [spectralZ_im, abs_of_pos (mul_pos (by linarith [hu.2]) (spectralM_im_pos hE))]
   exact mul_le_mul_of_nonneg_right (by linarith [hu.2]) (spectralM_im_pos hE).le
-
-/-- The gap remains valid under the paper's bulk condition `|E| ≤ 2-κ`.
-`RBM2D/Gauss/SpectralWindow.lean:51` (`spectralZ_window_gap_of_bulk`). -/
-theorem spectralZ_window_gap_of_bulk {E κ s t : ℝ} (hκ : 0 < κ)
-    (hE : |E| ≤ 2 - κ) (ht : t < 1) :
-    0 < (1 - t) * (mE E).im ∧
-      ∀ u ∈ Set.Icc s t, (1 - t) * (mE E).im ≤ |(zt E u).im| := by
-  have hE' : |E| < 2 := by linarith
-  constructor
-  · exact mul_pos (by linarith) (spectralM_im_pos hE')
-  · intro u hu
-    exact spectralZ_im_gap hE' ht hu
-
-/-- The real square root in the explicit bulk value has the expected square.
-`RBM2D/Gauss/SpectralAlgebra.lean:20` (`spectralM_sqrt_sq`). -/
-theorem spectralM_sqrt_sq {E : ℝ} (hE : |E| ≤ 2) :
-    Real.sqrt (4 - E ^ 2) ^ 2 = 4 - E ^ 2 := sq_sqrt_four_sub hE
 
 /-- The explicit bulk value solves the semicircle quadratic equation.
 `RBM2D/Gauss/SpectralAlgebra.lean:27` (`spectralM_mul`). -/
@@ -108,13 +88,6 @@ theorem hasDerivAt_spectralZ (E u : ℝ) : HasDerivAt (zt E) (-(mE E)) u := by
   rw [hfun]
   exact hsum
 
-/-- The imaginary gap has derivative `-Im m^(E)`.
-`RBM2D/Gauss/SpectralDerivative.lean:33` (`hasDerivAt_spectralZ_im`). -/
-theorem hasDerivAt_spectralZ_im (E u : ℝ) :
-    HasDerivAt (fun v : ℝ => (zt E v).im) (-(mE E).im) u := by
-  simpa only [spectralZ_im, id_eq, neg_one_mul] using
-    (((hasDerivAt_id u).const_sub 1).mul_const (mE E).im)
-
 end Spectral
 
 /-! ## 2. Samplewise time continuity of the flow, of the resolvent and of the loops -/
@@ -129,12 +102,6 @@ theorem continuous_Hflow_time (ω : Ω d L W) :
     Continuous fun u : ℝ => Hflow d L W u ω := by
   change Continuous fun u : ℝ => (Real.sqrt u : ℂ) • Xmat d L W ω
   exact (Complex.continuous_ofReal.comp Real.continuous_sqrt).smul continuous_const
-
-/-- Every matrix entry is continuous along the fixed-sample flow.
-`RBM2D/Gauss/FlowTimeCont.lean:29` (`continuous_Hflow_entry_time`). -/
-theorem continuous_Hflow_entry_time (ω : Ω d L W) (i j : Idx d L W) :
-    Continuous fun u : ℝ => Hflow d L W u ω i j :=
-  (continuous_apply j).comp ((continuous_apply i).comp (continuous_Hflow_time d L W ω))
 
 end FlowTime
 
@@ -198,13 +165,6 @@ end GreenCont
 section GreenTime
 
 variable (d L W : ℕ) [NeZero L] [NeZero W]
-
-/-- Fixed-sample time continuity of the full resolvent for a fixed non-real `z`.
-`RBM2D/Gauss/GreenTimeCont.lean:78` (`continuous_green_Hflow_time`). -/
-theorem continuous_green_Hflow_time (ω : Ω d L W) {z : ℂ} (hz : z.im ≠ 0) :
-    Continuous fun u : ℝ => Gres (Hflow d L W u ω) z true :=
-  continuous_green_of_isHermitian (continuous_Hflow_time d L W ω)
-    (fun u => Hflow_isHermitian d L W u ω) hz
 
 /-- The samplewise resolvent stays continuous when the spectral parameter follows any continuous
 path in the upper or lower half-plane.
@@ -286,16 +246,6 @@ omit [NeZero W] in
 theorem continuous_matrixTrace :
     Continuous (Matrix.trace : Matrix (Vtx d L W) (Vtx d L W) ℂ → ℂ) :=
   LinearMap.continuous_of_finiteDimensional (Matrix.traceLinearMap (Vtx d L W) ℂ ℂ)
-
-/-- A well-formed finite resolvent loop is continuous in time at a fixed Gaussian sample
-(RBM2D's `gloop` is the merged `loopL`).
-`RBM2D/Gauss/LoopTimeCont.lean:88` (`continuous_gloop_Hflow_time`). -/
-theorem continuous_gloop_Hflow_time (ω : Ω d L W) {z : ℝ → ℂ}
-    (hzcont : Continuous z) (hzim : ∀ u, (z u).im ≠ 0)
-    (I : Loop.LoopIdx (Zd d L)) (_hwf : I.WF) :
-    Continuous fun u : ℝ => loopL d L W (HflowBlock d L W u ω) (z u) I :=
-  (continuous_matrixTrace d L W).comp
-    (continuous_gloopProd_Hflow_time d L W ω hzcont hzim I)
 
 /-! ### Sample continuity and measurability at a fixed time -/
 
@@ -457,8 +407,6 @@ theorem hasDerivAt_green_HflowBlock_spectralZ (ω : Ω d L W)
 (`spectralMSign_eq_mSigma`). -/
 noncomputable def spectralMSign (E : ℝ) (σ : Bool) : ℂ :=
   if σ then mE E else (starRingEnd ℂ) (mE E)
-
-theorem spectralMSign_eq_mSigma (E : ℝ) (σ : Bool) : spectralMSign E σ = mSigma E σ := rfl
 
 /-- The derivative of one signed Green factor along the samplewise flow.
 `RBM2D/Gauss/LoopDerivative.lean:29` (`gsigFlowDeriv`). -/
@@ -727,236 +675,12 @@ theorem norm_gloop_le_crude [NeZero W] {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
             simp only [Loop.LoopIdx.WF] at hwf
             rw [hwf, min_self]
 
-/-- A deterministic loop envelope uniform in time and over every Gaussian sample.
-`RBM2D/Gauss/LoopEnvelope.lean:120` (`norm_gloop_HflowBlock_le_crude_on_Icc`), rule R3. -/
-theorem norm_gloop_HflowBlock_le_crude_on_Icc [NeZero W] {s t η : ℝ} (hη : 0 < η)
-    {z : ℝ → ℂ} (hz : ∀ u ∈ Set.Icc s t, η ≤ |(z u).im|)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) :
-    ∀ u ∈ Set.Icc s t, ∀ ω : Ω d L W,
-      ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖ ≤
-        (((L * W) ^ d : ℕ) : ℝ) *
-          (η⁻¹ * ((W : ℝ) ^ d)⁻¹) ^ I.a.length := by
-  intro u hu ω
-  exact norm_gloop_le_crude d L W (HflowBlock_isHermitian d L W u ω)
-    hη (hz u hu) I hwf
-
 end LoopEnvelope
 
 end Envelope
 
 /-! ## 5. Continuity of the Gaussian loop moment along the spectral path -/
 
-section Moment
-
-/-- Under a uniform deterministic envelope, dominated convergence makes the `q`-th absolute
-moment continuous in time.  (Helper, copy of `RBM2D/Gauss/MomentTimeCont.lean:26`
-(`continuousOn_integral_abs_pow_of_envelope`); dimension-free.) -/
-private theorem flowCalculus_continuousOn_integral_abs_pow_of_envelope
-    {α : Type*} [MeasurableSpace α] {P : Measure α} [IsFiniteMeasure P]
-    {S : Set ℝ} {f : ℝ → α → ℝ} {C : ℝ} (q : ℕ)
-    (hmeas : ∀ u ∈ S, AEStronglyMeasurable (f u) P)
-    (hbd : ∀ u ∈ S, ∀ ω, |f u ω| ≤ C)
-    (hcont : ∀ ω, ContinuousOn (fun u => f u ω) S) :
-    ContinuousOn (fun u => ∫ ω, |f u ω| ^ q ∂P) S := by
-  refine MeasureTheory.continuousOn_of_dominated (bound := fun _ : α => |C| ^ q) ?_ ?_
-    (integrable_const _) ?_
-  · intro u hu
-    have h := ((hmeas u hu).norm).pow q
-    have he : ((fun ω => ‖f u ω‖) ^ q) = fun ω => |f u ω| ^ q := by
-      funext ω
-      simp [Real.norm_eq_abs]
-    rwa [he] at h
-  · refine fun u hu => Filter.Eventually.of_forall fun ω => ?_
-    rw [Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (abs_nonneg _) q)]
-    exact pow_le_pow_left₀ (abs_nonneg _) ((hbd u hu ω).trans (le_abs_self C)) q
-  · exact Filter.Eventually.of_forall fun ω => ((hcont ω).abs).pow q
-
-variable (d L W : ℕ) [NeZero L] [NeZero W]
-
-/-- Samplewise loop continuity on a window whose spectral path stays off the real axis.
-Clamping the spectral path to the window reuses the global path theorem.  (Helper, copy of
-`RBM2D/Gauss/LoopMomentCont.lean:26` (`continuousOn_gloop_HflowBlock_window`).) -/
-private theorem flowCalculus_continuousOn_gloop_HflowBlock_window {s t : ℝ} (hst : s ≤ t)
-    (ω : Ω d L W) {z : ℝ → ℂ} (hzcont : Continuous z)
-    (hzim : ∀ u ∈ Set.Icc s t, (z u).im ≠ 0)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) :
-    ContinuousOn (fun u : ℝ => loopL d L W (HflowBlock d L W u ω) (z u) I)
-      (Set.Icc s t) := by
-  let clamp : ℝ → ℝ := fun u => max s (min t u)
-  have hclamp_cont : Continuous clamp :=
-    continuous_const.max (continuous_const.min continuous_id)
-  have hclamp_mem : ∀ u, clamp u ∈ Set.Icc s t := by
-    intro u
-    exact ⟨le_max_left _ _, max_le hst (min_le_left _ _)⟩
-  have hclamp_eq : ∀ u ∈ Set.Icc s t, clamp u = u := by
-    intro u hu
-    simp [clamp, min_eq_right hu.2, max_eq_right hu.1]
-  have hglobal := continuous_gloop_Hflow_time d L W ω
-    (z := fun u => z (clamp u)) (hzcont.comp hclamp_cont)
-    (fun u => hzim (clamp u) (hclamp_mem u)) I hwf
-  exact hglobal.continuousOn.congr (fun u hu => by
-    change loopL d L W (HflowBlock d L W u ω) (z u) I =
-      loopL d L W (HflowBlock d L W u ω) (z (clamp u)) I
-    rw [hclamp_eq u hu])
-
-/-- The `q`-th absolute moment of a finite resolvent loop is continuous in time.  (Helper, copy of
-`RBM2D/Gauss/LoopMomentCont.lean:51` (`continuousOn_integral_norm_gloop_pow`), rule R3: the
-envelope constant is `(L W)^d (η⁻¹ W^{-d})^n`.) -/
-private theorem flowCalculus_continuousOn_integral_norm_gloop_pow (g : ℝ) {s t η : ℝ}
-    (hst : s ≤ t) (hη : 0 < η) {z : ℝ → ℂ} (hzcont : Continuous z)
-    (hzlow : ∀ u ∈ Set.Icc s t, η ≤ |(z u).im|)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) (q : ℕ) :
-    ContinuousOn
-      (fun u : ℝ => ∫ ω : Ω d L W,
-        ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖ ^ q ∂(PF d L W g))
-      (Set.Icc s t) := by
-  let C : ℝ := (((L * W) ^ d : ℕ) : ℝ) *
-    (η⁻¹ * ((W : ℝ) ^ d)⁻¹) ^ I.a.length
-  have hzim : ∀ u ∈ Set.Icc s t, (z u).im ≠ 0 := by
-    intro u hu
-    exact abs_pos.mp (hη.trans_le (hzlow u hu))
-  have hmeas : ∀ u ∈ Set.Icc s t,
-      AEStronglyMeasurable
-        (fun ω : Ω d L W => ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖) (PF d L W g) := by
-    intro u hu
-    exact ((measurable_gloop_HflowBlock_sample d L W u (hzim u hu) I hwf).norm).aestronglyMeasurable
-  have hbd : ∀ u ∈ Set.Icc s t, ∀ ω : Ω d L W,
-      |‖loopL d L W (HflowBlock d L W u ω) (z u) I‖| ≤ C := by
-    intro u hu ω
-    rw [abs_of_nonneg (norm_nonneg _)]
-    exact norm_gloop_HflowBlock_le_crude_on_Icc d L W hη hzlow I hwf u hu ω
-  have hcont : ∀ ω : Ω d L W,
-      ContinuousOn (fun u : ℝ => ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖)
-        (Set.Icc s t) := by
-    intro ω
-    exact (flowCalculus_continuousOn_gloop_HflowBlock_window d L W hst ω hzcont hzim I hwf).norm
-  have h := flowCalculus_continuousOn_integral_abs_pow_of_envelope (P := PF d L W g)
-    (S := Set.Icc s t)
-    (f := fun u ω => ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖)
-    (C := C) q hmeas hbd hcont
-  simpa only [abs_of_nonneg (norm_nonneg _)] using h
-
-/-- The actual finite Gaussian loop moment has a continuous time dependence along the paper's bulk
-spectral path, on every window ending before `u=1`.
-`RBM2D/Gauss/SpectralWindow.lean:64` (`continuousOn_integral_norm_gloop_pow_spectralZ`),
-`P L W` becoming `PF d L W g`. -/
-theorem continuousOn_integral_norm_gloop_pow_spectralZ (g : ℝ)
-    {E κ s t : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ)
-    (hst : s ≤ t) (ht : t < 1)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) (q : ℕ) :
-    ContinuousOn
-      (fun u : ℝ => ∫ ω : Ω d L W,
-        ‖loopL d L W (HflowBlock d L W u ω) (zt E u) I‖ ^ q ∂(PF d L W g))
-      (Set.Icc s t) := by
-  obtain ⟨hη, hgap⟩ := spectralZ_window_gap_of_bulk (s := s) hκ hE ht
-  exact flowCalculus_continuousOn_integral_norm_gloop_pow d L W g hst hη
-    (continuous_spectralZ E) hgap I hwf q
-
-end Moment
-
 /-! ## 6. Compiled nonempty instances (`d = 3`, `L = 3`, `W = 2`, `N = (W L)^d = 216`) -/
-
-section Instances
-
-/-- A loop of length `3` with charges `(+, -, +)` and three distinct nonzero block labels in
-`Z_3^3` (27 blocks of `W^d = 8` sites). -/
-private def flowCalculusLoop : Loop.LoopIdx (Zd 3 3) :=
-  ⟨[true, false, true], [![1, 0, 2], ![0, 1, 0], ![2, 2, 1]]⟩
-
-private theorem flowCalculusLoop_wf : flowCalculusLoop.WF := rfl
-
-/-- The spectral path at `E = 1/2`: `|E| < 2`, unit modulus, positive imaginary part, and the
-derivative of the gap at the interior time `u = 1/2`. -/
-example : |(1 / 2 : ℝ)| < 2 ∧ ‖mE (1 / 2)‖ = 1 ∧ 0 < (mE (1 / 2)).im ∧
-    HasDerivAt (fun v : ℝ => (zt (1 / 2) v).im) (-(mE (1 / 2)).im) (1 / 2) ∧
-    HasDerivAt (zt (1 / 2)) (-(mE (1 / 2))) (1 / 2) ∧
-    (mE (1 / 2)) ^ 2 + ((1 / 2 : ℝ) : ℂ) * mE (1 / 2) + 1 = 0 :=
-  have h2 : |(1 / 2 : ℝ)| < 2 := by rw [abs_of_pos (by norm_num)]; norm_num
-  ⟨h2, norm_spectralM h2.le, spectralM_im_pos h2, hasDerivAt_spectralZ_im _ _,
-    hasDerivAt_spectralZ _ _, spectralM_quadratic h2.le⟩
-
-/-- The spectral window `[1/5, 3/5]`, `t = 3/5 < 1`, `κ = 1`: a positive uniform gap. -/
-example : 0 < (1 - 3 / 5 : ℝ) * (mE (1 / 2)).im ∧
-    ∀ u ∈ Set.Icc (1 / 5 : ℝ) (3 / 5), (1 - 3 / 5 : ℝ) * (mE (1 / 2)).im ≤ |(zt (1 / 2) u).im| :=
-  spectralZ_window_gap_of_bulk (κ := 1) (s := 1 / 5) (t := 3 / 5) one_pos
-    (by rw [abs_of_pos (by norm_num)]; norm_num) (by norm_num)
-
-/-- Entrywise time continuity of the flow at `d = 3`, `L = 3`, `W = 2` and along the size
-sequence `sz0` (`d = 3`, `L = 4`, `W = 32`), at the zero lattice point. -/
-example (ω : Ω 3 3 2) (ω' : Sizes.SeqΩ SizesInst.sz0) :
-    Continuous (fun u : ℝ => Hflow 3 3 2 u ω 0 0) ∧
-      Continuous (fun u : ℝ => SizesInst.sz0.seqHflow 0 u ω' 0 0) :=
-  ⟨continuous_Hflow_entry_time 3 3 2 ω 0 0,
-    Sizes.continuous_seqHflow_entry_time SizesInst.sz0 0 ω' 0 0⟩
-
-/-- Time continuity of the resolvent (fixed `z = i`, and moving `z_u = u + i`) and of a 3-loop
-along the flow, at every sample. -/
-example (ω : Ω 3 3 2) :
-    Continuous (fun u : ℝ => Gres (Hflow 3 3 2 u ω) Complex.I true 0 0) ∧
-    Continuous (fun u : ℝ => Gres (Hflow 3 3 2 u ω) ((u : ℂ) + Complex.I) true) ∧
-    Continuous (fun u : ℝ =>
-      loopL 3 3 2 (HflowBlock 3 3 2 u ω) ((u : ℂ) + Complex.I) flowCalculusLoop) := by
-  have hz : Continuous fun u : ℝ => (u : ℂ) + Complex.I :=
-    Complex.continuous_ofReal.add continuous_const
-  have him : ∀ u : ℝ, ((u : ℂ) + Complex.I).im ≠ 0 := fun u => by simp
-  exact ⟨(continuous_apply _).comp ((continuous_apply _).comp
-      (continuous_green_Hflow_time 3 3 2 ω (z := Complex.I) (by norm_num))),
-    continuous_green_Hflow_moving_time 3 3 2 ω hz him,
-    continuous_gloop_Hflow_time 3 3 2 ω hz him flowCalculusLoop flowCalculusLoop_wf⟩
-
-/-- Sample continuity and measurability of the 3-loop at the time `u = 1/2`, `z = i`. -/
-example :
-    Continuous (fun ω : Ω 3 3 2 =>
-      loopL 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) Complex.I flowCalculusLoop) ∧
-    Measurable (fun ω : Ω 3 3 2 =>
-      loopL 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) Complex.I flowCalculusLoop) :=
-  ⟨continuous_gloop_HflowBlock_sample 3 3 2 (1 / 2) (by norm_num) _ flowCalculusLoop_wf,
-    measurable_gloop_HflowBlock_sample 3 3 2 (1 / 2) (by norm_num) _ flowCalculusLoop_wf⟩
-
-/-- The derivative of the Green function and of the 3-loop along the spectral flow at `E = 1/2`,
-`u = 1/2`, at every sample. -/
-example (ω : Ω 3 3 2) :
-    HasDerivAt (fun v : ℝ => Gres (HflowBlock 3 3 2 v ω) (zt (1 / 2) v) true)
-      (-(Gres (HflowBlock 3 3 2 (1 / 2) ω) (zt (1 / 2) (1 / 2)) true *
-        ((1 / (2 * Real.sqrt (1 / 2)) : ℝ) • blockMat 3 3 2 (Xmat 3 3 2 ω) +
-          mE (1 / 2) • (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ)) *
-        Gres (HflowBlock 3 3 2 (1 / 2) ω) (zt (1 / 2) (1 / 2)) true)) (1 / 2) ∧
-    HasDerivAt (fun v : ℝ => loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (1 / 2) v) flowCalculusLoop)
-      (Matrix.trace (loopWordDeriv 3 3 2 ω (1 / 2) (1 / 2)
-        (flowCalculusLoop.σ.zip flowCalculusLoop.a))) (1 / 2) := by
-  have hE : |(1 / 2 : ℝ)| < 2 := by rw [abs_of_pos (by norm_num)]; norm_num
-  exact ⟨hasDerivAt_green_HflowBlock_spectralZ 3 3 2 ω hE (by norm_num) (by norm_num),
-    hasDerivAt_gloop_HflowBlock_spectralZ 3 3 2 ω hE (by norm_num) (by norm_num)
-      flowCalculusLoop flowCalculusLoop_wf⟩
-
-/-- The crude envelope on the window `[1/5, 3/5]` along `z_u = zt (1/2) u`, for every sample;
-the constant is `(L W)^d (η⁻¹ W^{-d})^3` with `(L W)^d = 216`, `W^d = 8`. -/
-example : ∀ u ∈ Set.Icc (1 / 5 : ℝ) (3 / 5), ∀ ω : Ω 3 3 2,
-    ‖loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (1 / 2) u) flowCalculusLoop‖ ≤
-      (((3 * 2) ^ 3 : ℕ) : ℝ) *
-        (((1 - 3 / 5 : ℝ) * (mE (1 / 2)).im)⁻¹ * (((2 : ℕ) : ℝ) ^ 3)⁻¹) ^ 3 := by
-  have hE : |(1 / 2 : ℝ)| ≤ 2 - 1 := by rw [abs_of_pos (by norm_num)]; norm_num
-  obtain ⟨hη, hgap⟩ := spectralZ_window_gap_of_bulk (s := 1 / 5) (t := 3 / 5) one_pos hE
-    (by norm_num)
-  exact norm_gloop_HflowBlock_le_crude_on_Icc 3 3 2 hη hgap flowCalculusLoop flowCalculusLoop_wf
-
-/-- The Gaussian second moment of the 3-loop along the spectral path is continuous on the window
-`[1/5, 3/5]`, for the law `PF 3 3 2 1`. -/
-example :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω 3 3 2,
-      ‖loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (1 / 2) u) flowCalculusLoop‖ ^ 2 ∂(PF 3 3 2 1))
-      (Set.Icc (1 / 5 : ℝ) (3 / 5)) :=
-  continuousOn_integral_norm_gloop_pow_spectralZ 3 3 2 1 (κ := 1) (s := 1 / 5) (t := 3 / 5)
-    one_pos (by rw [abs_of_pos (by norm_num)]; norm_num) (by norm_num) (by norm_num)
-    flowCalculusLoop flowCalculusLoop_wf 2
-
-/-- The block-product index has `(L W)^d = 216 = (W L)^d` points, and the block insertion has
-norm at most `W^{-d} = 1/8`. -/
-example : Fintype.card (Vtx 3 3 2) = 216 ∧ Fintype.card (Vtx 3 3 2) = Fintype.card (Idx 3 3 2) ∧
-    ‖Eblk 3 3 2 (![1, 0, 2] : Zd 3 3)‖ ≤ (((2 : ℕ) : ℝ) ^ 3)⁻¹ :=
-  ⟨by rw [card_BlockIndex]; norm_num, by rw [card_BlockIndex, card_Idx, mul_comm],
-    norm_Eblk_le_inv_W_sq 3 3 2 _⟩
-
-end Instances
 
 end RBM.Gauss

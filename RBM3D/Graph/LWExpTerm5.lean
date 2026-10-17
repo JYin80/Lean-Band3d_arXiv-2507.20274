@@ -67,11 +67,6 @@ def LWG5Cand (P : PGraph (Fin 2)) : Prop :=
     p ∈ lwSplit P.g.solid ∧ q ∈ lwSplit p.2 ∧ y ≠ Sum.inr x ∧ y' ≠ Sum.inr x ∧
       p.1 = ⟨true, false, Sum.inr x, y⟩ ∧ q.1 = ⟨true, false, y', Sum.inr x⟩
 
-/-- **Progress** at one node (supervisor 1102 §3): below the order target there is a candidate.
-`stuckG` (T2265 report (b)) shows this is not implied by Amend 1's invariants. -/
-def LWG5Progress (P : PGraph (Fin 2)) : Prop :=
-  P.g.scalingOrder < (if P.ext 0 = P.ext 1 then (4 : ℤ) else 5) → LWG5Cand P
-
 /-- **Identity half** of T2265's `LWG5Expand'Pin` (T2265a): the expectation identity for a given list. -/
 def LWG5Identity (d : ℕ) (Ls : Bool → Bool → List ((ℕ × ℕ) × PGraph (Fin 2))) : Prop :=
   ∀ (sz : Sizes d) (n : ℕ) (E t : ℝ), |E| < 2 → 0 < t → t < 1 → ∀ (k s : Bool)
@@ -108,11 +103,6 @@ def partitionX (Γ : LGraph E I) : List ((ℕ × ℕ) × PGraph E) :=
     (lwSplitLoopsX Δ.merge.solid).map fun r =>
       (r.1, { E' := Δ.ExtCls, I' := Δ.IntCls, ext := Δ.extMap, ext_surj := Δ.extMap_surj,
               g := { Δ.merge with solid := r.2 } })
-
-/-- (T2265a) the exponent-tracking partition is the partition (list-wise, coefficients scaled). -/
-def PartitionXSpec : Prop :=
-  ∀ (m : ℂ) (Γ : LGraph E I), (Γ.partition m).map (fun P => P.g.coeff) =
-    (partitionX Γ).map fun r => m ^ r.1.1 * star m ^ r.1.2 * r.2.g.coeff
 
 end Partition
 
@@ -304,12 +294,6 @@ private theorem lwExpTerm5_partition_eq (m : ℂ) (Γ : LGraph E I) :
   unfold LGraph.mergeSplitP LGraph.splitWeights
   rw [lwSplitLoopsX_spec m Δ.merge.solid]
   simp only [List.map_map]
-  refine List.map_congr_left fun r _ => ?_
-  simp [lwExpTerm5_scaleP]
-
-theorem partitionX_spec : PartitionXSpec (E := E) (I := I) := by
-  intro m Γ
-  rw [lwExpTerm5_partition_eq, List.map_map]
   refine List.map_congr_left fun r _ => ?_
   simp [lwExpTerm5_scaleP]
 
@@ -626,114 +610,3 @@ end Main
 end RBM.Gauss.Sizes
 
 /-! ## 6. The compiled instance (`d = 3`, `sz0`, `n = 0`, `E = STflowE z0 0`, `t = 1/16`) -/
-
-namespace RBM.Gauss.LWInst
-
-open RBM RBM.Loop RBM.Graph RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst Filter
-
-/-- **Instance of `lwExpandIdentity_holds`** at `d = 3`, `sz0`, `n = 0`, `E = STflowE z0 0`, `t = 1/16`, the rule
-`selClassical`, fuel `4`, both kernels and charges, all external labels `x, y`: no hypothesis
-(`|STflowE z0 0| < 2` by `abs_lemE_lt_two (z0_im_pos 0)`, `0 < 1/16 < 1`). -/
-theorem lwExpTerm5_inst_identity (k s : Bool) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∫ ω, (LWG5Graph k s).val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y] ∂(sz0.seqP) =
-      ((expandRoot selClassical 4 k s).map fun q =>
-        (mE (STflowE z0 0)) ^ q.1.1 * star (mE (STflowE z0 0)) ^ q.1.2 *
-          ∫ ω, q.2.val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y] ∂(sz0.seqP)).sum :=
-  lwExpandIdentity_holds selClassical 4 3 sz0 0 (STflowE z0 0) (1 / 16) (abs_lemE_lt_two (z0_im_pos 0))
-    (by norm_num) (by norm_num) k s x y
-
-
-/-- The packed instance graph `lwExpTerm3_instGraph` (external `x, y`, internal `α`; normal, `n_M = 1`), as a literal. -/
-private abbrev lwExpTerm5_instP : PGraph (Fin 2) :=
-  { E' := Fin 2, I' := Fin 1, ext := id, ext_surj := Function.surjective_id, g := lwExpTerm3_instGraph }
-
-/-- A candidate of `lwExpTerm5_instP` (`x = α`, `p = G_{αy}`, `q = G_{xα}`). -/
-private def lwExpTerm5_instCand : RCand lwExpTerm5_instP where
-  x := (0 : Fin 1)
-  y := (Sum.inl (1 : Fin 2) : Fin 2 ⊕ Fin 1)
-  y' := (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 1)
-  p := ((SEdge.mk true false (Sum.inr (0 : Fin 1)) (Sum.inl (1 : Fin 2)) : SEdge (Fin 2 ⊕ Fin 1)),
-    ([SEdge.mk true false (Sum.inl (0 : Fin 2)) (Sum.inr (0 : Fin 1)),
-      SEdge.mk false false (Sum.inl (0 : Fin 2)) (Sum.inl (1 : Fin 2)),
-      SEdge.mk true true (Sum.inr (0 : Fin 1)) (Sum.inr (0 : Fin 1)),
-      SEdge.mk true true (Sum.inr (0 : Fin 1)) (Sum.inr (0 : Fin 1))] : List (SEdge (Fin 2 ⊕ Fin 1))))
-  q := ((SEdge.mk true false (Sum.inl (0 : Fin 2)) (Sum.inr (0 : Fin 1)) : SEdge (Fin 2 ⊕ Fin 1)),
-    ([SEdge.mk false false (Sum.inl (0 : Fin 2)) (Sum.inl (1 : Fin 2)),
-      SEdge.mk true true (Sum.inr (0 : Fin 1)) (Sum.inr (0 : Fin 1)),
-      SEdge.mk true true (Sum.inr (0 : Fin 1)) (Sum.inr (0 : Fin 1))] : List (SEdge (Fin 2 ⊕ Fin 1))))
-  hp := by
-    change _ ∈ lwSplit lwExpTerm3_instGraph.solid
-    simp [lwSplit, lwExpTerm3_instGraph]
-  hq := by simp [lwSplit]
-  hy := by simp
-  hy' := by simp
-  hp1 := rfl
-  hq1 := rfl
-
-/-- **Instance of `RCand.kids_identity`** (one step of the expansion) at `d = 3`, `sz0`, `n = 0`,
-`E = STflowE z0 0`, `t = 1/16`, the packed normal instance graph and its candidate, all labels `x, y`: no
-hypothesis. -/
-theorem lwExpTerm5_inst_kids_identity (x y : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∫ ω, lwExpTerm5_instP.val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y] ∂(sz0.seqP) =
-      (lwExpTerm5_instCand.kids.map fun r => (mE (STflowE z0 0)) ^ r.1.1 * star (mE (STflowE z0 0)) ^ r.1.2 *
-        ∫ ω, r.2.val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y] ∂(sz0.seqP)).sum :=
-  RCand.kids_identity sz0 0 (STflowE z0 0) (1 / 16) (abs_lemE_lt_two (z0_im_pos 0)) (by norm_num)
-    (by norm_num) lwExpTerm3_instGraph_normal lwExpTerm5_instCand x y
-
-/-- **Instance of `RCand.kids_normal`** at the same candidate. -/
-theorem lwExpTerm5_inst_kids_normal : ∀ r ∈ lwExpTerm5_instCand.kids, r.2.g.Normal :=
-  lwExpTerm5_instCand.kids_normal
-
-/-- **Instance of `oe2xR1_val_zero`**: the normal instance graph, `p = G_{αy}`, `α ≠ y`, all `m`, `D`, `ℓe`. -/
-theorem lwExpTerm5_inst_R1_val_zero {ι : Type*} [Fintype ι] [DecidableEq ι] (m : ℂ) (D : LData ι)
-    (ℓe : Fin 2 → ι) :
-    (oe2xR1 m lwExpTerm3_instGraph lwExpTerm5_instCand.p 0 (Sum.inl 1) (by simp)).val D ℓe = 0 :=
-  oe2xR1_val_zero m lwExpTerm3_instGraph lwExpTerm3_instGraph_normal lwExpTerm5_instCand.p
-    lwExpTerm5_instCand.hp 0 (Sum.inl 1) (by simp) lwExpTerm5_instCand.hp1 D ℓe
-
-/-- **Instance of `val_eq_partitionX`** at the flow data of the instance (`M = m I` by `lwExpTerm3_Data_M`). -/
-theorem lwExpTerm5_inst_val_eq_partitionX (k s : Bool) (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    (LWG5Graph k s).val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y] =
-      ((partitionX (LWG5Graph k s)).map fun r => (mE (STflowE z0 0)) ^ r.1.1 * star (mE (STflowE z0 0)) ^ r.1.2 *
-        r.2.val (LWG5Data sz0 0 (STflowE z0 0) (1 / 16) ω) ![x, y]).sum :=
-  val_eq_partitionX (mE (STflowE z0 0)) (LWG5Graph k s) _ (fun a => by simp [lwExpTerm3_Data_M]) ![x, y]
-
-/-- **Instance of `partitionX_spec`, `partitionX_normal`, `lwSplitLoopsX_spec`** on the graph `LWG5Graph k s` and an
-edge list with two weights and a light edge (four terms). -/
-example : PartitionXSpec (E := Fin 2) (I := Fin 3) := partitionX_spec
-example (k s : Bool) : ∀ r ∈ partitionX (LWG5Graph k s), r.2.g.Normal := partitionX_normal _
-example (m : ℂ) :
-    lwSplitLoops m [SEdge.mk true false (0 : Fin 2) 0, SEdge.mk false false 1 1, SEdge.mk true true 0 1] =
-      (lwSplitLoopsX [SEdge.mk true false (0 : Fin 2) 0, SEdge.mk false false 1 1,
-        SEdge.mk true true 0 1]).map fun r => (m ^ r.1.1 * star m ^ r.1.2, r.2) :=
-  lwSplitLoopsX_spec m _
-example : (lwSplitLoopsX [SEdge.mk true false (0 : Fin 2) 0, SEdge.mk false false 1 1,
-    SEdge.mk true true 0 1]).length = 4 := by decide
-
-/-- **Instance of `expand_eq_expandG`** at the root graph, `selClassical` and fuel `4`. -/
-example : expand selClassical 4 (LWG5Graph false false).pack =
-    expandG (lwStep selClassical) 4 (LWG5Graph false false).pack := expand_eq_expandG _ _ _
-
-/-- **Instance of `expandG_sum`**: the step `n ↦ [(1,0) · (n+1), (0,1) · (n+1)]` for `n < 2` (a leaf at `2`) on `ℕ`,
-the weight `w (a, b) = (1/2)^(a+b)` and `Φ = 1`; fuel `2`, start `0` (four leaves at depth `2`). -/
-example :
-    (1 : ℂ) = (((expandG (fun n : ℕ => if n < 2 then some [((1, 0), n + 1), ((0, 1), n + 1)] else none) 2 0).map
-      fun t => (1 / 2 : ℂ) ^ (t.1.1 + t.1.2) * 1).sum) ∧
-    ∀ t ∈ expandG (fun n : ℕ => if n < 2 then some [((1, 0), n + 1), ((0, 1), n + 1)] else none) 2 0, True :=
-  have h := expandG_sum (fun n : ℕ => if n < 2 then some [((1, 0), n + 1), ((0, 1), n + 1)] else none)
-    (fun _ => True) (fun _ => (1 : ℂ)) (fun q => (1 / 2 : ℂ) ^ (q.1 + q.2)) (by simp)
-    (fun a b c e => by
-      change (1 / 2 : ℂ) ^ (a + c + (b + e)) = (1 / 2) ^ (a + b) * (1 / 2) ^ (c + e)
-      rw [← pow_add]
-      congr 1
-      ring)
-    (fun P l _ hst => by
-      by_cases hP : P < 2
-      · simp only [hP, ↓reduceIte, Option.some.injEq] at hst
-        subst hst
-        refine ⟨fun _ _ => trivial, ?_⟩
-        norm_num
-      · simp [hP] at hst) 2 0 trivial
-  ⟨by simpa using h.1, fun t _ => trivial⟩
-
-end RBM.Gauss.LWInst

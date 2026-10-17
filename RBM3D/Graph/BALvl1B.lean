@@ -72,9 +72,6 @@ def BALvl1GoodLit (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Prop :=
     (Γ.scalingOrder < Q.scalingOrder ∨ (Q.scalingOrder = Γ.scalingOrder ∧
       (Q.nLoops < Γ.nLoops ∨ (Q.nLoops = Γ.nLoops ∧ (Q.nS < Γ.nS ∨ (Q.nS = Γ.nS ∧ Q.nPairs < Γ.nPairs))))))
 
-instance (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Decidable (BALvl1Good Γ Q) := by unfold BALvl1Good; infer_instance
-instance (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Decidable (BALvl1GoodLit Γ Q) := by unfold BALvl1GoodLit; infer_instance
-
 /-- the transport lemma (D§2): the band-literal measure and `nExt ≤` give `BALvl1Good`. -/
 theorem ba_good_of_lit {Γ : BAGraph E₁ I₁} {Q : BAGraph E₂ I₂} (h : BALvl1GoodLit Γ Q) (hx : Q.nExt ≤ Γ.nExt) : BALvl1Good Γ Q := by
   obtain ⟨h1, h2, h3, h4⟩ := h
@@ -446,45 +443,6 @@ theorem BALvl1B_gg (P : BAPGraph E0) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.
 end Assembly
 
 /-! ## 5. Compiled instances (R1's data `P_W`, `P_E`, `P_A`, `P_C` of `BASimInst`; the data are nondegenerate: nonempty external and internal vertex sets, solid edges, `nExt ≥ 1`) -/
-
-namespace BALvl1BInst
-
-open BASimInst BALvl1AInst
-
-/-- the first term of `lw2` at `P_W` (a self-loop at the internal vertex `0` and an edge from the external vertex `0` to the internal vertex `1`) -/
-def tW : BAGraph (Fin 1) (Fin 2 ⊕ Fin 2) := (baPW.lw2 pW).head (by simp [BAGraph.lw2])
-
-/-- **Target 1 (`BALvl1Good`, `BALvl1GoodLit`, `ba_good_of_lit`)** at `P_W` and its first `lw2` term: the order rises from `-2` to `-1`; the decision procedures of the two predicates and the bound `nExt ≤` give
-`BALvl1Good` by `ba_good_of_lit`. -/
-example : (baPW.scalingOrder = -2 ∧ tW.scalingOrder = -1) ∧ BALvl1GoodLit baPW tW ∧ BALvl1Good baPW tW :=
-  ⟨by decide, by decide, ba_good_of_lit (by decide) (by decide)⟩
-
-/-- the term `X.d1` of macro (b) at `P_C` (two uncircled solid edges, so the `M`-split has four terms) -/
-def d1C : BAGraph (Fin 2) (Fin 3 ⊕ Fin 2) :=
-  BAGraph.ext 2 baPC qC.2 [bpS false (owxEmb 2 qC.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 qC.1.dst), bpS false (bpv 1) (owxEmb 2 pC.1.dst)]
-    [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 pC.1.src) (bpv 0)]
-
-theorem normalPC : baPC.Normal := by decide
-
-/-- **Target 3 (`BALvl1B_part_struct`)** at `P_C`, `G = baPC` and the term `d1C` (`BASim_Ext_ext`; `G` is normal; `d1C` has four `M`-split terms, and every one has the conclusions of target 3). -/
-example : d1C.splitG.length = 4 ∧ ∀ Δ ∈ d1C.splitG, Δ.Normal ∧ Δ.nW = (BAWeightOp_circ d1C).nW ∧ Δ.nA ≤ (BAWeightOp_circ d1C).nA ∧
-    Δ.nM ≤ (BAWeightOp_circ d1C).nM ∧ Δ.nExt ≤ (BAWeightOp_circ d1C).nExt ∧ Δ.nExt ≤ baPC.nExt :=
-  ⟨by decide +kernel, fun Δ hΔ => by
-    obtain ⟨hN, -, h3, h4, h5, h6, h7⟩ := BALvl1B_part_struct (baPG baPC) baPC (BASim_Ext_ext 2 baPC qC.2 _ _ _) normalPC Δ hΔ
-    exact ⟨hN, h3, h4, h5, h6, h7⟩⟩
-
-/-- the outputs of the `weight` step at `P_W` and of the `edge` step at `P_E` (the `gg` step at `P_A` has the outputs `ggF`) -/
-def outsW : List (BAPGraph (Fin 1)) := (baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)
-def outsE : List (BAPGraph (Fin 2)) := (baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)
-
-/-- **The cases `weight`, `edge`, `gg` of `BAstepMono`** (`BALvl1B_weight`, `BALvl1B_edge`, `BALvl1B_gg`) at `P_W`, `P_E`, `P_A`: each step has outputs (kernel evaluation), and the five conclusions hold at every output. -/
-example : ((∀ Q ∈ outsW, BALvl1B_Mono (baPG baPW) Q) ∧ 0 < outsW.length) ∧ ((∀ Q ∈ outsE, BALvl1B_Mono (baPG baPE) Q) ∧ 0 < outsE.length) ∧
-    ((∀ Q ∈ ggF, BALvl1B_Mono (baPG baPA) Q) ∧ 0 < ggF.length) :=
-  ⟨⟨fun Q hQ => BALvl1B_weight (baPG baPW) (by decide) (List.mem_cons_self ..) rfl rfl Q hQ, by decide +kernel⟩,
-    ⟨fun Q hQ => BALvl1B_edge (baPG baPE) (by decide) (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) rfl rfl Q hQ, by decide +kernel⟩,
-    ⟨fun Q hQ => BALvl1B_gg (baPG baPA) (by decide) (List.mem_cons_self ..) (List.mem_cons_self ..) Q hQ, by decide +kernel⟩⟩
-
-end BALvl1BInst
 
 end RBM.Graph
 

@@ -107,14 +107,6 @@ def anpKey5_rest {p q : ℕ} (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)) :
 def anpKey5_perPath {p q : ℕ} (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)) : Prop :=
   ∀ j : Fin p, ((Γ.path j).filter fun st => (Γ.es.get st.1).ghost || decide (st.1 ∈ M)).length ≤ 1
 
-instance anpKey5_decSumOrder {p q : ℕ} (E : List (NV p q × NV p q)) (σ : List (Fin q)) :
-    Decidable (AnpSumOrder E σ) := by
-  unfold AnpSumOrder; infer_instance
-
-instance anpKey5_decPerPath {p q : ℕ} (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)) :
-    Decidable (anpKey5_perPath Γ M) := by
-  unfold anpKey5_perPath; infer_instance
-
 end Vocab
 
 /-! ## 2. Counting helpers -/
@@ -154,11 +146,6 @@ theorem anpKey5_two_le_countP {α : Type*} (P : α → Bool) (l : List α) (i j 
     rcases hx with rfl | rfl <;> simpa [List.get_eq_getElem] using ‹_›
   have := Finset.card_le_card this
   rwa [Finset.card_pair hij] at this
-
-theorem anpKey5_one_le_countP {α : Type*} (P : α → Bool) (l : List α) (i : Fin l.length)
-    (hi : P (l.get i) = true) : 1 ≤ l.countP P := by
-  rw [anpKey5_countP_eq_card]
-  exact Finset.card_pos.2 ⟨i, by simpa [List.get_eq_getElem] using hi⟩
 
 theorem anpKey5_countP_le_sum {α β : Type*} (T : Finset β) (g : α → Bool) (h : β → α → Bool) (l : List α)
     (hl : ∀ e ∈ l, g e = true → ∃ v ∈ T, h v e = true) : l.countP g ≤ ∑ v ∈ T, l.countP (h v) := by
@@ -1341,87 +1328,5 @@ theorem anpKey5_cert : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ.es.
     exact hN.1 _ (List.get_mem _ k)
 
 /-! ## 8. Compiled nonempty instances -/
-
-section Instances
-
-instance anpKey5_decIsNested {p q : ℕ} (Γ : NGraph p q) : Decidable Γ.IsNested := by
-  unfold NGraph.IsNested; infer_instance
-
-/-- Formal case (IV) with `q = 1 < p = 2` (`α = inr 0`).  Path 0: `a_0 → α` (ghost, B2), `α → b_0` (solid, B1).
-Path 1: `a_1 → b_0` (solid, an ending edge at an external vertex), `b_0 → α` (solid), `α → b_1` (ghost, B2).
-Edge 5: `α a_0` (solid, on no path).  `deg_s(α) = 3`, `n_S = 4`, `ord = 2`, `n_ngh = 0`; without edge 5 it is
-case (III).  The paper's pigeonhole `q = p` (`7_8:1388-1393`) fails here. -/
-def anpKey5_figIVext : NGraph 2 1 where
-  es := [⟨true, .inl (.inl 0), .inr 0⟩, ⟨false, .inr 0, .inl (.inr 0)⟩, ⟨false, .inl (.inl 1), .inl (.inr 0)⟩,
-         ⟨false, .inl (.inr 0), .inr 0⟩, ⟨true, .inr 0, .inl (.inr 1)⟩, ⟨false, .inr 0, .inl (.inl 0)⟩]
-  path := fun i => if i = 0 then [(0, .inr 0), (1, .inl (.inr 0))]
-    else [(2, .inl (.inr 0)), (3, .inr 0), (4, .inl (.inr 1))]
-
-/-- Any `π` works at `anpKey5_figIVext` (no path is ghost-free). -/
-def anpKey5_piIV : Fin 1 → Fin 2 → Bool := fun _ _ => false
-
-/-- The reserved set `{0, 5}` of `figAux` (the first edge of path 0, the last edge of path 1). -/
-def anpKey5_resAux : Finset (Fin figAux.es.length) := Finset.univ.filter fun k => k.1 = 0 ∨ k.1 = 5
-
-/-- Instance (1): `anpKey5_figIVext` is in case (IV), and has the nested order `[α]`. -/
-theorem anpKey5_inst_figIVext :
-    anpKey5_figIVext.GhostOK ∧ anpKey5_figIVext.IsNested ∧ anpKey5_figIVext.NoA2 anpKey5_piIV ∧
-      ¬ AnpCaseI anpKey5_figIVext anpKey5_piIV ∧ ¬ AnpCaseIII anpKey5_figIVext anpKey5_piIV ∧
-      anpKey5_figIVext.degS 0 = 3 ∧ anpKey5_figIVext.ordN = 2 ∧ anpKey5_figIVext.nngh = 0 ∧
-      AnpSumOrder (anpKey5_rest anpKey5_figIVext ∅) [0] := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals decide +kernel
-
-theorem anpKey5_perm_two (σ : List (Fin 2)) (h : σ ∈ (List.finRange 2).permutations) :
-    σ = [0, 1] ∨ σ = [1, 0] := by
-  rw [List.mem_permutations] at h
-  obtain ⟨a, b, rfl⟩ := List.length_eq_two.1 h.length_eq
-  fin_cases a <;> fin_cases b <;> first | (left; rfl) | (right; rfl) | (exfalso; revert h; decide +kernel)
-
-/-- Instance (2): the re-rooting is needed: `figAux` with `anpKey5_resAux` removed has no nested order, and a
-certificate of depth 1 (AM-GM on the remaining edges `a_1 ℳ₁` (index 0) and `ℳ₂ b_0` (index 3); the two branches
-have the nested orders `[0, 1]` and `[1, 0]`). -/
-theorem anpKey5_inst_resAux :
-    anpKey5_perPath figAux anpKey5_resAux ∧
-      (∀ σ ∈ (List.finRange 2).permutations, ¬ AnpSumOrder (anpKey5_rest figAux anpKey5_resAux) σ) ∧
-      AnpSumCert 1 (anpKey5_rest figAux anpKey5_resAux) := by
-  refine ⟨by decide +kernel, ?_, ?_⟩
-  · intro σ hσ
-    rcases anpKey5_perm_two σ hσ with rfl | rfl <;> decide +kernel
-  refine Or.inr ⟨⟨0, by decide +kernel⟩, ⟨3, by decide +kernel⟩, by decide +kernel, ⟨[0, 1], ?_⟩, ⟨[1, 0], ?_⟩⟩
-  all_goals decide +kernel
-
-/-- Instance (3): the target at the merged `anpKey2_figAuxGh` (ghosts dropped, nothing reserved). -/
-theorem anpKey5_inst_figAuxGh :
-    anpKey5_perPath anpKey2_figAuxGh ∅ ∧ ∃ n : ℕ, AnpSumCert n (anpKey5_rest anpKey2_figAuxGh ∅) := by
-  have hp : anpKey5_perPath anpKey2_figAuxGh ∅ := by decide +kernel
-  exact ⟨hp, anpKey5_cert 2 2 anpKey2_figAuxGh ∅ anpKey2_figAuxGh_nested hp⟩
-
-/-- Instance (4): the target at `anpKey5_figIVext` (nothing reserved), and reserving edge `1` of path 0 (which
-already has its ghost `0`) violates the per-path hypothesis. -/
-theorem anpKey5_inst_figIVext_cert :
-    anpKey5_perPath anpKey5_figIVext ∅ ∧ (∃ n : ℕ, AnpSumCert n (anpKey5_rest anpKey5_figIVext ∅)) ∧
-      ¬ anpKey5_perPath anpKey5_figIVext
-        (Finset.univ.filter fun k : Fin anpKey5_figIVext.es.length => k.1 = 1) := by
-  have hp : anpKey5_perPath anpKey5_figIVext ∅ := by decide +kernel
-  exact ⟨hp, anpKey5_cert 2 1 anpKey5_figIVext ∅ anpKey5_inst_figIVext.2.1 hp, by decide +kernel⟩
-
-/-- Instances of the intermediate theorems at `figAux` with `anpKey5_resAux` removed (`p = q = 2`): the crossing
-bound at `S = {α₀, α₁}` (`2 ≤ cross`), the inside bound there (both vertices have exactly one leaving edge:
-`2 ≤ inside`), and the certificate from `anpKey5_graph` (loops excluded, both bounds checked on all four subsets). -/
-theorem anpKey5_inst_cross_inside :
-    (Finset.univ : Finset (Fin 2)).card ≤ anpKey5_cross (anpKey5_rest figAux anpKey5_resAux) Finset.univ ∧
-      (Finset.univ : Finset (Fin 2)).card ≤ anpKey5_inside (anpKey5_rest figAux anpKey5_resAux) Finset.univ ∧
-      ∃ n : ℕ, AnpSumCert n (anpKey5_rest figAux anpKey5_resAux) := by
-  have hp : anpKey5_perPath figAux anpKey5_resAux := by decide +kernel
-  have hN : figAux.IsNested := figAux_nested.1
-  refine ⟨anpKey5_cross_ge 2 2 figAux anpKey5_resAux hN hp Finset.univ,
-    anpKey5_inside_ge 2 2 figAux anpKey5_resAux hN hp Finset.univ (by decide +kernel), ?_⟩
-  refine anpKey5_graph 2 2 (anpKey5_rest figAux anpKey5_resAux) ?_ ?_ ?_
-  · decide +kernel
-  · decide +kernel
-  · decide +kernel
-
-end Instances
 
 end RBM.Graph

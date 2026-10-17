@@ -125,14 +125,6 @@ theorem BAAtom_mol_eq_of_mem (Γ : BAGraph E I) {v w : E ⊕ I} (h : w ∈ Γ.mo
   · intro hx; exact h.trans hx
   · intro hx; exact (hsymm h).trans hx
 
-/-- If distinct external vertices lie in distinct molecules of `Γ`, they lie in distinct molecules of the shadow. -/
-theorem BAAtom_shadow_ext (Γ : BAGraph E I)
-    (hext : ∀ a b : E, Γ.mol (Sum.inl a) = Γ.mol (Sum.inl b) → a = b) :
-    ∀ a b : E, Γ.shadow.molOf (Sum.inl a) = Γ.shadow.molOf (Sum.inl b) → a = b := by
-  intro a b h
-  rw [BAAtom_shadow_molOf_eq_iff] at h
-  exact hext a b (BAAtom_mol_eq_of_mem Γ h).symm
-
 end Vocab
 
 /-- The packed graph of the shadow (the input of the band's nested form `lwAuxNested_holds`). -/
@@ -260,64 +252,6 @@ theorem BAAtom_offdiag_E (g0 E : ℝ) (m : ℂ) (hw : ((E : ℂ) + m).im ≠ 0) 
   · rw [Matrix.smul_apply, BAAtom_PsiI_apply]
     simp [ho]
 
-/-- A dotted edge of a graph without `=`-dotted edges is a `Ψ`-dotted or an `M`-dotted edge: `atomAdj` of the ends. -/
-private theorem BAAtom_atomAdj_cases (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false) {u v : E ⊕ I}
-    (h : Γ.atomAdj u v = true) :
-    (∃ e ∈ Γ.mdot, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u)) ∨
-      ∃ e ∈ Γ.psi, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u) := by
-  unfold BAGraph.atomAdj at h
-  rw [Bool.or_eq_true, Bool.or_eq_true] at h
-  rcases h with (h | h) | h
-  · rw [List.any_eq_true] at h
-    obtain ⟨e, he, hd⟩ := h
-    have := hD e he
-    simp [this] at hd
-  · rw [List.any_eq_true] at h
-    obtain ⟨e, he, hd⟩ := h
-    exact Or.inr ⟨e, he, of_decide_eq_true hd⟩
-  · rw [List.any_eq_true] at h
-    obtain ⟨e, he, hd⟩ := h
-    exact Or.inl ⟨e, he, of_decide_eq_true hd⟩
-
-/-- **`scaleatom`, second half** (`B:317-318`): atom-mates are within `|E ⊕ I| r` in block distance when every `M`- and
-`Ψ`-dotted edge is within `r` (no `=`-dotted edge: the part (ii) of `BAGraph.Normal`). -/
-theorem baAtom_dist (Γ : BAGraph E I) (ℓ : E ⊕ I → Idx d L W) (r : ℝ) (hr : 0 ≤ r)
-    (hD : ∀ e ∈ Γ.dotted, e.eq = false)
-    (hm : ∀ e ∈ Γ.mdot, (lwBdist d L W (ℓ e.x) (ℓ e.y) : ℝ) ≤ r)
-    (hp : ∀ e ∈ Γ.psi, (lwBdist d L W (ℓ e.x) (ℓ e.y) : ℝ) ≤ r)
-    (u v : E ⊕ I) (hv : v ∈ Γ.atom u) :
-    (lwBdist d L W (ℓ u) (ℓ v) : ℝ) ≤ (Fintype.card (E ⊕ I) : ℝ) * r := by
-  have hstep : ∀ b c : E ⊕ I, Γ.atomAdj b c = true → (lwBdist d L W (ℓ b) (ℓ c) : ℝ) ≤ r := by
-    intro b c hbc
-    rcases BAAtom_atomAdj_cases Γ hD hbc with ⟨e, he, h1 | h1⟩ | ⟨e, he, h1 | h1⟩
-    · rw [← h1.1, ← h1.2]; exact hm e he
-    · rw [← h1.1, ← h1.2, lwBdist_comm]; exact hm e he
-    · rw [← h1.1, ← h1.2]; exact hp e he
-    · rw [← h1.1, ← h1.2, lwBdist_comm]; exact hp e he
-  have key : ∀ n : ℕ, ∀ w ∈ (Γ.atomStep)^[n] {u}, (lwBdist d L W (ℓ u) (ℓ w) : ℝ) ≤ (n : ℝ) * r := by
-    intro n
-    induction n with
-    | zero =>
-      intro w hw
-      simp only [Function.iterate_zero, id, Finset.mem_singleton] at hw
-      subst hw
-      simp [auxGraph_bdist_self]
-    | succ n ih =>
-      intro w hw
-      rw [Function.iterate_succ_apply'] at hw
-      simp only [BAGraph.atomStep, Finset.mem_union, Finset.mem_filter, Finset.mem_univ, true_and] at hw
-      rcases hw with hw | ⟨v', hv', hadj⟩
-      · refine (ih w hw).trans ?_
-        push_cast
-        nlinarith
-      · have h1 := ih v' hv'
-        have h2 := hstep v' w hadj
-        have h3 : (lwBdist d L W (ℓ u) (ℓ w) : ℝ) ≤ lwBdist d L W (ℓ u) (ℓ v') + lwBdist d L W (ℓ v') (ℓ w) := by
-          exact_mod_cast auxGraph_bdist_triangle (ℓ u) (ℓ v') (ℓ w)
-        push_cast
-        nlinarith
-  exact key _ v hv
-
 /-- **`Gyiyjatom`** (`B:424`), deterministic: if every label is within `R` of its centre block `lab`, a circled solid edge is
 `≤ ξ` of the centre blocks of its ends (the `hξ`-domination on `R`-balls). -/
 theorem baAtom_sedge_xi {V : Type} (D : BALData (Idx d L W)) (ξ : Zd d L → Zd d L → ℝ) (R : ℝ)
@@ -334,32 +268,6 @@ theorem baAtom_sedge_xi {V : Type} (D : BALData (Idx d L W)) (ξ : Zd d L → Zd
     exact h
   · simp only [ite_true]
     exact h
-
-/-- **`Gyiyjatom2`** (`B:432`), deterministic: the decay of `S`, `S⁺` gives the indicator of `d_B ≤ r` plus the tail. -/
-theorem baAtom_wedge (K : Matrix (Idx d L W) (Idx d L W) ℂ) (C c r : ℝ) (hc : 0 ≤ c)
-    (hK : ∀ x y, ‖K x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ)))) (x y : Idx d L W) :
-    ‖K x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * ((if (lwBdist d L W x y : ℝ) ≤ r then 1 else 0) + Real.exp (-(c * r))) := by
-  have h0 := hK x y
-  have he := Real.exp_pos (-(c * (lwBdist d L W x y : ℝ)))
-  have ha : 0 ≤ C * ((W : ℝ) ^ d)⁻¹ :=
-    (mul_nonneg_iff_of_pos_right he).1 ((norm_nonneg _).trans h0)
-  by_cases hd : (lwBdist d L W x y : ℝ) ≤ r
-  · simp only [hd, ↓reduceIte]
-    have h1 : Real.exp (-(c * (lwBdist d L W x y : ℝ))) ≤ 1 := by
-      apply Real.exp_le_one_iff.2
-      have : 0 ≤ c * (lwBdist d L W x y : ℝ) := by positivity
-      linarith
-    have h2 := Real.exp_pos (-(c * r))
-    calc ‖K x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))) := h0
-      _ ≤ C * ((W : ℝ) ^ d)⁻¹ * 1 := mul_le_mul_of_nonneg_left h1 ha
-      _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) ha
-  · simp only [hd, ↓reduceIte]
-    have h1 : Real.exp (-(c * (lwBdist d L W x y : ℝ))) ≤ Real.exp (-(c * r)) := by
-      apply Real.exp_le_exp.2
-      nlinarith [not_le.1 hd]
-    calc ‖K x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))) := h0
-      _ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * r)) := mul_le_mul_of_nonneg_left h1 ha
-      _ = _ := by ring
 
 end Atoms
 
@@ -956,142 +864,6 @@ The BA data are those of `BASizeClaimInst2`: `D0` (`M = BAlwM`, `S`, `S⁺ = S W
 solid `a → u₁`, `u₅ → b` (red), `u₃ → u₂`, `u₁ → u₄`; waved `S(a, u₃)`, `S⁺(u₂, u₄)`, `S(u₁, u₅)`; `M̄`-dotted `u₁ u₂`, `Ψ`-dotted `u₄ u₅`.
 Atoms `{a}, {b}, {u₁, u₂}, {u₃}, {u₄, u₅}`, molecules `{a, u₃}`, `{b}`, `{u₁, u₂, u₄, u₅}`; `(n_S, n_W, n_A, n_M) = (4, 3, 3, 1)`,
 `|𝒢_ℳ| = 3`, `ord Γ = 4`, `ord Γ^aux = 1`. -/
-
-namespace BAAtomInst
-
-open RBM.BA.MFixedPointInst BASizeClaimInst2
-
-/-- The graph `G*` of the instances. -/
-def Gstar : BAGraph (Fin 2) (Fin 5) where
-  solid := [⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inr 4, .inl 1⟩, ⟨true, true, .inr 2, .inr 1⟩,
-    ⟨true, true, .inr 0, .inr 3⟩]
-  waved := [⟨false, true, .inl 0, .inr 2⟩, ⟨true, true, .inr 1, .inr 3⟩, ⟨false, true, .inr 0, .inr 4⟩]
-  dotted := []
-  coeff := 1
-  psi := [⟨.inr 3, .inr 4⟩]
-  mdot := [⟨false, .inr 0, .inr 1⟩]
-
-theorem Gstar_normal : Gstar.Normal := ⟨by decide, by decide⟩
-
-theorem Gstar_ext : ∀ a b : Fin 2, Gstar.mol (Sum.inl a) = Gstar.mol (Sum.inl b) → a = b := by decide
-
-/-- The constant edge variable `ξ ≡ 1/100` (`= |Ǧ_{xy}|` of `D0`). -/
-def xiInst : Zd 3 4 → Zd 3 4 → ℝ := fun _ _ => 1 / 100
-
-/-- **Instance of the vocabulary and the order comparison** at `G*`: the shadow has the molecules and `n_M` of `Γ`, `distinct
-externals stay distinct`, `ord Γ - ord Γ^aux = (n_S - |𝒢_ℳ|) + 2 (n_W - n_A + n_M)`, `ord Γ^aux ≤ ord Γ`, the counters, and
-`Γ^aux ≥ 0`. -/
-example : (∀ v, Gstar.shadow.mol v = Gstar.mol v) ∧ Gstar.shadow.nM = Gstar.nM ∧
-    (∀ a b : Fin 2, Gstar.shadow.molOf (Sum.inl a) = Gstar.shadow.molOf (Sum.inl b) → a = b) ∧
-    Gstar.scalingOrder - Gstar.auxOrd = ((Gstar.nS : ℤ) - (Gstar.shadow.molSolid.length : ℤ)) +
-      2 * ((Gstar.nW : ℤ) - (Gstar.nA : ℤ) + (Gstar.nM : ℤ)) ∧ Gstar.auxOrd ≤ Gstar.scalingOrder ∧
-    (Gstar.nS = 4 ∧ Gstar.nW = 3 ∧ Gstar.nA = 3 ∧ Gstar.nM = 1) ∧ Gstar.shadow.molSolid.length = 3 ∧
-    Gstar.scalingOrder = 4 ∧ Gstar.auxOrd = 1 ∧ Gstar.scalingOrder - Gstar.auxOrd = 3 ∧
-    Gstar.shadow.molSolid.length ≤ Gstar.nS ∧ 0 ≤ Gstar.auxVal xiInst (fun _ => (0 : Zd 3 4)) := by
-  have h1 : Gstar.shadow.molSolid.length = 3 := by rw [auxGraph_molSolid_length]; decide
-  have h2 : Gstar.shadow.nM = 1 := by decide
-  have h3 : Gstar.nS = 4 ∧ Gstar.nW = 3 ∧ Gstar.nA = 3 ∧ Gstar.nM = 1 := by decide
-  have h4 : Gstar.scalingOrder = 4 := by simp [BAGraph.scalingOrder, BAGraph.counters, h3.1, h3.2.1, h3.2.2.1, ord]
-  have h5 : Gstar.auxOrd = 1 := by simp [BAGraph.auxOrd, LGraph.auxOrd, h1, h2, ord]
-  exact ⟨BAGraph.shadow_mol Gstar, BAGraph.shadow_nM Gstar, BAAtom_shadow_ext Gstar Gstar_ext,
-    Gstar.scalingOrder_sub_auxOrd, Gstar.auxOrd_le_scalingOrder Gstar_normal, h3, h1, h4, h5, by rw [h4, h5]; norm_num,
-    Gstar.molSolid_length_le, Gstar.auxVal_nonneg xiInst (fun _ _ => by norm_num [xiInst]) _⟩
-
-/-- Toy offset-diagonal data on `Z_8^3` for `scaleatom` with a non-zero term: `M = g Ψ = 1(same offset)`, `G = M + 1`,
-`S = S⁺ = 1`. -/
-def D1 : BALData (Idx 3 4 2) where
-  G := Matrix.of fun x y => (if (split 3 4 2 x).2 = (split 3 4 2 y).2 then 1 else 0) + 1
-  M := Matrix.of fun x y => if (split 3 4 2 x).2 = (split 3 4 2 y).2 then 1 else 0
-  S := Matrix.of fun _ _ => 1
-  Sp := Matrix.of fun _ _ => 1
-  gPsi := Matrix.of fun x y => if (split 3 4 2 x).2 = (split 3 4 2 y).2 then 1 else 0
-
-theorem D1_hoff : ∀ x y : Idx 3 4 2, (split 3 4 2 x).2 ≠ (split 3 4 2 y).2 → D1.M x y = 0 ∧ D1.gPsi x y = 0 := by
-  intro x y h
-  simp [D1, h]
-
-/-- A labelling of `G*` with four different offsets: `u₁, u₂` at `(1,0,0)`, `(3,0,0)` (blocks `0`, `1`, offset `(1,0,0)`), `u₄, u₅`
-at `(0,1,0)`, `(0,3,0)` (offset `(0,1,0)`), the others at offset `0`. -/
-def ell1 : Fin 2 ⊕ Fin 5 → Idx 3 4 2 :=
-  Sum.elim ![fun _ => 0, fun _ => 2] ![![1, 0, 0], ![3, 0, 0], fun _ => 0, ![0, 1, 0], ![0, 3, 0]]
-
-theorem D1_term : Gstar.term D1 ell1 ≠ 0 := by
-  have e1 : (split 3 4 2 (ell1 (.inr 0))).2 = (split 3 4 2 (ell1 (.inr 1))).2 := by decide
-  have e2 : (split 3 4 2 (ell1 (.inr 3))).2 = (split 3 4 2 (ell1 (.inr 4))).2 := by decide
-  simp [BAGraph.term, LGraph.term, Gstar, SEdge.val, WEdge.val, BAPsiEdge.val, BAMEdge.val, D1, e1, e2]
-
-/-- **Instance of `baAtom_offset`** (`scaleatom`, the offset half) at `G*`, the toy data `D1` (offset-diagonal `M`, `g Ψ`) and the
-labelling `ell1` with `Γ.term ≠ 0`: atom-mates share one offset, and the four atoms sit at four different offsets. -/
-example : Gstar.term D1 ell1 ≠ 0 ∧ (∀ u v, v ∈ Gstar.atom u → (split 3 4 2 (ell1 u)).2 = (split 3 4 2 (ell1 v)).2) ∧
-    (split 3 4 2 (ell1 (.inr 0))).2 ≠ (split 3 4 2 (ell1 (.inr 3))).2 :=
-  ⟨D1_term, fun u v hv => baAtom_offset Gstar D1 D1_hoff ell1 D1_term u v hv, by decide⟩
-
-/-- **Instance of `baAtom_offset` at the BA model data** `D0` (`M = BAlwM`, `g₀ Ψ` offset-diagonal by `BAAtom_offdiag_E`): the
-hypothesis `hoff` is discharged; the term hypothesis stays for every labelling. -/
-example : ∀ ℓ : Fin 2 ⊕ Fin 5 → Idx 3 4 2, Gstar.term D0 ℓ ≠ 0 → ∀ u v, v ∈ Gstar.atom u →
-    (split 3 4 2 (ℓ u)).2 = (split 3 4 2 (ℓ v)).2 := by
-  have hw : ((P.E : ℂ) + P.m0).im ≠ 0 := by simpa using P.real.1.1.ne'
-  exact fun ℓ h u v hv => baAtom_offset Gstar D0 (fun x y ho => BAAtom_offdiag_E P.g0 P.E P.m0 hw x y ho) ℓ h u v hv
-
-/-- **Instance of `baAtom_dist`** (`scaleatom`, the distance half) at `G*`, `r = 1`: the labels of the `M̄`-dotted pair `u₁ u₂`
-(`0`, `(2,0,0)`) and of the `Ψ`-dotted pair `u₄ u₅` (`0`, `(0,2,0)`) are at block distance 1; atom-mates are within `7 r`. -/
-example : ∃ ℓ : Fin 2 ⊕ Fin 5 → Idx 3 4 2, (lwBdist 3 4 2 (ℓ (.inr 0)) (ℓ (.inr 1)) : ℝ) = 1 ∧
-    ∀ u v, v ∈ Gstar.atom u → (lwBdist 3 4 2 (ℓ u) (ℓ v) : ℝ) ≤ 7 * 1 := by
-  let ℓ : Fin 2 ⊕ Fin 5 → Idx 3 4 2 := Sum.elim ellInst ![fun _ => 0, ![2, 0, 0], fun _ => 0, fun _ => 0, ![0, 2, 0]]
-  have h1 : lwBdist 3 4 2 (ℓ (.inr 0)) (ℓ (.inr 1)) = 1 := by decide
-  have h2 : lwBdist 3 4 2 (ℓ (.inr 3)) (ℓ (.inr 4)) = 1 := by decide
-  refine ⟨ℓ, by exact_mod_cast h1, fun u v hv => ?_⟩
-  have := baAtom_dist Gstar ℓ 1 zero_le_one (fun e he => by simp [Gstar] at he) (fun e he => by
-      simp only [Gstar, List.mem_singleton] at he; subst he; exact_mod_cast h1.le)
-    (fun e he => by simp only [Gstar, List.mem_singleton] at he; subst he; exact_mod_cast h2.le) u v hv
-  simpa using this
-
-/-- **Instances of `baAtom_sedge_xi`** (`Gyiyjatom`; `lab v = [ℓ v]`, `ξ ≡ 1/100`, `R = 7`) and of `baAtom_wedge` (`Gyiyjatom2`;
-`K = D0.S`, the decay of `baSpDecay`, `r = 1`). -/
-example (ℓ : Fin 2 ⊕ Fin 5 → Idx 3 4 2) :
-    (∀ e ∈ Gstar.solid, ‖SEdge.val D0.toLData ℓ e‖ ≤ 1 / 100) ∧ ∃ C c : ℝ, 0 < c ∧ ∀ x y : Idx 3 4 2, ‖D0.S x y‖ ≤
-      C * (((2 : ℕ) : ℝ) ^ 3)⁻¹ * ((if (lwBdist 3 4 2 x y : ℝ) ≤ 1 then 1 else 0) + Real.exp (-(c * 1))) := by
-  refine ⟨fun e he => baAtom_sedge_xi D0 xiInst 7 (fun x y a b _ _ => by simpa [xiInst] using D0_hG x y) ℓ
-    (fun v => (split 3 4 2 (ℓ v)).1) (fun v => by simp) e (Gstar_normal.2 e he), ?_⟩
-  obtain ⟨C, c, -, hc, hdec⟩ := baSpDecay 3 le_rfl 10 P.m0.im (by norm_num) P.real.1.1
-  exact ⟨C, c, hc, fun x y => baAtom_wedge D0.S C c 1 hc.le
-    (hdec 4 2 (by norm_num) _ _ (1 / 2) _ P.g0_pos P.g0_le P.real (by norm_num) (by norm_num)).1 x y⟩
-
-/-- **Instance of `BAAtom_exists_roots`** at `G*` (`n_V = 5`, `n_M = 1`, `n_A = 3`): one root (the internal molecule
-`{u₁, u₂, u₄, u₅}`), four children, two waved tree edges (`n_A - n_M`: the gate edges). -/
-example : ∃ (root : LGraph.AuxIMol Gstar.shadow → Fin 5) (C : Finset (Fin 5)) (par : Fin 5 → Fin 2 ⊕ Fin 5)
-    (edge : Fin 5 → Option Gstar.Jx) (ρ : Fin 5 → ℕ), Function.Injective root ∧
-    (∀ c, Gstar.shadow.molOf (Sum.inr (root c)) = c.1) ∧ (∀ i, i ∈ C ↔ i ∉ Set.range root) ∧ C.card = 4 ∧
-    (C.filter fun c => ∃ j, edge c = some (Sum.inl j)).card = 2 := by
-  obtain ⟨root, C, par, edge, ρ, h1, h2, h3, hcard, hg, -⟩ := BAAtom_exists_roots Gstar Gstar_normal.1
-  have hn : Gstar.nM = 1 ∧ Gstar.nA = 3 := by decide
-  refine ⟨root, C, par, edge, ρ, h1, h2, h3, ?_, ?_⟩
-  · simp only [Fintype.card_fin, hn.1] at hcard
-    omega
-  · rw [hn.1, hn.2] at hg
-    omega
-
-/-- The internal labels of the pointwise instance: `u₂` at `(2,0,0)` (block `(1,0,0)`), the others at `0`. -/
-def ellI1 : Fin 5 → Idx 3 4 2 := ![fun _ => 0, ![2, 0, 0], fun _ => 0, fun _ => 0, fun _ => 0]
-
-/-- **Instance of `BAAtom_term_conf`** (the pointwise bound on a confined labelling) at `G*`, `D0`, `Ψ = 1/100`, `ξ ≡ 1/100`,
-`r = 1`, `R = 7 = |E ⊕ I| r`, the external labels `ellInst` and the internal labels `ellI1`: every `J`-edge (three waved, one
-`M`-dotted, one `Ψ`-dotted) has block distance `≤ 1`, so `|term| ≤ |coeff| Ψ^{n_S - |𝒢_ℳ|} ∏_{𝒢_ℳ} ξ ∏_J f_j`. -/
-example : ∃ root : LGraph.AuxIMol Gstar.shadow → Fin 5, (∀ c, Gstar.shadow.molOf (Sum.inr (root c)) = c.1) ∧
-    ‖Gstar.term D0 (Sum.elim ellInst ellI1)‖ ≤ ‖Gstar.coeff‖ * (1 / 100 : ℝ) ^ (Gstar.nS - Gstar.shadow.molSolid.length) *
-      ((Gstar.shadow.molSolid.map fun e => xiInst
-          (LGraph.auxLab Gstar.shadow (fun a => (split 3 4 2 (ellInst a)).1) (fun c => (split 3 4 2 (ellI1 (root c))).1) e.src)
-          (LGraph.auxLab Gstar.shadow (fun a => (split 3 4 2 (ellInst a)).1) (fun c => (split 3 4 2 (ellI1 (root c))).1) e.dst)).prod *
-        ∏ j : Gstar.Jx, BAAtom_fJ Gstar D0 j (Sum.elim ellInst ellI1 (Gstar.edgeEnds j).1)
-          (Sum.elim ellInst ellI1 (Gstar.edgeEnds j).2)) := by
-  obtain ⟨root, C, par, edge, ρ, h1, h2, -⟩ := BAAtom_exists_roots Gstar Gstar_normal.1
-  have hconf' : ∀ j : Gstar.Jx, lwBdist 3 4 2 (Sum.elim ellInst ellI1 (Gstar.edgeEnds j).1)
-      (Sum.elim ellInst ellI1 (Gstar.edgeEnds j).2) ≤ 1 := by decide
-  exact ⟨root, h2, BAAtom_term_conf Gstar Gstar_normal D0 (ξ := xiInst) (R := 7) (r := 1) D0_hG
-    (fun x y a b _ _ => by simpa [xiInst] using D0_hG x y) zero_le_one (by simp) ellInst ellI1 root h2
-    (fun j => by exact_mod_cast hconf' j)⟩
-
-end BAAtomInst
 
 end RBM.Graph
 

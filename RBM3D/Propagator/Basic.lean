@@ -111,10 +111,6 @@ theorem Theta_transpose (hS : ‖SB d L g‖ = 1) {ξ : ℂ} (hξ : ‖ξ‖ < 1
     _ = ((1 - ξ • SB d L g) * Theta d L g ξ)ᵀ := (transpose_mul _ _).symm
     _ = 1 := by rw [mul_Theta d L g hS hξ, transpose_one]
 
-theorem Theta_isSymm (hS : ‖SB d L g‖ = 1) {ξ : ℂ} (hξ : ‖ξ‖ < 1) :
-    (Theta d L g ξ).IsSymm :=
-  Theta_transpose d L g hS hξ
-
 /-- Property 3 of `lem_propTH`: `Θ_ξ` commutes with `S^(B)`. -/
 theorem Theta_commute_SB (hS : ‖SB d L g‖ = 1) {ξ : ℂ} (hξ : ‖ξ‖ < 1) :
     Commute (Theta d L g ξ) (SB d L g) := by

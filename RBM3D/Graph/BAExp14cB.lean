@@ -30,12 +30,12 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 
-open private BAS3Close_pk BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_LeafC_dec BAS3Close_CtxExD_dec BAS3Close_Iso BAS3Close_iso_symm
+open private BAS3Close_pk BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm
   BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_iso_leaf BAS3Close_leaf_pk BAS3Close_ctxEx_pk BAS3Close_iso_cand BAS3Close_iso_root
   BAS3Close_out_stuck from RBM3D.Graph.BAS3Close
 open private BAS3Close_RootFacts BAS3Close_tests_M BAS3Close_MCM BAS3Close_vs1 BAS3Close_vs1_mem BAS3Close_vs1_len BAS3Close_invC_of_facts
   BAS3Close_CatR0 BAS3Close_eI0_0 BAS3Close_iso_pk_perm BAS3Close_keys_eq BAS3Close_cf0_0 from RBM3D.Graph.BAS3CloseB
-open private BAS3Close_D BAS3Close_data BAS3Close_hG BAS3Close_inst_leaf BAS3Close_rho BAS3Close_kD from RBM3D.Graph.BAS3CloseC
+open private BAS3Close_D BAS3Close_data BAS3Close_hG BAS3Close_rho BAS3Close_kD from RBM3D.Graph.BAS3CloseC
 open private BAVocab_val_of_factor BAVocab_val_of_not BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
 open private BAExpandId_integrable_pval BAExpandId_integrable_val from RBM3D.Graph.BAExpandId
 
@@ -932,222 +932,16 @@ theorem baExp14bS3_of_leaf : ∀ d : ℕ, BAExp14bS3OfLeaf d := by
 The leaf pin `BAG5LeafPrec` and the five Step 1/2 pins (other gates') stay hypotheses of the examples of targets 5, 6; every deterministic
 hypothesis is discharged at the data. -/
 
-namespace BAExp14cInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
 /-! ### Target 1 -/
-
-/-- The sub-root has a nonempty partition and a leaf in its list (the leaf witness of `MERGED` is a circled-first-edge term). -/
-theorem rootT0_leaf (s : Bool) : ∃ q ∈ (baS3RootT0 s).partition.flatMap (fun P => (BAexpand BAselStar 2 P).map Prod.snd),
-    BAG5LeafProps (fun _ _ => [q]) :=
-  BAS3Close_inst_leaf (baS3RootT0 s) (by cases s <;> decide +kernel) (BAS3Close_vs1 4) (BAS3Close_vs1_mem 4)
-    (BAS3Close_vs1_len 4) (by cases s <;> decide +kernel)
-
-theorem rootT0_partition_ne (s : Bool) : (baS3RootT0 s).partition ≠ [] := by
-  cases s <;> simp [BAGraph.partition, BAGraph.splitG, baS3RootT0, baSplitSolid]
-
-/-- Target 1: the partition and the list of the sub-root are nonempty, and sit inside those of `MERGED`. -/
-theorem rootT0_inst (s : Bool) :
-    (∃ P ∈ (baS3RootT0 s).partition, P ∈ (baS3RootM s).partition) ∧
-      ∃ q ∈ (baS3RootT0 s).partition.flatMap (fun P => (BAexpand BAselStar 2 P).map Prod.snd),
-        q ∈ BAS3expandRoot BAselStar 2 0 s ∧ BAG5LeafProps (fun _ _ => [q]) := by
-  obtain ⟨P, hP⟩ := List.exists_mem_of_ne_nil _ (rootT0_partition_ne s)
-  obtain ⟨q, hq, hl⟩ := rootT0_leaf s
-  exact ⟨⟨P, hP, baS3RootT0_sub s P hP⟩, q, hq, baS3RootT0_list BAselStar 2 s q hq, hl⟩
-
-/-- Target 1, the identity of the sub-root at the data of `BAS3CloseInst.baS3_inst_identity` (`d = 3`, `L = 3`, `W = 1`, `g₀ = E = 0`, `t = 1/2`,
-`m = i`): no hypothesis, all labels, both tail charges. -/
-theorem rootT0_inst_identity (s : Bool) (x y : Idx 3 3 1) :
-    ∫ ω, (baS3RootT0 s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-      (((baS3RootT0 s).partition.flatMap (fun P => (BAexpand BAselStar 2 P).map Prod.snd)).map fun q =>
-        ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
-  baS3RootT0_identity 3 BAselStar 2 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num)
-    (by norm_num) s x y
 
 /-! ### Target 2 -/
 
-/-- Target 2 at `d = 3`, `sz0`, `zSeq` (`flow_sz0`), `n = 0`, `t = 1/2` (`half_lt_t0`): the four identities, for every sample, both tail charges and all
-block pairs (also `a = b`). -/
-example (ω : sz0.SeqΩ) (σ : Bool) (a b : Zd 3 (sz0.L 0)) :=
-  baS3Bridge_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le ω σ a b
-
 /-! ### Target 3 -/
-
-/-- A packed graph with a waved edge (the anchor of the catalogue: `n_W = 2`). -/
-theorem anchor_nW : (baS3Stuck false 0 false).g.nW ≠ 0 := by decide +kernel
-
-/-- Target 3, values at `t = 0`: the anchor vanishes at every label pair and every sample. -/
-example (ω : sz0.SeqΩ) (ℓ : Fin 2 → Idx 3 (sz0.L 0) (sz0.W 0)) :
-    (baS3Stuck false 0 false).val (BAlwData 3 (sz0.L 0) (sz0.W 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0) 0
-      ((baFMz sz0 zSeq).m 0) (BAExp14a_slc sz0 0 ω)) ℓ = 0 :=
-  BAExp14c_val_zero 3 sz0 zSeq 0 ω (baS3Stuck false 0 false) anchor_nW ℓ
-
-/-- Target 3, the envelope of the anchor at the instance data. -/
-example := BAExp14c_val_env 3 le_rfl (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0 (baS3Stuck false 0 false)
-
-/-- Target 3, `η ≤ 1` at `n = 0`, `t = 1/2`. -/
-example : (baFMz sz0 zSeq).eta 0 (1 / 2) ≤ 1 :=
-  BAExp14c_eta_le_one (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 0 (by norm_num) (half_lt_t0 0).le
-
-/-- Target 3, the floor at a size `n` with `N ≥ 4` and `W^{-d} B ≤ 2` (eventually true along `sz0`), `t ≡ 1/2`, `o = 5` and `o = -3`. -/
-example : ∃ n : ℕ, ∀ o : ℤ, ((sz0.size n : ℕ) : ℝ) ^ (-(((|o| : ℤ) : ℝ) / 2)) ≤
-    ((baFMz sz0 zSeq).eta n (1 / 2))⁻¹ * (sz0.Bctl n (1 / 2)) ^ ((o : ℝ) / 2) := by
-  obtain ⟨n, h1, h4, -, hB, -⟩ := (BAExp14a_eventual_scalars (κ := 1 / 2) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (z := zSeq)
-    (sz := sz0) (by norm_num) (by norm_num) (by norm_num) flow_sz0 (t := fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun n => (half_lt_t0 n).le)).exists
-  exact ⟨n, fun o => BAExp14c_floor (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 n (by norm_num) (half_lt_t0 n).le
-    (by linarith) hB o⟩
 
 /-! ### Target 4 -/
 
-/-- Target 4: the weight of the anchor in `BAFoldLeafT` is `ρ' = t · 1[c₃ = c₁ ∧ c₄ = c₂] (M^{(B)}_{c₁c₂})²` at `t = 1/2` (one factor `t` less than L4d2b's
-`ρ`, `TwistFold2_rho2`). -/
-theorem foldT_rho0 (n : ℕ) (a b c₁ c₂ c₃ c₄ : Zd 3 (sz0.L n)) :
-    BAS3Close_rho (1 + 0) BAS3Close_kD BAS3Close_kD 3 sz0 zSeq n (1 / 2) a b c₁ c₂ c₃ c₄ =
-      if c₃ = c₁ ∧ c₄ = c₂ then (1 / 2 : ℂ) * twMB (baFMz sz0 zSeq) n c₁ c₂ ^ 2 else 0 := by
-  have hr := BAflow_real _ _ _ _ sz0 zSeq flow_sz0 n
-  have hmB := twMB_ba (sz := sz0) zSeq n hr.1.1
-  unfold BAS3Close_rho
-  simp only [BAS3Close_kD, hmB]
-  by_cases h1 : c₁ = c₃
-  · by_cases h2 : c₂ = c₄
-    · subst h1; subst h2
-      simp only [and_self, ↓reduceIte, mul_one]
-      push_cast
-      have hM : BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (↑(BAflowEs sz0 zSeq n))
-          (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) c₁ c₂ = BAExp14b_MB sz0 zSeq n c₁ c₂ := rfl
-      rw [hM]
-      ring
-    · have h2' : ¬ c₄ = c₂ := fun h => h2 h.symm
-      simp [h2, h2', h1.symm]
-  · have h1' : ¬ c₃ = c₁ := fun h => h1 h.symm
-    simp [h1, h1']
-
-/-- Target 4: the anchor is in the class, the transfer and the weakening apply. -/
-theorem foldT_anchor : BAFoldLeafT (baS3Stuck false 0 false) ∧ BAFoldLeaf (baS3Stuck false 0 false) :=
-  ⟨baFoldLeafT_congr (baS3Stuck false 0 false) (baS3Stuck false 0 false) (fun _ _ => rfl) (baS3FoldT_holds false 0 false),
-    baFoldLeafT_fold _ (baS3FoldT_holds false 0 false)⟩
-
-private theorem foldT_occurs : ∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAFoldLeafT q := by
-  obtain ⟨Γ, hΓ, hcat⟩ : ∃ Γ ∈ (baS3RootM false).splitG, BAS3Close_CatR0 false Γ := by decide +kernel
-  obtain ⟨hF, -⟩ := BAS3Close_tests_M false
-  obtain ⟨hI, hc⟩ := BAS3Close_invC_of_facts hF Γ hΓ
-  have hd := hI.1.1
-  have hiso : BAS3Close_Iso (BAS3Close_pk Γ) Γ.packMerge := BAS3Close_iso_root Γ hd
-  have hiso0 : BAS3Close_Iso (BAS3Close_pk Γ) (BAS3Close_pk (BAS3Close_cf0_0 false)) :=
-    BAS3Close_iso_pk_perm BAS3Close_eI0_0 (BAS3Close_keys_eq hcat hc)
-  have hPc : BAS3Close_Iso Γ.packMerge (BAS3Close_pk (BAS3Close_cf0_0 false)) :=
-    BAS3Close_iso_trans (BAS3Close_iso_symm hiso) hiso0
-  have hdP : ∀ e ∈ Γ.packMerge.g.dotted, e.eq = false := by
-    intro e he
-    obtain ⟨eE, eI, -, hg⟩ := hiso
-    rw [hg] at he
-    obtain ⟨e', he', rfl⟩ := List.mem_map.1 he
-    exact hd e' he'
-  have hnl : ¬ BAG5Leaf Γ.packMerge := fun hl =>
-    (by decide +kernel : ¬ BAS3Close_LeafC (BAS3Close_cf0_0 false))
-      ((BAS3Close_leaf_pk _).1 ((BAS3Close_iso_leaf hPc).2 hl))
-  have hno : ¬ ∃ c : BARCand Γ.packMerge, c.σ = true ∧ BACtx c := by
-    rintro ⟨c, hσ, hctx⟩
-    obtain ⟨c', hσ', hctx', -⟩ := BAS3Close_iso_cand hPc hdP c hσ
-    exact (by decide +kernel : ¬ BAS3Close_CtxExD (BAS3Close_cf0_0 false))
-      ((BAS3Close_ctxEx_pk _).2 ⟨c', hσ', hctx'.2 hctx⟩)
-  refine ⟨Γ.packMerge, ?_, ?_⟩
-  · refine List.mem_flatMap.2 ⟨Γ.packMerge, List.mem_map_of_mem hΓ, ?_⟩
-    rw [BAS3Close_out_stuck hnl hno 2]
-    simp
-  · exact baFoldLeafT_congr (baS3Stuck false 0 false) _ (fun D ℓ => BAS3Close_iso_val hPc D ℓ) (baS3FoldT_holds false 0 false)
-
-/-- Target 4: both disjuncts of `BAS3CloseT` occur in the list of `MERGED` at `s = false`. -/
-theorem closeT_inst : (∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAG5LeafProps (fun _ _ => [q])) ∧
-    (∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAFoldLeafT q) :=
-  ⟨BAS3CloseInst.baS3_inst_close.2.1, foldT_occurs⟩
-
-/-- Target 4, `baS3CloseT_holds` applied at `r = 0` (`MERGED`), `s = false` to the elements of the list. -/
-example : ∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAG5LeafProps (fun _ _ => [q]) ∨ BAFoldLeafT q := by
-  obtain ⟨q, hq, -⟩ := closeT_inst.1
-  exact ⟨q, hq, baS3CloseT_holds 0 false q hq⟩
-
 /-! ### Targets 5, 6 -/
 
-/-- A packed graph whose external vertices lie in one atom (`M(x, y)`-dotted): the `x ~ y` case. -/
-def tiedGraph : BAPGraph (Fin 2) where
-  E' := Fin 2
-  I' := Fin 0
-  ext := id
-  ext_surj := Function.surjective_id
-  g := { solid := [], waved := [], dotted := [], coeff := 1, psi := [], mdot := [BAMEdge.mk true (Sum.inl 0) (Sum.inl 1)] }
-
-theorem tiedGraph_atom : tiedGraph.g.atom (Sum.inl (tiedGraph.ext 0)) = tiedGraph.g.atom (Sum.inl (tiedGraph.ext 1)) := by
-  decide +kernel
-
-theorem offsets_exist : ∃ x y : Idx 3 (sz0.L 0) (sz0.W 0), (split 3 (sz0.L 0) (sz0.W 0) x).2 ≠ (split 3 (sz0.L 0) (sz0.W 0) y).2 := by
-  have : NeZero (sz0.L 0) := ⟨by have := sz0.three_le_L 0; omega⟩
-  have h : 1 < (sz0.W 0) ^ 3 := by rw [sz0_values.2.1]; norm_num
-  refine ⟨BAExp14b_pt (0 : Zd 3 (sz0.L 0)) ⟨0, by omega⟩, BAExp14b_pt (0 : Zd 3 (sz0.L 0)) ⟨1, h⟩, ?_⟩
-  rw [BAExp14b_split_pt, BAExp14b_split_pt]
-  intro hh
-  have := congrArg Fin.val hh
-  simp at this
-
-/-- Target 5, the `x ~ y` support at `sz0`, `zSeq`, `n = 0`, `t = 1/2`: the tied graph vanishes at labels of different offsets (and such labels exist). -/
-example (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0))
-    (hxy : (split 3 (sz0.L 0) (sz0.W 0) x).2 ≠ (split 3 (sz0.L 0) (sz0.W 0) y).2) :
-    tiedGraph.val (BAlwData 3 (sz0.L 0) (sz0.W 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0) (1 / 2) ((baFMz sz0 zSeq).m 0)
-      (BAExp14a_slc sz0 0 ω)) ![x, y] = 0 :=
-  BAExp14c_xy_support 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le ω tiedGraph
-    tiedGraph_atom x y hxy
-
-/-- Target 5 (b), the fold leaf: the average of the anchor at `d = 3`, `t ≡ 1/2`; the leaf pin and the five Step 1/2 pins stay hypotheses. -/
-example (hpin : BAG5LeafPrec 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLW : LWAvgLawgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hmax : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLK : STLKgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hDec : STDecaygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p _ => ‖∫ ω, ((((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹) ^ 2 * ∑ x ∈ twBlk n p.1, ∑ y ∈ twBlk n p.2,
-        (baS3Stuck false 0 false).val (BAlwData 3 (sz0.L n) (sz0.W n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n) (1 / 2)
-          ((baFMz sz0 zSeq).m n) (BAExp14a_slc sz0 n ω)) ![x, y] ∂(Sizes.seqP (sz0.withLam 0))‖)
-      (fun n _ _ => 1 / 2 * ((1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ))) :=
-  baS3LeafAvg_holds 3 hpin le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hLW hmax hLK hDec (baS3Stuck false 0 false)
-    (Or.inr (baS3FoldT_holds false 0 false))
-
-/-- Target 5 (b), the `BAG5LeafProps` leaf: a leaf of the list of `MERGED` at `s = false` (`closeT_inst`). -/
-example (hpin : BAG5LeafPrec 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLW : LWAvgLawgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hmax : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLK : STLKgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hDec : STDecaygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    ∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAG5LeafProps (fun _ _ => [q]) ∧
-      PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-        (fun n p _ => ‖∫ ω, ((((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹) ^ 2 * ∑ x ∈ twBlk n p.1, ∑ y ∈ twBlk n p.2,
-          q.val (BAlwData 3 (sz0.L n) (sz0.W n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n) (1 / 2)
-            ((baFMz sz0 zSeq).m n) (BAExp14a_slc sz0 n ω)) ![x, y] ∂(Sizes.seqP (sz0.withLam 0))‖)
-        (fun n _ _ => 1 / 2 * ((1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ))) := by
-  obtain ⟨q, hq, hl⟩ := closeT_inst.1
-  exact ⟨q, hq, hl, baS3LeafAvg_holds 3 hpin le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hLW hmax hLK hDec q (Or.inl hl)⟩
-
-/-- Target 6 at `d = 3`: the conditional assembly (the leaf pin is the only hypothesis). -/
-example (hpin : BAG5LeafPrec 3) : BAExp14bS3 3 := baExp14bS3_of_leaf 3 hpin
-
-/-- Target 6 at `d = 3`, `sz0`, `zSeq`, `t ≡ 1/2`: all five Step 1/2 premises and the leaf pin stay hypotheses; the bound of S3 for the four families. -/
-example (hpin : BAG5LeafPrec 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLW : LWAvgLawgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hmax : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hLK : STLKgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hDec : STDecaygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0))
-      (U := fun n => {_p : Fin 4 × (Bool × Bool) × (Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) // sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - 1 / 2})
-      (fun n p _ => ‖∫ ω, BAExp14bS3Fam sz0 zSeq n (1 / 2) ω p.1.1 p.1.2.1.1 p.1.2.1.2 p.1.2.2.1 p.1.2.2.2
-        ∂(Sizes.seqP (sz0.withLam 0))‖)
-      (fun n _ _ => (1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  baExp14bS3_of_leaf 3 hpin le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hLW hmax hLK hDec
-
-end BAExp14cInst
 end RBM.BA
 
 end

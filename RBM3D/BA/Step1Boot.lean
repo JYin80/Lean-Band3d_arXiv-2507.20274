@@ -64,15 +64,6 @@ def FlowFM.gexRHS {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (
         ‖C.L n t σ ![a', b'] ω‖) +
     (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (if zdistInf d (sz.L n) (a - b) ≤ 1 then 1 else 0)
 
-/-- *Proved (`rfl`).* The band `STindMax` is `FlowFM.indMax` at the band carrier. -/
-theorem bandFM_indMax {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (t A : ℝ) (ω : sz.SeqΩ) :
-    (bandFM sz E).indMax n t A ω = Sizes.STindMax sz n (E n) t A ω := rfl
-
-/-- *Proved (`rfl`).* The band `STgexRHS` is `FlowFM.gexRHS` at the band carrier. -/
-theorem bandFM_gexRHS {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ)
-    (a b : Zd d (sz.L n)) :
-    (bandFM sz E).gexRHS n t ω a b = Sizes.STgexRHS sz n (E n) t ω a b := rfl
-
 /-- `(GiiGEX)` for the block Anderson flow `z` at the time sequence `t` (band `STGiiGEX`, `Induction/Defs.lean:202`;
 `3_5:21`): `1(Ω(t, ε₀)) ‖G_t - M‖²_max ≺ max_{a,b} 𝓛^{(2)}_{t,(-,+),(a,b)}`, `Ω = {‖G_t - M‖_max ≤ W^{-ε₀}}`.
 T2256, supervisor `2026-10-05-2252` Q2. -/
@@ -81,16 +72,6 @@ def BAGiiGEX {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (ε₀
     (fun n p ω => (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω *
       ‖(baFMz sz z).GM n (t n) ω p.1 p.2‖ ^ 2)
     (fun n _ ω => STmaxLoop2g (baFMz sz z) n (t n) ω)
-
-/-- `(GijGEX)` for the block Anderson flow, on `(G_t - M)_{xy}`, `x ≠ y` (band `STGijGEX`, `Induction/Defs.lean:210`,
-has `(G_t)_{xy}`: there `M = m I`, so `M_{xy} = 0`; here `M = Mres(g₀ Ψ, E, m)` is not diagonal, `7_8:1916-1946` (b)
-is for `(G_t - M)_{xy}`).  T2256, supervisor `2026-10-05-2252` Q2. -/
-def BAGijGEX {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (ε₀ : ℝ) : Prop :=
-  PrecL sz (Sizes.seqP (sz.withLam 0))
-    (U := fun n => {p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) // p.1 ≠ p.2})
-    (fun n p ω => (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω *
-      ‖(baFMz sz z).GM n (t n) ω p.1.1 p.1.2‖ ^ 2)
-    (fun n p ω => (baFMz sz z).gexRHS n (t n) ω (STblk sz n p.1.1) (STblk sz n p.1.2))
 
 /-- `(GavLGEX)` for the block Anderson flow under `(initialGT2)` (band `STGavLGEX`, `Induction/Defs.lean:220`, `3_5:33`;
 no event, as the band's).  T2256, supervisor `2026-10-05-2252` Q2. -/
@@ -110,14 +91,6 @@ def BAGbEXPii (d : ℕ) : Prop :=
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
       ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
         ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t ε₀
-
-/-- **`lem_GbEXP_BA`, `(GijGEX)`, event form**, on `(G_t - M)_{xy}` (band pin `STGbEXPij`,
-`Induction/Defs.lean:315`).  Registry class: owed (BA-G6). -/
-def BAGbEXPij (d : ℕ) : Prop :=
-  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-      ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
-        ∀ ε₀ : ℝ, 0 < ε₀ → BAGijGEX sz z t ε₀
 
 /-- **`lem_GbEXP_BA`, `(GavLGEX)`** (band pin `STGbEXPav`, `Induction/Defs.lean:322`).  Registry class: owed (BA-G6). -/
 def BAGbEXPav (d : ℕ) : Prop :=
@@ -279,29 +252,6 @@ theorem baGii_member (d : ℕ) :
   · funext p ω
     simp only [STmaxLoop2g, hL]
 
-/-- **Target 3b** (`baGij_member_stmt`): the same for `(GijGEX)`. -/
-theorem baGij_member (d : ℕ) :
-    BAGbEXPij d → BAFlowMember d →
-    ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → (∀ n, 0 < sz.lam n) →
-        ∀ c₁ : ℝ, 0 < c₁ → c₁ ≤ 1 / 2 → BAWinBulk sz z c₁ κ →
-          ∀ t : ℕ → ℝ, (∀ n, t n ≤ BAflowT0 sz z n) → ∀ z' : ℕ → ℂ, BAFamZ sz z c₁ t z' →
-            ∀ u : ℕ → ℝ, (∀ n, 0 ≤ u n) → (∀ n, u n ≤ t n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGijGEX sz z' u ε₀ := by
-  intro hij hmem κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow hlam c₁ hc₁ hc₁' hwin t htT z' hfam u hu0 hut ε₀ hε₀
-  obtain ⟨κ', ε', z'', hκ', hε', hfl', hhor, hev⟩ :=
-    Boot_member hmem hκ hε h𝔡 hflow hlam hc₁ hc₁' hwin htT hfam hu0 hut
-  have h := hij κ' ε' 𝔡 hκ' hε' h𝔡 𝔠 sz z'' hfl' u hu0 hhor ε₀ hε₀
-  unfold BAGijGEX at h ⊢
-  refine (PrecL_congr ?_).mp h
-  filter_upwards [hev] with n hn
-  obtain ⟨hL, hG, hM⟩ := Boot_baFMz_eqAt sz hn
-  refine ⟨?_, ?_⟩
-  · funext p ω
-    simp only [FlowFM.indMax, FlowFM.GM, hG, hM]
-    rfl
-  · funext p ω
-    simp only [FlowFM.gexRHS, hL]
-
 end Member
 
 /-! ## 3. `‖M_xy‖ ≤ (Im m)⁻¹` and the event `Ω_u` -/
@@ -334,24 +284,6 @@ theorem baM_entry_le (d : ℕ) :
   change ‖BAMfine sz lam0 E n x y‖ ≤ _
   unfold BAMfine Mres
   simpa using h
-
-/-- **Target 4b** (`baOmegaC_eq_one_stmt`): on `‖G_u - M‖_max ≤ 1` the event `Ω_u` of threshold `1 + (Im m)⁻¹` holds
-(the band's `s1_omegaC_eq_one`, `Induction/Step1Setup.lean:988`, with `|m| ≤ 1` replaced by `baM_entry_le`). -/
-theorem baOmegaC_eq_one (d : ℕ) :
-    ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ), 0 < (BAmF sz lam0 E n).im →
-      (∀ x y : Idx d (sz.L n) (sz.W n), ‖(baFM sz lam0 E).GM n u ω x y‖ ≤ 1) →
-      (baFM sz lam0 E).omegaC n u (1 + ((BAmF sz lam0 E n).im)⁻¹) ω = 1 := by
-  intro sz lam0 E n u ω hm hGM
-  have hall : ∀ x y : Idx d (sz.L n) (sz.W n),
-      ‖(baFM sz lam0 E).G n u ω x y‖ ≤ 1 + ((BAmF sz lam0 E n).im)⁻¹ := by
-    intro x y
-    have h1 := norm_le_norm_sub_add ((baFM sz lam0 E).G n u ω x y) ((baFM sz lam0 E).M n x y)
-    have h2 := hGM x y
-    have h3 := baM_entry_le d sz lam0 E n hm x y
-    change ‖(baFM sz lam0 E).G n u ω x y - (baFM sz lam0 E).M n x y‖ ≤ 1 at h2
-    linarith
-  unfold FlowFM.omegaC
-  simp [hall]
 
 /-- At `t = 0` the flow is `H_0 = g₀ Ψ` and `z_0 = E + m`, so `G_0 = M` (used only by the instance of
 `baOmegaC_eq_one`). -/
@@ -702,133 +634,3 @@ the spectral parameters `zSeq`, `BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`fl
 `BAFlowMember`. -/
 
 end RBM.BA
-
-namespace RBM.BA.Step1BootInst
-
-open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-/-- **Instance of `baGii_member`** (target 3a): `sz0`, `zSeq`, `t ≡ 2/3`, `u ≡ 1/2`, `z' = zSeq`, `ε₀ = 1`; the hypotheses
-are the owed pins `hii`, `hmem` and the window `hwin`. -/
-theorem inst_baGii_member (hii : BAGbEXPii 3) (hmem : BAFlowMember 3)
-    (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) 1 :=
-  baGii_member 3 hii hmem (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin (fun _ => 2 / 3) (fun n => t0_sz0 n) zSeq
-    (BAFamZ_main sz0 zSeq (1 / 3) _) (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 1 one_pos
-
-/-- **Instance of `baGij_member`** (target 3b), same data. -/
-theorem inst_baGij_member (hij : BAGbEXPij 3) (hmem : BAFlowMember 3)
-    (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) : BAGijGEX sz0 zSeq (fun _ => 1 / 2) 1 :=
-  baGij_member 3 hij hmem (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin (fun _ => 2 / 3) (fun n => t0_sz0 n) zSeq
-    (BAFamZ_main sz0 zSeq (1 / 3) _) (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 1 one_pos
-
-/-- **Instance of `baM_entry_le`** (target 4a): `sz0`, the flow data of `zSeq`, every `n`, `x`, `y`; the hypothesis
-`0 < Im m` is `BAmF_sz0_im_pos`. -/
-theorem inst_baM_entry_le (n : ℕ) (x y : Idx 3 (sz0.L n) (sz0.W n)) :
-    ‖(baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).M n x y‖ ≤
-      ((BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n).im)⁻¹ :=
-  baM_entry_le 3 sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n (BAmF_sz0_im_pos n) x y
-
-/-- **Instance of `baOmegaC_eq_one`** (target 4b): `sz0`, `zSeq`, `n = 0`, `u = 0` (`G_0 = M`, so
-`‖G_0 - M‖_max = 0 ≤ 1`: `Boot_GM_zero`), every sample `ω`. -/
-theorem inst_baOmegaC_eq_one (ω : sz0.SeqΩ) :
-    (baFMz sz0 zSeq).omegaC 0 0 (1 + ((BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0).im)⁻¹) ω = 1 :=
-  baOmegaC_eq_one 3 sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 0 ω (BAmF_sz0_im_pos 0)
-    (fun x y => by rw [Boot_GM_zero]; simp)
-
-/-- The coupling `g_s = √(s₁/u') g₀` with `s₁ = u' = 2/3` is `g₀`. -/
-private theorem lamS_two_thirds : BAlamS sz0 zSeq (fun _ => 2 / 3) (fun _ => 2 / 3) = BAflowLam0 sz0 zSeq := by
-  funext n
-  unfold BAlamS
-  norm_num
-
-/-- The ConArg premise of `BABootstrap'`/`baBoot_LI` at the data `s ≡ 1/2`, `t ≡ 2/3`, `c₁ = 1/3` (the range
-`{u : s₁ ≤ u ≤ max(t, 1 - c₁)}` is `{u ≡ 2/3}`), derived from `baConArg''_holds 3` and `BATrivialLmax_holds`
-(only the window is a hypothesis). -/
-theorem inst_hcon (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) :
-    ∀ u : ℕ → ℝ, (∀ n, max ((fun _ => (1 / 2 : ℝ)) n) (1 - 1 / 3) ≤ u n) →
-      (∀ n, u n ≤ max ((fun _ => (2 / 3 : ℝ)) n) (1 - 1 / 3)) →
-      ∀ C₀ : ℝ, 0 < C₀ → ∀ k : ℕ, 2 ≤ k →
-        BAConArgLoop'' sz0 zSeq (fun n => max ((fun _ => (1 / 2 : ℝ)) n) (1 - 1 / 3)) u k C₀ := by
-  intro u h1 h2 C₀ hC₀ k hk
-  have hu : u = fun _ => 2 / 3 := by
-    funext n
-    have a1 := h1 n
-    have a2 := h2 n
-    norm_num at a1 a2
-    exact le_antisymm a2 a1
-  have hs₁ : (fun n : ℕ => max ((fun _ => (1 / 2 : ℝ)) n) (1 - 1 / 3)) = fun _ => (2 / 3 : ℝ) := by
-    funext n
-    norm_num
-  rw [hu, hs₁]
-  have hκm : ∀ n, (1 / 2 : ℝ) ≤
-      (BAmF sz0 (BAlamS sz0 zSeq (fun _ => 2 / 3) (fun _ => 2 / 3)) (BAflowEs sz0 zSeq) n).im := by
-    intro n
-    rw [lamS_two_thirds]
-    exact BAFamZ_im_m_ge (by norm_num) flow_sz0 sz0_lam_pos (by norm_num) (by norm_num) hwin
-      (BAFamZ_main sz0 zSeq (1 / 3) (fun _ => 0)) n
-  have hL : STLmaxgL (baFM sz0 (BAlamS sz0 zSeq (fun _ => 2 / 3) (fun _ => 2 / 3)) (BAflowEs sz0 zSeq))
-      (Sizes.seqP (sz0.withLam 0)) (fun _ => 2 / 3) := by
-    rw [lamS_two_thirds]
-    have h := BATrivialLmax_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-      sz0 zSeq flow_sz0 sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin zSeq
-      (BAFamZ_main sz0 zSeq (1 / 3) (fun _ => 0))
-    have e : (fun _ : ℕ => (1 : ℝ) - 1 / 3) = fun _ => 2 / 3 := by
-      funext n
-      norm_num
-    rw [e] at h
-    exact h
-  exact (baConArg''_holds 3 (1 / 2) (1 / 10) (1 / 10) (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 2 / 3) (fun _ => 2 / 3) (fun _ => by norm_num)
-    (fun _ => le_rfl) (fun _ => by norm_num) hκm hL C₀ hC₀).1 k hk
-
-/-- **Instance of `baBoot_LI`** (target 5), case (a) `u n ≥ s₁ n`: `s ≡ 1/2`, `t ≡ u ≡ 2/3`, every `C₀ > 0`, `k ≥ 1`,
-`z' = zSeq`; the ConArg premise is `inst_hcon` (from `baConArg''_holds 3`), so only the window is a hypothesis. -/
-theorem inst_baBoot_LI_a (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) (C₀ : ℝ) (hC₀ : 0 < C₀) (k : ℕ) (hk : 1 ≤ k) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p ω => (baFMz sz0 zSeq).omegaC n ((fun _ => (2 / 3 : ℝ)) n) C₀ ω *
-        ‖(baFMz sz0 zSeq).L n ((fun _ => (2 / 3 : ℝ)) n) p.1 p.2 ω‖)
-      (fun n _ _ => ((1 - (fun _ => (1 / 2 : ℝ)) n) / (1 - (fun _ => (2 / 3 : ℝ)) n)) ^ (k - 1) *
-        (sz0.Bctl n ((fun _ => (1 / 2 : ℝ)) n)) ^ (k - 1)) :=
-  baBoot_LI 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) zSeq
-    (BAFamZ_main sz0 zSeq (1 / 3) _) (inst_hcon hwin) C₀ hC₀ (fun _ => 2 / 3)
-    (fun _ => ⟨by norm_num, le_rfl⟩) k hk
-
-/-- **Instance of `baBoot_LI`** (target 5), case (b) `u n < s₁ n`: `s ≡ u ≡ 1/2`, `t ≡ 2/3` (`u ≡ 1/2 < 2/3 = s₁`). -/
-theorem inst_baBoot_LI_b (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) (C₀ : ℝ) (hC₀ : 0 < C₀) (k : ℕ) (hk : 1 ≤ k) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p ω => (baFMz sz0 zSeq).omegaC n ((fun _ => (1 / 2 : ℝ)) n) C₀ ω *
-        ‖(baFMz sz0 zSeq).L n ((fun _ => (1 / 2 : ℝ)) n) p.1 p.2 ω‖)
-      (fun n _ _ => ((1 - (fun _ => (1 / 2 : ℝ)) n) / (1 - (fun _ => (1 / 2 : ℝ)) n)) ^ (k - 1) *
-        (sz0.Bctl n ((fun _ => (1 / 2 : ℝ)) n)) ^ (k - 1)) :=
-  baBoot_LI 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) zSeq
-    (BAFamZ_main sz0 zSeq (1 / 3) _) (inst_hcon hwin) C₀ hC₀ (fun _ => 1 / 2)
-    (fun _ => ⟨le_rfl, by norm_num⟩) k hk
-
-/-- **Instances of `BAFamZ_mono`, `BAFamZ_horizon`** at the data: `Fam(2/3) ⊆ Fam(1/2)`, and the member `zSeq` runs up to
-`2/3` (`t₀ ≥ 2/3`). -/
-theorem inst_BAFamZ_mono : BAFamZ sz0 zSeq (1 / 3) (fun _ => 1 / 2) zSeq :=
-  BAFamZ_mono (fun _ => by norm_num) (BAFamZ_main sz0 zSeq (1 / 3) (fun _ => 2 / 3))
-
-theorem inst_BAFamZ_horizon (n : ℕ) : (2 / 3 : ℝ) ≤ BAflowT0 sz0 zSeq n :=
-  BAFamZ_horizon (u := fun _ => 2 / 3) (fun n => t0_sz0 n) (BAFamZ_main sz0 zSeq (1 / 3) _) n
-
-/-- **Instance of `PrecL_congr`**: the loop `𝓛^{(1)}_{1/2}` of the carrier of `zSeq` and of its modification
-`z₂ = 0` below `n = 5` (the carriers agree from `n = 5` on: `Boot_baFMz_eqAt`). -/
-theorem inst_PrecL_congr :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun _ => Unit)
-        (fun n _ ω => ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => 0) ω‖) (fun _ _ _ => 1) ↔
-      PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun _ => Unit)
-        (fun n _ ω => ‖(baFMz sz0 (fun n => if n < 5 then 0 else zSeq n)).L n (1 / 2)
-          (fun _ : Fin 1 => true) (fun _ => 0) ω‖) (fun _ _ _ => 1) := by
-  refine PrecL_congr ?_
-  filter_upwards [Filter.eventually_ge_atTop 5] with n hn
-  have h : zSeq n = (fun n => if n < 5 then (0 : ℂ) else zSeq n) n := by simp [not_lt.mpr hn]
-  obtain ⟨hL, -, -⟩ := Boot_baFMz_eqAt sz0 (z₁ := zSeq) (z₂ := fun n => if n < 5 then (0 : ℂ) else zSeq n) (n := n) h
-  exact ⟨by funext p ω; simp only [hL], rfl⟩
-
-end RBM.BA.Step1BootInst

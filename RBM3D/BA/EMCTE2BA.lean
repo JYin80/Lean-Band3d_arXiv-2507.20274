@@ -50,7 +50,7 @@ open MeasureTheory ProbabilityTheory Filter Matrix Topology
 open scoped NNReal ENNReal
 open scoped Matrix.Norms.L2Operator
 
-open private EMCTE2_hsum EMCTE2_hsum_nonneg EMCTE2_hsum_bdd EMCTE2_integrable_hsum EMCTE2_integrable_L1t_term
+open private EMCTE2_hsum EMCTE2_hsum_nonneg EMCTE2_integrable_hsum EMCTE2_integrable_L1t_term
   EMCTE2_integrable_L2t_term EMCTE2_sum_integral_swap from RBM3D.Universality.EMCTE2
 open private Jak_fixed_time Jak_queBound_eq from RBM3D.Universality.Jak
 open private UNPins_hg_3_10 from RBM3D.BA.UNPins
@@ -244,27 +244,6 @@ theorem eq225_intervalShift (d : ℕ) (sz : Sizes d) (n nf : ℕ) (z : Fin nf �
         rw [hcast T, hcast t, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
     _ ≤ (1 / 2 * Bd) * |T - t| := hmain
     _ = (1 / 2) * (T - t) * Bd := by rw [abs_of_nonneg (sub_nonneg.2 htT)]; ring
-
-/-- `eq225_intervalShift` at `A = 0` is `eq225_interval` (`EMCTE2.lean:455`): the band theorem is recovered. -/
-example : ∀ (d : ℕ) (sz : Sizes d) (n nf : ℕ) (z : Fin nf → ℂ) (hz : ∀ i : Fin nf, 0 < (z i).im)
-    (t T Bd : ℝ), 0 ≤ t → t ≤ T →
-    (∀ s ∈ Set.Ioo t T,
-      ∫ ω, ((∑ i : Fin nf, (∏ j ∈ Finset.univ.erase i,
-              (stieltjesN (0 + ouMat (UNModel.band sz) n s ω) (z j)).im) *
-              L1t d (sz.L n) (sz.W n) (sz.lam n) (0 + ouMat (UNModel.band sz) n s ω) (z i)) +
-            ∑ i : Fin nf, ∑ j ∈ Finset.univ.erase i,
-              (∏ k ∈ (Finset.univ.erase i).erase j,
-                (stieltjesN (0 + ouMat (UNModel.band sz) n s ω) (z k)).im) *
-              L2t d (sz.L n) (sz.W n) (sz.lam n) (0 + ouMat (UNModel.band sz) n s ω) (z i) (z j))
-        ∂(ouP (UNModel.band sz) n) ≤ Bd) →
-    |(∫ ω, ∏ i : Fin nf, (stieltjesN (ouMat (UNModel.band sz) n t ω) (z i)).im
-          ∂(ouP (UNModel.band sz) n)) -
-      ∫ ω, ∏ i : Fin nf, (stieltjesN (ouMat (UNModel.band sz) n T ω) (z i)).im
-          ∂(ouP (UNModel.band sz) n)| ≤
-      (1 / 2) * (T - t) * Bd := by
-  intro d sz n nf z hz t T Bd ht htT hB
-  simpa only [zero_add] using
-    eq225_intervalShift d sz n nf z hz 0 Matrix.isHermitian_zero t T Bd ht htT hB
 
 /-! ## 3. E1: the pin `UNEMCTE2k` at the block Anderson kind -/
 
@@ -624,30 +603,6 @@ theorem unUyw_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : 
         exact Real.one_le_rpow hX1 hε.le
 
 
-/-- **Target 6 (the generic row)**: `UNJakUywRowk K Loc` for every `Loc`, under the three kind hypotheses (`Loc` is not used,
-as in `jakRow`, `Jak.lean:931`); the common `C = 3 nf + 16` and `τ₀ = min τ₁ (1/4)` of `jakUywRow` (`Uyw.lean:881`). -/
-theorem jakUywRowk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : UNBadBoundk K) (hbb2 : UNBad2Boundk K)
-    (Loc : Prop) : UNJakUywRowk K Loc := by
-  intro _hloc hclaims d hd 𝔠 𝔡 sz hadm κ hκ E hE nf
-  obtain ⟨τ₁, hτ₁, hτ⟩ := hclaims d hd 𝔠 𝔡 sz hadm
-  refine ⟨3 * (nf : ℝ) + 16, min τ₁ (1 / 4), lt_min hτ₁ (by norm_num), ?_⟩
-  intro τU hτU hτle
-  obtain ⟨hQ, hD⟩ := hτ τU hτU (le_min_iff.1 hτle).1
-  exact ⟨unJak_of_ouClaimsk K hbw hbb d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hD,
-    unUyw_of_ouClaimsk K hbw hbb2 d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hD⟩
-
-#print axioms RBM.Univ.EMCTE2BA_testFunH_translate
-#print axioms RBM.Univ.EMCTE2BA_wirtSecond_translate
-#print axioms RBM.Univ.EMCTE2BA_measurable_shift
-#print axioms RBM.Univ.eq225_intervalShift
-#print axioms RBM.Univ.unEMCTE2k_ba
-#print axioms RBM.Univ.EMCTE2BA_keff
-#print axioms RBM.Univ.EMCTE2BA_hbad_of_K
-#print axioms RBM.Univ.EMCTE2BA_hbad2_of_K
-#print axioms RBM.Univ.unJak_of_ouClaimsk
-#print axioms RBM.Univ.unUyw_of_ouClaimsk
-#print axioms RBM.Univ.jakUywRowk
-
 /-! ## 5. The row `UNEMCTE2RowBA` and the band instances of the kind hypotheses -/
 
 /-- **Target 4 (E1, the binding pin)**: the weighted `(EMCTE2)` of the block Anderson kind, `UNEMCTE2Rowk` at `UNKind.ba`:
@@ -656,27 +611,6 @@ theorem jakUywRowk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : UNBadBou
 theorem unEMCTE2RowBA_holds : UNEMCTE2RowBA := by
   intro d _ 𝔠 𝔡 sz hA κ _ E _ nf
   exact ⟨1, 1, one_pos, fun τU _ _ => unEMCTE2k_ba d sz hA.2.2.1 E nf τU 1 (one_mul τU).ge⟩
-
-/-- The bulk window at the band kind: `κ' = r = κ/2` (`|E| ≤ 2 - κ`, `|e - E| ≤ κ/2` give `|e| ≤ 2 - κ/2`). -/
-theorem UNBulkWindowk_band : UNBulkWindowk (fun d => UNKind.band d) := by
-  intro d sz κ hκ
-  refine ⟨κ / 2, κ / 2, by positivity, by positivity, fun n E e hE he => ?_⟩
-  change |E| ≤ 2 - κ at hE
-  change |e| ≤ 2 - κ / 2
-  rw [abs_le] at hE he ⊢
-  constructor <;> linarith [he.1, he.2, hE.1, hE.2]
-
-/-- The `Jak` bad-event transfer at the band kind: `measure_bad_le_of_queBadMat` (`JakSpectral.lean:559`). -/
-theorem UNBadBoundk_band : UNBadBoundk (fun d => UNKind.band d) := by
-  intro d sz n t 𝔡 E y p _ h𝔡 hlam hp
-  exact measure_bad_le_of_queBadMat _ (sz.three_le_L n) (by exact_mod_cast sz.W_pos n) h𝔡 hlam y
-    (Hr := fun ω => ouMatC ((UNKind.band d).M sz) n t ω) (fun ω => ouMatC_isHermitian _ n t ω) p hp
-
-/-- The `Uyw` pair-event transfer at the band kind: `measure_bad2_le_of_queBadMat` (`UywKernel.lean:1061`). -/
-theorem UNBad2Boundk_band : UNBad2Boundk (fun d => UNKind.band d) := by
-  intro d sz n t 𝔡 E a0 p _ h𝔡 hlam hp
-  exact measure_bad2_le_of_queBadMat _ (sz.three_le_L n) (by exact_mod_cast sz.W_pos n) h𝔡 hlam a0
-    (Hr := fun ω => ouMatC ((UNKind.band d).M sz) n t ω) (fun ω => ouMatC_isHermitian _ n t ω) p hp
 
 /-! ## 6. E2 at block Anderson: the bulk window, the one-block bad events, `unJakUywRowBA_holds` -/
 
@@ -760,22 +694,6 @@ theorem UNBad2Boundk_ba : UNBad2Boundk (fun d => UNKind.ba d) := by
       (ouMatC_isHermitian _ n t ω) α β hα hβ hθ
   · exact le_mul_of_one_le_left' (by exact_mod_cast Nat.succ_le_succ (Nat.zero_le _))
 
-/-- **Target 10 (E2, the binding pin)**: `(jaklsdufowe)`, `(uywy7723r3rf)` of the block Anderson kind, `UNJakUywRowk` at
-`UNKind.ba` with `Loc = UNLocAvgBA`: `jakUywRowk` with targets 7-9.  `UNLocAvgBA` and `UNOUClaimsk (UNKind.ba)` (from
-`UNOURowBA`) are hypotheses of the row and are not used. -/
-theorem unJakUywRowBA_holds : UNJakUywRowBA :=
-  jakUywRowk (fun d => UNKind.ba d) UNBulkWindowk_ba UNBadBoundk_ba UNBad2Boundk_ba UNLocAvgBA
-
-#print axioms RBM.Univ.unEMCTE2RowBA_holds
-#print axioms RBM.Univ.UNBulkWindowk_band
-#print axioms RBM.Univ.UNBadBoundk_band
-#print axioms RBM.Univ.UNBad2Boundk_band
-#print axioms RBM.Univ.UNBulkWindowk_ba
-#print axioms RBM.Univ.UNBadBoundk_ba
-#print axioms RBM.Univ.EMCTE2BA_bad2_subset
-#print axioms RBM.Univ.UNBad2Boundk_ba
-#print axioms RBM.Univ.unJakUywRowBA_holds
-
 /-! ## 7. Compiled nonempty instances (CLAUDE.md §4 step 2; `d = 3`)
 
 * `inst_translate`, `inst_wirtSecond_translate` (target 1): the translate of the `∏ Im m(z)` test function by `A_0 = λ_0 Ψ` at
@@ -788,198 +706,6 @@ theorem unJakUywRowBA_holds : UNJakUywRowBA :=
 * `inst_unJak_k_ba`, `inst_unUyw_k_ba`, `inst_bad_ba` (targets 7-9) and `inst_unJakUywRowBA` (target 10) at `S0`, `nf = 2`;
   `UNLocAvgBA` and `rO hML hLoc hQ` are hypotheses (as `BAInst.inst_UNJakUywRowBA`).
 * `inst_univ_ba_rows`: the consumer `baBUniv_of_rows` with `rE`, `rJ` discharged. -/
-
-namespace EMCTE2BAInst
-
-open RBM.Gauss.SizesInst RBM.BA.UNPinsInst RBM.Univ.BAInst
-
-/-- The mean `λ_0 Ψ` of block Anderson at `sz0`, `n = 0`: a deterministic Hermitian matrix. -/
-noncomputable abbrev lamPsi0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ :=
-  ((sz0.lam 0 : ℝ) : ℂ) • PsiI 3 (sz0.L 0) (sz0.W 0)
-
-theorem lamPsi0_herm : lamPsi0.IsHermitian := (UNModelC.ba sz0).mean_herm 0
-
-theorem zI_pos : ∀ i : Fin 1, 0 < (![Complex.I] i).im := fun i => by fin_cases i; simp
-
-/-- Target 1 at the data: the translate of `K ↦ ∏ Im m_K(i)` by `A_0` is a `TestFunH`. -/
-theorem inst_translate :
-    TestFunH 3 (sz0.L 0) (sz0.W 0)
-      (fun K => (((∏ i : Fin 1, (stieltjesN (lamPsi0 + K) (![Complex.I] i)).im) : ℝ) : ℂ)) :=
-  EMCTE2BA_testFunH_translate (testFunH_stieltjesImProduct 3 (sz0.L 0) (sz0.W 0) 1 ![Complex.I] zI_pos) lamPsi0_herm
-
-/-- Target 1 at the data: the Hessian term of the translate at `M` is the Hessian term at `A_0 + M`. -/
-theorem inst_wirtSecond_translate (M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-    (a b : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    wirtSecond 3 (sz0.L 0) (sz0.W 0)
-        (fun K => (((∏ i : Fin 1, (stieltjesN (lamPsi0 + K) (![Complex.I] i)).im) : ℝ) : ℂ)) M a b =
-      wirtSecond 3 (sz0.L 0) (sz0.W 0)
-        (fun K => (((∏ i : Fin 1, (stieltjesN K (![Complex.I] i)).im) : ℝ) : ℂ)) (lamPsi0 + M) a b :=
-  EMCTE2BA_wirtSecond_translate (fun K => (((∏ i : Fin 1, (stieltjesN K (![Complex.I] i)).im) : ℝ) : ℂ)) lamPsi0 M a b
-
-/-- Target 2 at the data (`nf = 1`, `z = ![I]`, `t = 0`, `T = 1`, `A = λ_0 Ψ`). -/
-theorem inst_eq225_intervalShift : ∃ Bd : ℝ,
-    (∀ s ∈ Set.Ioo (0 : ℝ) 1,
-      ∫ ω, ((∑ i : Fin 1, (∏ j ∈ Finset.univ.erase i,
-              (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] j)).im) *
-              L1t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i)) +
-            ∑ i : Fin 1, ∑ j ∈ Finset.univ.erase i,
-              (∏ k ∈ (Finset.univ.erase i).erase j,
-                (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] k)).im) *
-              L2t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i) (![Complex.I] j))
-        ∂(ouP (UNModel.band sz0) 0) ≤ Bd) ∧
-    |(∫ ω, ∏ i : Fin 1, (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 0 ω) (![Complex.I] i)).im
-          ∂(ouP (UNModel.band sz0) 0)) -
-      ∫ ω, ∏ i : Fin 1, (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 1 ω) (![Complex.I] i)).im
-          ∂(ouP (UNModel.band sz0) 0)| ≤
-      (1 / 2) * (1 - 0) * Bd := by
-  obtain ⟨K, hK⟩ := EMCTE2_hsum_bdd 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) ![Complex.I] zI_pos
-  have hB : ∀ s ∈ Set.Ioo (0 : ℝ) 1,
-      ∫ ω, ((∑ i : Fin 1, (∏ j ∈ Finset.univ.erase i,
-              (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] j)).im) *
-              L1t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i)) +
-            ∑ i : Fin 1, ∑ j ∈ Finset.univ.erase i,
-              (∏ k ∈ (Finset.univ.erase i).erase j,
-                (stieltjesN (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] k)).im) *
-              L2t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (lamPsi0 + ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i) (![Complex.I] j))
-        ∂(ouP (UNModel.band sz0) 0) ≤ K := by
-    intro s _
-    calc _ ≤ ∫ _ω, K ∂(ouP (UNModel.band sz0) 0) :=
-          integral_mono (EMCTE2_integrable_hsum (lam := sz0.lam 0) (ouP (UNModel.band sz0) 0)
-            (EMCTE2BA_measurable_shift lamPsi0 (measurable_ouMat (UNModel.band sz0) 0 s))
-            (fun ω => lamPsi0_herm.add (ouMat_isHermitian (UNModel.band sz0) 0 s ω)) ![Complex.I] zI_pos)
-            (integrable_const K)
-            (fun ω => hK _ (lamPsi0_herm.add (ouMat_isHermitian (UNModel.band sz0) 0 s ω)))
-      _ = K := by simp
-  exact ⟨K, hB, eq225_intervalShift 3 sz0 0 1 ![Complex.I] zI_pos lamPsi0 lamPsi0_herm 0 1 K le_rfl zero_le_one hB⟩
-
-/-- Target 3 at `sz0` (`sz0_tendsto`), `E = 0`, `nf = 2`, `τU = 1/2`, `Cn = 1`: the pin `UNEMCTE2k (UNKind.ba 3)`. -/
-theorem inst_unEMCTE2k_ba_sz0 : UNEMCTE2k (UNKind.ba 3) sz0 0 2 (1 / 2) 1 :=
-  unEMCTE2k_ba 3 sz0 sz0_tendsto 0 2 (1 / 2) 1 (one_mul _).ge
-
-/-- Target 4 at the class sequence `S0`, `κ_*`, `E_*` (`S0_adm`, `S0_bulk`), `nf = 1`: `UNEMCTE2k (UNKind.ba 3) S0 E_* 1 τU Cn`
-with no hypothesis left. -/
-theorem inst_unEMCTE2Rowk_ba : ∃ Cn τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-    UNEMCTE2k (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 1 τU Cn :=
-  inst_UNEMCTE2RowBA unEMCTE2RowBA_holds
-
-/-- Targets 5, 6 (`Jak`, band kind): `unJak_of_ouClaimsk` at `UNKind.band 3`, `sz0`, `κ = 1/2`, `E = 1`, `nf = 2`; it reproduces
-`JakInst.inst_unJak` (`Jak.lean`).  `UNOUQUEk`, `UNOUDiagk` are the `𝐇_t` claims (other gates' pins). -/
-theorem inst_unJak_k_band (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUEk (UNKind.band 3) sz0 (1 / 10) τU) (hDiag : UNOUDiagk (UNKind.band 3) sz0 τU) :
-    UNJakk (UNKind.band 3) sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  unJak_of_ouClaimsk (fun d => UNKind.band d) UNBulkWindowk_band UNBadBoundk_band 3 le_rfl (1 / 6) (1 / 10) sz0
-    UNInst.sz0_adm (1 / 2) (by norm_num) 1
-    (Eventually.of_forall fun n => by change |(1 : ℝ)| ≤ 2 - 1 / 2; norm_num) 2 τU hτ hτ4 hQUE hDiag
-
-/-- Targets 5, 6 (`Uyw`, band kind): `unUyw_of_ouClaimsk`, same data; it reproduces `UywInst.inst_unUyw`. -/
-theorem inst_unUyw_k_band (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUEk (UNKind.band 3) sz0 (1 / 10) τU) (hDiag : UNOUDiagk (UNKind.band 3) sz0 τU) :
-    UNUywk (UNKind.band 3) sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  unUyw_of_ouClaimsk (fun d => UNKind.band d) UNBulkWindowk_band UNBad2Boundk_band 3 le_rfl (1 / 6) (1 / 10) sz0
-    UNInst.sz0_adm (1 / 2) (by norm_num) 1
-    (Eventually.of_forall fun n => by change |(1 : ℝ)| ≤ 2 - 1 / 2; norm_num) 2 τU hτ hτ4 hQUE hDiag
-
-/-- The band K-form instance gives the band statements of `JakInst.inst_unJak`, `UywInst.inst_unUyw` (`UNJakk_band`,
-`UNUywk_band`, `UNOUQUEk_band`, `UNOUDiagk_band`, `PinsK.lean:522-548`): the K-forms reproduce the band instances. -/
-theorem inst_unJak_unUyw_band_recover (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUE sz0 (1 / 10) τU) (hDiag : UNOUDiag sz0 τU) :
-    UNJak sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) ∧
-      UNUyw sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  ⟨(UNJakk_band sz0 1 2 τU _ _).1 (inst_unJak_k_band τU hτ hτ4 ((UNOUQUEk_band sz0 _ τU).2 hQUE)
-      ((UNOUDiagk_band sz0 τU).2 hDiag)),
-    (UNUywk_band sz0 1 2 τU _ _).1 (inst_unUyw_k_band τU hτ hτ4 ((UNOUQUEk_band sz0 _ τU).2 hQUE)
-      ((UNOUDiagk_band sz0 τU).2 hDiag))⟩
-
-/-- Target 6 (the generic row) at the band kind, `sz0`, `κ = 1/2`, `E = 1`, `nf = 2`: `jakUywRowk` with the three band
-hypotheses; `Loc = UNLocAvgBand` and `UNOUClaims` are the hypotheses of the row. -/
-theorem inst_jakUywRowk_band (hloc : UNLocAvgBand) (hOU : UNOUClaims) :
-    ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNJakk (UNKind.band 3) sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) ∧
-        UNUywk (UNKind.band 3) sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  jakUywRowk (fun d => UNKind.band d) UNBulkWindowk_band UNBadBoundk_band UNBad2Boundk_band UNLocAvgBand hloc
-    (UNOUClaimsk_band.2 hOU) 3
-    le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-    (Eventually.of_forall fun n => by change |(1 : ℝ)| ≤ 2 - 1 / 2; norm_num) 2
-
-/-- Targets 5, 6 (`Jak`, block Anderson kind) at `S0`, `κ_*`, `E_*`, `nf = 2`: `unJak_of_ouClaimsk` with the block Anderson
-hypotheses of targets 7, 8; `UNOUQUEk`, `UNOUDiagk` are the `𝐇_t` claims. -/
-theorem inst_unJak_k_ba (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUEk (UNKind.ba 3) S0 (1 / 10) τU) (hDiag : UNOUDiagk (UNKind.ba 3) S0 τU) :
-    UNJakk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  unJak_of_ouClaimsk (fun d => UNKind.ba d) UNBulkWindowk_ba UNBadBoundk_ba 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm
-    (clsκ 4 UNPins_hg_3_10) (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 2 τU hτ hτ4 hQUE hDiag
-
-/-- Targets 5, 6 (`Uyw`, block Anderson kind), same data, with targets 7, 9. -/
-theorem inst_unUyw_k_ba (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUEk (UNKind.ba 3) S0 (1 / 10) τU) (hDiag : UNOUDiagk (UNKind.ba 3) S0 τU) :
-    UNUywk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  unUyw_of_ouClaimsk (fun d => UNKind.ba d) UNBulkWindowk_ba UNBad2Boundk_ba 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm
-    (clsκ 4 UNPins_hg_3_10) (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 2 τU hτ hτ4 hQUE hDiag
-
-/-- Target 7 at `S0`: there are `κ', r > 0` such that every energy within `r` of `E_*` is in the `κ'`-bulk of the class sequence
-at every large `n` (from `S0_bulk` by `UNBulkWindowk_ba`, with `κ' = κ_*/2`, `r = (π κ_*)³/8`). -/
-theorem inst_bulk_window_ba : ∃ κ' r : ℝ, 0 < κ' ∧ 0 < r ∧ ∀ᶠ n in atTop, ∀ e : ℝ,
-    |e - (fp 4 UNPins_hg_3_10).E| ≤ r → (UNKind.ba 3).bulk S0 κ' e n := by
-  obtain ⟨κ', r, hκ', hr, hw⟩ := UNBulkWindowk_ba 3 S0 (clsκ 4 UNPins_hg_3_10) (clsκ_pos 4 UNPins_hg_3_10)
-  exact ⟨κ', r, hκ', hr, S0_bulk.mono fun n hn e he => hw n _ e hn he⟩
-
-/-- Targets 8, 9 at `S0`, `n` large, `𝔡 = 1/10`, a block `a0 = 0`, `p = 1`: the two block Anderson bad-event transfers, every
-premise discharged. -/
-theorem inst_bad_ba : ∀ᶠ n : ℕ in atTop, 0 < S0.W n := by
-  filter_upwards [S0_adm.2.2.2.2] with n hn
-  have hp : ∀ b : Zd 3 (S0.L n), ouP ((UNKind.ba 3).M S0).toUNModel n
-      {ω | queBadMat 3 (S0.L n) (S0.W n) (S0.lam n) ((1 / 10 : ℝ) / 3) ((1 / 10 : ℝ) / 6) 0 b
-        (ouMatC ((UNKind.ba 3).M S0) n 0 ω)} ≤ 1 := fun b => prob_le_one
-  have _ := UNBadBoundk_ba 3 S0 n 0 (1 / 10) 0 0 1 le_rfl (by norm_num) hn.1 hp
-  have _ := UNBad2Boundk_ba 3 S0 n 0 (1 / 10) 0 0 1 le_rfl (by norm_num) hn.1 hp
-  exact S0.W_pos n
-
-/-- Target 10 at `S0`, `κ_*`, `E_*`, `nf = 2`: `UNJakUywRowBA` produced by `unJakUywRowBA_holds`; `UNLocAvgBA` and the claims
-`rO hML hLoc hQ` are the hypotheses (as `BAInst.inst_UNJakUywRowBA`). -/
-theorem inst_unJakUywRowBA (rO : UNOURowBA) (hML : ∀ d : ℕ, UNMLOutBA d) (hLoc : UNLocAvgBA) (hQ : UNQueBA) :
-    ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNJakk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU C (1 / 6 * (1 / 10) / 30) ∧
-        UNUywk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU C (1 / 6 * (1 / 10) / 30) :=
-  inst_UNJakUywRowBA unJakUywRowBA_holds rO hML hLoc hQ
-
-/-- The consumer `baBUniv_of_rows` (`BA/UNPins.lean:367`) with `rE`, `rJ` discharged by the two producers: the block Anderson
-`Thm: B_Univ` from the rows of the other gates, at the class sequence (`BAInst.inst_univ_ba`). -/
-theorem inst_univ_ba_rows (hcore : UNCoreC'') (h32 : UNL32) (hGL : UNGUELocal) (hGC : UNGreenCorrAllC)
-    (rD : UNDensBARow') (rT0 : UNTrLocalBARow) (rT : UNTrLocalInitBARow') (rN : UNNormBARow)
-    (rC : UNClaimRowBA) (rO : UNOURowBA) (hML : ∀ d : ℕ, UNMLOutBA d) (hLoc : UNLocAvgBA) (hQ : UNQueBA) :
-    UNUnivDilAt S0 (UNModel.ba S0) (fun n => BArho 3 (S0.L n) (S0.lam n) (fp 4 UNPins_hg_3_10).E)
-      (fp 4 UNPins_hg_3_10).E 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) :=
-  BAInst.inst_univ_ba hcore h32 hGL hGC rD rT0 rT rN rC unEMCTE2RowBA_holds unJakUywRowBA_holds rO hML hLoc hQ
-
-/-- The shape of the consumer after this row (`rE`, `rJ` removed from the hypotheses of `baBUniv_of_rows`), as a term from
-`baBUniv_of_rows` and the two producers. -/
-example : UNCoreC'' → UNL32 → UNGUELocal → UNGreenCorrAllC → UNDensBARow' → UNTrLocalBARow → UNTrLocalInitBARow' →
-    UNNormBARow → UNClaimRowBA → UNOURowBA → (∀ d : ℕ, UNMLOutBA d) → UNLocAvgBA → UNQueBA →
-      ∀ d : ℕ, BAEnd_BUnivL d :=
-  fun hcore h32 hGL hGC rD rT0 rT rN rC rO hML hLoc hQ =>
-    baBUniv_of_rows hcore h32 hGL hGC rD rT0 rT rN rC unEMCTE2RowBA_holds unJakUywRowBA_holds rO hML hLoc hQ
-
-#print axioms RBM.Univ.EMCTE2BAInst.inst_translate
-#print axioms RBM.Univ.EMCTE2BAInst.inst_wirtSecond_translate
-#print axioms RBM.Univ.EMCTE2BAInst.inst_eq225_intervalShift
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unEMCTE2k_ba_sz0
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unEMCTE2Rowk_ba
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unJak_k_band
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unUyw_k_band
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unJak_unUyw_band_recover
-#print axioms RBM.Univ.EMCTE2BAInst.inst_jakUywRowk_band
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unJak_k_ba
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unUyw_k_ba
-#print axioms RBM.Univ.EMCTE2BAInst.inst_bulk_window_ba
-#print axioms RBM.Univ.EMCTE2BAInst.inst_bad_ba
-#print axioms RBM.Univ.EMCTE2BAInst.inst_unJakUywRowBA
-#print axioms RBM.Univ.EMCTE2BAInst.inst_univ_ba_rows
-
-end EMCTE2BAInst
 
 end RBM.Univ
 

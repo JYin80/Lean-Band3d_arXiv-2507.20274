@@ -8,12 +8,12 @@ Run from the main worktree (it needs the built `RBM3D` library):
 
 Prints a report on stdout.  Nothing is written, the library is not modified.
 
-RBM3D roots (T2522).  Core: `final_shape`, `Thm27`, `Thm27_of_L32`, `band_terminal`; the constants
-named by the `example`s of `RBM3D/Main/FinalShape.lean` (listed by hand, `exampleRoots`); every
-constant of the namespace `RBM.Audit` and its sub-namespaces.  Optional groups `G1`-`G4`
-(`groups`) are reported beyond the core: for each, the extra declarations and lines its closure
-adds to the core closure.  Section (g) lists the `Name` literals of every `Name`-valued constant
-of `RBM.Audit` (the registry lists of `RBM3D/Test/Axioms.lean`) that are unreached in the core, with
+RBM3D roots (T2522, T2523).  Core: `final_shape`, `Thm27`, `Thm27_of_L32`, `band_terminal`; the
+constants named by the `example`s of `RBM3D/Main/FinalShape.lean` (listed by hand, `exampleRoots`);
+every constant of the namespace `RBM.Audit` and its sub-namespaces; and, since T2523, the roots of
+the four groups `G1`-`G4` (`groups`) and the declarations T2523 kept by hand (`restoredRoots`, `scanProvers`).  Section (f) is kept as a note: for each group, the extra
+declarations and lines its closure adds to the closure of the roots (zero, the groups being roots).  Section (g) lists the `Name` literals of every `Name`-valued constant
+of `RBM.Audit` (the registry lists of `RBM3D/Test/Axioms.lean`) whose constant does not survive the deletion (`survives`), with
 their line in that file (read from the current directory).
 
 Method.  The environment is `import RBM3D`.  A declaration is *in scope* when its declaring
@@ -75,8 +75,143 @@ def exampleRoots : List Name :=
    `RBM.BA.UNPinsInst.clsκ_pos, `RBM.BA.UNPinsInst.fp, `RBM.Univ.BAInst.S0_bulk,
    `RBM.Univ.UNInst.bump, `RBM.Univ.UNInst.bump_testFun]
 
-/-- Optional groups (T2522): name, description, roots (added to the core roots for that group's
-closure).  The `example`s of the named file are listed by hand under that file's `open`s. -/
+/-- Declarations that T2523 kept although the closure does not reach them (a limitation of the term closure, see
+the header): each is a `rfl`-lemma, definition or `@[simp]` lemma that a reached proof uses through `simp`, `dsimp`,
+`unfold` or the default simp set, which leave no trace of it in the proof term; deleting it breaks the reached proof.
+Listed by hand from the T2523 deletion (the report lists them with the module). -/
+def restoredRoots : List Name :=
+  [`RBM.BA.GUETwistBA_Pi_apply,
+   `RBM.BA.GreenMinor_a_zero,
+   `RBM.BA.BAMcharge_def,
+   `RBM.BA.BAslotStart_leaf,
+   `RBM.BA.TwistAvgA2_G_eq,
+   privName `RBM3D.BA.TwistGridWTail `RBM.BA.TwistGridWTail_cm_apply,
+   `RBM.BA.TwistStep2_eta_eq,
+   `RBM.BA.BAMss_pp_apply,
+   privName `RBM3D.Chain.StepDecompGen `RBM.BA.StepDecompGen_wd_nil,
+   privName `RBM3D.Gauss.FineModel `RBM.Gauss.fineModel_Hflow_apply,
+   privName `RBM3D.Gauss.FineModel `RBM.Gauss.fineModel_Xmat_apply,
+   `RBM.Gauss.wordDirectionMap_cons,
+   `RBM.Gauss.wordDirectionMap_nil,
+   `RBM.Graph.anpKey5_inS_inl,
+   privName `RBM3D.Graph.BAEngine `RBM.Graph.BAEngine_col_transpose,
+   privName `RBM3D.Graph.BAExp14c `RBM.BA.BAExp14c_D_G,
+   privName `RBM3D.Graph.BAExp14c `RBM.BA.BAExp14c_D_S',
+   privName `RBM3D.Graph.BAExp14c `RBM.BA.BAExp14c_blk,
+   privName `RBM3D.Graph.BAGGOp `RBM.Graph.BAGGOp_rho2_b,
+   privName `RBM3D.Graph.BAGGOp `RBM.Graph.BAGGOp_rho2_u,
+   `RBM.Graph.BALocReg1_molMap_mk,
+   `RBM.Graph.BALocReg2_bpS_dst,
+   `RBM.Graph.BALocReg2_bpS_src,
+   `RBM.Graph.BALocReg2_bpS_σ,
+   privName `RBM3D.Graph.BAS3Close `RBM.Graph.BAS3Close_lift_bpv,
+   privName `RBM3D.Graph.BAS3CloseC `RBM.Graph.BAS3Close_D_M,
+   `RBM.Graph.BAShapeO2_rho2_zero,
+   `RBM.Graph.BASim_owxEmb2_inr,
+   `RBM.Graph.lwEngine_col_transpose,
+   `RBM.Graph.lwEngine_dotChoices_sc,
+   `RBM.Graph.lwSymm_slice_flip,
+   `RBM.Graph.SEdge.localReg2_cends_mk,
+   `RBM.Graph.localReg2_owxEmb_inr_eq,
+   privName `RBM3D.Graph.LocalRegular6d `RBM.Graph.localReg6d_map_mk,
+   privName `RBM3D.Graph.LocalRegular6d `RBM.Graph.localReg6d_phi_a,
+   privName `RBM3D.Graph.LocalRegular6d `RBM.Graph.localReg6d_phi_b,
+   `RBM.Green.minorGreen_apply,
+   `RBM.Green.minorMat_apply,
+   `RBM.Green.applyOps_nil,
+   `RBM.Green.numQ_nil,
+   `RBM.Green.epsHom_inl,
+   `RBM.Green.epsHom_inr,
+   `RBM.Green.deltaFam_apply,
+   `RBM.Green.gFam_apply,
+   `RBM.Green.gInvFam_apply,
+   `RBM.Green.iterDeltaFam_nil,
+   `RBM.Green.badTower_zero,
+   privName `RBM3D.Green.MinorGoodLe `RBM.Green.flucIterHigh_seqHflow_apply,
+   privName `RBM3D.Green.MinorGoodLe `RBM.Green.flucIterHigh_slice_apply,
+   `RBM.Green.minorDiff_nil,
+   privName `RBM3D.Green.RowIndep `RBM.Green.slice_apply,
+   privName `RBM3D.Hierarchy.ContractionBasic `RBM.Gauss.contraction_coordinateMatrix_apply,
+   privName `RBM3D.Hierarchy.ContractionBasic `RBM.Gauss.contraction_gloopProd_cons,
+   privName `RBM3D.Hierarchy.ContractionBasic `RBM.Gauss.contraction_loopL_eq,
+   privName `RBM3D.Hierarchy.ContractionSecondLoop `RBM.Gauss.secondLoop_gloopProd_nil,
+   `RBM.Gauss.Sizes.B45_STKloop_eq,
+   `RBM.Ind.zSig_false,
+   `RBM.Ind.zSig_true,
+   privName `RBM3D.Induction.LoopGenN `RBM.Ind.LoopGenN_gloopProd_cons,
+   privName `RBM3D.Induction.LoopGenN `RBM.Ind.LoopGenN_gloopProd_nil,
+   privName `RBM3D.Induction.LoopGenN `RBM.Ind.LoopGenN_loopL_eq,
+   privName `RBM3D.Induction.NewKLK `RBM.Gauss.Sizes.nkl_STmsig_eq,
+   privName `RBM3D.Induction.QVN `RBM.Ind.QVN_cm_apply,
+   privName `RBM3D.Induction.QVN `RBM.Ind.QVN_wd_nil,
+   `RBM.Ind.gchain_single,
+   privName `RBM3D.Induction.Split `RBM.Ind.gloopProd_nil,
+   `RBM.Gauss.Sizes.STLM_seqHflow,
+   privName `RBM3D.Loop.GLoopFlow `RBM.Gauss.gloopProd_cons,
+   privName `RBM3D.Loop.GLoopFlow `RBM.Gauss.gloopProd_nil,
+   privName `RBM3D.Loop.KLWard `RBM.Loop.KLWard_flipIdx_length,
+   privName `RBM3D.Path.QVIdentity `RBM.Path.QVIdentity_cm_apply,
+   privName `RBM3D.Universality.GUEInvariance `RBM.Univ.GUE_Tpp_eucl_apply,
+   privName `RBM3D.Universality.GUEInvariance `RBM.Univ.GUE_Xmat_apply,
+   privName `RBM3D.Universality.GUEInvariance `RBM.Univ.GUE_real_smul,
+   privName `RBM3D.Universality.GUEPhase.DuhamelA1 `RBM.Univ.GUEPhase.Duhamel_coordinateMatrix_apply,
+   privName `RBM3D.Universality.GUEPhase.Generator `RBM.Univ.GUEPhase.Generator_gloopProd_cons,
+   privName `RBM3D.Universality.GUEPhase.Generator `RBM.Univ.GUEPhase.Generator_gloopProd_nil,
+   privName `RBM3D.Universality.GUEPhase.Generator `RBM.Univ.GUEPhase.Generator_loopL_eq,
+   `RBM.Univ.unPinsK_band_bulk,
+   `RBM.Univ.unPinsK_toC_toUNModel]
+
+/-- Theorems that T2523 kept because the premise scan of `#assert_rbm_axioms` needs them: each concludes a `Prop`
+(a structure or predicate) that a reached theorem assumes and that no other surviving theorem proves, so deleting it
+would leave that `Prop` in none of the registry lists of `RBM3D/Test/Axioms.lean` (the scan fails with "premises that
+no theorem proves").  Chosen by script, one per such `Prop`, the one whose closure adds the fewest constants (the
+report of T2523 lists them with the `Prop` they prove). -/
+def scanProvers : List Name :=
+  [`RBM.BA.ConArgInst.inst_BAConArgHyp,
+   `RBM.BA.FlowPinsInst.flow_sz0,
+   `RBM.BA.baStep5III_EMatrix_level,
+   `RBM.BA.Step5IIIEdet_scalar_sz0_one,
+   `RBM.BA.bandStep2_GridAssemblyHypN,
+   `RBM.BA.nqGoodGen_kerNAL_band_at,
+   `RBM.BA.qtBootGen_flowModFam_band,
+   `RBM.BA.qtBootGen_hyp_band,
+   `RBM.BA.qtNZGen_kerNZ_band_at,
+   `RBM.BA.KDecayGen_band_STKwardgL,
+   `RBM.BA.step2IterGen_newKLKAtN_band,
+   `RBM.Ind.qDriftB_thDecay_band_concl,
+   `RBM.Evol.cltMom1_cluster_inst,
+   `RBM.Evol.cltMom1_b_paired,
+   `RBM.Gauss.Sizes.rel_self,
+   `RBM.Gauss.Sizes.stNewKLKAt_holds,
+   `RBM.Gauss.Step34Inst.szB_regIterI,
+   `RBM.Graph.lwMomExpFar_inst_oneEdge,
+   `RBM.Graph.LWMomExpInfInst.inst_near,
+   `RBM.Graph.BALvl1AInst.hFW,
+   `RBM.Graph.BASimInst.hTW,
+   `RBM.Graph.BAEngine_pL_locStd,
+   `RBM.Graph.BALvl1AInst.locStepB,
+   `RBM.Graph.DEdge.BASim_sameU_refl,
+   `RBM.Graph.localReg2_inst_Q_locStd,
+   `RBM.Graph.LWEngineInst.lwEngine_inst_stepX,
+   `RBM.Graph.PGraph.BASim_BAEquiv_refl,
+   `RBM.Graph.localReg6a_instQ_locStd,
+   `RBM.Graph.WEdge.BASim_sameRev_refl,
+   `RBM.Graph.anpKey2_chain_new,
+   `RBM.Graph.baUntag_locStepT_intro,
+   `RBM.Green.asGMcSeq_time_zero,
+   `RBM.Green.Instance.inst_hyp,
+   `RBM.Green.localLawDetSeq_time_zero,
+   `RBM.Ind.GridAssemblyNInst.gridAsm_bundle,
+   `RBM.Path.LemDecCalE_e2Hyp_zero,
+   `RBM.Path.LemDecCalEdif_hyp_zero,
+   `RBM.Univ.GUEPhase.Eq729B_flowData_formulas,
+   `RBM.Univ.GUEPhase.eq736_detDomAt,
+   `RBM.Univ.GUELocalBootstrapInst.inst_glSmall_witness,
+   `RBM.Univ.OUInterfaceK_UNOULL_of_k,
+   `RBM.Univ.JakKernelInst.gridGood_one]
+
+/-- Root groups (T2522 optional groups; roots of the closure since T2523): name, description,
+roots.  The `example`s of the named file are listed by hand under that file's `open`s. -/
 def groups : List (String × String × List Name) :=
   [("G1", "constants of the `example`s in Main/BandTerminal.lean §Instances",
     [`RBM.Endpoints.Inst.inst_decol, `RBM.Endpoints.Inst.inst_locSC, `RBM.Endpoints.Inst.inst_QUE,
@@ -193,6 +328,22 @@ def edges (env : Environment) (inScope : Name → Bool) (rangeOf : Name → Opti
       p := p.getPrefix
   return out
 
+/-- A constant of the library survives the deletion of the unreached declarations: a ranged constant when the unit it
+belongs to is reached; a constant without a range (`T.below`, `T.brecOn`, ... generated for an inductive `T`) when its
+nearest ancestor constant survives; every constant outside the scope.  (T2523, for section (g).) -/
+partial def survives (env : Environment) (inScope : Name → Bool) (rangeOf : Name → Option (Nat × Nat))
+    (reached : Std.HashSet Name) (n : Name) : Bool :=
+  if !inScope n then true else
+  match rangeOf n with
+  | some _ => reached.contains (unitOf env inScope rangeOf n)
+  | none => survivesPre env inScope rangeOf reached n.getPrefix
+where
+  survivesPre (env : Environment) (inScope : Name → Bool) (rangeOf : Name → Option (Nat × Nat))
+      (reached : Std.HashSet Name) (p : Name) : Bool :=
+    if p.isAnonymous then false
+    else if env.contains p then survives env inScope rangeOf reached p
+    else survivesPre env inScope rangeOf reached p.getPrefix
+
 def pad (s : String) (w : Nat) : String := s ++ "".pushn ' ' (w - s.length)
 
 /-- A `Name` literal written as an expression (`Name.mkStr1 ..`, `Name.str p s`, ...). -/
@@ -262,6 +413,16 @@ def run : CommandElabM Unit := do
   for r in exampleRoots do
     if !fixedRoots.contains r then
       rootsUsed := rootsUsed.push (r, "core: added by hand, constant of the `example`s in Main/FinalShape.lean")
+  for r in restoredRoots do
+    if !rootsUsed.any (·.1 == r) then
+      rootsUsed := rootsUsed.push (r, "core: restored by T2523 (used by simp/dsimp/unfold without a trace in the proof term)")
+  for r in scanProvers do
+    if !rootsUsed.any (·.1 == r) then
+      rootsUsed := rootsUsed.push (r, "core: kept by T2523 (proves a premise that a reached theorem assumes; premise scan)")
+  for (g, _, rs) in groups do
+    for r in rs do
+      if !rootsUsed.any (·.1 == r) then
+        rootsUsed := rootsUsed.push (r, s!"core: root of group {g} (T2523)")
   let auditNames := modOf.toList.filterMap fun (c, _) => if `RBM.Audit |>.isPrefixOf c then some c else none
   let auditSorted := auditNames.toArray.qsort (fun a b => a.toString < b.toString)
   for r in auditSorted do rootsUsed := rootsUsed.push (r, "core: namespace RBM.Audit")
@@ -308,7 +469,7 @@ def run : CommandElabM Unit := do
   out := out.push s!"- ({auditSorted.size} constants in RBM.Audit and its sub-namespaces; {reached.size} in-scope constants reached in the core)"
   if !missing.isEmpty then out := out.push s!"MISSING ROOTS: {missing}"
   for (g, desc, rs) in groups do
-    out := out.push s!"- {g} ({desc}; optional, not part of the core closure): {rs.length} roots"
+    out := out.push s!"- {g} ({desc}; roots of the closure since T2523): {rs.length} roots"
     for r in rs do
       out := out.push s!"  - {g}: {fmtName r}{if env.contains r then "" else "  [MISSING]"}"
   out := out.push ""
@@ -406,7 +567,7 @@ def run : CommandElabM Unit := do
   out := out.push s!"- modules with no reached declaration: {deadMods.size}"
   -- (f) optional groups
   out := out.push ""
-  out := out.push "## (f) optional groups: declarations and lines kept alive beyond the core closure"
+  out := out.push "## (f) note: root groups G1-G4 (roots since T2523); declarations and lines they keep alive beyond the other roots"
   out := out.push ""
   let isCoreReached (d : Decl) : Bool := reached.contains d.name
   for (g, desc, rs) in groups do
@@ -457,7 +618,7 @@ def run : CommandElabM Unit := do
     let ns := collectNames v #[]
     let (s, e) := (rangeOf c).getD (0, 0)
     let inSc := ns.filter inScope
-    let unr := inSc.filter fun n => !reached.contains n
+    let unr := inSc.filter fun n => !survives env inScope rangeOf reached n
     let notConst := ns.filter fun n => !env.contains n
     regTotal := regTotal + ns.size
     regScope := regScope + inSc.size
@@ -470,6 +631,27 @@ def run : CommandElabM Unit := do
     for n in notConst do
       out := out.push s!"  (not a constant of the environment) {n}"
   out := out.push s!"- totals over {regDefs.size} name lists: {regTotal} names, {regScope} in scope, {regUnr} unreached in the core"
+  -- (h) namespaces of `RBM` that disappear with the unreached declarations
+  let userName (n : Name) : Name := (privateToUserName? n).getD n
+  let nsPrefixes (n : Name) : List Name := Id.run do
+    let mut r : List Name := []
+    let mut p := (userName n).getPrefix
+    while !p.isAnonymous do
+      r := p :: r
+      p := p.getPrefix
+    return r
+  let mut allNs : Std.HashSet Name := {}
+  let mut aliveNs : Std.HashSet Name := {}
+  for d in decls do
+    for p in nsPrefixes d.name do
+      allNs := allNs.insert p
+      if isReached d || d.isMeta then aliveNs := aliveNs.insert p
+  let lostNs := (allNs.toList.filter fun p => !aliveNs.contains p && p.getRoot == `RBM).toArray.qsort
+    (fun a b => a.toString < b.toString)
+  out := out.push ""
+  out := out.push "## (h) namespaces of `RBM` all of whose declarations are unreached (the namespace disappears with them)"
+  if lostNs.isEmpty then out := out.push "(none)"
+  for p in lostNs do out := out.push s!"- {p}"
   -- emit in chunks so that no message is huge
   let mut chunk := ""
   let mut cnt := 0

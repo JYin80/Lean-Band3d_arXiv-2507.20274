@@ -94,44 +94,6 @@ noncomputable section
 
 /-! ## 0. Two `≺`-calculus lemmas of the T2015 probe (DECISIONS §26; probe `752e027`, §4.0) -/
 
-namespace RBM.StochDomAt
-
-open MeasureTheory Filter RBM RBM.Gauss
-
-variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
-
-/-- A failure event eventually contained in a failure event or the complement of a `w.h.p.`
-event.  Probe `752e027:RBM3D/Probe/T2015Pins.lean:907` (`StochDomAt.of_subset_whp`). -/
-theorem of_subset_whp (hsize : Tendsto size atTop atTop) {U₁ : ℕ → Type*}
-    {ξ ζ : ∀ l, U l → Ω → ℝ} {f g : ∀ l, U₁ l → Ω → ℝ} {Ξ : ℕ → Set Ω}
-    (h : StochDomAt P size f g) (hΞ : HighProbAt P size Ξ)
-    (hsub : ∀ τ > (0 : ℝ), ∃ τ' > (0 : ℝ), ∀ᶠ l : ℕ in atTop,
-      badSetAt size ξ ζ τ l ⊆ badSetAt size f g τ' l ∪ (Ξ l)ᶜ) : StochDomAt P size ξ ζ := by
-  intro τ hτ D hD
-  obtain ⟨τ', hτ', hs⟩ := hsub τ hτ
-  filter_upwards [hs, h τ' hτ' (D + 1) (by linarith), hΞ (D + 1) (by linarith),
-    hsize.eventually (eventually_two_mul_rpow_le D)] with l h0 h1 h2 h3
-  have hp : (0 : ℝ) ≤ (size l : ℝ) ^ (-(D + 1)) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  calc P (badSetAt size ξ ζ τ l) ≤ P (badSetAt size f g τ' l ∪ (Ξ l)ᶜ) := measure_mono h0
-    _ ≤ P (badSetAt size f g τ' l) + P (Ξ l)ᶜ := measure_union_le _ _
-    _ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-(D + 1))) +
-          ENNReal.ofReal ((size l : ℝ) ^ (-(D + 1))) := add_le_add h1 h2
-    _ = ENNReal.ofReal (2 * (size l : ℝ) ^ (-(D + 1))) := by
-        rw [← ENNReal.ofReal_add hp hp]; ring_nf
-    _ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-D)) := ENNReal.ofReal_le_ofReal h3
-
-/-- A failure event eventually contained in the complement of a `w.h.p.` event.  Probe
-`752e027:RBM3D/Probe/T2015Pins.lean:926` (`StochDomAt.of_subset_compl`). -/
-theorem of_subset_compl {ξ ζ : ∀ l, U l → Ω → ℝ} {Ξ : ℕ → Set Ω}
-    (hΞ : HighProbAt P size Ξ)
-    (hsub : ∀ τ > (0 : ℝ), ∀ᶠ l : ℕ in atTop, badSetAt size ξ ζ τ l ⊆ (Ξ l)ᶜ) :
-    StochDomAt P size ξ ζ := by
-  intro τ hτ D hD
-  filter_upwards [hsub τ hτ, hΞ D hD] with l h1 h2
-  exact (measure_mono h1).trans h2
-
-end RBM.StochDomAt
-
 namespace RBM.Ind
 
 open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
@@ -148,10 +110,6 @@ the flow are `STStep1`'s own, they play the roles of `KboundConcl`, `InitLK`, `I
 `STStep1Loop` and `STStep1Weak` of `STStep1`; S1-36 proves it. -/
 def Step1TargetV3 (d : ℕ) : Prop :=
   STGbEXPii d → STGbEXPij d → STStep1 d
-
-/-- `Step1TargetV3 d` is `STStep1 d` under the two `lem_GbEXP` parts. -/
-theorem stStep1_of_target {d : ℕ} (h : Step1TargetV3 d) (hii : STGbEXPii d) (hij : STGbEXPij d) :
-    STStep1 d := h hii hij
 
 /-! ## 2. Elementary facts -/
 
@@ -176,25 +134,10 @@ private theorem s1_mul_rpow_le {x K p q : ℝ} (hx : 0 < x) (h : K ≤ x ^ (q - 
   rw [e]
   exact mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hx.le _)
 
-/-- `N = (W L)^d` (`Step1:122`, `s1_size_eq`: `size = (WL)^d`). -/
-theorem s1_size_eq (n : ℕ) :
-    ((sz.size n : ℕ) : ℝ) = (((sz.W n : ℕ) : ℝ) * ((sz.L n : ℕ) : ℝ)) ^ d := by
-  simp [Sizes.size]
-
-theorem s1_one_le_L (n : ℕ) : 1 ≤ sz.L n := by
-  have := sz.three_le_L n; omega
-
 theorem s1_one_le_W (n : ℕ) : 1 ≤ sz.W n := sz.W_pos n
 
 theorem s1_one_le_size (n : ℕ) : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
   exact_mod_cast sz.one_le_size n
-
-/-- `W^d ≤ N` (`Step1:135`, `W² ≤ N` at `d = 2`). -/
-theorem s1_W_pow_le_size (n : ℕ) : ((sz.W n : ℕ) : ℝ) ^ d ≤ ((sz.size n : ℕ) : ℝ) := by
-  rw [s1_size_eq, mul_pow]
-  have h1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by exact_mod_cast s1_one_le_L sz n
-  have h2 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) ^ d := one_le_pow₀ h1
-  nlinarith [pow_nonneg (Nat.cast_nonneg (sz.W n) : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ)) d]
 
 theorem s1_hsize (h : sz.SizeTendsto) : Tendsto sz.size atTop atTop :=
   tendsto_natCast_atTop_iff.mp h
@@ -545,20 +488,6 @@ end Scales
 section Generic
 
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
-
-/-- A deterministic bound `ξ ≤ N^τ ζ` (eventually, for every `τ > 0`) gives `ξ ≺ ζ`
-(RBM2D `s1_pt_of_le`, `Step1:467`). -/
-private theorem s1_pt_of_le {ξ ζ : ∀ l, U l → Ω → ℝ}
-    (h : ∀ τ > (0 : ℝ), ∀ᶠ l : ℕ in atTop, ∀ u ω, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω) :
-    PerTimeDomAt P size ξ ζ := by
-  intro τ hτ D hD
-  filter_upwards [h τ hτ] with l hl u
-  have : {ω | (size l : ℝ) ^ τ * ζ l u ω < ξ l u ω} = ∅ := by
-    ext ω
-    simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_lt]
-    exact hl u ω
-  rw [this, measure_empty]
-  exact zero_le
 
 /-- The union bound in event form: `ξ ≺ ζ` per time, with polynomially many parameters, gives that
 `ξ ≤ N^τ ζ` for all parameters simultaneously with high probability (RBM2D `s1_highProb_of_pt`,
@@ -923,11 +852,6 @@ theorem s1xM_le {E u B : ℝ} {M : Matrix (Idx d L W) (Idx d L W) ℂ}
     (h : ∀ i j, Green.llErrMat d L W E u M i j ≤ B) : s1xM d L W E u M ≤ B :=
   Finset.sup'_le _ _ fun q _ => h q.1 q.2
 
-theorem s1xM_nonneg (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) :
-    0 ≤ s1xM d L W E u M := by
-  obtain ⟨i⟩ : Nonempty (Idx d L W) := inferInstance
-  exact (norm_nonneg _).trans (s1xM_ge E u M i i)
-
 /-- `llErrMat` as the matrix inverse (`Gres = Ring.inverse`, `Matrix.nonsing_inv_eq_ringInverse`). -/
 theorem s1_llErrMat_eq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (i j : Idx d L W) :
     Green.llErrMat d L W E u M i j =
@@ -1132,423 +1056,14 @@ instance is another gate's pin (`STKbound`, `STLK`, `STLocalMax`, `STGbEXPii`, `
 `Step1TargetV3` itself, proved by S1-36) or, for `s1_wl_det` at `u = 1/16`, an event premise on the
 sample (`‖G_u - m‖_max ≤ 2a`, `STGiiGEX`, `STGijGEX` at `ω`). -/
 
-namespace RBM.Ind.Step1SetupInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Path
-  RBM.Gauss.StochDomAtInst Filter MeasureTheory
-
-/-- `S1Std` at `(sz0, z0, s ≡ 0, t ≡ 1/16)`: `κ = 1/10`, `𝔠 = 1/6`, `𝔡 = 1/10`, `τ = ε/2`,
-`𝔠_d = 1/100`; every field is discharged. -/
-theorem s1Std_sz0 :
-    S1Std sz0 (1 / 10) (1 / 6) (1 / 10) ((1 / 10) / 2) (1 / 100) (STflowE z0) sInst tInst :=
-  s1_std_of_stFlow (by norm_num) (by norm_num) (by norm_num) le_rfl flow_z0 (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) sixteenth_le_lemT
-    (conStInd_inst (by norm_num))
-
-/-- **Instance of `s1_std_of_stFlow`, `s1_c0_pos`, `s1_s_lt_one`, `s1_B_pos`, `s1_Bu_pos`,
-`s1_c1_pos`**: `c₀ = min(2𝔠𝔡, τ) = 1/30 > 0`, `a_s(0) > 0` at `n = 0`. -/
-example : 0 < min (2 * (1 / 6 : ℝ) * (1 / 10)) ((1 / 10) / 2) := s1_c0_pos s1Std_sz0
-example : sInst 0 < 1 := s1_s_lt_one s1Std_sz0 0
-example : 0 < sz0.Bctl 0 (sInst 0) := s1_B_pos s1Std_sz0 0
-example : 0 < sz0.Bctl 0 (1 / 32) := s1_Bu_pos s1Std_sz0 0 (u := 1 / 32) (by simp only [tInst]; norm_num)
-example : 0 < Real.sqrt (2 * (1 / 10 : ℝ)) / 2 := s1_c1_pos s1Std_sz0
-
-/-- **Instances of the elementary facts** at `sz0`, `n = 0` (`L = 4`, `W = 32`, `N = 2097152`). -/
-example : ((sz0.size 0 : ℕ) : ℝ) = (((sz0.W 0 : ℕ) : ℝ) * ((sz0.L 0 : ℕ) : ℝ)) ^ 3 :=
-  s1_size_eq sz0 0
-example : 1 ≤ sz0.L 0 := s1_one_le_L sz0 0
-example : 1 ≤ sz0.W 0 := s1_one_le_W sz0 0
-example : (1 : ℝ) ≤ ((sz0.size 0 : ℕ) : ℝ) := s1_one_le_size sz0 0
-example : ((sz0.W 0 : ℕ) : ℝ) ^ 3 ≤ ((sz0.size 0 : ℕ) : ℝ) := s1_W_pow_le_size sz0 0
-example : Tendsto sz0.size atTop atTop := s1_hsize sz0 sz0_tendsto
-example : 0 < 3 := s1_d_pos sz0 sz0_tendsto
-example : ((2 : ℝ)⁻¹) ^ ((1 : ℝ) / 4) = (2 : ℝ) ^ (-((1 : ℝ) / 4)) := s1_inv_rpow (by norm_num) _
-example : |(1 / 2 : ℝ)| < 2 ∧ Real.sqrt (2 * 1) / 2 ≤ (mE (1 / 2)).im :=
-  s1_bulk one_pos (by rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num)
-/-- `s1_apow_le` at `a = 1/4`, `N = 16`, `c₀ = 1/2`, `p = 1/2`. -/
-example : (1 / 4 : ℝ) ^ ((1 : ℝ) / 2) ≤ 2 * (16 : ℝ) ^ (-((1 / 2 : ℝ) * (1 / 2))) :=
-  s1_apow_le (by norm_num) (by norm_num)
-    (by
-      have h : (16 : ℝ) ^ (-(1 / 2 : ℝ)) = 1 / 4 := by
-        rw [Real.rpow_neg (by norm_num), show (16 : ℝ) = 4 ^ (2 : ℝ) by norm_num,
-          ← Real.rpow_mul (by norm_num)]
-        norm_num
-      rw [h]; norm_num)
-    (by norm_num) (by norm_num)
-
-/-- **Scale facts at `sz0`** (rows R1, R2 of the exponent table): `a_u ≤ 2N^{-c₀}`, `a_s → 0`,
-`a_s^p ≤ K`, `a_s ≤ 1`, `N^y ≥ K`, `ilambda² + 1 ≤ 𝔡⁻² + 1`, all eventually. -/
-example : ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, u ≤ tInst n →
-    sz0.Bctl n u ≤ 2 * ((sz0.size n : ℕ) : ℝ) ^ (-(min (2 * (1 / 6 : ℝ) * (1 / 10)) ((1 / 10) / 2))) :=
-  s1_a_le s1Std_sz0
-example : Tendsto (fun n => sz0.Bctl n (sInst n)) atTop (nhds 0) := s1_B_tendsto s1Std_sz0
-example : ∀ᶠ n : ℕ in atTop, sz0.Bctl n (sInst n) ^ ((1 : ℝ) / 8) ≤ 1 :=
-  s1_B_ev_pow s1Std_sz0 (by norm_num) one_pos
-example : ∀ᶠ n : ℕ in atTop, sz0.Bctl n (sInst n) ≤ 1 := s1_B_le_one s1Std_sz0
-example : ∀ᶠ n : ℕ in atTop, 3 ≤ ((sz0.size n : ℕ) : ℝ) ^ ((1 : ℝ) / 8) :=
-  s1_N_pow_ev s1Std_sz0 (by norm_num) 3
-example : ∀ᶠ n : ℕ in atTop, sz0.lam n ^ 2 + 1 ≤ ((1 / 10 : ℝ)⁻¹) ^ 2 + 1 :=
-  s1_lam_sq_le s1Std_sz0
-example : (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ ≤ (sz0.lam 0 ^ 2 + 1) * sz0.Bctl 0 (1 / 2) :=
-  s1_Wd_le_Bctl sz0 0 (by norm_num) (by norm_num)
-
-/-- **Instance of `s1_ratio_pt`**: `n` with `a_t^{𝔠_d} ≤ (1-t)/(1-s)` (`conStInd_inst`), `s = 0 ≤
-u = 1/32 ≤ t = 1/16`: `a_0 (1-0)/(1-1/32) ≤ a_0^{1-1/100}`. -/
-example : ∃ n : ℕ, sz0.Bctl n 0 * ((1 - 0) / (1 - 1 / 32)) ≤ (sz0.Bctl n 0) ^ (1 - (1 / 100 : ℝ)) := by
-  obtain ⟨n, hn, -⟩ := (conStInd_inst (𝔠d := 1 / 100) (by norm_num)).exists
-  exact ⟨n, s1_ratio_pt sz0 n (c := 1 / 100) (s := 0) (u := 1 / 32) (t := 1 / 16) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by simpa [sInst, tInst] using hn)⟩
-
-/-- **Instance of `s1_ratio_ev`**. -/
-example : ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, sInst n ≤ u → u ≤ tInst n →
-    sz0.Bctl n (sInst n) * ((1 - sInst n) / (1 - u)) ≤ sz0.Bctl n (sInst n) ^ ((14 : ℝ) / 15) :=
-  s1_ratio_ev s1Std_sz0
-
-/-- **Instances of `s1_F3`-`s1_F8`** (`∃ τ₀, ε, c'` and the eventual inequalities). -/
-example : ∃ τ₀ > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
-    ((sz0.size n : ℕ) : ℝ) ^ τ₀ * (s1B sz0 sInst n) ^ ((1 : ℝ) / 2) <
-      (s1B sz0 sInst n) ^ ((1 : ℝ) / 4) := s1_F3 s1Std_sz0
-example : ∃ ε > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
-    (2 * (3 : ℝ) ^ 3) * (s1B sz0 sInst n) ^ ((7 : ℝ) / 15) ≤
-      ((sz0.size n : ℕ) : ℝ) ^ (-ε) * ((s1B sz0 sInst n) ^ ((1 : ℝ) / 4) / 2) := s1_F4 s1Std_sz0
-example : ∃ c' > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
-    2 * (s1B sz0 sInst n) ^ ((1 : ℝ) / 4) ≤ ((sz0.W n : ℕ) : ℝ) ^ (-c') := s1_F5 s1Std_sz0
-example : ∀ᶠ n : ℕ in atTop,
-    ((sz0.size n : ℕ) : ℝ)⁻¹ ≤ (s1B sz0 sInst n) ^ ((1 : ℝ) / 4) / 2 := s1_F6 s1Std_sz0
-example : ∀ᶠ n : ℕ in atTop, (s1B sz0 sInst n) ^ ((1 : ℝ) / 4) ≤ 1 := s1_F7 s1Std_sz0
-example : ∀ᶠ n : ℕ in atTop,
-    (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ (s1B sz0 sInst n) ^ ((14 : ℝ) / 15) := s1_F8 s1Std_sz0
-
 /-! ### Further windows `[s_0, t_0]` at `sz0` (constant times), for the branches `u ≥ 1/2`, `s ≥ 1/2` -/
-
-/-- `(con_st_ind)` at constant times `s_0 < t_0 < 1` for every `𝔠_d > 0`, eventually: `W^{-3}B_{t_0,0}
-≤ 2 (1 - t_0)⁻¹ W^{-3} → 0` (`Bctl_const_le`). -/
-theorem s1Setup_conStInd_const {s0 t0 𝔠d : ℝ} (hst : s0 < t0) (ht : t0 < 1) (h𝔠 : 0 < 𝔠d) :
-    STConStInd sz0 𝔠d (fun _ => s0) (fun _ => t0) := by
-  have hW : Tendsto (fun n : ℕ => (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) :=
-    tendsto_inv_atTop_zero.comp ((tendsto_pow_atTop (by norm_num : (3 : ℕ) ≠ 0)).comp W_tendsto_sz0)
-  have hup : Tendsto (fun n : ℕ => 2 * (1 - t0)⁻¹ * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) := by
-    simpa using hW.const_mul (2 * (1 - t0)⁻¹)
-  have hB : Tendsto (fun n => sz0.Bctl n t0) atTop (nhds 0) := by
-    refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hup (fun n => ?_)
-      (fun n => Bctl_const_le n ht)
-    exact (sz0.STBctl_pos n ht).le
-  have h0 : Tendsto (fun n => sz0.Bctl n t0 ^ 𝔠d) atTop (nhds ((0 : ℝ) ^ 𝔠d)) :=
-    hB.rpow_const (Or.inr h𝔠.le)
-  rw [Real.zero_rpow h𝔠.ne'] at h0
-  have hpos : 0 < (1 - t0) / (1 - s0) := div_pos (by linarith) (by linarith)
-  filter_upwards [h0.eventually (gt_mem_nhds hpos)] with n hn
-  exact ⟨hn.le, (div_lt_one (by linarith)).2 (by linarith)⟩
-
-/-- The bulk `|lemE z0_n| ≤ 2 - 1/10`. -/
-theorem bulk_z0' (n : ℕ) : |STflowE z0 n| ≤ 2 - 1 / 10 :=
-  (lemma28_quant (z := z0 n) (κ := 1 / 10) (by norm_num) (z0_im_pos n) (z0_im_le_one n)
-    (z0_locDomain n).1).1
-
-/-- `S1Std` at `sz0` on any constant window `0 ≤ s_0 < t_0 < 1` (`τ = 1/20`, `𝔠_d = 1/100`):
-the window `[1/16, 3/4]` has `s < 1/2 ≤ u`, the window `[1/2, 3/4]` has `1/2 ≤ s`. -/
-theorem s1Std_sz0_const {s0 t0 : ℝ} (hs0 : 0 ≤ s0) (hst : s0 < t0) (ht : t0 < 1) :
-    S1Std sz0 (1 / 10) (1 / 6) (1 / 10) ((1 / 10) / 2) (1 / 100) (STflowE z0)
-      (fun _ => s0) (fun _ => t0) := by
-  refine ⟨by norm_num, bulk_z0', by norm_num, by norm_num, by norm_num, by norm_num, le_rfl,
-    fun _ => hs0, fun _ => hst.le, fun _ => ht, sz0_tendsto, sz0_admissible.2.2.2.1,
-    sz0_admissible.2.2.2.2, s1Setup_conStInd_const hst ht (by norm_num), ?_⟩
-  have h1 : Tendsto (fun n : ℕ => ((sz0.size n : ℕ) : ℝ) ^ (-((19 : ℝ) / 20))) atTop (nhds 0) :=
-    (tendsto_rpow_neg_atTop (by norm_num)).comp sz0_tendsto
-  filter_upwards [h1.eventually (gt_mem_nhds (by linarith : (0 : ℝ) < 1 - t0))] with n hn
-  have : (-1 + (1 / 10 : ℝ) / 2) = -((19 : ℝ) / 20) := by norm_num
-  rw [this]
-  exact hn.le
 
 /-! ### The loop family at `sz0` -/
 
-/-- **Instance of `s1_loop_det`** (`d = 3`, `L = 4`, `W = 32`, `E = 1/2`, `u = 1/4`, `k = 2`, the
-Hermitian matrix `H_u(ω)` of the flow at every sample `ω`): `c₁ = √2/2 ≤ Im m(1/2)`. -/
-example (ω : sz0.SeqΩ) :
-    ‖loopFine 3 (sz0.L 0) (sz0.W 0) (sz0.seqHflow 0 (1 / 4) ω) (zt (1 / 2) (1 / 4))
-        ![true, false] ![0, 0]‖ ≤
-      (2 / (Real.sqrt (2 * 1) / 2)) ^ 2 * ((((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹) ^ (2 - 1) :=
-  s1_loop_det (d := 3) (c₁ := Real.sqrt (2 * 1) / 2)
-    (by positivity)
-    (s1_bulk (κ := 1) one_pos
-      (by rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num)).2 (by norm_num) _
-    (Sizes.seqHflow_isHermitian sz0 0 _ ω) (k := 2) (by norm_num) _ _
-
-/-- **Instance of `s1T1`**: `t₁ = max(s, 1/2)` is `1/2` for `s ≡ 1/16` and `3/4` for `s ≡ 3/4`. -/
-example : s1T1 (fun _ => (1 : ℝ) / 16) 0 = 1 / 2 ∧ s1T1 (fun _ => (3 : ℝ) / 4) 0 = 3 / 4 := by
-  constructor <;> simp only [s1T1] <;> norm_num
-
-/-- **Instance of `s1_Kbound_seq`** (`STKbound`, the `ML:Kbound` pin of the KL gate, stays a
-hypothesis). -/
-example (hK : STKbound sz0 (STflowE z0)) (k : ℕ) (hk : 1 ≤ k) :
-    sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p _ => ‖STKloop sz0 n (STflowE z0 n) (sInst n) p.1 p.2‖)
-      (fun n _ _ => (sz0.Bctl n (sInst n)) ^ (k - 1)) :=
-  s1_Kbound_seq s1Std_sz0 hK hk
-
-/-- **Instances of `s1_h55`** at the windows `[0, 1/16]` (`s < 1/2`) and `[1/2, 3/4]`
-(`1/2 ≤ s`); `STLK` (`(Eq:L-KGt)`) and `STKbound` are other gates' pins. -/
-example (hLK : STLK sz0 (STflowE z0) sInst) (hK : STKbound sz0 (STflowE z0)) :
-    S1H55 sz0 (STflowE z0) sInst := s1_h55 s1Std_sz0 hLK hK
-example (hLK : STLK sz0 (STflowE z0) (fun _ => 1 / 2)) (hK : STKbound sz0 (STflowE z0)) :
-    S1H55 sz0 (STflowE z0) (fun _ => 1 / 2) :=
-  s1_h55 (s1Std_sz0_const (s0 := 1 / 2) (t0 := 3 / 4) (by norm_num) (by norm_num) (by norm_num))
-    hLK hK
-
-/-- **Instance of `s1_LI`**, window `[0, 1/16]`, `u ≡ 1/32 < 1/2` (the deterministic branch). -/
-example (hLK : STLK sz0 (STflowE z0) sInst) (hK : STKbound sz0 (STflowE z0)) (k : ℕ)
-    (hk : 1 ≤ k) :
-    sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p ω => sz0.STomegaC n (STflowE z0 n) (1 / 32) 2 ω *
-        ‖Sizes.Lloop sz0 n (STflowE z0 n) (1 / 32) p.1 p.2 ω‖)
-      (fun n _ _ => ((1 - sInst n) / (1 - 1 / 32)) ^ (k - 1) * (sz0.Bctl n (sInst n)) ^ (k - 1)) :=
-  s1_LI s1Std_sz0 (s1_h55 s1Std_sz0 hLK hK) (fun _ => 1 / 32)
-    (fun n => ⟨by simp [sInst], by simp only [tInst]; norm_num⟩) hk
-
-/-- **Instance of `s1_LI`**, window `[1/16, 3/4]`, `u ≡ 5/8 ≥ 1/2` (the branch through `conArg`,
-`s < 1/2`: `t₁ = 1/2`). -/
-example (hLK : STLK sz0 (STflowE z0) (fun _ => 1 / 16)) (hK : STKbound sz0 (STflowE z0))
-    (k : ℕ) (hk : 1 ≤ k) :
-    sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p ω => sz0.STomegaC n (STflowE z0 n) (5 / 8) 2 ω *
-        ‖Sizes.Lloop sz0 n (STflowE z0 n) (5 / 8) p.1 p.2 ω‖)
-      (fun n _ _ => ((1 - 1 / 16) / (1 - 5 / 8)) ^ (k - 1) * (sz0.Bctl n (1 / 16)) ^ (k - 1)) :=
-  have h := s1Std_sz0_const (s0 := 1 / 16) (t0 := 3 / 4) (by norm_num) (by norm_num) (by norm_num)
-  s1_LI h (s1_h55 h hLK hK) (fun _ => 5 / 8) (fun n => ⟨by norm_num, by norm_num⟩) hk
-
-/-- **Instance of `s1_LI`**, window `[1/2, 3/4]`, `u ≡ 5/8` (`s ≥ 1/2`: `t₁ = s`). -/
-example (hLK : STLK sz0 (STflowE z0) (fun _ => 1 / 2)) (hK : STKbound sz0 (STflowE z0))
-    (k : ℕ) (hk : 1 ≤ k) :
-    sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-      (fun n p ω => sz0.STomegaC n (STflowE z0 n) (5 / 8) 2 ω *
-        ‖Sizes.Lloop sz0 n (STflowE z0 n) (5 / 8) p.1 p.2 ω‖)
-      (fun n _ _ => ((1 - 1 / 2) / (1 - 5 / 8)) ^ (k - 1) * (sz0.Bctl n (1 / 2)) ^ (k - 1)) :=
-  have h := s1Std_sz0_const (s0 := 1 / 2) (t0 := 3 / 4) (by norm_num) (by norm_num) (by norm_num)
-  s1_LI h (s1_h55 h hLK hK) (fun _ => 5 / 8) (fun n => ⟨by norm_num, by norm_num⟩) hk
-
 /-! ### The lattice ball, `‖G_u - m‖_max` and the weak-law step at `sz0` -/
-
-/-- **Instance of `s1_near_card`** (`d = 3`, `L = 4`): at most `3^3 = 27` near blocks; the count is
-`27` (the `L^∞` ball has `27` points, not the `7` of the `ℓ¹` ball). -/
-example (a : Zd 3 4) :
-    ((Finset.univ.filter (fun a' : Zd 3 4 => zdistInf 3 4 (a' - a) ≤ 1)).card : ℝ) ≤ 3 ^ 3 :=
-  s1_near_card a
-example : (Finset.univ.filter (fun a' : Zd 3 4 => zdistInf 3 4 (a' - 0) ≤ 1)).card = 27 := by
-  decide
-
-theorem seqHflow_zero_sz0 (n : ℕ) (ω : sz0.SeqΩ) : sz0.seqHflow n 0 ω = 0 := by
-  simp [Sizes.seqHflow]
-
-theorem hE_half : |(1 / 2 : ℝ)| ≤ 2 := by
-  rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num
-
-/-- `‖G_0 - m‖_max = 0`: at `u = 0` the flow matrix is `0` and `G_0 = m I`. -/
-theorem s1xM_time_zero_sz0 (ω : sz0.SeqΩ) :
-    s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) 0 (sz0.seqHflow 0 0 ω) ≤ 0 := by
-  refine s1xM_le fun i j => ?_
-  rw [seqHflow_zero_sz0]
-  exact (Green.llErrMat_time_zero hE_half i j).le
-
-example (ω : sz0.SeqΩ) (i j : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    Green.llErrMat 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) i j ≤
-      s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) := s1xM_ge _ _ _ i j
-example (ω : sz0.SeqΩ) : 0 ≤ s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) :=
-  s1xM_nonneg _ _ _
-example (ω : sz0.SeqΩ) (i j : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    Green.llErrMat 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) i j =
-      ‖(sz0.seqHflow 0 (1 / 16) ω - zt (1 / 2) (1 / 16) •
-          (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ))⁻¹ i j -
-        (if i = j then mE (1 / 2) else 0)‖ := s1_llErrMat_eq _ _ _ i j
-example (ω : sz0.SeqΩ) (i j : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ‖Gres (sz0.seqHflow 0 (1 / 16) ω) (zt (1 / 2) (1 / 16)) true i j‖ ≤
-      1 + s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) :=
-  s1_gMax_le hE_half _ i j
-example (ω : sz0.SeqΩ) :
-    s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) ≤
-      s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) + 0 :=
-  s1xM_le_add (fun i j => by simp)
-example (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ‖sz0.STGM 0 (1 / 2) (1 / 16) ω x y‖ =
-      Green.llErrMat 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) x y :=
-  s1_STGM_norm sz0 0 _ _ ω x y
-
-/-- **Instances of `s1_omegaC_eq_one`, `s1_indMax_eq_one`** at `u = 0`, where `G_0 = m I`. -/
-example (ω : sz0.SeqΩ) : sz0.STomegaC 0 (1 / 2) 0 2 ω = 1 :=
-  s1_omegaC_eq_one sz0 0 ω hE_half ((s1xM_time_zero_sz0 ω).trans (by norm_num))
-example (ω : sz0.SeqΩ) : sz0.STindMax 0 (1 / 2) 0 (1 / 10) ω = 1 :=
-  s1_indMax_eq_one sz0 0 ω ((s1xM_time_zero_sz0 ω).trans (by norm_num))
-
-/-- **Instance of `s1_gexRHS_le`** (`n = 0`, `E = 1/2`, `u = 1/16`, every sample `ω`, every pair of
-blocks): the envelope `|𝓛^{(2)}| ≤ η⁻²` (`Sizes.norm_Lloop_le`) gives `B = η⁻²`. -/
-example (ω : sz0.SeqΩ) (a b : Zd 3 (sz0.L 0)) :
-    sz0.STgexRHS 0 (1 / 2) (1 / 16) ω a b ≤
-      2 * 9 ^ 3 * (etaT (1 / 2) (1 / 16))⁻¹ ^ 2 + (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ :=
-  s1_gexRHS_le sz0 0 (1 / 2) (1 / 16) _ ω
-    (fun σ b => Sizes.norm_Lloop_le sz0 0 (E := 1 / 2) (t := 1 / 16)
-      (by rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num) (by norm_num) (k := 1) σ b ω) a b
-
-private theorem maxLoop2_nonneg (n : ℕ) (E u : ℝ) (ω : sz0.SeqΩ) : 0 ≤ sz0.STmaxLoop2 n E u ω :=
-  (norm_nonneg _).trans (Finset.le_sup' (fun p : Zd 3 (sz0.L n) × Zd 3 (sz0.L n) =>
-    ‖Sizes.Lloop sz0 n E u ![false, true] ![p.1, p.2] ω‖) (Finset.mem_univ ((0, 0))))
-
-private theorem gexRHS_nonneg (n : ℕ) (E u : ℝ) (ω : sz0.SeqΩ) (a b : Zd 3 (sz0.L n)) :
-    0 ≤ sz0.STgexRHS n E u ω a b := by
-  unfold Sizes.STgexRHS
-  refine add_nonneg (Finset.sum_nonneg fun σ _ => Finset.sum_nonneg fun a' _ =>
-    Finset.sum_nonneg fun b' _ => norm_nonneg _) (mul_nonneg (by positivity) ?_)
-  split_ifs <;> norm_num
-
-/-- **Instance of `s1_wl_det` at `u = 0`, no premise left**: `n = 0` (`L = 4`, `W = 32`),
-`E = 1/2`, `c' = 1/10`, `a = 0`, `N^τ = 1`, `g = η⁻² + 1`; at `u = 0` the matrix is `0` and
-`G_0 = m I`, so the premises on the sample (`‖G_u - m‖_max ≤ 2a`, `STGiiGEX`, `STGijGEX`, the loop
-bound) are all proved. -/
-example (ω : sz0.SeqΩ) :
-    ∀ i j, ‖sz0.STGM 0 (1 / 2) 0 ω i j‖ ^ 2 ≤
-      (2 * 9 ^ 3 + 1) * (1 : ℝ) ^ 2 * ((etaT (1 / 2) 0)⁻¹ ^ 2 + 1) := by
-  have hx := (s1xM_time_zero_sz0 ω).trans (by norm_num : (0 : ℝ) ≤ 2 * 0)
-  have hzero : ∀ i j, ‖sz0.STGM 0 (1 / 2) 0 ω i j‖ = 0 := fun i j => by
-    rw [s1_STGM_norm, seqHflow_zero_sz0]; exact Green.llErrMat_time_zero hE_half i j
-  have hom2 : sz0.STomegaC 0 (1 / 2) 0 2 ω = 1 :=
-    s1_omegaC_eq_one sz0 0 ω hE_half ((s1xM_time_zero_sz0 ω).trans (by norm_num))
-  have hW1 : (1 : ℝ) ≤ ((sz0.W 0 : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz0 0
-  have hg : 0 ≤ (etaT (1 / 2) 0)⁻¹ ^ 2 + 1 := by
-    have := sq_nonneg ((etaT (1 / 2) 0)⁻¹); linarith
-  refine s1_wl_det sz0 0 ω (E := 1 / 2) (u := 0) (a := 0) (c' := 1 / 10)
-    (g := (etaT (1 / 2) 0)⁻¹ ^ 2 + 1) (Nτ := 1) hE_half (by norm_num)
-    hx (by rw [mul_zero]; exact Real.rpow_nonneg (Nat.cast_nonneg _) _) le_rfl hg
-    ?_ ?_ ?_ ?_
-  · exact (inv_le_one_of_one_le₀ (one_le_pow₀ hW1)).trans (by nlinarith [sq_nonneg ((etaT (1 / 2) 0)⁻¹)])
-  · intro σ b
-    rw [hom2, one_mul, one_mul]
-    exact (Sizes.norm_Lloop_le sz0 0 (E := 1 / 2) (t := 0)
-      (by rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num) (by norm_num) (k := 1) σ b ω).trans
-      (by linarith)
-  · intro p
-    rw [hzero, one_mul]
-    simpa using maxLoop2_nonneg 0 (1 / 2) 0 ω
-  · intro p
-    have h0 : ‖Sizes.Gt sz0 0 (1 / 2) 0 true ω p.1.1 p.1.2‖ = 0 := by
-      have := hzero p.1.1 p.1.2
-      unfold Sizes.STGM at this
-      simpa [p.2] using this
-    rw [h0]
-    simpa using gexRHS_nonneg 0 (1 / 2) 0 ω (sz0.STblk 0 p.1.1) (sz0.STblk 0 p.1.2)
-
-/-- **Instance of `s1_wl_det` at `u = 1/16`** (a nonzero time): the same deterministic data
-(`E = 1/2`, `c' = 1/10`, `N^τ = 1`, `g = η⁻² + 1`, `a = W^{-c'}/2`, the loop bound proved by the
-envelope); the event premise `‖G_u - m‖_max ≤ 2a` and the two pins `STGiiGEX`, `STGijGEX` at `ω`
-(other gates) stay hypotheses. -/
-example (ω : sz0.SeqΩ)
-    (hx : s1xM 3 (sz0.L 0) (sz0.W 0) (1 / 2) (1 / 16) (sz0.seqHflow 0 (1 / 16) ω) ≤
-      2 * (((sz0.W 0 : ℕ) : ℝ) ^ (-(1 / 10 : ℝ)) / 2))
-    (hii : ∀ p : Idx 3 (sz0.L 0) (sz0.W 0) × Idx 3 (sz0.L 0) (sz0.W 0),
-      sz0.STindMax 0 (1 / 2) (1 / 16) (((sz0.W 0 : ℕ) : ℝ) ^ (-(1 / 10 : ℝ))) ω *
-          ‖sz0.STGM 0 (1 / 2) (1 / 16) ω p.1 p.2‖ ^ 2 ≤
-        1 * sz0.STmaxLoop2 0 (1 / 2) (1 / 16) ω)
-    (hij : ∀ p : {p : Idx 3 (sz0.L 0) (sz0.W 0) × Idx 3 (sz0.L 0) (sz0.W 0) // p.1 ≠ p.2},
-      sz0.STindMax 0 (1 / 2) (1 / 16) (((sz0.W 0 : ℕ) : ℝ) ^ (-(1 / 10 : ℝ))) ω *
-          ‖Sizes.Gt sz0 0 (1 / 2) (1 / 16) true ω p.1.1 p.1.2‖ ^ 2 ≤
-        1 * sz0.STgexRHS 0 (1 / 2) (1 / 16) ω (sz0.STblk 0 p.1.1) (sz0.STblk 0 p.1.2)) :
-    ∀ i j, ‖sz0.STGM 0 (1 / 2) (1 / 16) ω i j‖ ^ 2 ≤
-      (2 * 9 ^ 3 + 1) * (1 : ℝ) ^ 2 * ((etaT (1 / 2) (1 / 16))⁻¹ ^ 2 + 1) := by
-  have hW1 : (1 : ℝ) ≤ ((sz0.W 0 : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz0 0
-  have hWc : ((sz0.W 0 : ℕ) : ℝ) ^ (-(1 / 10 : ℝ)) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos hW1 (by norm_num)
-  have hom2 : sz0.STomegaC 0 (1 / 2) (1 / 16) 2 ω = 1 :=
-    s1_omegaC_eq_one sz0 0 ω hE_half (by linarith)
-  have hg : 0 ≤ (etaT (1 / 2) (1 / 16))⁻¹ ^ 2 + 1 := by
-    have := sq_nonneg ((etaT (1 / 2) (1 / 16))⁻¹); linarith
-  refine s1_wl_det sz0 0 ω (E := 1 / 2) (u := 1 / 16) (c' := 1 / 10)
-    (a := ((sz0.W 0 : ℕ) : ℝ) ^ (-(1 / 10 : ℝ)) / 2) (g := (etaT (1 / 2) (1 / 16))⁻¹ ^ 2 + 1)
-    (Nτ := 1) hE_half (by norm_num) hx (by linarith) le_rfl hg ?_ ?_ hii hij
-  · exact (inv_le_one_of_one_le₀ (one_le_pow₀ hW1)).trans (by nlinarith [sq_nonneg ((etaT (1 / 2) (1 / 16))⁻¹)])
-  · intro σ b
-    rw [hom2, one_mul, one_mul]
-    exact (Sizes.norm_Lloop_le sz0 0 (E := 1 / 2) (t := 1 / 16)
-      (by rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]; norm_num) (by norm_num) (k := 1) σ b ω).trans
-      (by linarith)
 
 /-! ### The generic helpers and the `≺`-calculus lemmas at `sz0` -/
 
-/-- **Instance of `s1_stochDom_unit`**: per time over `Unit` is uniform (`Xi ≺ Ze`). -/
-example : StochDomAt (seqP sz0) sz0.size (U := fun _ => Unit) Xi Ze :=
-  s1_stochDom_unit PerTimeCalcInst.pt_Xi_Ze
-
-/-- **Instance of `s1_highProb_of_pt` and `s1_pt_of_highProb`** (`#(Fin 2) = 2 ≤ N^1`): the
-per-time `Xi ≺ Ze` over `Fin 2` gives the `w.h.p.` events for every `τ > 0`, and these give back the
-per-time statement. -/
-example : ∀ᶠ l : ℕ in atTop, (Fintype.card (Fin 2) : ℝ) ≤ ((sz0.size l : ℕ) : ℝ) ^ (1 : ℝ) := by
-  filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-  simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn)
-example : HighProbAt (seqP sz0) sz0.size
-    (fun l => {ω | ∀ _u : Fin 2, Xi l () ω ≤ ((sz0.size l : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze l () ω}) :=
-  s1_highProb_of_pt (U := fun _ => Fin 2) (C := 1) zero_le_one
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    precPT_Xi_Ze (by norm_num : (0 : ℝ) < 1 / 10)
-example : PerTimeDomAt (seqP sz0) sz0.size (U := fun _ => Fin 2) (fun n _ ω => Xi n () ω)
-    (fun n _ ω => Ze n () ω) :=
-  s1_pt_of_highProb fun τ hτ => s1_highProb_of_pt (U := fun _ => Fin 2) (C := 1) zero_le_one
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    precPT_Xi_Ze hτ
-
-/-- **Instance of `StochDomAt.of_subset_whp`** (DECISIONS §26): `Xi ≺ Ch` from `Xi ≺ Ze` and the
-good event `univ` (`Ze ≤ Ch`, so `bad(Xi, Ch) ⊆ bad(Xi, Ze) ∪ univᶜ`). -/
-example : StochDomAt (seqP sz0) sz0.size (U := fun _ => Unit) Xi Ch :=
-  StochDomAt.of_subset_whp tendsto_sz0_size (f := Xi) (g := Ze) prec_Xi_Ze
-    (highProbAt_univ (seqP sz0) sz0.size) fun τ hτ =>
-    ⟨τ, hτ, Eventually.of_forall fun l ω ⟨u, hu⟩ => Or.inl ⟨u,
-      lt_of_le_of_lt (mul_le_mul_of_nonneg_left
-        (by unfold Ze Ch; linarith) (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hu⟩⟩
-
-/-- **Instance of `StochDomAt.of_subset_compl`**: on the `w.h.p.` event
-`{∀ u, Xi ≤ N^{1/10} Ze}` (`whp_Xi`), the failure event of `Xi ≺ N^{1/10} Ze` is empty. -/
-example : StochDomAt (seqP sz0) sz0.size (U := fun _ => Unit) Xi
-    (fun n u ω => ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω) :=
-  StochDomAt.of_subset_compl whp_Xi fun τ hτ => by
-    filter_upwards [Eventually.of_forall (sz0.one_le_size)] with l hl ω ⟨u, hu⟩ hΞ
-    have h1 : (1 : ℝ) ≤ ((sz0.size l : ℕ) : ℝ) ^ τ :=
-      Real.one_le_rpow (by exact_mod_cast hl) hτ.le
-    have h2 := hΞ u
-    have h3 : 0 ≤ ((sz0.size l : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze l u ω :=
-      mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (Ze_nonneg l u ω)
-    nlinarith
-
-/-- **Instance of `s1_omegaC_le_one`** (`n = 0`, every sample). -/
-example (ω : sz0.SeqΩ) : sz0.STomegaC 0 (1 / 2) (1 / 16) 2 ω ≤ 1 :=
-  s1_omegaC_le_one (sz := sz0) 0 (1 / 2) (1 / 16) 2 ω
-
-/-- **DECISIONS §29 (1): `0 ≤ u` cannot be dropped from `s1_Wd_le_Bctl`** (hence from `s1_F8`,
-`s1_loop_det`'s consumers): at `n = 0` (`L = 4`, `W = 32`, `ilambda = 1/64`) and `u = -10^6` the
-volume factor `W^{-3}` exceeds `(ilambda² + 1) W^{-3} B_{u,0}` (`B` is `~10^{-6}`). -/
-example : ¬ ((((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ ≤ (sz0.lam 0 ^ 2 + 1) * sz0.Bctl 0 (-(10 : ℝ) ^ 6)) := by
-  have hW : ((sz0.W 0 : ℕ) : ℝ) = 32 := by norm_num [sz0]
-  have hL : ((sz0.L 0 : ℕ) : ℝ) = 4 := by norm_num [sz0]
-  have hl : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-  have ha : |1 - (-(10 : ℝ) ^ 6)| = 1000001 := by rw [abs_of_pos] <;> norm_num
-  unfold Sizes.Bctl Bparam
-  rw [hW, hL, hl, ha]
-  norm_num
-
 /-! ### The pin `Step1TargetV3` -/
-
-/-- **Instance of `Step1TargetV3`** (the pin, proved by S1-36) applied at the data of the file:
-`d = 3`, `sz0`, `z0`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `𝔠_d = 1/100`, `s ≡ 0 < t ≡ 1/16 ≤ lemT z_n`;
-`STConStInd` is discharged (`conStInd_inst`); `STKbound`, `STLK`, `STLocalMax` (the pins of the
-KL, loop and local-law gates) and `STGbEXPii`, `STGbEXPij` stay hypotheses.  Both conjuncts of
-`STStep1` are produced. -/
-example (h : Step1TargetV3 3) (hii : STGbEXPii 3) (hij : STGbEXPij 3)
-    (hK : STKbound sz0 (STflowE z0)) (hLK : STLK sz0 (STflowE z0) sInst)
-    (hLoc : STLocalMax sz0 (STflowE z0) sInst) :
-    STStep1Loop sz0 (STflowE z0) sInst tInst ∧ STStep1Weak sz0 (STflowE z0) sInst tInst :=
-  stStep1_of_target h hii hij (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 100) (by norm_num) le_rfl (1 / 6) sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl)
-    zero_le_lemT (fun n => by simp only [sInst, tInst]; norm_num) sixteenth_le_lemT hK hLK hLoc
-    (conStInd_inst (by norm_num))
-
-end RBM.Ind.Step1SetupInst
 
 end

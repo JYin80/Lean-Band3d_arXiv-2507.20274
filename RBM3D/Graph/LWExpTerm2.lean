@@ -595,10 +595,6 @@ theorem lwExpTerm2_trace_prod4 (P : Fin 4 → Matrix ι ι ℂ) :
     trace (List.ofFn P).prod = ∑ x₀, ∑ x₁, ∑ x₂, ∑ x₃, P 0 x₀ x₁ * (P 1 x₁ x₂ * (P 2 x₂ x₃ * P 3 x₃ x₀)) := by
   simp [List.ofFn_succ, Matrix.trace, Matrix.mul_apply, Finset.mul_sum]
 
-theorem lwExpTerm2_trace_prod5 (P : Fin 5 → Matrix ι ι ℂ) :
-    trace (List.ofFn P).prod = ∑ x₀, ∑ x₁, ∑ x₂, ∑ x₃, ∑ x₄, P 0 x₀ x₁ * (P 1 x₁ x₂ * (P 2 x₂ x₃ * (P 3 x₃ x₄ * P 4 x₄ x₀))) := by
-  simp [List.ofFn_succ, Matrix.trace, Matrix.mul_apply, Finset.mul_sum]
-
 end Trace
 
 /-! ## 4. The bridge `Lloop` ↔ fine-lattice traces -/
@@ -1149,15 +1145,6 @@ theorem lwExpTerm2_BM_X (n : ℕ) {E t : ℝ} (hE : |E| < 2) (ht : t < 1) (σ : 
     (a : Zd d (sz.L n)) :
     lwExpTerm2_BM (fun ω : sz.SeqΩ => Lloop sz n E t ![σ] ![a] ω - mSigma E σ) :=
   lwExpTerm2_BM_sub (lwExpTerm2_BM_Lloop sz n hE ht _ _) (lwExpTerm2_BM_const _)
-
-/-- `LWcut` is bounded measurable. -/
-theorem lwExpTerm2_BM_LWcut (n : ℕ) {E t : ℝ} (hE : |E| < 2) (ht : t < 1) (σc σo : Bool)
-    (ac ao : Zd d (sz.L n)) : lwExpTerm2_BM (fun ω : sz.SeqΩ => LWcut sz n E t σc σo ac ao ω) := by
-  unfold LWcut
-  refine lwExpTerm2_BM_mul (lwExpTerm2_BM_const _) (lwExpTerm2_BM_sum _ fun a₁ _ =>
-    lwExpTerm2_BM_sum _ fun a₂ _ => lwExpTerm2_BM_mul (lwExpTerm2_BM_mul (lwExpTerm2_BM_const _)
-      (lwExpTerm2_BM_X sz n hE ht σc a₁)) ?_)
-  exact lwExpTerm2_BM_Lloop sz n hE ht (k := 2) _ _
 
 end LoopBM
 
@@ -1737,24 +1724,6 @@ theorem lwExpTerm2_SB_support (L : ℕ) [NeZero L] (g : ℝ) {a b : Zd d L} (h :
     · exact h1.le
     · exfalso; apply h; simp [h0, h1]
 
-/-- **`LWExpKer` of `S^{(B)}`**: support on `|a - b|₁ ≤ 1`, entries `≤ 1`. -/
-theorem lwExpTerm2_ker_SB : LWExpKer sz (fun n => SB d (sz.L n) (sz.lam n)) := by
-  refine ⟨Real.exp 1, 1, Real.exp_pos 1, one_pos, fun n a b => ?_⟩
-  beta_reduce
-  by_cases h : SB d (sz.L n) (sz.lam n) a b = 0
-  · rw [h, norm_zero]; positivity
-  · have h1 := lwExpTerm2_SB_support (d := d) (sz.L n) (sz.lam n) h
-    have h2 : ‖SB d (sz.L n) (sz.lam n) a b‖ ≤ 1 := by
-      rw [← sum_norm_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a]
-      exact Finset.single_le_sum (f := fun b => ‖SB d (sz.L n) (sz.lam n) a b‖) (fun _ _ => norm_nonneg _)
-        (Finset.mem_univ b)
-    have h3 : (1 : ℝ) ≤ Real.exp 1 * Real.exp (-(1 * ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ))) := by
-      rw [← Real.exp_add]
-      apply Real.one_le_exp
-      have : ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ) ≤ 1 := by exact_mod_cast h1
-      linarith
-    exact h2.trans h3
-
 /-- Left multiplication by `S^{(B)}` keeps the decay (`|a - x| ≤ 1` on the support, `Σ_x ‖S^{(B)}_{ax}‖ = 1`). -/
 theorem lwExpTerm2_ker_SB_mul {K : ∀ n, Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ} (h : LWExpKer sz K) :
     LWExpKer sz (fun n => SB d (sz.L n) (sz.lam n) * K n) := by
@@ -2023,94 +1992,9 @@ theorem lwCutExp_of_terms (d : ℕ) :
   · exact key _ _ _
 
 
-/-- **Target 8: `LWExpG5'` contains `LWExpG5`** (the case `p.1 = (false, false)`: first kernel `S^{(B)}`, last charge `-`). -/
-theorem lwExpG5_of_G5' (d : ℕ) : LWExpG5' d → LWExpG5 d := by
-  intro h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz hLE hLW hLmax hLK hDec
-  have hsz : sz.SizeTendsto := hz.1.2.2.1
-  have h' := (st6_prec_det_iff sz hsz _ _).1 (h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz hLE hLW hLmax hLK hDec)
-  refine (st6_prec_det_iff sz hsz _ _).2 fun τ hτ => ?_
-  filter_upwards [h' τ hτ] with n hn
-  intro p
-  exact hn ⟨((false, false), p.1), p.2⟩
-
-/-- **Target 9a: the merged `I₁` is the case `K = S^{(B)}` of `LWExpI1K`** (`lwExpTerm2_ker_SB`). -/
-theorem lwExpI1_of_K (d : ℕ) : LWExpI1K d → LWExpI1 d := by
-  intro h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz hLW hLK
-  exact h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz (fun n => SB d (sz.L n) (sz.lam n))
-    (lwExpTerm2_ker_SB sz) hLW hLK
-
-/-- **Target 9b: the merged `I₄₁` is the case `K = S^{(B)}`, `s = false` of `LWExpI41K`.** -/
-theorem lwExpI41_of_K (d : ℕ) : LWExpI41K d → LWExpI41 d := by
-  intro h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz hLW hLmax hLK
-  have hsz : sz.SizeTendsto := hz.1.2.2.1
-  have h' := (st6_prec_det_iff sz hsz _ _).1 (h hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz t ht0 htz
-    (fun n => SB d (sz.L n) (sz.lam n)) (lwExpTerm2_ker_SB sz) hLW hLmax hLK)
-  refine (st6_prec_det_iff sz hsz _ _).2 fun τ hτ => ?_
-  filter_upwards [h' τ hτ] with n hn
-  intro p
-  exact hn ((p.1, false), p.2)
-
 end RBM.Gauss.Sizes
 
 /-! ## 16. Compiled nonempty instances (`d = 3`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, the merged data `sz0`, `z0`, `tInst`
 of `RBM.Gauss.LWInst`): every deterministic hypothesis is discharged (`3 ≤ 3`, `0 < 1/10`, `flow_z0`, `0 ≤ tInst`,
 `tInst ≤ lemT z0`); the local laws (`LWAvgLaw`, `STLK`, `STLmax`, `STLocalEntry`, `STDecay`) and the four term pins
 (`LWExpI1K`, `LWExpI23K`, `LWExpI41K`, `LWExpG5'`; LW-14d, LW-14c) are other gates' pins and stay hypotheses. -/
-
-namespace RBM.Gauss.LWInst
-
-open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst Filter
-
-theorem lwExpTerm2_inst_cut (h1 : LWExpI1K 3) (h23 : LWExpI23K 3) (h41 : LWExpI41K 3) (h5 : LWExpG5' 3)
-    (hLE : STLocalEntry sz0 (STflowE z0) tInst) (hLW : LWAvgLaw sz0 (STflowE z0) tInst)
-    (hLmax : STLmax sz0 (STflowE z0) tInst) (hLK : STLK sz0 (STflowE z0) tInst)
-    (hDec : STDecay sz0 (STflowE z0) tInst) :
-    Prec sz0 (U := fun n => {_p : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)) //
-        sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 3 ≤ 1 - tInst n})
-      (fun n p _ => ‖∫ ω, LWE sz0 n (STflowE z0 n) (tInst n) p.1.1 p.1.2 ω ∂(sz0.seqP)‖)
-      (fun n _ _ => (1 - tInst n)⁻¹ * (sz0.Bctl n (tInst n)) ^ (5 / 2 : ℝ)) :=
-  inst_LWtermEXP (lwTermEXP_of_cut 3 (lwCutExp_of_terms 3 h1 h23 h41 h5)) hLE hLW hLmax hLK hDec
-
-theorem lwExpTerm2_inst_ker_SB : LWExpKer sz0 (fun n => SB 3 (sz0.L n) (sz0.lam n)) :=
-  lwExpTerm2_ker_SB sz0
-
-theorem lwExpTerm2_inst_ker_Kp : LWExpKer sz0 (fun n => LWExpKp sz0 n (STflowE z0 n) (tInst n)) :=
-  lwExpTerm2_ker_Kp sz0 le_rfl (κ := 1 / 10) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num) flow_z0
-    tInst_range.1 tInst_range.2
-
-theorem lwExpTerm2_inst_ker_KK : LWExpKer sz0 (fun n => lwExpTerm2_KK sz0 n (STflowE z0 n) (tInst n)) :=
-  lwExpTerm2_ker_KK sz0 le_rfl (κ := 1 / 10) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num) flow_z0
-    tInst_range.1 tInst_range.2
-
-/-- The expansion of one cut at the instance data (`n = 0`: `L = 4`, `W = 32`, `t = 1/16`, `σ_c = σ_o = +`). -/
-theorem lwExpTerm2_inst_expand :
-    ∫ ω, LWcut sz0 0 (STflowE z0 0) (tInst 0) true true 0 0 ω ∂(sz0.seqP) =
-      lwExpTerm2_Pa sz0 0 (lwExpTerm2_KK sz0 0 (STflowE z0 0) (tInst 0)) (STflowE z0 0) (tInst 0) true 0 0 +
-        ((tInst 0 : ℝ) : ℂ) * lwExpTerm2_Pb sz0 0 (lwExpTerm2_KK sz0 0 (STflowE z0 0) (tInst 0)) (STflowE z0 0)
-          (tInst 0) true true 0 0 +
-        ((tInst 0 : ℝ) : ℂ) * lwExpTerm2_Pb sz0 0 (lwExpTerm2_KK sz0 0 (STflowE z0 0) (tInst 0)) (STflowE z0 0)
-          (tInst 0) false true 0 0 +
-        mE (STflowE z0 0) * lwExpTerm2_Pd sz0 0 (LWExpKp sz0 0 (STflowE z0 0) (tInst 0)) (STflowE z0 0)
-          (tInst 0) true 0 0 +
-        ((tInst 0 : ℝ) : ℂ) * lwExpTerm2_Pc sz0 0 (lwExpTerm2_KK sz0 0 (STflowE z0 0) (tInst 0)) (STflowE z0 0)
-          (tInst 0) true 0 0 :=
-  lwExpTerm2_cut_expand sz0 0 (Green.gaussIBP sz0) (st6_flowE_lt_two sz0 (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 0)
-    (by simp [tInst]) (st5_t_lt_one sz0 flow_z0 tInst_range.2 0) true 0 0
-
-theorem lwExpTerm2_inst_conj (ω : sz0.SeqΩ) :
-    (starRingEnd ℂ) (LWcut sz0 0 (STflowE z0 0) (tInst 0) false true 0 0 ω) =
-      LWcut sz0 0 (STflowE z0 0) (tInst 0) true false 0 0 ω :=
-  lwExpTerm2_cut_conj sz0 0 (STflowE z0 0) (tInst 0) true 0 0 ω
-
-theorem lwExpTerm2_inst_Kp_split :
-    ((tInst 0 : ℝ) : ℂ) • (SB 3 (sz0.L 0) (sz0.lam 0) * LWExpKp sz0 0 (STflowE z0 0) (tInst 0)) =
-      ((mE (STflowE z0 0)) ^ 2)⁻¹ • (LWExpKp sz0 0 (STflowE z0 0) (tInst 0) -
-        ((tInst 0 : ℝ) : ℂ) • SB 3 (sz0.L 0) (sz0.lam 0)) :=
-  lwExpTerm2_Kp_split sz0 0 (STflowE z0 0) (tInst 0) (st6_flowE_lt_two sz0 (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 0)
-    (tInst_range.1 0) (st5_t_lt_one sz0 flow_z0 tInst_range.2 0)
-
-theorem lwExpTerm2_inst_G5 (h : LWExpG5' 3) : LWExpG5 3 := lwExpG5_of_G5' 3 h
-theorem lwExpTerm2_inst_I1 (h : LWExpI1K 3) : LWExpI1 3 := lwExpI1_of_K 3 h
-theorem lwExpTerm2_inst_I41 (h : LWExpI41K 3) : LWExpI41 3 := lwExpI41_of_K 3 h
-
-end RBM.Gauss.LWInst

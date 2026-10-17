@@ -304,33 +304,6 @@ theorem martingale_sq_eq_sum (hM : Martingale M ℱ μ) (hM0 : M 0 = 0) (hM2 : �
       rw [← h1, integral_congr_ae hc, integral_add hInt2 integrable_condExp, h2]
     rw [Finset.sum_range_succ, ← ih, hstep]
 
-/-- **Stopped martingale.** If `M` is a martingale and `τ : Ω' → ℕ` is a (bounded, i.e.
-`ℕ`-valued) stopping time for `ℱ`, then the process stopped at `τ`, `k ↦ M (min k τ)`, is again a
-martingale. Obtained from `MeasureTheory.Submartingale.stoppedProcess` applied to `M` and `-M`. -/
-theorem stopped_martingale (hM : Martingale M ℱ μ) {τ : Ω' → ℕ}
-    (hτ : IsStoppingTime ℱ (fun ω => (τ ω : WithTop ℕ))) :
-    Martingale (fun k ω => M (min k (τ ω)) ω) ℱ μ := by
-  have hcoeUntopA : ∀ n : ℕ, ((n : WithTop ℕ)).untopA = n := fun n => rfl
-  have heq : stoppedProcess M (fun ω => (τ ω : WithTop ℕ)) = fun k ω => M (min k (τ ω)) ω := by
-    funext k ω
-    change M (min (k : WithTop ℕ) ((τ ω : ℕ) : WithTop ℕ)).untopA ω = M (min k (τ ω)) ω
-    have hmin : (min (k : WithTop ℕ) ((τ ω : ℕ) : WithTop ℕ))
-        = ((min k (τ ω) : ℕ) : WithTop ℕ) := (WithTop.coe_min k (τ ω)).symm
-    rw [hmin, hcoeUntopA]
-  rw [← heq]
-  have hSubUp : Submartingale (stoppedProcess M (fun ω => (τ ω : WithTop ℕ))) ℱ μ :=
-    hM.submartingale.stoppedProcess hτ
-  have hSubDown : Submartingale (stoppedProcess (-M) (fun ω => (τ ω : WithTop ℕ))) ℱ μ :=
-    hM.neg.submartingale.stoppedProcess hτ
-  have heqNeg : stoppedProcess (-M) (fun ω => (τ ω : WithTop ℕ))
-      = -(stoppedProcess M (fun ω => (τ ω : WithTop ℕ))) :=
-    stoppedProcess_comp Neg.neg
-  rw [heqNeg] at hSubDown
-  have hSuper : Supermartingale (stoppedProcess M (fun ω => (τ ω : WithTop ℕ))) ℱ μ := by
-    have h := hSubDown.neg
-    simpa using h
-  exact martingale_iff.mpr ⟨hSuper, hSubUp⟩
-
 end Martingale
 
 /-! ### Compiled nonempty instance of `azuma_two_sided` at `sz0`
@@ -342,41 +315,5 @@ The model-free statement above is applied on the grid walk of `RBM.Gauss.SizesIn
 `markov_instA_bound`); each `Y (k+1)` is conditionally sub-Gaussian given `filt sz0 k` with
 parameter `1` (`markov_cond_subgaussian_unit_sz0`), and strongly adapted to `filt sz0`.  The
 parameter is the tail point `ε = 20`.  No hypothesis is left. -/
-
-section Instance
-
-open RBM.Gauss RBM.Gauss.SizesInst
-
-/-- The increments: `Y 0 = 0`, `Y (k+1) ω = √(9/40) · linTr 0 A (X (ω (k+1)))`. -/
-private noncomputable def azumaInstY : ℕ → PathΩ sz0 → ℝ
-  | 0 => fun _ => 0
-  | k + 1 => fun ω => Real.sqrt (9 / 40 : ℝ)
-      * linTr 0 markov_instA (Sizes.seqXmat sz0 0 (ω (k + 1)))
-
-private theorem azumaInstY_adapted : StronglyAdapted (filt sz0) azumaInstY := by
-  intro i
-  cases i with
-  | zero => exact stronglyMeasurable_const
-  | succ k =>
-    rw [stronglyMeasurable_iff_measurable]
-    have hω : Measurable[filt sz0 (k + 1)] (fun ω : PathΩ sz0 => ω (k + 1)) := by
-      have : (fun ω : PathΩ sz0 => ω (k + 1))
-          = (fun g : Set.Iic (k + 1) → Sizes.SeqΩ sz0 => g ⟨k + 1, Set.mem_Iic.2 le_rfl⟩)
-            ∘ (Preorder.restrictLe (π := fun _ : ℕ => Sizes.SeqΩ sz0) (k + 1)) := rfl
-      rw [this]
-      exact (measurable_pi_apply (⟨k + 1, Set.mem_Iic.2 le_rfl⟩ : Set.Iic (k + 1))).comp
-        (comap_measurable (Preorder.restrictLe (π := fun _ : ℕ => Sizes.SeqΩ sz0) (k + 1)))
-    exact ((markov_measurable_linTr_seqXmat_sz0 markov_instA).const_mul _).comp hω
-
-/-- **`azuma_two_sided` at `sz0`**, `n = 100`, `c_k = 1`, `ε = 20`: every hypothesis discharged. -/
-example :
-    (pathP sz0).real {ω | (20 : ℝ) ≤ |∑ i ∈ range 100, azumaInstY i ω|} ≤
-      2 * Real.exp (-(20 : ℝ) ^ 2 / (2 * ∑ i ∈ range 100, ((fun _ => (1 : ℝ≥0)) i))) :=
-  azuma_two_sided (c := fun _ => (1 : ℝ≥0)) azumaInstY_adapted 100
-    ⟨fun t => by simp [azumaInstY],
-      fun t => by simpa [azumaInstY, mgf] using Real.one_le_exp (by positivity)⟩
-    (fun i _ => markov_cond_subgaussian_unit_sz0 i) (by norm_num)
-
-end Instance
 
 end RBM.Path

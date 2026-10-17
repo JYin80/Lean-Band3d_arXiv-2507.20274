@@ -56,9 +56,6 @@ def UNQueBAAt (d : ℕ) : Prop :=
         ((UNKind.ba d).M sz).μ {ω | queBadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E a (((UNKind.ba d).M sz).H n ω)} ≤
           queBound (sz.W n) 𝔡 ε₀ c τ
 
-/-- **P2**: `UNQueBA` is `∀ d, 3 ≤ d → UNQueBAAt d` (`Iff.rfl`; twin `UNLocAvgBA_iff_at`, `BA/MAPins.lean:196`). -/
-theorem UNQueBA_iff_at : UNQueBA ↔ ∀ d : ℕ, 3 ≤ d → UNQueBAAt d := Iff.rfl
-
 /-! ## 2. Decol at BA (twin `decol_of_locSC`, `Main/FixedZ.lean:789`) -/
 
 section Decol
@@ -142,9 +139,6 @@ theorem baMADecol (d : ℕ) : BAMADecol d := by
 /-- **Target 4, `baEnd_decolL`** (`MR:decol_BA` bullet 1, `1_2:651`): `BAEnd_decolL d` from `UNMLOutBA d` (`baMADecol d` ∘ `baEnd_locSCL`). -/
 theorem baEnd_decolL (d : ℕ) (hML : UNMLOutBA d) : BAEnd_decolL d :=
   baMADecol d (baEnd_locSCL d hML)
-
-/-- **Target 4, `baEnd_decolL_three`**: `BAEnd_decolL 3`, unconditional (`baMADecol 3` at `baEnd_locSCL_three`); closing condition (i). -/
-theorem baEnd_decolL_three : BAEnd_decolL 3 := baMADecol 3 baEnd_locSCL_three
 
 end Decol
 
@@ -359,9 +353,6 @@ theorem baMAQUE (d : ℕ) : BAMAQUE d := by
 theorem baEnd_QUEL (d : ℕ) (hML : UNMLOutBA d) : BAEnd_QUEL d :=
   baMAQUE d (baEnd_QDiffL d hML)
 
-/-- **Target 8, `baEnd_QUEL_three`**: `BAEnd_QUEL 3`, unconditional (`baMAQUE 3` at `baEnd_QDiffL_three`); closing condition (i). -/
-theorem baEnd_QUEL_three : BAEnd_QUEL 3 := baMAQUE 3 baEnd_QDiffL_three
-
 end QUE
 
 /-! ## 4. The `UNQueBA` bridge through a per-`d` core (MNO-C3; T2513 D5 `T2513_que_core`) -/
@@ -378,154 +369,9 @@ theorem unQueBAAt_of_QUEL (d : ℕ) (hd : 3 ≤ d) (h : BAEnd_QUEL d) : UNQueBAA
 theorem unQueBAAt_of_ML (d : ℕ) (hd : 3 ≤ d) (hML : UNMLOutBA d) : UNQueBAAt d :=
   unQueBAAt_of_QUEL d hd (baEnd_QUEL d hML)
 
-/-- **Target 9, `unQueBAAt_three`** (core at `baEnd_QUEL_three`): `UNQueBAAt 3`, unconditional; N2's `d = 3` input, no `∀ d` BA input. -/
-theorem unQueBAAt_three : UNQueBAAt 3 := unQueBAAt_of_QUEL 3 le_rfl baEnd_QUEL_three
-
 end Bridge
 
 /-! ## 5. Compiled nonempty instances at `d = 3` on the class sequence `S0` (`(L, g) = (4, 3/10)`, `(𝔠, 𝔡) = (1/6, 1/10)`) -/
-
-section Inst
-
-open RBM.BA.UNPinsInst RBM.Univ.BAInst RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-private theorem MADecolQUE_hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-/-- **Target 1** at `sz0`, `n = 0`, `z = i`, the fine-lattice point `x = 0`: `M_xx = m(i)` and `Im M_xx ≤ 1`. -/
-example := baMz_diag sz0 0 Complex.I (by simp) (0 : Idx 3 (sz0.L 0) (sz0.W 0))
-
-/-- **Target 1** at `S0`, `n = 1`, `z = E_* + i/2`, `x = 0`. -/
-example := baMz_diag S0 1 (⟨(fp 4 MADecolQUE_hg).E, 1 / 2⟩ : ℂ) (by norm_num) (0 : Idx 3 (S0.L 1) (S0.W 1))
-
-/-- **Target 3** at `S0`, `κ_*`, `(τ, D) = (1/10, 1)`: the step pin `BAMADecol 3` applied to the step chain `baMANetLoc ∘ baLocSCFixed_of_ML`
-(probe `:286`, with the merged `unMLOutBA_three`). -/
-example := baMADecol 3 (baMANetLoc 3 (baLocSCFixed_of_ML 3 unMLOutBA_three)) le_rfl (1 / 6) (1 / 10) S0 S0_adm
-  (clsκ 4 MADecolQUE_hg) (1 / 10) 1 (clsκ_pos 4 MADecolQUE_hg) (by norm_num) (by norm_num)
-
-/-- **Target 4** at `S0`, `κ_*`, `(τ, D) = (1/10, 1)`: `BAEnd_decolL 3`, unconditional, and `baEnd_decolL 3` from the flow output. -/
-example := baEnd_decolL_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (1 / 10) 1
-  (clsκ_pos 4 MADecolQUE_hg) (by norm_num) (by norm_num)
-
-example := baEnd_decolL 3 unMLOutBA_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (1 / 10) 1
-  (clsκ_pos 4 MADecolQUE_hg) (by norm_num) (by norm_num)
-
-/-- **Targets 5b, 5c** at `S0` (`κ_*`, `ε₀ = 1/30`): the domain is nonempty (`E_*` is in the bulk at every `n`, so the eventual domain
-statement has a witness) and the row differences hold with some `C > 0` at `n = 0`, `z = E_* + i/2`. -/
-example : (∃ n : ℕ, BAendDom S0 (clsκ 4 MADecolQUE_hg) (1 / 6 * (1 / 10 - 1 / 30)) n
-    ((((fp 4 MADecolQUE_hg).E : ℝ) : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I)) ∧
-    ∃ C : ℝ, 0 < C ∧ ∀ a b b' : Zd 3 (S0.L 0),
-      ‖BAprof S0 0 (⟨(fp 4 MADecolQUE_hg).E, 1 / 2⟩ : ℂ) true false a b - BAprof S0 0 (⟨(fp 4 MADecolQUE_hg).E, 1 / 2⟩ : ℂ) true false a b'‖ ≤
-        C * (S0.lam 0 ^ 2)⁻¹ / ((S0.W 0 : ℕ) : ℝ) ^ 3 := by
-  refine ⟨?_, ?_⟩
-  · obtain ⟨n, hn⟩ := ((MADecolQUE_domain S0 S0_adm (κ := clsκ 4 MADecolQUE_hg) (ε₀ := 1 / 30) (by norm_num)
-      (by norm_num)).and S0_bulk).exists
-    exact ⟨n, hn.1 _ hn.2⟩
-  · obtain ⟨C, hC, h⟩ := MADecolQUE_rowDiff 3 le_rfl (1 / 10) (clsκ 4 MADecolQUE_hg) (by norm_num) (clsκ_pos 4 MADecolQUE_hg)
-    have hlam : 0 < S0.lam 0 ∧ S0.lam 0 ≤ (1 / 10 : ℝ)⁻¹ :=
-      ⟨(fp 4 MADecolQUE_hg).g0_pos, by
-        change (fp 4 MADecolQUE_hg).g0 ≤ (1 / 10 : ℝ)⁻¹
-        have := (fp 4 MADecolQUE_hg).g0_le
-        norm_num
-        linarith⟩
-    exact ⟨C, hC, fun a b b' => (h S0 0 hlam.1 hlam.2 (⟨(fp 4 MADecolQUE_hg).E, 1 / 2⟩ : ℂ) (by norm_num) (by norm_num)
-      (cls_bulk 4 (by norm_num) MADecolQUE_hg) a b b').1⟩
-
-/-- **Targets 6, 7** at `S0`, `κ_*`, `E_*`, `(ε₀, c) = (1/30, 1/60)` (`baQueFixed`, with the private generic `que2Bad_sub` inside): at some `n`
-(eventually in the domain, the window `(eq:WO)` and the bulk) every hypothesis of `baQueFixed` holds with `ε = qdBoundExp` (the
-expectation half, from M2's `baEnd_QDiffL_three`) and `K = C λ⁻² W^{-d}` (from `baThetaDiff`), and both Markov bounds follow. -/
-example : ∃ n : ℕ, ∃ ε K : ℝ, 0 < etaQ S0 n (1 / 30) ∧
-    (∀ a b : Zd 3 (S0.L n),
-      ‖(∫ ω, avg2 S0 n (fun x y => ((‖BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω x y‖ ^ 2 : ℝ) : ℂ))
-            a b ∂(Sizes.seqP (S0.withLam 0))) -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true false a b‖ ≤ ε ∧
-      ‖(∫ ω, avg2 S0 n (fun x y => BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω x y *
-            BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω y x) a b ∂(Sizes.seqP (S0.withLam 0))) -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true true a b‖ ≤ ε) ∧
-    (∀ a b b' : Zd 3 (S0.L n),
-      ‖BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true false a b -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true false a b'‖ ≤ K ∧
-        ‖BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true true a b -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true true a b'‖ ≤ K) ∧
-    (∀ a : Zd 3 (S0.L n),
-      Sizes.seqP (S0.withLam 0) {ω | queBadMat 3 (S0.L n) (S0.W n) (S0.lam n) (1 / 30) (1 / 60) (fp 4 MADecolQUE_hg).E a
-          (S0.seqHBA n ω)} ≤
-        ENNReal.ofReal (4 * Nsz S0 n ^ 2 * etaQ S0 n (1 / 30) ^ 2 * (4 * (K + ε)) / ((S0.W n : ℕ) : ℝ) ^ (-(2 * (1 / 60 : ℝ))))) ∧
-    (∀ A : Finset (Zd 3 (S0.L n)), A.Nonempty →
-      Sizes.seqP (S0.withLam 0) {ω | que2BadMat 3 (S0.L n) (S0.W n) (S0.lam n) (1 / 30) (1 / 60) (fp 4 MADecolQUE_hg).E A
-          (S0.seqHBA n ω)} ≤
-        ENNReal.ofReal (4 * Nsz S0 n ^ 2 * etaQ S0 n (1 / 30) ^ 2 * (4 * (K + ε)) / ((S0.W n : ℕ) : ℝ) ^ (-(2 * (1 / 60 : ℝ))))) := by
-  obtain ⟨C, hC, hrow⟩ := MADecolQUE_rowDiff 3 le_rfl (1 / 10) (clsκ 4 MADecolQUE_hg) (by norm_num) (clsκ_pos 4 MADecolQUE_hg)
-  have hQD := baEnd_QDiffL_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (1 / 6 * (1 / 10 - 1 / 30)) (1 / 600) 1
-    (clsκ_pos 4 MADecolQUE_hg) (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨n, ⟨hQn, hdomn⟩, hWOn, hbulk⟩ := ((hQD.and (MADecolQUE_domain S0 S0_adm (κ := clsκ 4 MADecolQUE_hg) (ε₀ := 1 / 30)
-    (by norm_num) (by norm_num))).and (S0_adm.2.2.2.2.and S0_bulk)).exists
-  have hD := hdomn _ hbulk
-  have him : ((((fp 4 MADecolQUE_hg).E : ℝ) : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I).im = etaQ S0 n (1 / 30) := by simp
-  have hη : 0 < etaQ S0 n (1 / 30) := by
-    have h0 := hD.2.1
-    rw [him] at h0
-    exact lt_of_lt_of_le (Real.rpow_pos_of_pos (Nsz_pos S0 n) _) h0
-  have hWpos : (0 : ℝ) < ((S0.W n : ℕ) : ℝ) := by exact_mod_cast S0.W_pos n
-  have hlam : 0 < S0.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos hWpos _) hWOn.1
-  have hK := hrow S0 n hlam hWOn.2 _ (by rw [him]; exact hη) hD.2.2 hD.1
-  have hQ' : ∀ a b : Zd 3 (S0.L n),
-      ‖(∫ ω, avg2 S0 n (fun x y => ((‖BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω x y‖ ^ 2 : ℝ) : ℂ))
-            a b ∂(Sizes.seqP (S0.withLam 0))) -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true false a b‖ ≤
-        qdBoundExp S0 n (1 / 600) (etaQ S0 n (1 / 30)) ∧
-      ‖(∫ ω, avg2 S0 n (fun x y => BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω x y *
-            BAGz S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) ω y x) a b ∂(Sizes.seqP (S0.withLam 0))) -
-          BAprof S0 n (((fp 4 MADecolQUE_hg).E : ℂ) + (etaQ S0 n (1 / 30) : ℂ) * Complex.I) true true a b‖ ≤
-        qdBoundExp S0 n (1 / 600) (etaQ S0 n (1 / 30)) := by
-    intro a b
-    have h := hQn.2 _ hD a b
-    rwa [him] at h
-  have hKK := fun a b b' => hK a b b'
-  exact ⟨n, qdBoundExp S0 n (1 / 600) (etaQ S0 n (1 / 30)), C * (S0.lam n ^ 2)⁻¹ / ((S0.W n : ℕ) : ℝ) ^ 3, hη, hQ', hKK,
-    baQueFixed S0 n (1 / 30) (1 / 60) _ _ _ _ rfl hη hQ' hKK⟩
-
-/-- **Target 8** at `S0`, `κ_*`, `(ε₀, c, τ) = (1/30, 1/60, 1/300)` (exponent `-1/300 < 0`, the bound is `< 1`; not the merged `τ = 1/100` of
-`inst_BAEnd_QUEL`): `BAEnd_QUEL 3`, unconditional; the step pin `baMAQUE 3` at the step chain `baMANetQD ∘ baQDiffFixed_of_ML`; `baEnd_QUEL 3`. -/
-example := baEnd_QUEL_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg) (1 / 30) (1 / 60) (1 / 300)
-  (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-example := baMAQUE 3 (baMANetQD 3 (baQDiffFixed_of_ML 3 unMLOutBA_three)) le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg)
-  (clsκ_pos 4 MADecolQUE_hg) (1 / 30) (1 / 60) (1 / 300) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-  (by norm_num)
-
-example := baEnd_QUEL 3 unMLOutBA_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg) (1 / 30)
-  (1 / 60) (1 / 300) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **Target 8, non-vacuity**: the bound `queBound W 𝔡 ε₀ c τ` at `(1/10, 1/30, 1/60, 1/300)` is `W^{-1/300} < 1` for every `W > 1`. -/
-example (W : ℕ) (hW : 1 < W) : queBound W (1 / 10) (1 / 30) (1 / 60) (1 / 300) < 1 := by
-  unfold queBound
-  rw [← ENNReal.ofReal_one]
-  refine (ENNReal.ofReal_lt_ofReal_iff one_pos).2 ?_
-  refine Real.rpow_lt_one_of_one_lt_of_neg (by exact_mod_cast hW) ?_
-  norm_num
-
-/-- **Target 9** at `S0`, `κ_*`, `(ε₀, c, τ) = (1/30, 1/60, 1/300)`: `UNQueBAAt 3`, unconditional (N2's `d = 3` input); from the flow output
-(`unQueBAAt_of_ML`); the core at `baEnd_QUEL_three`. -/
-example := unQueBAAt_three (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg) (1 / 30) (1 / 60) (1 / 300)
-  (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-example := unQueBAAt_of_ML 3 le_rfl unMLOutBA_three (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg)
-  (1 / 30) (1 / 60) (1 / 300) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-example := unQueBAAt_of_QUEL 3 le_rfl baEnd_QUEL_three (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg)
-  (1 / 30) (1 / 60) (1 / 300) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **The merged `∀ d` text** (the statement of `UNQueBA_of_BAEnd_QUEL`, `UNPins.lean:357`) as one line from the core and P2 (`d > 3` forms
-are Jun decision B's open pins, a hypothesis of this example), read at `d = 3`, `S0`. -/
-example (h : ∀ d : ℕ, BAEnd_QUEL d) : UNQueBA := UNQueBA_iff_at.2 fun d hd => unQueBAAt_of_QUEL d hd (h d)
-
-example (h : ∀ d : ℕ, BAEnd_QUEL d) : True := by
-  have _ := (UNQueBA_iff_at.1 (UNQueBA_iff_at.2 fun d hd => unQueBAAt_of_QUEL d hd (h d))) 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm
-    (clsκ 4 MADecolQUE_hg) (clsκ_pos 4 MADecolQUE_hg) (1 / 30) (1 / 60) (1 / 300) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num)
-  trivial
-
-end Inst
 
 end RBM.BA
 

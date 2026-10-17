@@ -60,29 +60,16 @@ variable {d L W K k : ℕ} [NeZero L] [NeZero W]
 def cltEvalAt (F : LocalForm d L W k K) (E u : ℝ) (ω : Ω d L W) (b : Fin k → Zd d L) : ℂ :=
   F.eval E u (Hflow d L W u ω) b
 
-/-- `Y_b(ω)` on the finite model (`clt-yform`), one label.  RBM2D `CltPath.lean:51`. -/
-def cltYo (F : LocalForm d L W 1 K) (E u : ℝ) (ω : Ω d L W) (b : Zd d L) : ℂ :=
-  cltY F E u (Hflow d L W u ω) b
-
 /-- `Y_b(ω)` at the matrix `H₀ + H_u(ω)` and the spectral value `m` (T2455; band: `H₀ = 0`, `m = mE E`). -/
 def cltEvalAtOf (F : LocalForm d L W k K) (m : ℂ) (E u : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
     (ω : Ω d L W) (b : Fin k → Zd d L) : ℂ :=
   F.evalOf m E u (H₀ + Hflow d L W u ω) b
-
-/-- `Y_b(ω)` at `H₀ + H_u(ω)` and `m`, one label. -/
-def cltYoOf (F : LocalForm d L W 1 K) (m : ℂ) (E u : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
-    (ω : Ω d L W) (b : Zd d L) : ℂ :=
-  cltYOf F m E u (H₀ + Hflow d L W u ω) b
 
 /-- The coefficient weight `Σ_{j,q} |coef(b,j,q)| · j · 4^j` of the first-order bound
 `CltDerivEvalMulti` at `g = 4`, `k` labels. -/
 def cltCoefSumMulti (F : LocalForm d L W k K) (b : Fin k → Zd d L) : ℝ :=
   ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
     ‖F.coef b j q‖ * (j : ℝ) * 4 ^ (j : ℕ)
-
-/-- The coefficient weight, one label.  RBM2D `CltPath.lean:56`. -/
-def cltCoefSum (F : LocalForm d L W 1 K) (b : Zd d L) : ℝ :=
-  cltCoefSumMulti F (fun _ => b)
 
 end Step
 
@@ -122,19 +109,6 @@ def CltPathBoundMulti (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
     ‖cltEvalAt F E u (Function.update ω₀ c s) b - cltEvalAt F E u ω₀ b‖ ≤
       |s - ω₀ c| * 4 * cltCoefSumMulti F b * (W : ℝ) ^ (-D')
 
-/-- **Pin P1**, one label (RBM2D `CltPathBound`, with the scale parameters `ρ R θ` in place of
-`τ`, `ellT L u`, `6 ≤ W^τ`). -/
-def CltPathBound (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
-  ∀ (K : ℕ) (F : LocalForm d L W 1 K) (E u ρ R θ D' : ℝ) (b : Zd d L) (c : CoordF d L W)
-    (ω₀ : Ω d L W) (s : ℝ),
-    0 ≤ u → u < 1 → (zt E u).im ≠ 0 → F.Local ρ → 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 →
-    zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1 →
-    R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b) : ℝ) → θ ≤ R / 2 - ρ - 1 →
-    cltGoodAt d L W E u θ D' ω₀ →
-    |s - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
-    ‖cltYo F E u (Function.update ω₀ c s) b - cltYo F E u ω₀ b‖ ≤
-      |s - ω₀ c| * 4 * cltCoefSum F b * (W : ℝ) ^ (-D')
-
 /-- **P1** at `H₀ + H_u(ω)` and the spectral value `m`, `k` labels: `H₀` is a deterministic Hermitian matrix
 (the new premise); `cltCoefSumMulti` is spectrum-free. -/
 def CltPathBoundMultiOf (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
@@ -147,18 +121,6 @@ def CltPathBoundMultiOf (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
     |s - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
     ‖cltEvalAtOf F m E u H₀ (Function.update ω₀ c s) b - cltEvalAtOf F m E u H₀ ω₀ b‖ ≤
       |s - ω₀ c| * 4 * cltCoefSumMulti F b * (W : ℝ) ^ (-D')
-
-/-- **P1** at `H₀ + H_u(ω)` and the spectral value `m`, one label. -/
-def CltPathBoundOf (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
-  ∀ (K : ℕ) (F : LocalForm d L W 1 K) (m : ℂ) (E u ρ R θ D' : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
-    (b : Zd d L) (c : CoordF d L W) (ω₀ : Ω d L W) (s : ℝ),
-    H₀.IsHermitian → 0 ≤ u → u < 1 → (ztOf m E u).im ≠ 0 → F.Local ρ → 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 →
-    zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1 →
-    R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b) : ℝ) → θ ≤ R / 2 - ρ - 1 →
-    cltGoodAtOf d L W m E u θ D' H₀ ω₀ →
-    |s - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
-    ‖cltYoOf F m E u H₀ (Function.update ω₀ c s) b - cltYoOf F m E u H₀ ω₀ b‖ ≤
-      |s - ω₀ c| * 4 * cltCoefSum F b * (W : ℝ) ^ (-D')
 
 /-! ## 2. Private helpers -/
 
@@ -199,14 +161,6 @@ private theorem cltpath_zs_im {m : ℂ} {E u : ℝ} (hz : (ztOf m E u).im ≠ 0)
 private theorem cltpath_gEntry (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
     (x y : Idx d L W) : gEntryOf d L W m E u M σ x y = green M (cltpath_zs m E u σ) x y := by
   simp only [gEntryOf, Gres, green, cltpath_zs, Matrix.nonsing_inv_eq_ringInverse]
-
-open scoped Matrix.Norms.L2Operator in
-/-- Every entry of the `σ`-resolvent of a Hermitian matrix is at most `η⁻¹` when `η ≤ |Im z|`. -/
-private theorem cltpath_gEntry_le (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
-    (hH : M.IsHermitian) (σ : Bool) (x y : Idx d L W) {η : ℝ} (hη : 0 < η)
-    (hz : η ≤ |(ztOf m E s).im|) : ‖gEntryOf d L W m E s M σ x y‖ ≤ η⁻¹ :=
-  (norm_matrix_entry_le_opNorm (Gres M (ztOf m E s) σ) x y).trans
-    (norm_Gsig_le_inv_eta hH hη hz σ)
 
 private theorem cltpath_zdistInf_neg (x : Zd d L) : zdistInf d L (-x) = zdistInf d L x := by
   simp only [zdistInf, Pi.neg_apply, zdist_neg]
@@ -338,33 +292,6 @@ theorem cltPathMulti_boundOf (k : ℕ) : CltPathBoundMultiOf d L W k := by
   calc _ ≤ _ := hmvt
     _ = _ := by ring
 
-/-- **P1**, one label, at `H₀ + H_u(ω)` and `m`: the case `k = 1` of `cltPathMulti_boundOf`. -/
-theorem cltPath_boundOf : CltPathBoundOf d L W :=
-  fun K F m E u ρ R θ D' H₀ b c ω₀ s hH₀ hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs =>
-    cltPathMulti_boundOf d L W 1 K F m E u ρ R θ D' H₀ (fun _ => b) c ω₀ s hH₀ hu0 hu1 hz hloc hθ hadj
-      (fun _ => hfar) hθR hgood hs
-
-private theorem cltpath_evalAt_zero (d L W : ℕ) [NeZero L] [NeZero W] {k K : ℕ} (F : LocalForm d L W k K) (E u : ℝ) (ω : Ω d L W)
-    (b : Fin k → Zd d L) : cltEvalAtOf F (mE E) E u 0 ω b = cltEvalAt F E u ω b := by
-  unfold cltEvalAtOf cltEvalAt; rw [zero_add]; rfl
-
-private theorem cltpath_good_zero (d L W : ℕ) [NeZero L] [NeZero W] (E u θ D' : ℝ) (ω : Ω d L W) :
-    cltGoodAtOf d L W (mE E) E u θ D' 0 ω ↔ cltGoodAt d L W E u θ D' ω := by
-  unfold cltGoodAtOf cltGoodAt; rw [zero_add]; rfl
-
-/-- **P1**, `k` labels (`CltPathBoundMulti`): the case `H₀ = 0`, `m = mE E` of `cltPathMulti_boundOf`. -/
-theorem cltPathMulti_bound (k : ℕ) : CltPathBoundMulti d L W k :=
-  fun K F E u ρ R θ D' b c ω₀ s hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs => by
-    have h := cltPathMulti_boundOf d L W k K F (mE E) E u ρ R θ D' 0 b c ω₀ s Matrix.isHermitian_zero hu0
-      hu1 hz hloc hθ hadj hfar hθR ((cltpath_good_zero d L W E u θ D' ω₀).2 hgood) hs
-    rwa [cltpath_evalAt_zero d L W, cltpath_evalAt_zero d L W] at h
-
-/-- **P1**, one label (`CltPathBound`): the case `k = 1` of `cltPathMulti_bound`. -/
-theorem cltPath_bound : CltPathBound d L W :=
-  fun K F E u ρ R θ D' b c ω₀ s hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs =>
-    cltPathMulti_bound d L W 1 K F E u ρ R θ D' (fun _ => b) c ω₀ s hu0 hu1 hz hloc hθ hadj
-      (fun _ => hfar) hθR hgood hs
-
 end Bound
 
 
@@ -378,331 +305,10 @@ diagonal matrix `-z⁻¹ 1`, every entry `≤ 2`, the off-diagonal ones `= 0`); 
 `c = (x₁, x₁, +)`, `x₁ = (70000 W, 0, 0)` (block distance `70000 ≥ R/2` from the label); the
 step is `s = W^{-1/2} > 0`.  No hypothesis is left open. -/
 
-section Checks
-
-open RBM.Gauss.Step5Inst
-
-
-private theorem cltpath_blk_zero {d L W : ℕ} [NeZero L] [NeZero W] :
-    (split d L W (0 : Idx d L W)).1 = 0 := by
-  funext i
-  simp [split, blk]
-
-private theorem cltpath_zdistInf_zero {d L : ℕ} : zdistInf d L 0 = 0 := by
-  simp [zdistInf]
-
-private theorem cltpath_Hflow_zero (d L W : ℕ) [NeZero L] [NeZero W] (u : ℝ) :
-    Hflow d L W u (0 : Ω d L W) = 0 := by
-  ext i j
-  simp [Hflow, Xmat, Xentry]
-
-/-- The `σ`-resolvent of a scalar matrix `r • 1` is diagonal. -/
-private theorem cltpath_gEntry_diag {d L W : ℕ} [NeZero L] [NeZero W] (m : ℂ) (r : ℝ) (E u : ℝ)
-    (hz : (ztOf m E u).im ≠ 0) (σ : Bool) {x y : Idx d L W} (hxy : x ≠ y) :
-    gEntryOf d L W m E u ((r : ℂ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)) σ x y = 0 := by
-  set zσ : ℂ := if σ then ztOf m E u else (starRingEnd ℂ) (ztOf m E u) with hzσ
-  have hne : (r : ℂ) - zσ ≠ 0 := by
-    intro h
-    have := congrArg Complex.im h
-    cases σ <;> simp [hzσ] at this <;> simp_all
-  have h1 : ((r : ℂ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) - zσ • 1) = ((r : ℂ) - zσ) • 1 := by
-    rw [sub_smul]
-  have h2 : (((r : ℂ) - zσ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ =
-      ((r : ℂ) - zσ)⁻¹ • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) := by
-    apply Matrix.inv_eq_right_inv
-    rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, mul_inv_cancel₀ hne, one_smul]
-  unfold gEntryOf Gres
-  rw [← Matrix.nonsing_inv_eq_ringInverse, h1, h2]
-  simp [Matrix.one_apply_ne hxy]
-
-/-- The `σ`-resolvent of the zero matrix is diagonal (`r = 0`). -/
-private theorem cltpath_gEntry_zero {d L W : ℕ} [NeZero L] [NeZero W] (E u : ℝ)
-    (hz : (zt E u).im ≠ 0) (σ : Bool) {x y : Idx d L W} (hxy : x ≠ y) :
-    gEntry d L W E u 0 σ x y = 0 := by
-  have h := cltpath_gEntry_diag (d := d) (L := L) (W := W) (mE E) 0 E u hz σ hxy
-  rw [Complex.ofReal_zero, zero_smul] at h
-  exact h
-
-private theorem cltpath_chk_z_ne : (zt 0 (1 / 2)).im ≠ 0 := by
-  rw [zt_im, mE_im, show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
-  norm_num
-
-/-- The one-monomial form `G_{x₀ x₀}` (`K = 1`) with `k` labels, supported on the label `b₂`. -/
-private def cltpath_chkForm {d L W : ℕ} (k : ℕ) (b₂ : Fin k → Zd d L) (x₀ : Idx d L W) :
-    LocalForm d L W k 1 where
-  coef := fun b' j q =>
-    if h : (j : ℕ) = 1 then
-      (if b' = b₂ ∧ q ⟨0, by omega⟩ = (x₀, x₀, true) then 1 else 0) else 0
-
-private theorem cltpath_chk_local {d L W : ℕ} [NeZero L] [NeZero W] (k : ℕ) (m₀ : Fin k)
-    {ρ : ℝ} (hρ : 0 < ρ) :
-    (cltpath_chkForm k (fun _ => (0 : Zd d L)) (0 : Idx d L W)).Local ρ := by
-  intro b j q hq i
-  have hj : (j : ℕ) = 1 := by
-    by_contra h
-    apply hq
-    simp [cltpath_chkForm, h]
-  have hq0 : q ⟨0, by omega⟩ = (0, 0, true) := by
-    by_contra h
-    apply hq
-    simp [cltpath_chkForm, hj, h]
-  have hb : b = fun _ => (0 : Zd d L) := by
-    by_contra h
-    apply hq
-    simp [cltpath_chkForm, hj, h]
-  have hi : i = ⟨0, by omega⟩ := Fin.ext (by have := i.2; omega)
-  subst hi
-  subst hb
-  refine ⟨m₀, ?_⟩
-  rw [hq0]
-  have h0 : zdistInf d L (0 : Zd d L) = 0 := cltpath_zdistInf_zero
-  simp only [cltpath_blk_zero, sub_zero, h0, Nat.cast_zero, add_zero]
-  exact hρ
-
-private theorem cltpath_chk_sum {d L W : ℕ} [NeZero L] [NeZero W] (k : ℕ) (b₂ : Fin k → Zd d L)
-    (x₀ : Idx d L W) : 4 ≤ cltCoefSumMulti (cltpath_chkForm k b₂ x₀) b₂ := by
-  unfold cltCoefSumMulti
-  have hnn : ∀ j : Fin (1 + 1), 0 ≤ ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
-      ‖(cltpath_chkForm k b₂ x₀).coef b₂ j q‖ * (j : ℝ) * 4 ^ (j : ℕ) := fun j =>
-    Finset.sum_nonneg fun q _ => by positivity
-  refine le_trans ?_ (Finset.single_le_sum (fun j _ => hnn j) (Finset.mem_univ (1 : Fin (1 + 1))))
-  refine le_trans ?_ (Finset.single_le_sum (f := fun q : Fin ((1 : Fin (1 + 1)) : ℕ) → Idx d L W × Idx d L W × Bool =>
-      ‖(cltpath_chkForm k b₂ x₀).coef b₂ 1 q‖ * (((1 : Fin (1 + 1)) : ℕ) : ℝ) * 4 ^ (((1 : Fin (1 + 1)) : ℕ)))
-    (fun q _ => by positivity) (Finset.mem_univ (fun _ => (x₀, x₀, true))))
-  simp [cltpath_chkForm]
-
-
 /-! ### The data at `szCL`, `n = 0` -/
-
-private theorem cltpath_chk_L : szCL.L 0 = 15925248 := rfl
-private theorem cltpath_chk_W : szCL.W 0 = 16777216 := rfl
-
-/-- `w = (log W)^3 ℓ_s` at `szCL`, `n = 0` (`ℓ_s = 1`, `szCL_ellT_s`). -/
-private noncomputable def cpw : ℝ :=
-  Real.log ((szCL.W 0 : ℕ) : ℝ) ^ 3 * ellT (szCL.L 0) (szCL.lam 0) (sCL 0)
-
-private theorem cpw_eq : cpw = Real.log ((szCL.W 0 : ℕ) : ℝ) ^ 3 := by
-  rw [cpw, szCL_ellT_s, mul_one]
-
-private theorem cpw_ge : 1 ≤ cpw := by
-  rw [cpw_eq]; exact one_le_pow₀ (szCL_one_le_log_W 0)
-
-private theorem cpw_le : cpw ≤ 24 ^ 3 := by
-  rw [cpw_eq]
-  have h := szCL_log_W_le 0
-  have h0 := szCL_one_le_log_W 0
-  push_cast at h
-  exact pow_le_pow_left₀ (by linarith) (by linarith) 3
-
-/-- The step `s = W^{-1/2}`. -/
-private noncomputable def cpS : ℝ := ((szCL.W 0 : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))
-
-private theorem cpS_pos : 0 < cpS := Real.rpow_pos_of_pos (by exact_mod_cast (szCL.W_pos 0)) _
-
-private theorem cltpath_chk_step : 16 * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 / 2 : ℝ)) ≤ 1 := by
-  have h : (((szCL.W 0 : ℕ) : ℝ)) = 4096 ^ 2 := by rw [cltpath_chk_W]; norm_num
-  rw [h, Real.rpow_neg (by positivity), ← Real.sqrt_eq_rpow, Real.sqrt_sq (by norm_num)]
-  norm_num
-
-/-- The point `x₁ = (70000 W, 0, 0)` of `Z_{WL}^3`: block `(70000, 0, 0)`. -/
-private def cpx : Idx 3 (szCL.L 0) (szCL.W 0) :=
-  fun i => if i = 0 then (((70000 * szCL.W 0 : ℕ)) : ZMod (szCL.W 0 * szCL.L 0)) else 0
-
-private theorem cpx_far : (70000 : ℝ) ≤
-    (zdistInf 3 (szCL.L 0) ((split 3 (szCL.L 0) (szCL.W 0) cpx).1 - 0) : ℝ) := by
-  have hWL : 70000 * szCL.W 0 < szCL.W 0 * szCL.L 0 := by
-    rw [cltpath_chk_L, cltpath_chk_W]; norm_num
-  have h1 : (split 3 (szCL.L 0) (szCL.W 0) cpx).1 0 = ((70000 : ℕ) : ZMod (szCL.L 0)) := by
-    simp only [split, blk, cpx, ite_true]
-    rw [ZMod.val_natCast_of_lt hWL, Nat.mul_div_cancel _ (szCL.W_pos 0)]
-  have h2 : zdist (szCL.L 0) (((70000 : ℕ) : ZMod (szCL.L 0))) = 70000 := by
-    have hlt : 70000 < szCL.L 0 := by rw [cltpath_chk_L]; norm_num
-    unfold zdist
-    rw [ZMod.val_natCast_of_lt hlt]
-    rw [cltpath_chk_L]; norm_num
-  have h3 : zdist (szCL.L 0) ((split 3 (szCL.L 0) (szCL.W 0) cpx).1 0) ≤
-      zdistInf 3 (szCL.L 0) ((split 3 (szCL.L 0) (szCL.W 0) cpx).1 - 0) := by
-    rw [sub_zero]
-    exact Finset.le_sup (f := fun i => zdist (szCL.L 0)
-      ((split 3 (szCL.L 0) (szCL.W 0) cpx).1 i)) (Finset.mem_univ (0 : Fin 3))
-  rw [h1, h2] at h3
-  exact_mod_cast h3
-
-
-/-- The good set at `ω₀ = 0`: all entries `≤ 2`, and the far (hence off-diagonal) ones vanish. -/
-private theorem cltpath_chk_good (θ D' : ℝ) (hθ : 0 < θ) :
-    cltGoodAt 3 (szCL.L 0) (szCL.W 0) 0 (1 / 2) θ D' 0 := by
-  refine ⟨fun σ x y => ?_, fun σ x y hxy => ?_⟩
-  · have h := cltpath_gEntry_le (d := 3) (L := szCL.L 0) (W := szCL.W 0) (mE 0) 0 (1 / 2)
-      (Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0) (Hflow_isHermitian _ _ _ _ _) σ x y (η := 1 / 2)
-      (by norm_num)
-      (by show (1 / 2 : ℝ) ≤ |(zt 0 (1 / 2)).im|; rw [zt_im, mE_im, show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num),
-        abs_of_pos (by norm_num)]; norm_num)
-    rwa [show ((1 / 2 : ℝ))⁻¹ = 2 by norm_num] at h
-  · have hne : x ≠ y := by
-      intro h
-      subst h
-      rw [sub_self, cltpath_zdistInf_zero] at hxy
-      norm_num at hxy
-      linarith
-    rw [cltpath_Hflow_zero, cltpath_gEntry_zero 0 (1 / 2) cltpath_chk_z_ne σ hne, norm_zero]
-    exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-
-/-- The coordinate `c = (x₁, x₁, +)`. -/
-private def cpc : CoordF 3 (szCL.L 0) (szCL.W 0) := (cpx, cpx, true)
-
-/-- **Instance of `cltPath_bound`** at `szCL`, `n = 0`, `d = 3`: `E = 0`, `u = 1/2`, `ω₀ = 0`,
-`ρ = w`, `R = 10 w`, `θ = R/2 - ρ - 1`, `D' = 1`, one label `b = 0`, the step `s = W^{-1/2}`. -/
-private theorem cltpath_chk_szCL :
-    ‖cltYo (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-        0 (1 / 2) (Function.update 0 cpc cpS) 0 -
-      cltYo (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-        0 (1 / 2) 0 0‖ ≤
-    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
-      cltCoefSum (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
-  cltPath_bound 3 (szCL.L 0) (szCL.W 0) 1
-    (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-    0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 0 cpc 0 cpS (by norm_num) (by norm_num)
-    cltpath_chk_z_ne (cltpath_chk_local 1 0 (by linarith [cpw_ge])) cltpath_chk_step
-    (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
-    (le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far)
-    le_rfl (cltpath_chk_good _ _ (by linarith [cpw_ge]))
-    (by
-      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
-      have := cpS_pos
-      unfold cpS at *
-      linarith)
-
-
-/-- **Instance of `cltPathMulti_bound`** at the same data with two labels `b = (0, 0)` (the shape
-of `STcltB`: `b : Fin 2 → Zd 3 L`). -/
-private theorem cltpath_chk_szCL_multi :
-    ‖cltEvalAt (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 (1 / 2) (Function.update 0 cpc cpS) (fun _ => 0) -
-      cltEvalAt (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 (1 / 2) 0 (fun _ => 0)‖ ≤
-    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
-      cltCoefSumMulti (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) (fun _ => 0) * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
-  cltPathMulti_bound 3 (szCL.L 0) (szCL.W 0) 2 1
-    (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-    0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 (fun _ => 0) cpc 0 cpS (by norm_num)
-    (by norm_num) cltpath_chk_z_ne (cltpath_chk_local 2 0 (by linarith [cpw_ge]))
-    cltpath_chk_step (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
-    (fun _ => le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far) le_rfl
-    (cltpath_chk_good _ _ (by linarith [cpw_ge]))
-    (by
-      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
-      have := cpS_pos
-      unfold cpS at *
-      linarith)
 
 /-! ### The generic endpoint at a non-semicircle value `m = 1/2 + i` and `H₀ = (1/3) 1` (same lattice data) -/
 
-private noncomputable def cpm : ℂ := ⟨1 / 2, 1⟩
-
-private theorem cpm_im : (ztOf cpm 0 (1 / 2)).im = 1 / 2 := by
-  rw [ztOf_im, etaOf]; simp [cpm]; norm_num
-
-private theorem cpm_ne : (ztOf cpm 0 (1 / 2)).im ≠ 0 := by rw [cpm_im]; norm_num
-
-/-- `H₀ = (1/3) 1`: Hermitian, nonzero. -/
-private noncomputable def cpH : Matrix (Idx 3 (szCL.L 0) (szCL.W 0)) (Idx 3 (szCL.L 0) (szCL.W 0)) ℂ :=
-  (((1 / 3 : ℝ)) : ℂ) • 1
-
-private theorem cpH_herm : cpH.IsHermitian := by
-  unfold cpH
-  change Matrix.conjTranspose _ = _
-  rw [Matrix.conjTranspose_smul, Matrix.conjTranspose_one, Complex.star_def, Complex.conj_ofReal]
-
-private theorem cltpath_chk_goodOf (θ D' : ℝ) (hθ : 0 < θ) :
-    cltGoodAtOf 3 (szCL.L 0) (szCL.W 0) cpm 0 (1 / 2) θ D' cpH 0 := by
-  have hsum : cpH + Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0 = cpH := by
-    rw [cltpath_Hflow_zero, add_zero]
-  refine ⟨fun σ x y => ?_, fun σ x y hxy => ?_⟩
-  · have h := cltpath_gEntry_le (d := 3) (L := szCL.L 0) (W := szCL.W 0) cpm 0 (1 / 2)
-      (cpH + Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0) (cpH_herm.add (Hflow_isHermitian _ _ _ _ _)) σ x y
-      (η := 1 / 2) (by norm_num) (by rw [cpm_im, abs_of_pos (by norm_num)])
-    rwa [show ((1 / 2 : ℝ))⁻¹ = 2 by norm_num] at h
-  · have hne : x ≠ y := by
-      intro h
-      subst h
-      rw [sub_self, cltpath_zdistInf_zero] at hxy
-      norm_num at hxy
-      linarith
-    rw [hsum]
-    change ‖gEntryOf 3 (szCL.L 0) (szCL.W 0) cpm 0 (1 / 2) (((1 / 3 : ℝ) : ℂ) • 1) σ x y‖ ≤ _
-    rw [cltpath_gEntry_diag cpm (1 / 3) 0 (1 / 2) cpm_ne σ hne, norm_zero]
-    exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-
-/-- **Instance of `cltPath_boundOf`** at `szCL`, `n = 0`, `d = 3`, `m = 1/2 + i` (`‖m‖ ≠ 1`), `H₀ = (1/3) 1`,
-`E = 0`, `u = 1/2`, `ω₀ = 0`, `ρ = w`, `R = 10 w`, `θ = R/2 - ρ - 1`, `D' = 1`, one label, the step `s = W^{-1/2}`. -/
-private theorem cltpath_chk_szCLOf :
-    ‖cltYoOf (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-        cpm 0 (1 / 2) cpH (Function.update 0 cpc cpS) 0 -
-      cltYoOf (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-        cpm 0 (1 / 2) cpH 0 0‖ ≤
-    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
-      cltCoefSum (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
-  cltPath_boundOf 3 (szCL.L 0) (szCL.W 0) 1
-    (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-    cpm 0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 cpH 0 cpc 0 cpS cpH_herm (by norm_num)
-    (by norm_num) cpm_ne (cltpath_chk_local 1 0 (by linarith [cpw_ge])) cltpath_chk_step
-    (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
-    (le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far)
-    le_rfl (cltpath_chk_goodOf _ _ (by linarith [cpw_ge]))
-    (by
-      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
-      have := cpS_pos
-      unfold cpS at *
-      linarith)
-
-/-- The same with two labels, through `cltPathMulti_boundOf`. -/
-private theorem cltpath_chk_szCLOf_multi :
-    ‖cltEvalAtOf (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) cpm 0 (1 / 2) cpH (Function.update 0 cpc cpS) (fun _ => 0) -
-      cltEvalAtOf (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) cpm 0 (1 / 2) cpH 0 (fun _ => 0)‖ ≤
-    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
-      cltCoefSumMulti (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) (fun _ => 0) * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
-  cltPathMulti_boundOf 3 (szCL.L 0) (szCL.W 0) 2 1
-    (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
-    cpm 0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 cpH (fun _ => 0) cpc 0 cpS cpH_herm
-    (by norm_num) (by norm_num) cpm_ne (cltpath_chk_local 2 0 (by linarith [cpw_ge]))
-    cltpath_chk_step (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
-    (fun _ => le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far) le_rfl
-    (cltpath_chk_goodOf _ _ (by linarith [cpw_ge]))
-    (by
-      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
-      have := cpS_pos
-      unfold cpS at *
-      linarith)
-
-/-- Nondegeneracy of the instance: the step is positive, the coefficient weight is `≥ 4`, and the
-far threshold `θ = R/2 - ρ - 1 = 4 w - 1` of `cltFarGeomNear` is at least `c w` for `c ∈ {1, 3}`
-(`w = (log W)^3 ℓ_s`, the threshold `c (log W)^3 ℓ_s` of `STFarEntryAtLog`). -/
-private theorem cltpath_chk_nondeg :
-    0 < cpS ∧
-      4 ≤ cltCoefSum (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0)))
-        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 ∧
-      1 * cpw ≤ 10 * cpw / 2 - cpw - 1 ∧ 3 * cpw ≤ 10 * cpw / 2 - cpw - 1 :=
-  ⟨cpS_pos, cltpath_chk_sum 1 _ _, by linarith [cpw_ge], by linarith [cpw_ge]⟩
-
-end Checks
-
 /-! ## Axioms of the declarations of this file -/
-
-#print axioms cltPathMulti_bound
-#print axioms cltPath_bound
-#print axioms cltPathMulti_boundOf
-#print axioms cltPath_boundOf
-#print axioms cltpath_chk_szCLOf
-#print axioms cltpath_chk_szCLOf_multi
-#print axioms cltpath_chk_szCL
-#print axioms cltpath_chk_szCL_multi
-#print axioms cltpath_chk_nondeg
 
 end RBM.Evol

@@ -1063,21 +1063,6 @@ private theorem StepDecompN_loopFam_hermTestFun {d : ℕ} (sz : Sizes d) (E s t 
   have hu1 : gridTime s t K n (j + 1) < 1 := StepDecompN_gridTime_lt_one s t K n hst hj ht1
   exact (hermTestFunLoopN sz k n (E n) (gridTime s t K n (j + 1)) hE hu0 hu1 σ b).1
 
-/-- The Hermitian second-derivative bound of the pin `HermTestFunLoopN` for the loop family:
-`‖∂²Φ_a(M)[y,y]‖ ≤ k (k + 1) N η_{u_{j+1}}^{-(k+2)} ‖y‖²` at Hermitian `M`, `y` (the hypothesis
-`hC₂` of `stepDecompCN` for `loopFamN`, with `C₂ = k (k + 1) N η^{-(k+2)}` uniform in the label). -/
-private theorem StepDecompN_loopFam_hC₂ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n)
-    {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
-    (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hM : M.IsHermitian)
-    (hy : y.IsHermitian) :
-    ‖fderiv ℝ (fderiv ℝ (loopFamN sz E s t K n j σ a)) M y y‖ ≤
-      (((k * (k + 1) : ℕ) : ℝ) * (Sizes.size sz n : ℝ)
-        * (etaT (E n) (gridTime s t K n (j + 1)))⁻¹ ^ (k + 2)) * ‖y‖ ^ 2 := by
-  have hu0 : 0 ≤ gridTime s t K n (j + 1) := StepDecompN_gridTime_nonneg s t K n hs0 hst (j + 1)
-  have hu1 : gridTime s t K n (j + 1) < 1 := StepDecompN_gridTime_lt_one s t K n hst hj ht1
-  exact (hermTestFunLoopN sz k n (E n) (gridTime s t K n (j + 1)) hE hu0 hu1 σ a).2 M y hM hy
-
 /-- The directional derivative along the real line `y ↦ M + y X` at `0` is `fderiv ℝ Ψ M X`, for
 `Ψ` differentiable at `M` (merged `StepDecomp_fderiv_im_eq_zero`, first half). -/
 private theorem StepDecompN_hasDerivAt_dir {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -1154,21 +1139,6 @@ theorem ZvecN_eq_stepZCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ
       stepZCN sz s t K n j (loopFamN sz E s t K n j σ) (fun a a' => if a = a' then 1 else 0) b ω := by
   rw [StepDecompN_stepZCN_eq_sum_zvecN sz E s t K n j hE hs0 hst ht1 hj σ _ b ω,
     StepDecompN_sum_delta]
-
-/-- **`Ugen ∘ ZvecN = stepZCN` with the propagator kernel** (RBM1D `stepZC_ukerMatC_eq_Uker`,
-`:619`): `(𝒰_{u_{j+1},u_m,σ} Z)_a = stepZCN` of the loop family with the kernel
-`U(a,b) = Π_i ukerMat(m_i m_{i+1}; u_{j+1}, u_m)(a_i, b_i)` of `Ugen`, so that the
-sub-Gaussianity of `(𝒰 Z)_a` (`SubGaussStopN` for `ZvecN`) reduces to `stepDecompCN_Z_subG`. -/
-theorem Ugen_stepZCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n)
-    {k : ℕ} (σ : Fin k → Bool) (m : ℕ) (a : Fin k → Zd d (sz.L n)) (ω : PathΩ sz) :
-    Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n (j + 1)) (gridTime s t K n m)
-        (ZvecN sz E s t K n j σ ω) a =
-      stepZCN sz s t K n j (loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω := by
-  rw [StepDecompN_stepZCN_eq_sum_zvecN sz E s t K n j hE hs0 hst ht1 hj σ _ a ω]
-  rfl
 
 /-- **`stepXiCN` is linear in the complex kernel `U`**, a.e., simultaneously for all labels `b`
 (RBM1D `stepXiC_eq_sum_gridDeltaC_ae`, `:628`): `ξ^U_b = Σ_a U(b,a) ξ^δ_a`. -/
@@ -1309,54 +1279,6 @@ theorem Ugen_stepYCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ →
   unfold Ugen
   exact Finset.sum_congr rfl fun b _ => by rw [h1 b]
 
-/-- **`SubGaussStopN` for `ZvecN` reduces to `stepDecompCN_Z_subG`** (the purpose of
-`Ugen_stepZCN`): with the stopping family `{j < τ} ∈ F_j` as the set `E`, the stopped propagated
-increment `1_{j<τ} (𝒰_{u_{j+1},u_m,σ} Z_j)_a` is conditionally sub-Gaussian, real and imaginary
-part, with the proxy `c` whenever `Δ · linTrVar` of `AbCN` and of `(-I) • AbCN` (the loop family
-with the `Ugen` kernel) is at most `c` on `{j < τ}`. -/
-theorem StepDecompN_subGaussStopN_zvecN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
-    (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n)
-    {k : ℕ} (σ : Fin k → Bool) (τ : PathΩ sz → ℕ)
-    (hτ : MeasurableSet[filt sz j] {ω | j < τ ω}) (m : ℕ) (a : Fin k → Zd d (sz.L n))
-    (c : ℝ) (hc : 0 ≤ c)
-    (hboundRe : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      (AbCN sz s t K n j (loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c)
-    (hboundIm : ∀ ω, j < τ ω → gridStep s t K n * linTrVar n
-      ((-Complex.I) • AbCN sz s t K n j (loopFamN sz E s t K n j σ)
-        (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω) ≤ c) :
-    SubGaussStopN sz (E n) σ (gridTime s t K n) τ (fun j ω => ZvecN sz E s t K n j σ ω) m a j
-      ⟨c, hc⟩ := by
-  have hΦ := StepDecompN_loopFam_hermTestFun sz E s t K n j hE hs0 hst ht1 hj σ
-  have hZ := stepDecompCN_Z_subG sz s t K n j hΦ
-    (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a {ω | j < τ ω} hτ c hc hboundRe hboundIm
-  have hU := fun ω' => Ugen_stepZCN sz E s t K n j hE hs0 hst ht1 hj σ m a ω'
-  have hre : (fun ω => ({ω' | j < τ ω'}.indicator (fun ω' => Ugen d (sz.L n) (sz.lam n) (E n) σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (ZvecN sz E s t K n j σ ω') a) ω).re)
-      = fun ω => {ω' | j < τ ω'}.indicator (fun ω' => stepZCN_re sz s t K n j
-        (loopFamN sz E s t K n j σ) (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω') ω := by
-    funext ω
-    by_cases h : ω ∈ {ω' | j < τ ω'}
-    · simp only [Set.indicator_of_mem h, hU]
-      simp [stepZCN]
-    · simp [Set.indicator_of_notMem h]
-  have him : (fun ω => ({ω' | j < τ ω'}.indicator (fun ω' => Ugen d (sz.L n) (sz.lam n) (E n) σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (ZvecN sz E s t K n j σ ω') a) ω).im)
-      = fun ω => {ω' | j < τ ω'}.indicator (fun ω' => stepZCN_im sz s t K n j
-        (loopFamN sz E s t K n j σ) (fun a b => ∏ i : Fin k, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma (E n) (σ i)) i)
-          (gridTime s t K n (j + 1)) (gridTime s t K n m) (a i) (b i)) a ω') ω := by
-    funext ω
-    by_cases h : ω ∈ {ω' | j < τ ω'}
-    · simp only [Set.indicator_of_mem h, hU]
-      simp [stepZCN]
-    · simp [Set.indicator_of_notMem h]
-  unfold SubGaussStopN SubGaussFormN
-  exact ⟨by rw [hre]; exact hZ.1, by rw [him]; exact hZ.2⟩
-
 end Identification
 
 /-! ## 8. Compiled nonempty instances
@@ -1370,219 +1292,10 @@ Step `j = 0`: `H_0 = 0` (`s 0 = 0`) is deterministic, so `AbCN` does not depend 
 `C₂ = k (k + 1) N η^{-(k+2)}` come from the merged theorem `hermTestFunLoopN`, so every
 hypothesis is discharged (no external hypothesis occurs). -/
 
-section Instances
-
-namespace StepDecompNCheck
-
-open RBM.Gauss.SizesInst
-
-private abbrev E0 : ℕ → ℝ := fun _ => 0
-private abbrev s0 : ℕ → ℝ := fun _ => 0
-private abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev K0 : ℕ → ℕ := fun _ => 4
-
-/-- `σ = (+,-,+)`. -/
-private abbrev σ3 : Fin 3 → Bool := ![true, false, true]
-
-/-- The label `(0, 0, 0)`: all three insertions in the same block. -/
-private abbrev b3 : Fin 3 → Zd 3 (sz0.L 0) := ![0, 0, 0]
-
-/-- The identity kernel `δ`. -/
-private abbrev δ3 : (Fin 3 → Zd 3 (sz0.L 0)) → (Fin 3 → Zd 3 (sz0.L 0)) → ℂ :=
-  fun a a' => if a = a' then 1 else 0
-
-/-- The propagator kernel of `Ugen` at `σ3` and the times `u_{j+1} → u_m`. -/
-private abbrev U3 (j m : ℕ) : (Fin 3 → Zd 3 (sz0.L 0)) → (Fin 3 → Zd 3 (sz0.L 0)) → ℂ :=
-  fun a b => ∏ i : Fin 3, uKer 3 (sz0.L 0) (sz0.lam 0)
-    (cycProd (fun i => mSigma (E0 0) (σ3 i)) i)
-    (gridTime s0 t0 K0 0 (j + 1)) (gridTime s0 t0 K0 0 m) (a i) (b i)
-
-private theorem hE0 : |E0 0| < 2 := by norm_num
-private theorem hs00 : 0 ≤ s0 0 := le_rfl
-private theorem hst0 : s0 0 ≤ t0 0 := by norm_num
-private theorem ht10 : t0 0 < 1 := by norm_num
-private theorem hj0 : 0 + 1 ≤ K0 0 := by norm_num
-private theorem hj1 : 1 + 1 ≤ K0 0 := by norm_num
-
-private theorem hΔ : 0 ≤ gridStep s0 t0 K0 0 := by norm_num [gridStep]
-
-/-- The grid data are nondegenerate: `Δ = 1/8`, `u_1 = 1/8`, `u_2 = 1/4`. -/
-private theorem data : gridStep s0 t0 K0 0 = 1 / 8 ∧ gridTime s0 t0 K0 0 1 = 1 / 8 ∧
-    gridTime s0 t0 K0 0 2 = 1 / 4 := by
-  refine ⟨?_, ?_, ?_⟩ <;> norm_num [gridStep, gridTime]
-
-/-- The loop family at the data is in the Hermitian test class (`k = 3`). -/
-private theorem hΦ3 (j : ℕ) (hj : j + 1 ≤ K0 0) (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    HermTestFun sz0 0 (loopFamN sz0 E0 s0 t0 K0 0 j σ3 a) :=
-  StepDecompN_loopFam_hermTestFun sz0 E0 s0 t0 K0 0 j hE0 hs00 hst0 ht10 hj σ3 a
-
-/-- The Hermitian second-derivative constant `C₂ = k (k + 1) N η_{u_{j+1}}^{-(k+2)}` at the data. -/
-private def C₂3 (j : ℕ) : ℝ :=
-  ((3 * (3 + 1) : ℕ) : ℝ) * (Sizes.size sz0 0 : ℝ)
-    * (etaT (E0 0) (gridTime s0 t0 K0 0 (j + 1)))⁻¹ ^ (3 + 2)
-
-private theorem hC₂3 (j : ℕ) (hj : j + 1 ≤ K0 0) (a : Fin 3 → Zd 3 (sz0.L 0))
-    (M y : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :
-    M.IsHermitian → y.IsHermitian →
-      ‖fderiv ℝ (fderiv ℝ (loopFamN sz0 E0 s0 t0 K0 0 j σ3 a)) M y y‖ ≤ C₂3 j * ‖y‖ ^ 2 :=
-  fun hM hy => StepDecompN_loopFam_hC₂ sz0 E0 s0 t0 K0 0 j hE0 hs00 hst0 ht10 hj σ3 a M y hM hy
-
-/-- `C₂ > 0` (the bound is not a vacuous `≤ 0`): `12 · 2097152 · η^{-5} > 0`. -/
-private theorem C₂3_pos (j : ℕ) (hj : j + 1 ≤ K0 0) : 0 < C₂3 j := by
-  have hη : 0 < etaT (E0 0) (gridTime s0 t0 K0 0 (j + 1)) :=
-    etaT_pos hE0 (StepDecompN_gridTime_lt_one s0 t0 K0 0 hst0 hj ht10)
-  have hN : 0 < (Sizes.size sz0 0 : ℝ) := by
-    rw [sz0_values.2.2.1]; norm_num
-  unfold C₂3
-  positivity
-
 /-! ### Step `j = 0` (`H_0 = 0`) -/
 
-/-- **Instance of `stepDecompCN`** (identity kernel): the loop family at the data, with the
-integrability hypotheses discharged by `integrable_stepZCN_re_of_hermTestFun` and
-`integrable_stepZCN_im_of_hermTestFun`. -/
-example :=
-  stepDecompCN sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3
-    (integrable_stepZCN_re_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3)
-    (integrable_stepZCN_im_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3)
-
-/-- **Instance of `stepDecompCN`** with the genuinely complex propagator kernel `U3 0 1`. -/
-example :=
-  stepDecompCN sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ (U3 0 1) b3
-    (integrable_stepZCN_re_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ
-      (U3 0 1) b3)
-    (integrable_stepZCN_im_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ
-      (U3 0 1) b3)
-
-/-- **Instances of the integrability theorems** (identity and propagator kernels). -/
-example :=
-  integrable_stepZCN_re_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3
-
-example :=
-  integrable_stepZCN_im_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3
-
-example :=
-  integrable_stepZCN_re_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ (U3 0 1) b3
-
-example :=
-  integrable_stepZCN_im_of_hermTestFun sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ (U3 0 1) b3
-
-/-- **Instances of `stepDecompCN_Y_sq`** (identity and propagator kernels). -/
-example := stepDecompCN_Y_sq sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ δ3 b3
-
-example := stepDecompCN_Y_sq sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (hC₂3 0 hj0) hΔ (U3 0 1) b3
-
-/-- `H_0 = 0` at the data (`s 0 = 0`, `j = 0`): the walk is deterministic, so `AbCN` does not
-depend on `ω`. -/
-private theorem pathH_zero (ω : PathΩ sz0) : pathH sz0 s0 t0 K0 0 0 ω = 0 := by
-  simp [pathH, s0]
-
-/-- The (deterministic) direction `AbCN` of the loop family with the kernel `U3 0 1` at `H_0 = 0`. -/
-private def A₀3 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ :=
-  AbCN sz0 s0 t0 K0 0 0 (loopFamN sz0 E0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 (fun _ => 0)
-
-private theorem AbCN_eq (ω : PathΩ sz0) :
-    AbCN sz0 s0 t0 K0 0 0 (loopFamN sz0 E0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 ω = A₀3 := by
-  simp only [A₀3, AbCN, pathH_zero]
-
-/-- The sub-Gaussian proxy: the larger of `Δ · linTrVar A₀` and `Δ · linTrVar ((-I) • A₀)`. -/
-private def c3 : ℝ :=
-  max (gridStep s0 t0 K0 0 * linTrVar 0 A₀3)
-    (gridStep s0 t0 K0 0 * linTrVar 0 ((-Complex.I) • A₀3))
-
-private theorem c3_nonneg : 0 ≤ c3 :=
-  le_max_of_le_left (mul_nonneg hΔ (linTrVar_nonneg 0 _))
-
-private theorem boundRe3 (ω : PathΩ sz0) :
-    gridStep s0 t0 K0 0 * linTrVar 0
-      (AbCN sz0 s0 t0 K0 0 0 (loopFamN sz0 E0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 ω) ≤ c3 := by
-  rw [AbCN_eq]; exact le_max_left _ _
-
-private theorem boundIm3 (ω : PathΩ sz0) :
-    gridStep s0 t0 K0 0 * linTrVar 0 ((-Complex.I) •
-      AbCN sz0 s0 t0 K0 0 0 (loopFamN sz0 E0 s0 t0 K0 0 0 σ3) (U3 0 1) b3 ω) ≤ c3 := by
-  rw [AbCN_eq]; exact le_max_right _ _
-
-/-- **Instance of `stepDecompCN_Z_subG`** (kernel `U3 0 1`, `E = univ`, `c = c3`). -/
-example :=
-  stepDecompCN_Z_subG sz0 s0 t0 K0 0 0 (hΦ3 0 hj0) (U3 0 1) b3 Set.univ
-    MeasurableSet.univ c3 c3_nonneg (fun ω _ => boundRe3 ω) (fun ω _ => boundIm3 ω)
-
-/-- **Instance of `StepDecompN_subGaussStopN_zvecN`**: the stopping family `τ ≡ K 0` (`{0 < τ}` is
-the whole space since `K 0 ≥ 1`), `m = 1`. -/
-example : SubGaussStopN sz0 (E0 0) σ3 (gridTime s0 t0 K0 0) (fun _ => K0 0)
-    (fun j ω => ZvecN sz0 E0 s0 t0 K0 0 j σ3 ω) 1 b3 0 ⟨c3, c3_nonneg⟩ := by
-  have hτ : MeasurableSet[filt sz0 0]
-      {ω : PathΩ sz0 | 0 < (fun _ : PathΩ sz0 => K0 0) ω} := by
-    have : {ω : PathΩ sz0 | 0 < (fun _ : PathΩ sz0 => K0 0) ω} = Set.univ :=
-      Set.eq_univ_of_forall fun _ => by norm_num
-    rw [this]; exact MeasurableSet.univ
-  exact StepDecompN_subGaussStopN_zvecN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3
-    (fun _ => K0 0) hτ 1 b3 c3 c3_nonneg (fun ω _ => boundRe3 ω) (fun ω _ => boundIm3 ω)
-
-/-- **Instances of the identification theorems** at the data. -/
-example (ω : PathΩ sz0) (b : Fin 3 → Zd 3 (sz0.L 0)) :=
-  ZvecN_eq_stepZCN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3 b ω
-
-example := martIncN_eq_stepXiCN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3
-
-example := YvecN_eq_stepYCN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3
-
-/-- **Instances of `Ugen_stepZCN`, `Ugen_stepYCN`** (`u_m = u_1`, `m = 1`). -/
-example (a : Fin 3 → Zd 3 (sz0.L 0)) (ω : PathΩ sz0) :=
-  Ugen_stepZCN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3 1 a ω
-
-example := Ugen_stepYCN sz0 E0 s0 t0 K0 0 0 hE0 hs00 hst0 ht10 hj0 σ3 1
-
 /-! ### Step `j = 1` (`H_1 = √Δ X_1` random; `u_2 = 1/4`, `m = 2`) -/
-
-/-- **Instance of `stepDecompCN`** at `j = 1`, propagator kernel `U3 1 2`: the direction `AbCN`
-depends on `ω`. -/
-example :=
-  stepDecompCN sz0 s0 t0 K0 0 1 (hΦ3 1 hj1) (hC₂3 1 hj1) hΔ (U3 1 2) b3
-    (integrable_stepZCN_re_of_hermTestFun sz0 s0 t0 K0 0 1 (hΦ3 1 hj1) (hC₂3 1 hj1) hΔ
-      (U3 1 2) b3)
-    (integrable_stepZCN_im_of_hermTestFun sz0 s0 t0 K0 0 1 (hΦ3 1 hj1) (hC₂3 1 hj1) hΔ
-      (U3 1 2) b3)
-
-example := stepDecompCN_Y_sq sz0 s0 t0 K0 0 1 (hΦ3 1 hj1) (hC₂3 1 hj1) hΔ (U3 1 2) b3
-
-example (ω : PathΩ sz0) (b : Fin 3 → Zd 3 (sz0.L 0)) :=
-  ZvecN_eq_stepZCN sz0 E0 s0 t0 K0 0 1 hE0 hs00 hst0 ht10 hj1 σ3 b ω
-
-example := martIncN_eq_stepXiCN sz0 E0 s0 t0 K0 0 1 hE0 hs00 hst0 ht10 hj1 σ3
-
-example := YvecN_eq_stepYCN sz0 E0 s0 t0 K0 0 1 hE0 hs00 hst0 ht10 hj1 σ3
-
-example (a : Fin 3 → Zd 3 (sz0.L 0)) (ω : PathΩ sz0) :=
-  Ugen_stepZCN sz0 E0 s0 t0 K0 0 1 hE0 hs00 hst0 ht10 hj1 σ3 2 a ω
-
-example := Ugen_stepYCN sz0 E0 s0 t0 K0 0 1 hE0 hs00 hst0 ht10 hj1 σ3 2
-
-end StepDecompNCheck
-
-end Instances
 
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.loopFamN
-#print axioms RBM.Ind.dirDerivN
-#print axioms RBM.Ind.ZfamN
-#print axioms RBM.Ind.ZvecN
-#print axioms RBM.Ind.YvecN
-#print axioms RBM.Ind.stoppedEdgeN
-#print axioms RBM.Ind.SubGaussFormN
-#print axioms RBM.Ind.SubGaussStopN
-#print axioms RBM.Ind.stepDecompCN
-#print axioms RBM.Ind.stepDecompCN_Z_subG
-#print axioms RBM.Ind.integrable_stepZCN_re_of_hermTestFun
-#print axioms RBM.Ind.integrable_stepZCN_im_of_hermTestFun
-#print axioms RBM.Ind.stepDecompCN_Y_sq
-#print axioms RBM.Ind.ZvecN_eq_stepZCN
-#print axioms RBM.Ind.Ugen_stepZCN
-#print axioms RBM.Ind.martIncN_eq_stepXiCN
-#print axioms RBM.Ind.YvecN_eq_stepYCN
-#print axioms RBM.Ind.Ugen_stepYCN
-#print axioms RBM.Ind.StepDecompN_subGaussStopN_zvecN

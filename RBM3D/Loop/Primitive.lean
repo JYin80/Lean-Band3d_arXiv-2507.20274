@@ -51,15 +51,6 @@ variable {d L W g}
 theorem Theta_zero : Theta d L g 0 = 1 := by
   simp [Theta]
 
-/-- The spectral parameter of `(Kn2sol)` stays in the unit ball: the paper's `m(σ)` has
-`|m(σ)| = 1` (it is a point of the unit circle in the upper half plane), so
-`‖t m(σ₁)m(σ₂)‖ = t < 1`. -/
-theorem norm_mul_lt_one {m : Bool → ℂ} {σ₁ σ₂ : Bool} (h₁ : ‖m σ₁‖ = 1) (h₂ : ‖m σ₂‖ = 1)
-    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) : ‖(t : ℂ) * (m σ₁ * m σ₂)‖ < 1 := by
-  rw [norm_mul, norm_mul, h₁, h₂, mul_one, mul_one, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg ht0]
-  exact ht1
-
 /-- **`(Kn2sol)` solves the convolution tree equation at `n = 2`**, wherever
 `‖t m₁ m₂‖ < 1`. -/
 theorem hasDerivAt_kTwo (hS : ‖SB d L g‖ = 1) (hW : (W : ℂ) ^ d ≠ 0) (m : Bool → ℂ) {t : ℝ}
@@ -93,34 +84,7 @@ theorem kTwo_zero (m : Bool → ℂ) (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
 
 variable (d L W g)
 
-/-- `(Kn2sol)` as a function of the loop index, zero off loops of length `2`. -/
-noncomputable def kTwoLoop (m : Bool → ℂ) (t : ℝ) (I : LoopIdx (Zd d L)) : ℂ :=
-  match I.σ, I.a with
-  | [σ₁, σ₂], [a₁, a₂] => kTwo d L W g m t σ₁ σ₂ a₁ a₂
-  | _, _ => 0
-
 variable {d L W g}
-
-/-- **`(Kn2sol)` satisfies `(pro_dyncalK)` at `n = 2`** in its general form, with the
-right-hand side built from the cut-and-glue operators. -/
-theorem hasDerivAt_kTwoLoop (hS : ‖SB d L g‖ = 1) (hW : (W : ℂ) ^ d ≠ 0) (m : Bool → ℂ)
-    {t : ℝ} (σ₁ σ₂ : Bool) (ht : ‖(t : ℂ) * (m σ₁ * m σ₂)‖ < 1) (a₁ a₂ : Zd d L) :
-    HasDerivAt (fun s => kTwoLoop d L W g m s ⟨[σ₁, σ₂], [a₁, a₂]⟩)
-      (treeEqRhs d L W g (kTwoLoop d L W g m t) ⟨[σ₁, σ₂], [a₁, a₂]⟩) t := by
-  rw [treeEqRhs_two]
-  exact hasDerivAt_kTwo hS hW m σ₁ σ₂ ht a₁ a₂
-
-/-- At `t = 0`, `(Kn2sol)` takes the `M`-loop values on every loop of length `2`. -/
-theorem kTwoLoop_zero (m : Bool → ℂ) (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
-    kTwoLoop d L W g m 0 ⟨[σ₁, σ₂], [a₁, a₂]⟩ = MLoop d L W m ⟨[σ₁, σ₂], [a₁, a₂]⟩ :=
-  kTwo_zero m σ₁ σ₂ a₁ a₂
-
-/-- **`RBM.Loop.KTwoFormula` is satisfiable.**  The hypothesis carried by `pureLoop_two`
-holds of the explicit solution, so the theorems that assume it are not vacuous. -/
-theorem kTwoFormula_kTwoLoop (m : Bool → ℂ) :
-    KTwoFormula d L W g m (kTwoLoop d L W g m) := by
-  intro t _ _ σ₁ σ₂ a₁ a₂
-  rfl
 
 /-- An entrywise bound on `(Kn2sol)`: `‖K^(2)‖ ≤ W^{-d}(1-t)^{-1}`, from
 `RBM.norm_Theta_apply_le` and the row sum `RBM.sum_Theta_real_row`.  This is what supplies
@@ -143,17 +107,5 @@ theorem norm_kTwo_le (hL : 3 ≤ L) {m : Bool → ℂ} {σ₁ σ₂ : Bool} (h�
         rw [hmm, mul_one]
     _ ≤ ‖((W : ℂ) ^ d)⁻¹‖ * (1 - t)⁻¹ :=
         mul_le_mul_of_nonneg_left hentry (norm_nonneg _)
-
-/-- **`res_pureKes` at `n = 2`, with `(Kn2sol)` no longer assumed.**  Applying
-`pureLoop_two` to the explicit solution discharges its `KTwoFormula` hypothesis; what is
-left standing is `ThetaDecayShort`, which the paper really does borrow. -/
-theorem pureLoop_two_kTwoLoop {k : ℕ} {m : Bool → ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g)
-    (hL : 3 ≤ L) {σ : Bool} (hm : ‖m σ‖ = 1) (hmi : 0 < (m σ).im)
-    (hshort : ThetaDecayShort (k + 2) g (m σ)) :
-    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 → ∀ a₁ a₂ : Zd (k + 2) L,
-      ‖kTwoLoop (k + 2) L W g m t ⟨[σ, σ], [a₁, a₂]⟩‖
-        ≤ C * ‖((W : ℂ) ^ (k + 2))⁻¹‖
-          * Real.exp (-(c * (zdistD (k + 2) L (a₁ - a₂) : ℝ))) :=
-  pureLoop_two hd hg hL hm hmi hshort (kTwoFormula_kTwoLoop m)
 
 end RBM.Loop

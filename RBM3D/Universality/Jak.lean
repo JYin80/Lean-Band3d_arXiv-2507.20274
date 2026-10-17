@@ -937,22 +937,6 @@ theorem unJak_of_ouClaims : ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz
         gcongr
         exact Real.one_le_rpow hX1 hε.le
 
-/-- **The `Jak` half of the row `UNJakUywRow`** (RBM2D `jakRow` `:903`; RBM1D `expect_L1_weighted_le`,
-`Flow/Step3KernelBounds.lean:1768`, per site `y`): the weighted `(jaklsdufowe)` (`1_2:569-578`) at
-`c' = 𝔠𝔡/30` and `C = 3 nf + 16`, from the `𝐇_t` claims, with `τ₀ = min τ₁ (1/4)`.  `UNLocAvgBand` is the
-first hypothesis of the row and is not used.  Same hypotheses and quantifiers as the first conjunct of
-`UNJakUywRow` (`Pins.lean:805-809`). -/
-theorem jakRow :
-    UNLocAvgBand → UNOUClaims → ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-      ∀ κ : ℝ, 0 < κ → ∀ E : ℝ, |E| ≤ 2 - κ → ∀ nf : ℕ, ∃ C τ₀ : ℝ, 0 < τ₀ ∧
-        ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ → UNJak sz E nf τU C (𝔠 * 𝔡 / 30) := by
-  intro _hloc hclaims d hd 𝔠 𝔡 sz hadm κ hκ E hE nf
-  obtain ⟨τ₁, hτ₁, hτ⟩ := hclaims d hd 𝔠 𝔡 sz hadm
-  refine ⟨3 * (nf : ℝ) + 16, min τ₁ (1 / 4), lt_min hτ₁ (by norm_num), ?_⟩
-  intro τU hτU hτle
-  obtain ⟨hQ, hD⟩ := hτ τU hτU (le_min_iff.1 hτle).1
-  exact unJak_of_ouClaims d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hD
-
 /-! ## §6 Compiled nonempty instances (namespace `RBM.Univ.JakInst`)
 
 `jakRow` at the preflight size sequence `sz0` (`d = 3`, `L_n = 4(n+1)`, `W_n = (2(n+1))^5`,
@@ -962,56 +946,5 @@ deterministic hypothesis is discharged.  `inst_window` shows that the premises o
 satisfiable at every size: `z = 1 + i N⁻¹` lies in the window `InWindow sz0 1 1 τ_U n` and `t = 0 ≤ t*`.
 `inst_unJak` applies `unJak_of_ouClaims` at the same data (`UNOUQUE`, `UNOUDiag` stay hypotheses) and
 `inst_cd_le_half` applies `un_cd_le_half`. -/
-
-namespace JakInst
-
-theorem inst_row :
-    UNLocAvgBand → UNOUClaims →
-      ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-        UNJak SizesInst.sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  fun hloc hOU =>
-    jakRow hloc hOU 3 le_rfl (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-      (by norm_num) 2
-
-theorem inst_window :
-    ∀ (n : ℕ) (τU : ℝ), 0 < τU →
-      InWindow SizesInst.sz0 1 1 τU n (⟨1, (Nsz SizesInst.sz0 n)⁻¹⟩ : ℂ) ∧
-        0 ≤ ouTStar SizesInst.sz0 τU n := by
-  intro n τU hτU
-  have hN : (1 : ℝ) ≤ Nsz SizesInst.sz0 n := by
-    have : 1 ≤ SizesInst.sz0.size n := by
-      simp only [Sizes.size, SizesInst.sz0]
-      exact Nat.one_le_pow _ _ (by positivity)
-    exact_mod_cast this
-  have hN0 : (0 : ℝ) < Nsz SizesInst.sz0 n := by linarith
-  refine ⟨⟨by simp, ?_, ?_⟩, by unfold ouTStar; positivity⟩
-  · change Nsz SizesInst.sz0 n ^ (-1 - τU) ≤ (Nsz SizesInst.sz0 n)⁻¹
-    rw [← Real.rpow_neg_one]
-    exact Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-  · change (Nsz SizesInst.sz0 n)⁻¹ ≤ Nsz SizesInst.sz0 n ^ (-1 + τU)
-    rw [← Real.rpow_neg_one]
-    exact Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-
-/-- `unJak_of_ouClaims` at `sz0`, `κ = 1/2`, `E = 1`, `nf = 2`, any `τ_U ∈ (0, 1/4]`; the two `𝐇_t` claims
-at `τ_U` are hypotheses (pins of other gates). -/
-theorem inst_unJak (τU : ℝ) (hτ : 0 < τU) (hτ4 : τU ≤ 1 / 4)
-    (hQUE : UNOUQUE SizesInst.sz0 (1 / 10) τU) (hDiag : UNOUDiag SizesInst.sz0 τU) :
-    UNJak SizesInst.sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  unJak_of_ouClaims 3 le_rfl (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-    (by norm_num) 2 τU hτ hτ4 hQUE hDiag
-
-/-- `un_cd_le_half` at `sz0`: `𝔠𝔡 = 1/60 ≤ 1/2`. -/
-theorem inst_cd_le_half : (1 / 6 : ℝ) * (1 / 10) ≤ 1 / 2 :=
-  un_cd_le_half 3 (by norm_num) (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm
-
-end JakInst
-
-#print axioms RBM.Univ.un_cd_le_half
-#print axioms RBM.Univ.unJak_of_ouClaims
-#print axioms RBM.Univ.jakRow
-#print axioms RBM.Univ.JakInst.inst_row
-#print axioms RBM.Univ.JakInst.inst_window
-#print axioms RBM.Univ.JakInst.inst_unJak
-#print axioms RBM.Univ.JakInst.inst_cd_le_half
 
 end RBM.Univ

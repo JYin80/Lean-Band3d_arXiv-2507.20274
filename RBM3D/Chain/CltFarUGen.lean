@@ -73,40 +73,6 @@ def IniTermGen_CltFlow (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
         ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ T0 sz z n) → STReg5I sz s t →
           STMfarg (mk sz z) s ∧ STGijDecgL (mk sz z) (law sz) s ∧ STKfargL (mk sz z) s ∧ STKpropsg (mk sz z) s
 
-private theorem CltFarUGen_ck_pos {κ : ℝ} (h0 : 0 < κ) (h2 : κ ≤ 2) : 0 < cltCk κ := by
-  unfold cltCk
-  exact div_pos (Real.sqrt_pos.2 (mul_pos h0 (by linarith))) two_pos
-
-/-- **Target 5 at the band** (`T2484_CltFlow` for `(seqP, STFlow, bandFM ∘ STflowE, lemT)`): the construction inside
-`stCltFar_of_gL` (`Evolution/CltFarG.lean:926-950`) with `κ' = cltCk (κ/2)` (`min (κ/2) 2` to keep `cltCk` positive for every
-`κ > 0`), `δ = ε/2`, `H₀ = 0`, `g' = sz.lam`, `E = STflowE z`. -/
-theorem iniTermGen_cltFlow_band (d : ℕ) : IniTermGen_CltFlow d (fun sz => Sizes.seqP sz)
-    (fun sz κ ε 𝔠 𝔡 z => sz.STFlow κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  have hκ' : 0 < min (κ / 2) 2 := lt_min (half_pos hκ) two_pos
-  have hck : 0 < cltCk (min (κ / 2) 2) := CltFarUGen_ck_pos hκ' (min_le_right _ _)
-  refine ⟨cltCk (min (κ / 2) 2), ε / 2, hck, ?_, half_pos hε, ?_⟩
-  · unfold cltCk
-    refine (div_le_one two_pos).2 (Real.sqrt_le_iff.2 ⟨by norm_num, ?_⟩)
-    nlinarith [sq_nonneg (min (κ / 2) 2 - 2)]
-  intro 𝔠 sz z hflow
-  obtain ⟨hadm, hE, ht1, hRC⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow (t := fun n => lemT (z n)) (fun _ => le_rfl)
-  have hEm : ∀ n, |STflowE z n| ≤ 2 - min (κ / 2) 2 := fun n => by linarith [min_le_left (κ / 2) 2, hE n]
-  have hWt : Filter.Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) Filter.atTop Filter.atTop :=
-    tendsto_atTop_mono' _ hadm.2.2.2.1 ((tendsto_rpow_atTop hadm.1).comp hadm.2.2.1)
-  refine ⟨fun _ => 0, sz.lam, STflowE z, fun n => (cltCk_facts hκ' (hEm n)).2.1, hRC, cltRepg_band sz _,
-    fun n x => bandFM_M_le sz _ (fun n => (hE n).le.trans (by linarith)) n x,
-    bandFM_STThPropsg sz (κ / 2) 𝔡 (STflowE z) hd (half_pos hκ) h𝔡 hadm.2.2.2.2 (fun n => (hE n).le),
-    stExpInvgL_band sz _, ?_⟩
-  intro s t hs0 hst htl hreg
-  have hcl : ∀ n, s n ≤ lemT (z n) := fun n => (hst n).le.trans (htl n)
-  obtain ⟨-, -, ht1', -⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
-  exact ⟨bandFM_STMfarg sz _ ((Real.tendsto_log_atTop.comp hWt).eventually_gt_atTop 0) _,
-    bandFM_STGijDecgL_of_three_le hd hκ hε h𝔡 hflow hs0 hcl,
-    bandFM_STKfargL hd hκ hε hflow hs0 hcl,
-    bandFM_STKpropsg sz (κ / 2) 𝔡 (STflowE z) s t hd (half_pos hκ) h𝔡 hadm.2.2.2.2 (fun n => (hE n).le) hs0
-      (fun n => (hst n).le) ht1' hreg⟩
-
 /-- **D2: the class feeds X1's far pin at every grid time `t' ∈ (s, t]`** (closure under `t ↦ t'`): `HCltOf` at `t'` is assembled
 from the `t`-free fields of the class (applied at `(s, t')`), the flow facts (admissibility, `T0 < 1`) and the Step-2 premises
 restricted to `[s, t']`; `stCltFargL_holds` then gives the far pin at `t'`. -/
@@ -136,14 +102,6 @@ def STCltFarUConclgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.S
   PrecL sz μ (U := fun n => Σ u : TimeIcc s t n, sz.STCltFarIdx s n (u : ℝ))
     (fun n q ω => ‖STfFarg C n (s n) (q.1 : ℝ) q.2.1.1.1 q.2.1.2 ω‖)
     (fun n q _ => sz.STCltFarZeta n q.2.1.2)
-
-/-- **Target 6, band bridge** (`T2484_BandCltFarU`): the band `STCltFarUConcl` is `STCltFarUConclgL` at `(bandFM sz E, seqP sz)`,
-through `bandFM_STfFarg`. -/
-theorem bandFM_STCltFarUConcl : ∀ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ),
-    sz.STCltFarUConcl E s t ↔ STCltFarUConclgL (bandFM sz E) (Sizes.seqP sz) s t := by
-  intro d sz E s t
-  unfold STCltFarUConclgL STCltFarUConcl Prec PrecL
-  simp only [bandFM_STfFarg]
 
 private theorem CltFarUGen_prec_restrict {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) {U V : ℕ → Type*}
     {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ} {ξ' ζ' : ∀ n, V n → sz.SeqΩ → ℝ}
@@ -616,99 +574,6 @@ theorem stCltFarUgL_of (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
 end Uniform
 
 /-! ## 6. Band re-derivation and compiled nonempty instances (target 10; `d = 3`, `szB`, `zB`) -/
-
-/-- **Target 7 at the band** (re-derivation of `stCltFar_uniform`, `IniTermI:2005`): the generic pin at the band tuple
-`(seqP, STFlow, bandFM ∘ STflowE, lemT)`, `gK = sz.lam`, through `Step5Gen_ingR5_iff_congr` and the bridge of target 6. -/
-theorem iniTermGen_cltFarU_band (d : ℕ) : STIngR5 d STReg5I (fun sz E s t => sz.STCltFarUConcl E s t) :=
-  (Step5Gen_ingR5_iff_congr d STReg5I (fun sz E s t => sz.STCltFarUConcl E s t)
-    (fun sz z s t => STCltFarUConclgL (bandFM sz (STflowE z)) (Sizes.seqP sz) s t)
-    (fun sz z s t => bandFM_STCltFarUConcl sz (STflowE z) s t)).2
-    (stCltFarUgL_of d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => sz.lam) (fun sz => inferInstance)
-      (step5CasesGen_flowFacts_band d) (iniTermGen_kerFacts_band d) (iniTermGen_cltFlow_band d))
-
-section Inst
-
-open RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst
-
-/-- **Target 5 at `(szB, zB)`** (`L = 4`, `W_n = n + 4`, `lam = 1`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), case (i) window
-`(s, t) = (7/8, 15/16)` (`szB_reg5I`; `15/16 ≤ 31/32 ≤ lemT`): every field of the class is discharged. -/
-example : ∃ κ' δ : ℝ, 0 < κ' ∧ κ' ≤ 1 ∧ 0 < δ ∧
-    ∃ (H₀ : ∀ n, Matrix (Idx 3 (szB.L n) (szB.W n)) (Idx 3 (szB.L n) (szB.W n)) ℂ) (g' E : ℕ → ℝ),
-      (∀ n, κ' ≤ ((bandFM szB (STflowE zB)).m n).im) ∧
-      (∀ᶠ n in atTop, ((szB.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - lemT (zB n)) ∧
-      CltRepg (bandFM szB (STflowE zB)) (Sizes.seqP szB) H₀ g' E ∧
-      STThPropsg (bandFM szB (STflowE zB)) ∧ STExpInvgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) ∧
-      STMfarg (bandFM szB (STflowE zB)) (fun _ => 7 / 8) ∧
-      STGijDecgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) ∧
-      STKfargL (bandFM szB (STflowE zB)) (fun _ => 7 / 8) ∧ STKpropsg (bandFM szB (STflowE zB)) (fun _ => 7 / 8) := by
-  obtain ⟨κ', δ, h1, h2, h3, H⟩ :=
-    iniTermGen_cltFlow_band 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨H₀, g', E, hm, hev, hrep, hM, hTh, hX, hst⟩ := H (1 / 6) szB zB flow_zB
-  exact ⟨κ', δ, h1, h2, h3, H₀, g', E, hm, hev, hrep, hTh, hX,
-    hst (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num)
-      (szB_flow_ht (by norm_num)) szB_reg5I⟩
-
-/-- **The far pin from the class at `(szB, zB)`**, window `(7/8, 15/16)`: `CltFarUGen_cltFar_of` (the closure of `HCltOf` under
-`t ↦ t'`) gives X1's far conclusion; the two restricted Step-2 premises stay hypotheses (another gate's pins). -/
-example (hLE : STLocalEntryUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hGD : STGdecayWgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) 1) :
-    STCltFarConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  CltFarUGen_cltFar_of 3 (fun sz => Sizes.seqP sz) _ _ _ (step5CasesGen_flowFacts_band 3) (iniTermGen_cltFlow_band 3) le_rfl
-    (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) szB zB flow_zB 1 _ _ (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_reg5I hLE hGD
-
-/-- **Target 6, the bridge at `(szB, zB)`**: the band `STCltFarUConcl` is the generic one. -/
-example : szB.STCltFarUConcl (STflowE zB) (fun _ => 7 / 8) (fun _ => 15 / 16) ↔
-    STCltFarUConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  bandFM_STCltFarUConcl szB _ _ _
-
-/-- **Target 6, `stIngR5gL_hyps_restrict` at `(szB, zB, 7/8, 15/16)`**, `t' = 29/32`: the regime and `(con_st_ind)` are discharged,
-the five stochastic premises of Steps 1-4 stay hypotheses (other gates' pins). -/
-example (Cd : ℝ)
-    (hS1 : STStep1LoopgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hS2 : STStep2ConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) Cd)
-    (hLmax : STLmaxUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hLKU : STLKUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STReg5I szB (fun _ => 7 / 8) (fun _ => 29 / 32) ∧ szB.STConStInd (1 / 100) (fun _ => 7 / 8) (fun _ => 29 / 32) ∧
-      STStep1LoopgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 29 / 32) ∧
-      STStep2ConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 29 / 32) Cd ∧
-      STLmaxUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 29 / 32) ∧
-      STLKUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 29 / 32) :=
-  stIngR5gL_hyps_restrict szB (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => 29 / 32)
-    (1 / 100) Cd (by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) szB_reg5I
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) hS1 hS2 hLmax hLKU
-
-/-- **Target 7 at the band**: the generic pin `stCltFarUgL_of` at the band tuple, read through the band shape, gives the instance of
-`Step5Pins` at `(szB, zB, 7/8, 15/16)` for every `Cd > 0` (as `inst_cltFarU_proved`, `IniTermI:3800`); the pin's hypotheses are
-discharged by the band results, the stochastic premises of Steps 1-4 are the premises of the instance. -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => sz.STCltFarUConcl E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_ing5_I STReg5I _ (iniTermGen_cltFarU_band 3) szB_reg5I Cd hCd
-
-/-- **Target 7 applied at `(szB, zB, 7/8, 15/16)`**: the pin `stCltFarUgL_of` at the band tuple, its five hypotheses discharged
-by the band results; the flow (`flow_zB`), the window (`szB_reg5I`, `15/16 ≤ 31/32 ≤ lemT`) and `(con_st_ind)` (`conStInd_const`)
-are discharged; the stochastic premises of Steps 1-4 are hypotheses of the example (other gates' pins). -/
-example (Cd : ℝ) (hCd : 0 < Cd)
-    (hKb : STKboundgL (bandFM szB (STflowE zB)) (Sizes.seqP szB)) (hKw : STKwardgL (bandFM szB (STflowE zB)) (Sizes.seqP szB))
-    (hLK : STLKgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hDecS : STDecayStronggL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hS1 : STStep1LoopgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hS2 : STStep2ConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) Cd)
-    (hLmax : STLmaxUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hLKU : STLKUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      STCltFarUConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := stCltFarUgL_of 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band 3) (iniTermGen_kerFacts_band 3) (iniTermGen_cltFlow_band 3) le_rfl (1 / 10) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, H (1 / 6) szB zB flow_zB (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5I hKb hKw hLK hDec hDecS
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h0) hS1 hS2 hLmax hLKU⟩
-
-end Inst
 
 end RBM.BA
 

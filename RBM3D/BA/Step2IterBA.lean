@@ -785,49 +785,4 @@ The data are the merged preflight sequence `sz0` (`Defs/Sizes.lean:260`: `L_n = 
 `N_n = (W_n L_n)^3`), the spectral parameters `zSeq` and `flow_sz0 : BAFlow sz0 zSeq` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`
 (`BA/FlowPins.lean:1214`), the times `s ≡ 1/10 < t ≡ 1/2 < t₀` (`half_lt_t0`).  Every deterministic hypothesis is discharged. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- Target 1 at `sz0`, the flow coupling and energy, grid times `1/10, 1/2`, `n = 0`, `k = 1`, a sample point `ω`. -/
-example (ω : PathΩ sz0) :
-    ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Hpath (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => 3) 0 1 ω).IsHermitian :=
-  baStep2Mat_Hpath_herm sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) _ _ _ 0 1 ω
-
-/-- Target 2 at `sz0`, `zSeq`. -/
-example : Step2IterGen_OneLoop (baFMz sz0 zSeq) :=
-  baStep2_oneLoop sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-/-- Target 3 at `sz0`, the flow coupling and energy. -/
-example : Step2IterGen_ListLink (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) :=
-  baStep2Mat_listLink sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)
-
-/-- Target 4 at `sz0`, `zSeq`, `s ≡ 1/10`, `t ≡ 1/2`. -/
-example : ∃ C_K : ℝ, 0 < C_K ∧ ∀ᶠ n in atTop, ∀ (u D : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-    (1 / 10 : ℝ) ≤ u → u ≤ 1 / 2 → 0 ≤ D →
-      ‖(baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).K n u σ a‖ ≤
-        C_K * STprof sz0 n u D ((sz0.L n : ℕ) : ℝ) (a 0) (a 1) :=
-  baStep2_K2 3 (by norm_num) (1 / 2) (1 / 10) (1 / 6) (1 / 10) (by norm_num) (by norm_num) sz0 zSeq flow_sz0
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num)
-
-/-- Target 5 at `sz0`, `zSeq`: constants `C, δ₀` first, then the eventual statement at the BA carrier. -/
-example : ∃ C δ₀ : ℝ, 0 < C ∧ 0 < δ₀ ∧
-    ∀ᶠ n in atTop, Step2IterGen_NewKLKAtN (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) n C δ₀ := by
-  obtain ⟨C, δ₀, hC, hδ, h⟩ := baStep2_newKLK 3 (by norm_num) (1 / 2) (1 / 10) (by norm_num) (by norm_num)
-  exact ⟨C, δ₀, hC, hδ, h (1 / 10) (1 / 6) sz0 zSeq flow_sz0⟩
-
-/-- Target 6 at `sz0`, `zSeq`, `t ≡ 1/2 ≤ t₀`. -/
-example : ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ 1 / 2 →
-    cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n u ∧ sz0.Bctl n u ≤ ((sz0.size n : ℕ) : ℝ) ^ (-c) := by
-  obtain ⟨cB, hcB, h⟩ := baSTBdatagL_holds 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨c, hc, h'⟩ := h (1 / 6)
-  exact ⟨cB, c, hcB, hc, h' sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le)⟩
-
-/-- Target 7 at `sz0`, `zSeq`, `s ≡ 1/10 < t ≡ 1/2 ≤ t₀`. -/
-example : ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz0 (fun _ => 1 / 10) (fun _ => 1 / 2) Kseq :=
-  baScaleExists_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le)
-
-end Instances
-
 end RBM.BA

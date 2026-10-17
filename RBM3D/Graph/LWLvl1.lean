@@ -965,11 +965,6 @@ theorem lvl1_incA_twist {V : Type*} [DecidableEq V] (c t : Bool) (a₀ : V) (e :
   rw [lwSymmTwistS_eq]
   cases t <;> simp [lvl1IncA, Bool.or_comm]
 
-theorem lvl1_col_twist {V W : Type*} [DecidableEq W] (c t : Bool) (vm : V → W) (e : SEdge V) :
-    lvl1Col vm (lwSymmTwistS c t e) = lvl1Col vm e := by
-  rw [lwSymmTwistS_eq]
-  cases t <;> simp [lvl1Col, eq_comm]
-
 theorem lvl1_countP_twist {V : Type*} (c t : Bool) (p : SEdge V → Bool)
     (hp : ∀ e, p (lwSymmTwistS c t e) = p e) (N : List (SEdge V)) :
     (N.map (lwSymmTwistS c t)).countP p = N.countP p := by
@@ -3127,13 +3122,6 @@ theorem PGraph.lvl1Comp_val (Q : PGraph E') (f : E → E') (hf : Function.Surjec
     exact h ⟨ℓ'' ∘ Q.ext, hℓ''⟩
 
 
-variable {E : Type}
-
-/-- the graphs of the dotted edge partition of a term `T` of a step, packed over the external vertices of the input -/
-def lvl1Outs (P : PGraph E) (m : ℂ) {I'' : Type} [Fintype I''] [DecidableEq I''] (T : LGraph P.E' I'') :
-    List (PGraph E) :=
-  (T.partition m).map fun Q => Q.lvl1Comp P.ext P.ext_surj
-
 end Comp
 
 section Integral
@@ -3213,9 +3201,6 @@ instance (Γ : LGraph E I) : Decidable Γ.LocStd := by
 
 /-- locally standard packed graphs -/
 def PGraph.LocStd {E : Type} (P : PGraph E) : Prop := P.g.LocStd
-
-instance {E : Type} (P : PGraph E) : Decidable P.LocStd := by
-  unfold PGraph.LocStd; infer_instance
 
 end LocStdDef
 
@@ -3834,49 +3819,6 @@ def Lvl1Ident (m : ℂ) (Γ : PGraph E) (outs errs : List (PGraph E)) : Prop :=
         (outs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum +
         (errs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum
 
-theorem lvl1_exists_aux (m : ℂ) (K : ℤ) (Γ : PGraph E) (hN : Γ.g.Normal) :
-    ∃ outs errs : List (PGraph E), (∀ Q ∈ outs, Q.g.LocStd ∧ ord Q.g.counters < K) ∧
-      (∀ Q ∈ errs, K ≤ ord Q.g.counters) ∧ (∀ Q ∈ outs ++ errs, Lvl1Reach m K Γ Q) ∧ Lvl1Ident m Γ outs errs := by
-  classical
-  induction Γ using (InvImage.wf (Lvl1Mu K) lvl1Lt_wf).induction with
-  | _ Γ ih =>
-    by_cases hK : K ≤ ord Γ.g.counters
-    · refine ⟨[], [Γ], by simp, by simpa using hK, by simpa using Lvl1Reach.refl Γ, ?_⟩
-      intro d sz n z u Sp M _ _ _ _ _ _ _ _ _ ℓe
-      simp
-    by_cases hL : Γ.g.LocStd
-    · refine ⟨[Γ], [], by simpa using ⟨hL, by omega⟩, by simp, by simpa using Lvl1Reach.refl Γ, ?_⟩
-      intro d sz n z u Sp M _ _ _ _ _ _ _ _ _ ℓe
-      simp
-    -- a step
-    obtain ⟨L, hst⟩ := lvl1_exists_step m Γ hN hL
-    have hgood := lvl1_step_good hst hN
-    have hlt : ord Γ.g.counters < K := by omega
-    obtain ⟨fo, fe, hfo⟩ := lvl1_choose_list
-      (fun (Q : PGraph E) (o e : List (PGraph E)) => (∀ Q' ∈ o, Q'.g.LocStd ∧ ord Q'.g.counters < K) ∧
-        (∀ Q' ∈ e, K ≤ ord Q'.g.counters) ∧ (∀ Q' ∈ o ++ e, Lvl1Reach m K Q Q') ∧ Lvl1Ident m Q o e) L
-      (fun Q hQ => ih Q (lvl1_mu_lt hlt (hgood Q hQ).2) (hgood Q hQ).1)
-    have hreach : ∀ Q ∈ L, Lvl1Reach m K Γ Q := fun Q hQ =>
-      Lvl1Reach.step Γ Γ Q L (Lvl1Reach.refl Γ) hlt hL hst hQ
-    refine ⟨L.flatMap fo, L.flatMap fe, ?_, ?_, ?_, ?_⟩
-    · intro Q' hQ'
-      obtain ⟨Q, hQ, hQ'⟩ := List.mem_flatMap.1 hQ'
-      exact (hfo Q hQ).1 Q' hQ'
-    · intro Q' hQ'
-      obtain ⟨Q, hQ, hQ'⟩ := List.mem_flatMap.1 hQ'
-      exact (hfo Q hQ).2.1 Q' hQ'
-    · intro Q' hQ'
-      rcases List.mem_append.1 hQ' with h | h
-      · obtain ⟨Q, hQ, h⟩ := List.mem_flatMap.1 h
-        exact (hreach Q hQ).trans ((hfo Q hQ).2.2.1 Q' (List.mem_append_left _ h))
-      · obtain ⟨Q, hQ, h⟩ := List.mem_flatMap.1 h
-        exact (hreach Q hQ).trans ((hfo Q hQ).2.2.1 Q' (List.mem_append_right _ h))
-    · intro d sz n z u Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 ℓe
-      rw [lvl1_step_identity Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 hst hN ℓe,
-        lvl1_sum_flatMap, lvl1_sum_flatMap, ← List.sum_map_add]
-      refine congrArg List.sum (List.map_congr_left fun Q hQ => ?_)
-      exact (hfo Q hQ).2.2.2 Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 ℓe
-
 end Exists
 
 end RBM.Graph
@@ -3884,82 +3826,6 @@ end
 end Lvl1PartM
 
 /-! ## 14. The `lvl1 lemma` (`lvl1_lemma`) -/
-
-section Lvl1PartF
-open MeasureTheory ProbabilityTheory Matrix
-open RBM RBM.Gauss RBM.Green RBM.Graph
-
-noncomputable section
-
-namespace RBM.Graph
-set_option linter.unusedSectionVars false
-set_option linter.unusedVariables false
-
-section Final
-
-variable {E : Type}
-
-/-- **The `lvl1 lemma`** (`7_8:392-399`, [yang2021] Lemma 3.22, proved here by `strat_local`): every normal packed graph `Γ` and every cutoff `K` give finite lists
-`outs`, `errs` of packed graphs, independent of the sample data and of `n`, with: every graph of `outs` is locally standard of scaling order
-`≥ ord Γ` and `< K`; every graph of `errs` has order `≥ K` (cutoff (a)); all are reached from
-`Γ` by `LocStep` (so `lvl1_induction` applies to them), normal, and have `n_M ≤ n_M(Γ)`, `n_V - n_W ≤ n_V(Γ) - n_W(Γ)`; and
-`E[Γ] = Σ_{outs} E[·] + Σ_{errs} E[·]` at all admissible data. -/
-theorem lvl1_lemma (m : ℂ) (K : ℤ) (Γ : PGraph E) (hN : Γ.g.Normal) :
-    ∃ outs errs : List (PGraph E),
-      (∀ Q ∈ outs, Q.g.LocStd ∧ Γ.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < K) ∧
-      (∀ Q ∈ errs, K ≤ Q.g.scalingOrder) ∧
-      (∀ Q ∈ outs ++ errs, Lvl1Reach m K Γ Q ∧ Q.g.Normal ∧ Γ.g.scalingOrder ≤ Q.g.scalingOrder ∧
-        Q.g.nM ≤ Γ.g.nM ∧ (Q.g.nV : ℤ) - Q.g.nW ≤ (Γ.g.nV : ℤ) - Γ.g.nW) ∧
-      ∀ {d : ℕ} {sz : Sizes d} {n : ℕ} {z : ℂ} {u : ℝ}
-        (Sp M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
-        GaussIBP sz → 0 < z.im → 0 < u → m ≠ 0 → z + (u : ℂ) * m = -m⁻¹ →
-        (∀ i j, Sp i j - m ^ 2 * ∑ w, Sp i w * lwS sz n u w j = lwS sz n u i j) → Spᵀ = Sp →
-        (∀ a, M a a = m) → (∀ a b, a ≠ b → M a b = 0) → ∀ ℓe : E → Idx d (sz.L n) (sz.W n),
-          ∫ ω, Γ.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz) =
-            (outs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum +
-            (errs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum := by
-  obtain ⟨outs, errs, hout, herr, hreach, hid⟩ := lvl1_exists_aux m K Γ hN
-  have hinv : ∀ Q ∈ outs ++ errs, Q.g.Normal ∧ ord Γ.g.counters ≤ ord Q.g.counters ∧ Q.g.nM ≤ Γ.g.nM ∧
-      (Q.g.nV : ℤ) - Q.g.nW ≤ (Γ.g.nV : ℤ) - Γ.g.nW := by
-    intro Q hQ
-    refine lvl1_induction (hreach Q hQ) (fun Q => Q.g.Normal ∧ ord Γ.g.counters ≤ ord Q.g.counters ∧
-        Q.g.nM ≤ Γ.g.nM ∧ (Q.g.nV : ℤ) - Q.g.nW ≤ (Γ.g.nV : ℤ) - Γ.g.nW)
-      ⟨hN, le_refl _, le_refl _, le_refl _⟩ ?_
-    intro A L hst hA B hB
-    obtain ⟨hBN, hg⟩ := lvl1_step_good hst hA.1 B hB
-    obtain ⟨h1, h2, h3, -⟩ := hg
-    exact ⟨hBN, le_trans hA.2.1 h1, le_trans h2 hA.2.2.1, by have := hA.2.2.2; omega⟩
-  refine ⟨outs, errs, fun Q hQ => ⟨(hout Q hQ).1, (hinv Q (List.mem_append_left _ hQ)).2.1, (hout Q hQ).2⟩,
-    fun Q hQ => herr Q hQ, fun Q hQ => ⟨hreach Q hQ, hinv Q hQ⟩, ?_⟩
-  intro d sz n z u Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 ℓe
-  exact hid Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 ℓe
-
-/-- **The induction principle for the lists of the `lvl1 lemma`** (ticket item 4, for `LW-10`): the lists of `lvl1_lemma` can be taken so
-that every predicate `Pred` that holds at `Γ` and passes from the input of every `LocStep` to each of its outputs holds at every graph of
-`outs` and of `errs` (the same lists, chosen before `Pred`); no unfolding of the proof of `lvl1_lemma` is needed. -/
-theorem lvl1_lemma_induction (m : ℂ) (K : ℤ) (Γ : PGraph E) (hN : Γ.g.Normal) :
-    ∃ outs errs : List (PGraph E),
-      (∀ Q ∈ outs, Q.g.LocStd ∧ Γ.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < K) ∧
-      (∀ Q ∈ errs, K ≤ Q.g.scalingOrder) ∧
-      (∀ Pred : PGraph E → Prop, Pred Γ →
-        (∀ (A : PGraph E) (L : List (PGraph E)), LocStep m A L → Pred A → ∀ B ∈ L, Pred B) →
-        ∀ Q ∈ outs ++ errs, Pred Q) ∧
-      ∀ {d : ℕ} {sz : Sizes d} {n : ℕ} {z : ℂ} {u : ℝ}
-        (Sp M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
-        GaussIBP sz → 0 < z.im → 0 < u → m ≠ 0 → z + (u : ℂ) * m = -m⁻¹ →
-        (∀ i j, Sp i j - m ^ 2 * ∑ w, Sp i w * lwS sz n u w j = lwS sz n u i j) → Spᵀ = Sp →
-        (∀ a, M a a = m) → (∀ a b, a ≠ b → M a b = 0) → ∀ ℓe : E → Idx d (sz.L n) (sz.W n),
-          ∫ ω, Γ.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz) =
-            (outs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum +
-            (errs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum := by
-  obtain ⟨outs, errs, h1, h2, h3, h4⟩ := lvl1_lemma m K Γ hN
-  exact ⟨outs, errs, h1, h2, fun Pred h0 hstep Q hQ => lvl1_induction (h3 Q hQ).1 Pred h0 hstep, h4⟩
-
-end Final
-
-end RBM.Graph
-end
-end Lvl1PartF
 
 /-! ## 15. The cutoff (a) `ord ≥ K`, its size corollary, the `lvl1 lemma` in the paper's form -/
 
@@ -4036,39 +3902,6 @@ theorem lvl1_size_le (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : ℝ) (G : Counters
 
 end Size
 
-section LemmaSize
-
-variable {E : Type}
-
-/-- **The `lvl1 lemma` in the paper's form** (`7_8:392-399`, [yang2021] Lemma 3.22, proved here by `strat_local` with the order cutoff
-`K = lvl1Cutoff c K0 d D Γ.counters`): for every `D`, the normal packed graph `Γ` is `E`-equal to a sum of locally standard graphs of
-order `≥ ord Γ` and a sum of graphs of scaling size `≤ W^{-D}` (in the regime `W^{-d/2} ≤ Ψ ≤ W^{-c}`, `L^d ≤ W^{K0}`, for all
-`W, L, Ψ`; the lists do not depend on them nor on the sample data), at all admissible data of dimension `d`. -/
-theorem lvl1_lemma_size (m : ℂ) (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : ℝ) (Γ : PGraph E) (hN : Γ.g.Normal) :
-    ∃ outs errs : List (PGraph E),
-      (∀ Q ∈ outs, Q.g.LocStd ∧ Γ.g.scalingOrder ≤ Q.g.scalingOrder) ∧
-      (∀ Q ∈ errs, ∀ (W L : ℕ) (Ψ : ℝ), 1 ≤ W → 1 ≤ L → (L : ℝ) ^ d ≤ (W : ℝ) ^ K0 →
-        (W : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ → Ψ ≤ (W : ℝ) ^ (-c) → Q.g.scalingSize Ψ W d L ≤ (W : ℝ) ^ (-D)) ∧
-      (∀ Q ∈ outs ++ errs, Lvl1Reach m (lvl1Cutoff c K0 d D Γ.g.counters : ℤ) Γ Q ∧ Q.g.Normal ∧
-        Γ.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.nM ≤ Γ.g.nM ∧ (Q.g.nV : ℤ) - Q.g.nW ≤ (Γ.g.nV : ℤ) - Γ.g.nW) ∧
-      ∀ {sz : Sizes d} {n : ℕ} {z : ℂ} {u : ℝ}
-        (Sp M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
-        GaussIBP sz → 0 < z.im → 0 < u → m ≠ 0 → z + (u : ℂ) * m = -m⁻¹ →
-        (∀ i j, Sp i j - m ^ 2 * ∑ w, Sp i w * lwS sz n u w j = lwS sz n u i j) → Spᵀ = Sp →
-        (∀ a, M a a = m) → (∀ a b, a ≠ b → M a b = 0) → ∀ ℓe : E → Idx d (sz.L n) (sz.W n),
-          ∫ ω, Γ.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz) =
-            (outs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum +
-            (errs.map fun Q => ∫ ω, Q.val (lwSampleData sz n z u M (lwS sz n u) Sp ω) ℓe ∂(Sizes.seqP sz)).sum := by
-  obtain ⟨outs, errs, hout, herr, hall, hid⟩ := lvl1_lemma m (lvl1Cutoff c K0 d D Γ.g.counters : ℤ) Γ hN
-  refine ⟨outs, errs, fun Q hQ => ⟨(hout Q hQ).1, (hout Q hQ).2.1⟩, ?_, hall, ?_⟩
-  · intro Q hQ W L Ψ hW hL hLW hlow hup
-    obtain ⟨-, -, -, hM, hV⟩ := hall Q (List.mem_append_right _ hQ)
-    exact lvl1_size_le c hc K0 d D Γ.g.counters W L Ψ hW hL hLW hlow hup Q.g.counters (herr Q hQ) hM hV
-  · intro sz n z u
-    exact hid
-
-end LemmaSize
-
 end RBM.Graph
 end
 end Lvl1PartX
@@ -4098,94 +3931,6 @@ def lvl1ExStd : LGraph (Fin 2) (Fin 3) where
     ⟨false, Sum.inr 1, Sum.inl 1⟩]
   coeff := 1
 
-/-- clause (i) fails: the same solid edges without the `×`-dotted edges (not normal) -/
-def lvl1ExNotNormal : LGraph (Fin 2) (Fin 3) := { lvl1ExStd with dotted := [] }
-
-/-- clause (ii) fails: a light-weight `(G - M)_{α₂ α₂}` at the otherwise isolated vertex `α₂` (normal, every vertex of clause (iii) fine) -/
-def lvl1ExLoop : LGraph (Fin 2) (Fin 3) :=
-  { lvl1ExStd with solid := lvl1ExStd.solid ++ [⟨true, true, Sum.inr 2, Sum.inr 2⟩] }
-
-/-- clause (ii) fails at an external vertex: a light-weight `(Ḡ - M̄)_{a₀ a₀}` -/
-def lvl1ExLoopExt : LGraph (Fin 2) (Fin 3) :=
-  { lvl1ExStd with solid := lvl1ExStd.solid ++ [⟨false, true, Sum.inl 0, Sum.inl 0⟩] }
-
-/-- clause (iii) fails: `α₀` has degree `1` -/
-def lvl1ExDeg1 : LGraph (Fin 2) (Fin 3) where
-  solid := [⟨true, false, Sum.inl 0, Sum.inr 0⟩]
-  waved := []
-  dotted := [⟨false, Sum.inl 0, Sum.inr 0⟩]
-  coeff := 1
-
-/-- clause (iii) fails: `α₀` has degree `3` -/
-def lvl1ExDeg3 : LGraph (Fin 2) (Fin 3) where
-  solid := [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨false, false, Sum.inl 1, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inr 1⟩]
-  waved := []
-  dotted := [⟨false, Sum.inl 0, Sum.inr 0⟩, ⟨false, Sum.inl 1, Sum.inr 0⟩, ⟨false, Sum.inr 0, Sum.inr 1⟩]
-  coeff := 1
-
-/-- clause (iii) fails: `α₀` has two edges of one colour, `G_{a₀ α₀} G_{α₀ a₁}` (neutral charge, not standard neutral) -/
-def lvl1ExSame : LGraph (Fin 2) (Fin 3) where
-  solid := [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩]
-  waved := []
-  dotted := [⟨false, Sum.inl 0, Sum.inr 0⟩, ⟨false, Sum.inr 0, Sum.inl 1⟩]
-  coeff := 1
-
-/-- clause (iii) fails: `α₀` has two edges of opposite colours with charge `2`, `G_{a₀ α₀} Ḡ_{α₀ a₁}` -/
-def lvl1ExCharge : LGraph (Fin 2) (Fin 3) where
-  solid := [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨false, false, Sum.inr 0, Sum.inl 1⟩]
-  waved := []
-  dotted := [⟨false, Sum.inl 0, Sum.inr 0⟩, ⟨false, Sum.inr 0, Sum.inl 1⟩]
-  coeff := 1
-
-/-- the three clauses of `deflvl1` on a record, as one proposition -/
-theorem lvl1_locStd_iff {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : LGraph E I) :
-    Γ.LocStd ↔ Γ.Normal ∧ (∀ e ∈ Γ.solid, e.src ≠ e.dst) ∧
-      ∀ i : I, Γ.StdNeutral (Sum.inr i) ∨ Γ.lvl1DegAt (Sum.inr i) = 0 := Iff.rfl
-
-/-- **`deflvl1` on concrete records** (compiled instance of the target `LGraph.LocStd`, `by decide`): the graph `lvl1ExStd` satisfies the
-three clauses (normal, no self-loop, every internal vertex standard neutral or without solid edge), also as a packed graph. -/
-theorem lvl1_inst_locStd : lvl1ExStd.LocStd := by decide
-
-theorem lvl1_inst_locStd_pack : lvl1ExStd.pack.LocStd := by decide
-
-/-- degrees and charges of the three internal vertices of `lvl1ExStd` -/
-theorem lvl1_inst_std_counts :
-    (lvl1ExStd.lvl1DegAt (Sum.inr 0), lvl1ExStd.lvl1ChargeAt (Sum.inr 0), lvl1ExStd.lvl1DegAt (Sum.inr 1),
-      lvl1ExStd.lvl1ChargeAt (Sum.inr 1), lvl1ExStd.lvl1DegAt (Sum.inr 2)) = (2, 0, 2, 0, 0) := by decide
-
-/-- clause (i) fails alone -/
-theorem lvl1_inst_fail_normal : ¬ lvl1ExNotNormal.Normal ∧ (∀ e ∈ lvl1ExNotNormal.solid, e.src ≠ e.dst) ∧
-    ∀ i : Fin 3, lvl1ExNotNormal.StdNeutral (Sum.inr i) ∨ lvl1ExNotNormal.lvl1DegAt (Sum.inr i) = 0 := by decide
-
-/-- clause (ii) fails alone (a light-weight at an internal vertex) -/
-theorem lvl1_inst_fail_loop : lvl1ExLoop.Normal ∧ ¬ (∀ e ∈ lvl1ExLoop.solid, e.src ≠ e.dst) ∧
-    ∀ i : Fin 3, lvl1ExLoop.StdNeutral (Sum.inr i) ∨ lvl1ExLoop.lvl1DegAt (Sum.inr i) = 0 := by decide
-
-/-- clause (ii) fails alone (a light-weight at an external vertex) -/
-theorem lvl1_inst_fail_loopExt : lvl1ExLoopExt.Normal ∧ ¬ (∀ e ∈ lvl1ExLoopExt.solid, e.src ≠ e.dst) ∧
-    ∀ i : Fin 3, lvl1ExLoopExt.StdNeutral (Sum.inr i) ∨ lvl1ExLoopExt.lvl1DegAt (Sum.inr i) = 0 := by decide
-
-/-- clause (iii) fails alone (degree `1`) -/
-theorem lvl1_inst_fail_deg1 : lvl1ExDeg1.Normal ∧ (∀ e ∈ lvl1ExDeg1.solid, e.src ≠ e.dst) ∧
-    ¬ ∀ i : Fin 3, lvl1ExDeg1.StdNeutral (Sum.inr i) ∨ lvl1ExDeg1.lvl1DegAt (Sum.inr i) = 0 := by decide
-
-/-- clause (iii) fails alone (degree `3`) -/
-theorem lvl1_inst_fail_deg3 : lvl1ExDeg3.Normal ∧ (∀ e ∈ lvl1ExDeg3.solid, e.src ≠ e.dst) ∧
-    ¬ ∀ i : Fin 3, lvl1ExDeg3.StdNeutral (Sum.inr i) ∨ lvl1ExDeg3.lvl1DegAt (Sum.inr i) = 0 := by decide
-
-/-- clause (iii) fails alone (two edges of one colour: degree `2`, charge `0`, not standard neutral) -/
-theorem lvl1_inst_fail_same : lvl1ExSame.Normal ∧ (∀ e ∈ lvl1ExSame.solid, e.src ≠ e.dst) ∧
-    lvl1ExSame.lvl1DegAt (Sum.inr 0) = 2 ∧ lvl1ExSame.lvl1ChargeAt (Sum.inr 0) = 0 ∧ ¬ lvl1ExSame.StdNeutral (Sum.inr 0) := by decide
-
-/-- clause (iii) fails alone (two edges of opposite colours with charge `2`) -/
-theorem lvl1_inst_fail_charge : lvl1ExCharge.Normal ∧ (∀ e ∈ lvl1ExCharge.solid, e.src ≠ e.dst) ∧
-    lvl1ExCharge.lvl1DegAt (Sum.inr 0) = 2 ∧ lvl1ExCharge.lvl1ChargeAt (Sum.inr 0) = 2 ∧
-    ¬ lvl1ExCharge.StdNeutral (Sum.inr 0) := by decide
-
-/-- none of the seven failing records is locally standard -/
-theorem lvl1_inst_not_locStd : ¬ lvl1ExNotNormal.LocStd ∧ ¬ lvl1ExLoop.LocStd ∧ ¬ lvl1ExLoopExt.LocStd ∧
-    ¬ lvl1ExDeg1.LocStd ∧ ¬ lvl1ExDeg3.LocStd ∧ ¬ lvl1ExSame.LocStd ∧ ¬ lvl1ExCharge.LocStd := by decide
-
 end ExamplesLocStd
 
 section ExamplesStep
@@ -4197,25 +3942,6 @@ def lvl1ExP2p : SEdge (Fin 2 ⊕ Fin 4) × List (SEdge (Fin 2 ⊕ Fin 4)) :=
   (⟨true, true, Sum.inr 1, Sum.inr 1⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩,
     ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩, ⟨false, false, Sum.inr 2, Sum.inl 1⟩])
 
-/-- **Step 1 as a `LocStep`** at the light-weight `(Ǧ - M)_{β₁β₁}` of `p2Graph`: the graph, the selected weight, the selector `(c, t) = (false, false)`;
-the outputs are the four terms of `(Owx)` followed by the dotted edge partition, packed (`lvl1Pack`). -/
-theorem lvl1_inst_locStep_weight : LocStep (mE 0) p2Graph.pack
-    (lvl1Pack p2Graph.pack (lvl1WeightOuts0 (mE 0) p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)) :=
-  LocStep.weight p2Graph.pack lvl1ExP2p List.mem_cons_self (Sum.inr (1 : Fin 4) : Fin 2 ⊕ Fin 4) false false rfl
-
-/-- **One step of `strat_local` and its expectation identity, Step 1** at the light-weight `(Ǧ - M)_{β₁β₁}` of `p2Graph`
-(`(eq:p=2graph)`), at the merged instance data (`d = 3`, `L = 3`, `W = 1`, `E = 0`, `t = 1/2`, `m = i`, `M = m·1`,
-`S⁺ = S (1 - m² S)⁻¹`; `GaussIBP` is the proved `gaussIBP`): every hypothesis of `lvl1_step_identity` is discharged. -/
-theorem lvl1_inst_step1 :
-    ∫ ω, p2Graph.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      ((lvl1Pack p2Graph.pack (lvl1WeightOuts0 (mE 0) p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)).map fun Q =>
-        ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum :=
-  lvl1_step_identity lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 lvl1_inst_locStep_weight (by decide) lwSymmInstL
-
 /-- the last element of a list, with the other elements, is one of the pairs of `lwSplit` -/
 theorem lvl1_split_last {κ : Type*} (l : List κ) (a : κ) : (a, l) ∈ lwSplit (l ++ [a]) := by
   induction l with
@@ -4224,238 +3950,7 @@ theorem lvl1_split_last {κ : Type*} (l : List κ) (a : κ) : (a, l) ∈ lwSplit
     simp only [List.cons_append, lwSplit, List.mem_cons, List.mem_map]
     exact Or.inr ⟨(a, l), ih, rfl⟩
 
-/-- the selected red light-weight `(Ḡ - M̄)_{a₀ a₀}` at the external vertex `a₀` of `lvl1ExLoopExt` (its last solid edge), with the other
-solid edges -/
-def lvl1ExLoopExtp : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) :=
-  (⟨false, true, Sum.inl 0, Sum.inl 0⟩, lvl1ExStd.solid)
-
-/-- **Step 1 at an external vertex, for a red weight** (`(Owx)` at `x = a₀ ∈ E`, the selector `(c, t) = (true, false)` conjugates): a `LocStep`
-of `lvl1ExLoopExt`. -/
-theorem lvl1_inst_locStep_weightExt : LocStep (mE 0) lvl1ExLoopExt.pack
-    (lvl1Pack lvl1ExLoopExt.pack (lvl1WeightOuts0 (mE 0) lvl1ExLoopExt lvl1ExLoopExtp (Sum.inl (0 : Fin 2)) true false)) :=
-  LocStep.weight lvl1ExLoopExt.pack lvl1ExLoopExtp (lvl1_split_last _ _) (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) true false rfl
-
-/-- the expectation identity of that step at the instance data -/
-theorem lvl1_inst_step1Ext :
-    ∫ ω, lvl1ExLoopExt.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      ((lvl1Pack lvl1ExLoopExt.pack (lvl1WeightOuts0 (mE 0) lvl1ExLoopExt lvl1ExLoopExtp (Sum.inl (0 : Fin 2)) true
-          false)).map fun Q =>
-        ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum :=
-  lvl1_step_identity lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 lvl1_inst_locStep_weightExt (by decide) lwSymmInstL
-
-/-- the selected in-edge `G_{a₀ α₀}` of the degree-`1` vertex `α₀` of `lvl1ExDeg1` -/
-def lvl1ExDeg1p : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) := (⟨true, false, Sum.inl 0, Sum.inr 0⟩, [])
-
-/-- **Step 2 as a `LocStep`** at the vertex `α₀` of degree `1` of `lvl1ExDeg1`: no weight, `deg α₀ = 1 ∉ {0, 2}`; the in-edge `G_{a₀ α₀}` is
-made the blue out-edge by the selector `(c, t) = (false, true)` (transposition). -/
-theorem lvl1_inst_locStep_edge : LocStep (mE 0) lvl1ExDeg1.pack
-    (lvl1Pack lvl1ExDeg1.pack (lvl1EdgeOuts0 (mE 0) lvl1ExDeg1 lvl1ExDeg1p (0 : Fin 3) (Sum.inl (0 : Fin 2)) false true)) :=
-  LocStep.edge lvl1ExDeg1.pack lvl1ExDeg1p List.mem_cons_self (0 : Fin 3) (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3)
-    (by decide : (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) ≠ Sum.inr (0 : Fin 3)) false true rfl (by decide) (by decide)
-
-/-- **Step 2** at the vertex `α₀` of degree `1` of `lvl1ExDeg1` (no weight; the in-edge `G_{a₀ α₀}` is made the blue out-edge by
-the selector `(c, t) = (false, true)`, the transposition): the step and its expectation identity at the instance data. -/
-theorem lvl1_inst_step2 :
-    ∫ ω, lvl1ExDeg1.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      ((lvl1Pack lvl1ExDeg1.pack (lvl1EdgeOuts0 (mE 0) lvl1ExDeg1 lvl1ExDeg1p (0 : Fin 3) (Sum.inl (0 : Fin 2)) false true)).map fun Q =>
-        ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum :=
-  lvl1_step_identity lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 lvl1_inst_locStep_edge (by decide) lwSymmInstL
-
-/-- the selected pair `G_{a₀ α₀}`, `G_{α₀ a₁}` at the vertex `α₀` of `lvl1ExSame` -/
-def lvl1ExSamep : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) :=
-  (⟨true, false, Sum.inl 0, Sum.inr 0⟩, [⟨true, false, Sum.inr 0, Sum.inl 1⟩])
-
-def lvl1ExSameq : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) := (⟨true, false, Sum.inr 0, Sum.inl 1⟩, [])
-
-/-- **Step 3 as a `LocStep`** at the vertex `α₀` of `lvl1ExSame`: no weight, every internal vertex of degree `0` or `2` with neutral charge,
-`α₀` has the two blue edges `G_{a₀ α₀} G_{α₀ a₁}`; the selector is the transposition. -/
-theorem lvl1_inst_locStep_gg : LocStep (mE 0) lvl1ExSame.pack
-    (lvl1Pack lvl1ExSame.pack (lvl1GGOuts0 (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq (0 : Fin 3) (Sum.inl (0 : Fin 2))
-      (Sum.inl (1 : Fin 2)) false true)) :=
-  LocStep.gg lvl1ExSame.pack lvl1ExSamep lvl1ExSameq List.mem_cons_self List.mem_cons_self (0 : Fin 3)
-    (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) (Sum.inl (1 : Fin 2) : Fin 2 ⊕ Fin 3)
-    (by decide : (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) ≠ Sum.inr (0 : Fin 3)) false true rfl rfl (by decide) (by decide)
-
-/-- **Step 3** at the vertex `α₀` of `lvl1ExSame` (no weight, every internal vertex of degree `0` or `2` with neutral charge, `α₀`
-has the two blue edges `G_{a₀ α₀} G_{α₀ a₁}`; the selector is the transposition): the step and its expectation identity at the
-instance data. -/
-theorem lvl1_inst_step3 :
-    ∫ ω, lvl1ExSame.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      ((lvl1Pack lvl1ExSame.pack (lvl1GGOuts0 (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq (0 : Fin 3) (Sum.inl (0 : Fin 2))
-          (Sum.inl (1 : Fin 2)) false true)).map fun Q =>
-        ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum :=
-  lvl1_step_identity lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 lvl1_inst_locStep_gg (by decide) lwSymmInstL
-
-/-- the counters `(n_S, n_W, n_V, n_M)` of a graph, as a tuple -/
-def lvl1Counts4 {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (g : LGraph E I) : ℕ × ℕ × ℕ × ℕ :=
-  (g.nS, g.nW, g.nV, g.nM)
-
-/-- **The outputs of Step 1 on `p2Graph`, listed before the dotted edge partition** (`lvl1_inst_locStep_weight`): `p2Graph` has the counters
-`(6, 2, 4, 2)` and order `2`; the twelve terms of `(Owx)` at `(Ǧ - M)_{β₁β₁}` (`T1`, `T2`, and `T3`, `T4` for each of the five other solid
-edges) have counters `(7, 3, 5, 2)` (`T1` and the five `T3`) and `(7, 4, 6, 2)` (`T2` and the five `T4`), all of order `3 = ord p2Graph + 1`.
-Each term is then followed by `LGraph.partition`, whose output lists are not computable in the kernel. -/
-theorem lvl1_inst_step1_terms :
-    lvl1Counts4 p2Graph = (6, 2, 4, 2) ∧ ord p2Graph.counters = 2 ∧
-    lvl1Counts4 (lwSymmOwxT1 false false (mE 0) p2Graph (Sum.inr 1)) = (7, 3, 5, 2) ∧
-    lvl1Counts4 (lwSymmOwxT2 false false (mE 0) p2Graph lvl1ExP2p (Sum.inr 1)) = (7, 4, 6, 2) ∧
-    ((lwSplit lvl1ExP2p.2).map fun q => lvl1Counts4 (lwSymmOwxT3 false false (mE 0) p2Graph (Sum.inr 1) q)) =
-      [(7, 3, 5, 2), (7, 3, 5, 2), (7, 3, 5, 2), (7, 3, 5, 2), (7, 3, 5, 2)] ∧
-    ((lwSplit lvl1ExP2p.2).map fun q => lvl1Counts4 (lwSymmOwxT4 false false (mE 0) p2Graph (Sum.inr 1) q)) =
-      [(7, 4, 6, 2), (7, 4, 6, 2), (7, 4, 6, 2), (7, 4, 6, 2), (7, 4, 6, 2)] ∧
-    ord (lwSymmOwxT1 false false (mE 0) p2Graph (Sum.inr 1)).counters = 3 ∧
-    ord (lwSymmOwxT2 false false (mE 0) p2Graph lvl1ExP2p (Sum.inr 1)).counters = 3 ∧
-    ((lwSplit lvl1ExP2p.2).map fun q => ord (lwSymmOwxT3 false false (mE 0) p2Graph (Sum.inr 1) q).counters) =
-      [3, 3, 3, 3, 3] ∧
-    ((lwSplit lvl1ExP2p.2).map fun q => ord (lwSymmOwxT4 false false (mE 0) p2Graph (Sum.inr 1) q).counters) =
-      [3, 3, 3, 3, 3] := by decide
-
-/-- **The outputs of Step 2 on `lvl1ExDeg1`, listed before the dotted edge partition**: `lvl1ExDeg1` has the counters `(1, 0, 3, 3)`, order
-`-5`; the edge `G_{a₀ α₀}` is alone (`lwSplit p.2 = []`), so the only term is the loop term `(Owx)` (`m 1_{x = y₁}` is `0`), with counters
-`(2, 1, 4, 3)`, order `-4`. -/
-theorem lvl1_inst_step2_terms :
-    lvl1Counts4 lvl1ExDeg1 = (1, 0, 3, 3) ∧ ord lvl1ExDeg1.counters = -5 ∧ lwSplit lvl1ExDeg1p.2 = [] ∧
-    lvl1Counts4 (lwSymmOe1xOwx false true (mE 0) lvl1ExDeg1 lvl1ExDeg1p 0) = (2, 1, 4, 3) ∧
-    ord (lwSymmOe1xOwx false true (mE 0) lvl1ExDeg1 lvl1ExDeg1p 0).counters = -4 := by decide
-
-/-- **The outputs of Step 3 on `lvl1ExSame`, listed before the dotted edge partition**: `lvl1ExSame` has the counters `(2, 0, 3, 3)`, order
-`-4`; `q.2 = []`, so there are no terms `R7`, `R8`; the terms `R2`, `R3`, `R4`, `R5`, `R6` have the counters `(1, 1, 3, 2)`, `(3, 1, 4, 3)`,
-`(3, 2, 5, 3)`, `(3, 1, 4, 3)`, `(3, 2, 5, 3)`, all of order `-3 = ord + 1` (`R1` is `0`). -/
-theorem lvl1_inst_step3_terms :
-    lvl1Counts4 lvl1ExSame = (2, 0, 3, 3) ∧ ord lvl1ExSame.counters = -4 ∧ lwSplit lvl1ExSameq.2 = [] ∧
-    lvl1Counts4 (lwSymmOe2xR2 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)) = (1, 1, 3, 2) ∧
-    lvl1Counts4 (lwSymmOe2xR3 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0) = (3, 1, 4, 3) ∧
-    lvl1Counts4 (lwSymmOe2xR4 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)) = (3, 2, 5, 3) ∧
-    lvl1Counts4 (lwSymmOe2xR5 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)) = (3, 1, 4, 3) ∧
-    lvl1Counts4 (lwSymmOe2xR6 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)) = (3, 2, 5, 3) ∧
-    ord (lwSymmOe2xR2 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)).counters = -3 ∧
-    ord (lwSymmOe2xR3 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0).counters = -3 ∧
-    ord (lwSymmOe2xR4 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)).counters = -3 ∧
-    ord (lwSymmOe2xR5 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)).counters = -3 ∧
-    ord (lwSymmOe2xR6 false true (mE 0) lvl1ExSame lvl1ExSamep lvl1ExSameq 0 (Sum.inl 0) (Sum.inl 1)).counters = -3 := by decide
-
 end ExamplesStep
-
-section ExamplesLemma
-
-open RBM.Gauss.SizesInst
-
-/-- the cutoff of the `p = 2` graph for `c = 1/4`, `K0 = 1`, `d = 3`, `D = 10`: `(10 + 1·2 + 3·2) / (1/4) = 72` -/
-theorem lvl1_inst_cutoff : lvl1Cutoff (1 / 4) 1 3 10 p2Graph.counters = 72 := by
-  have h := p2Graph_counters
-  have hM : p2Graph.counters.nM = 2 := h.2.2.2
-  have hV : p2Graph.counters.nV = 4 := h.2.2.1
-  have hW : p2Graph.counters.nW = 2 := h.2.1
-  unfold lvl1Cutoff
-  rw [hM, hV, hW]
-  rw [Nat.ceil_eq_iff (by norm_num)]
-  norm_num
-
-/-- **`lvl1_size_le` at concrete counters** (`d = 3`, `c = 1/4`, `K0 = 1`, `D = 10`, `G = p2Graph.counters`, `W = 27`, `L = 3`,
-`Ψ = 27^{-1/4}`): a graph with `n_S = 80`, `n_W = 4`, `n_V = 6`, `n_M = 1` has order `76 ≥ 72`, `n_M ≤ 2`, `n_V - n_W = 2 ≤ 2`, hence size
-`≤ 27^{-10}`; `L^3 = 27 ≤ 27^1` and `27^{-3/2} ≤ Ψ ≤ 27^{-1/4}`. -/
-theorem lvl1_inst_size_le :
-    (⟨80, 4, 6, 1, 0, 0⟩ : Counters).scalingSize (((27 : ℕ) : ℝ) ^ (-(1 / 4 : ℝ))) 27 3 3 ≤ ((27 : ℕ) : ℝ) ^ (-(10 : ℝ)) := by
-  have h := p2Graph_counters
-  have e1 : p2Graph.counters.nV = 4 := h.2.2.1
-  have e2 : p2Graph.counters.nW = 2 := h.2.1
-  have e3 : p2Graph.counters.nM = 2 := h.2.2.2
-  refine lvl1_size_le (1 / 4) (by norm_num) 1 3 10 p2Graph.counters 27 3 _ (by norm_num) (by norm_num) (by norm_num) ?_
-    (le_refl _) (⟨80, 4, 6, 1, 0, 0⟩ : Counters) ?_ ?_ ?_
-  · exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-  · rw [lvl1_inst_cutoff]; norm_num [ord]
-  · rw [e3]; norm_num
-  · rw [e1, e2]; norm_num
-
-/-- **The `lvl1 lemma` on `p2Graph`** with the order cutoff `K = 72` at the merged instance data: the lists exist, every graph of `outs`
-is locally standard of order in `[2, 72)`, every graph of `errs` has order `≥ 72`, and the expectation identity holds at the instance
-data with every hypothesis discharged (`GaussIBP` is the proved `gaussIBP`, the rest deterministic). -/
-theorem lvl1_inst_lemma :
-    ∃ outs errs : List (PGraph (Fin 2)),
-      (∀ Q ∈ outs, Q.g.LocStd ∧ 2 ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < 72) ∧ (∀ Q ∈ errs, 72 ≤ Q.g.scalingOrder) ∧
-      ∫ ω, p2Graph.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-        (outs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum +
-        (errs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum := by
-  obtain ⟨outs, errs, h1, h2, -, hid⟩ := lvl1_lemma (mE 0) 72 p2Graph.pack (by decide)
-  refine ⟨outs, errs, fun Q hQ => ?_, h2, ?_⟩
-  · obtain ⟨a, b, c⟩ := h1 Q hQ
-    have e : p2Graph.pack.g.scalingOrder = 2 := p2Graph_ord
-    exact ⟨a, by rw [e] at b; exact b, c⟩
-  · exact hid lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num) (lwWx_mE_ne 0 lwWx_inst_hE)
-      (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 lwSymmInstL
-
-/-- **The `lvl1 lemma` in the paper's form on `p2Graph`**, `d = 3`, `c = 1/4`, `K0 = 1` (`L^3 ≤ W`), `D = 10`; the regime is evaluated at
-`W = 27`, `L = 3`, `Ψ = 27^{-1/4}` (`27^{-3/2} ≤ Ψ ≤ 27^{-1/4}`, `L^3 = 27 ≤ 27^1`): every graph of `errs` has scaling size `≤ 27^{-10}`;
-the graphs of `outs` are locally standard of order `≥ 2 = ord p2Graph`; and the expectation identity holds at the instance data. -/
-theorem lvl1_inst_lemma_size :
-    ∃ outs errs : List (PGraph (Fin 2)),
-      (∀ Q ∈ outs, Q.g.LocStd ∧ 2 ≤ Q.g.scalingOrder) ∧
-      (∀ Q ∈ errs, Q.g.scalingSize (((27 : ℕ) : ℝ) ^ (-(1 / 4 : ℝ))) 27 3 3 ≤ ((27 : ℕ) : ℝ) ^ (-(10 : ℝ))) ∧
-      ∫ ω, p2Graph.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-        (outs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum +
-        (errs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum := by
-  obtain ⟨outs, errs, h1, h2, -, hid⟩ := lvl1_lemma_size (E := Fin 2) (mE 0) (1 / 4) (by norm_num) 1 3 10 p2Graph.pack (by decide)
-  refine ⟨outs, errs, fun Q hQ => ?_, fun Q hQ => ?_, ?_⟩
-  · obtain ⟨a, b⟩ := h1 Q hQ
-    have e : p2Graph.pack.g.scalingOrder = 2 := p2Graph_ord
-    exact ⟨a, by rw [e] at b; exact b⟩
-  · refine h2 Q hQ 27 3 _ (by norm_num) (by norm_num) (by norm_num) ?_ (le_refl _)
-    refine Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-  · exact hid lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num) (lwWx_mE_ne 0 lwWx_inst_hE)
-      (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 lwSymmInstL
-
-end ExamplesLemma
-
-section ExamplesInduction
-
-/-- **`lvl1_induction` applied to the invariant "normal, `n_M ≤ 2`"** (the molecule count of `p2Graph` does not increase) at the graphs of
-the lists of `lvl1_lemma` for an arbitrary cutoff: the invariant holds at `p2Graph` and passes along every `LocStep`
-(by `lvl1_step_good`), hence holds at every graph of `outs` and `errs`. -/
-theorem lvl1_inst_induction (K : ℤ) : ∃ outs errs : List (PGraph (Fin 2)), ∀ Q ∈ outs ++ errs, Q.g.Normal ∧ Q.g.nM ≤ 2 := by
-  obtain ⟨outs, errs, -, -, hall, -⟩ := lvl1_lemma (mE 0) K p2Graph.pack (by decide)
-  refine ⟨outs, errs, fun Q hQ => ?_⟩
-  refine lvl1_induction (hall Q hQ).1 (fun R : PGraph (Fin 2) => R.g.Normal ∧ R.g.nM ≤ 2) ⟨by decide, by decide⟩ ?_
-  intro A L hst hA B hB
-  obtain ⟨hBN, hg⟩ := lvl1_step_good hst hA.1 B hB
-  exact ⟨hBN, le_trans hg.2.1 hA.2⟩
-
-/-- **`lvl1_lemma_induction` on `p2Graph`** (the same invariant, with the predicate chosen after the lists): the lists exist with the
-invariant "normal, `n_M ≤ 2`" holding at all their graphs, at the instance data of the identity with every hypothesis discharged. -/
-theorem lvl1_inst_lemma_induction (K : ℤ) :
-    ∃ outs errs : List (PGraph (Fin 2)), (∀ Q ∈ outs ++ errs, Q.g.Normal ∧ Q.g.nM ≤ 2) ∧
-      ∫ ω, p2Graph.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-        (outs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum +
-        (errs.map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-          (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum := by
-  obtain ⟨outs, errs, -, -, hP, hid⟩ := lvl1_lemma_induction (mE 0) K p2Graph.pack (by decide)
-  refine ⟨outs, errs, ?_, hid lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 lwSymmInstL⟩
-  refine hP (fun R : PGraph (Fin 2) => R.g.Normal ∧ R.g.nM ≤ 2) ⟨by decide, by decide⟩ ?_
-  intro A L hst hA B hB
-  obtain ⟨hBN, hg⟩ := lvl1_step_good hst hA.1 B hB
-  exact ⟨hBN, le_trans hg.2.1 hA.2⟩
-
-end ExamplesInduction
 
 end RBM.Graph
 end

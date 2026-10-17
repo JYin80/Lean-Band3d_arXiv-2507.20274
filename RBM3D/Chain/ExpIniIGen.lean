@@ -72,26 +72,6 @@ def STExpIniIgL' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
   STIngR6gL d STReg5I law Flow mk T0 (fun sz z s t => STExpIniIConclgL' (mk sz z) (law sz) s t)
 
-section Bridges
-
-variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ)
-
-/-- Band `STExpIniIConcl'` is `STExpIniIConclgL'` at `bandFM`: through `bandStep2_Ugen`, nothing else. -/
-theorem bandFM_STExpIniIConcl' :
-    STExpIniIConcl' sz E s t ↔ STExpIniIConclgL' (bandFM sz E) (Sizes.seqP sz) s t := by
-  unfold STExpIniIConcl' STExpIniIConclgL'
-  simp only [bandStep2_Ugen]
-  exact Iff.rfl
-
-end Bridges
-
-/-- Band `STExpIniI'` is `STExpIniIgL'` at the band tuple `(seqP, STFlow, bandFM ∘ STflowE, lemT)`. -/
-theorem STExpIniI'_iff_gL' (d : ℕ) :
-    STExpIniI' d ↔ STExpIniIgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  Step6Gen_ingR6_iff_congr d STReg5I (fun sz E s t => STExpIniIConcl' sz E s t) _
-    (fun sz z s t => bandFM_STExpIniIConcl' sz (STflowE z) s t)
-
 /-! ## 2. Polynomial facts along the flow and the expectation step (W-a) -/
 
 section Expect
@@ -820,137 +800,12 @@ theorem stExpIniIgL'_of {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
 
 /-! ## 7. The band re-derivation -/
 
-open private Step6KitGen_KerFR1_band from RBM3D.Chain.Step6KitGen
-
-/-- `STKboundgL` along a band flow (`d ≥ 3`): the merged `stKbound_holds` at `E = STflowE z`, `gmax = 𝔡⁻¹` (`|E n| ≤ 2 - κ` from the flow, `0 < lam ≤ 𝔡⁻¹` from `WO`). -/
-private theorem ExpIniIGen_Kb_band {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (hκ : 0 < κ)
-    (hflow : STFlow sz κ ε 𝔠 𝔡 z) : STKboundgL (bandFM sz (STflowE z)) (Sizes.seqP sz) := by
-  have him : ∀ n, 0 < (z n).im := fun n =>
-    lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1
-  exact stKbound_holds sz hd (E := STflowE z) (κ := κ) (gmax := 𝔡⁻¹) hκ (inv_pos.2 hflow.1.2.1) hflow.1.2.2.1
-    (Eventually.of_forall fun n => (abs_lemE_le (him n)).trans (hflow.2 n).1) (step34Gen_band_hg hflow.1)
-
-/-- **Band `stExpIniI'_holds` re-derived** (`ExpIniI:1106`) from `stExpIniIgL'_of` through `STExpIniI'_iff_gL'`: the premises at the band tuple are the merged
-`step5CasesGen_flowFacts_band`, `iniTermGen_cltFlow_band`, `stKbound_holds`, `stek_sumRes2NALgL_band`, `stek_sumRes2gL_band` and the class `STEKBandKer` with `gK = sz.lam`, `Aof = 1`. -/
-theorem stExpIniI'_gen_band (d : ℕ) : STExpIniI' d := fun hd =>
-  ((STExpIniI'_iff_gL' d).2 (stExpIniIgL'_of (Ker := @STEKBandKer d) (Aof := fun _ => 1) (fun sz _ => sz.lam)
-    (fun sz => inferInstance) (step5CasesGen_flowFacts_band d) (iniTermGen_cltFlow_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hflow => ExpIniIGen_Kb_band hd sz κ ε 𝔠 𝔡 z hκ hflow) (stek_sumRes2NALgL_band d)
-    (stek_sumRes2gL_band d) (fun _ _ => le_rfl) Step6KitGen_KerFR1_band)) hd
-
 /-! ## 8. Compiled nonempty instances at `d = 3` (regime (i) data of the band: `szB`, `zB`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `(s, t) = (7/8, 15/16)`, `𝔠_d = 1/300`)
 
 `szB`: `L = 4`, `W_n = n + 4`, `lam = 1`; `1/16 = lam²/L² ≤ 1 - t = 1/16 ≤ 1 - s = 1/8 ≤ lam² = 1`.  Discharged: flow, times, regime, `(con_st_ind)` (`conStInd_const`), admissibility,
 probability law, flow facts, the class `IniTermGen_CltFlow` (`iniTermGen_cltFlow_band`: `κ'`, `δ`, `CltRepg`, the range `N^{-1+δ} ≤ 1 - T0`), `STKboundgL` (`stKbound_holds`), the kernel pins
 `stek_sumRes2NALgL_band`, `stek_sumRes2gL_band`, the class `STEKBandKer` with `gK = lam`, R1 at `Aof = 1`, the mollifier family `st6_mollifier_familyg`.  What stays a hypothesis is
 `STDecaygL`, `STExp2gL` at `s ≡ 7/8` (`(Eq:Gdecay+IND)`, `(Eq:Gtlp_exp+IND)`: stochastic premises of other gates). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- The row-9' data of the band flow `zB` at the time `T ≡ 15/16`: `κ'`, `δ`, `H₀ = 0`, `g' = lam`, `E`, `κ' ≤ Im m`, the range and `CltRepg`. -/
-private theorem ExpIniIGen_bandData :
-    ∃ (κ' δ : ℝ) (H₀ : ∀ n, Matrix (Idx 3 (szB.L n) (szB.W n)) (Idx 3 (szB.L n) (szB.W n)) ℂ) (g' E : ℕ → ℝ),
-      0 < κ' ∧ 0 < δ ∧ (∀ n, κ' ≤ ((bandFM szB (STflowE zB)).m n).im) ∧
-      (∀ᶠ n in atTop, ((szB.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - (15 / 16 : ℝ)) ∧
-      CltRepg (bandFM szB (STflowE zB)) (Sizes.seqP szB) H₀ g' E := by
-  obtain ⟨κ', δ, hκ', -, hδ, HC⟩ := iniTermGen_cltFlow_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num)
-  obtain ⟨H₀, g', E, hm', hev', hrep, -⟩ := HC (1 / 6) szB zB flow_zB
-  refine ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev'.mono fun n hn => hn.trans ?_, hrep⟩
-  have := szB_flow_ht (t0 := 15 / 16) (by norm_num) n
-  linarith
-
-/-- **Target 6**: the bridge of the conclusion and of the pin at the band data. -/
-example (h : STExpIniIConcl' szB (STflowE zB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STExpIniIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  (bandFM_STExpIniIConcl' szB (STflowE zB) _ _).1 h
-
-example (h : STExpIniIgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) :
-    InstIng6Concl (fun sz E s t => STExpIniIConcl' sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ ((STExpIniI'_iff_gL' 3).2 h) szB_reg5I
-
-/-- **`expIniI_fastDecayg`** at `(szB, zB, s ≡ 7/8, T ≡ 15/16)`: the stochastic premise `STDecaygL` at `s` stays a hypothesis. -/
-example (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8)) (ε' D : ℝ) (hε' : 0 < ε') (hD : 0 < D) :
-    ∀ᶠ n in atTop, ∀ σ : Fin 2 → Bool,
-      EKFastDecay (szB.lam n) (7 / 8) ((szB.W n : ℕ) : ℝ) ε' D
-        (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) σ b) := by
-  obtain ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev, hrep⟩ := ExpIniIGen_bandData
-  exact expIniI_fastDecayg (bandFM szB (STflowE zB)) (Sizes.seqP szB) (by norm_num) hκ' hδ szB_admissible inferInstance hrep hm'
-    (ExpIniIGen_Kb_band (by norm_num) szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) flow_zB) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) hev hDec ε' D hε' hD
-
-/-- **`expIniI_sameg`** at `(szB, zB, 7/8, 15/16)`, `𝔠_d = 1/300`: the kernel pin is the proved `stek_sumRes2NALgL_band` (class `STEKBandKer` at `κm = √(2κ)/2`, `gK = lam`, R1
-at `A = 1`); the stochastic premises stay hypotheses. -/
-example (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hExp : STExp2gL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8)) :
-    PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigSame (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖Step2Gen_UN (bandFM szB (STflowE zB)) n p.2.1.1 (7 / 8) (p.1 : ℝ)
-        (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) p.2.1.1 b) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ)) := by
-  obtain ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev, hrep⟩ := ExpIniIGen_bandData
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact expIniI_sameg (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_sumRes2NALgL_band 3) (by norm_num) hκm le_rfl
-    (𝔠d := 1 / 300) (by norm_num) (by norm_num) hκ' hδ szB_admissible szB.lam hKer hg hR1 inferInstance hrep hm'
-    (ExpIniIGen_Kb_band (by norm_num) szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) flow_zB)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hev szB_reg5I hDec hExp
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num))
-
-/-- **`expIniI_Qopg`** at `(szB, zB, s ≡ 7/8, T ≡ 15/16)` for the mollifier family `st6_mollifier_familyg` (positive `Cq`, `c`). -/
-example (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hExp : STExp2gL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8)) :
-    ∃ Cq c : ℝ, 0 < Cq ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd 3 (szB.L n)) → ℂ,
-      (∀ᶠ n in atTop, STMollifierProps (d := 3) (szB.lam n) Cq c (ϑ n)) ∧
-      (∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, ∀ σ : Fin 2 → Bool,
-        ‖STQop (d := 3) (ϑ n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) σ b)‖ ≤
-          ((szB.size n : ℕ) : ℝ) ^ τ * STExpTarget szB n (7 / 8)) ∧
-      (∀ ε' D : ℝ, 0 < ε' → 0 < D → ∀ᶠ n in atTop, ∀ σ : Fin 2 → Bool,
-        EKFastDecay (szB.lam n) (7 / 8) ((szB.W n : ℕ) : ℝ) ε' D
-          (STQop (d := 3) (ϑ n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) σ b))) ∧
-      (∀ᶠ n in atTop, ∀ σ : Fin 2 → Bool,
-        EKSumZero (STQop (d := 3) (ϑ n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) σ b))) := by
-  obtain ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev, hrep⟩ := ExpIniIGen_bandData
-  obtain ⟨Cq, c, hC, hc, ϑ, hϑ⟩ := st6_mollifier_familyg szB (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) szB_WO
-  exact ⟨Cq, c, hC, hc, ϑ, hϑ, expIniI_Qopg (bandFM szB (STflowE zB)) (Sizes.seqP szB) (by norm_num) hκ' hδ szB_admissible inferInstance
-    hrep hm' (ExpIniIGen_Kb_band (by norm_num) szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) flow_zB)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hev hDec hExp Cq c hC hc ϑ hϑ⟩
-
-/-- **`expIniI_mixedg`** at `(szB, zB, 7/8, 15/16)`, `𝔠_d = 1/300`, for the mollifier family `st6_mollifier_familyg`; the kernel pin is the proved `stek_sumRes2gL_band`. -/
-example (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hExp : STExp2gL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8)) :
-    ∃ Cq c : ℝ, 0 < Cq ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd 3 (szB.L n)) → ℂ,
-      (∀ᶠ n in atTop, STMollifierProps (d := 3) (szB.lam n) Cq c (ϑ n)) ∧
-      PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-        (fun n p _ => ‖Step2Gen_UN (bandFM szB (STflowE zB)) n p.2.1.1 (7 / 8) (p.1 : ℝ)
-          (STQop (d := 3) (ϑ n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) p.2.1.1 b)) p.2.2‖)
-        (fun n p _ => STExpTarget szB n (p.1 : ℝ)) := by
-  obtain ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev, hrep⟩ := ExpIniIGen_bandData
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  obtain ⟨Cq, c, hC, hc, ϑ, hϑ⟩ := st6_mollifier_familyg szB (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) szB_WO
-  exact ⟨Cq, c, hC, hc, ϑ, hϑ, expIniI_mixedg (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_sumRes2gL_band 3)
-    (by norm_num) hκm le_rfl (𝔠d := 1 / 300) (by norm_num) (by norm_num) hκ' hδ szB_admissible szB.lam hKer hg hR1 inferInstance hrep hm'
-    (ExpIniIGen_Kb_band (by norm_num) szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) flow_zB)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hev szB_reg5I hDec hExp
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) Cq c hC hc ϑ hϑ⟩
-
-/-- **Target 8, `stExpIniIgL'_of`, the pin at the band tuple, `d = 3`**: every family premise is discharged; no hypothesis remains. -/
-example : STExpIniIgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpIniIgL'_of (Ker := @STEKBandKer 3) (Aof := fun _ => 1) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band 3) (iniTermGen_cltFlow_band 3)
-    (fun sz κ ε 𝔠 𝔡 z hκ hflow => ExpIniIGen_Kb_band (by norm_num) sz κ ε 𝔠 𝔡 z hκ hflow) (stek_sumRes2NALgL_band 3)
-    (stek_sumRes2gL_band 3) (fun _ _ => le_rfl) Step6KitGen_KerFR1_band
-
-/-- **The band re-derivation `stExpIniI'_gen_band`**, read at the data of regime (i) `(szB, zB, 7/8, 15/16)` through the merged `inst_ing6_I`; the stochastic premises of
-`STIngR6` are the hypotheses of the produced statement. -/
-example : InstIng6Concl (fun sz E s t => STExpIniIConcl' sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ (stExpIniI'_gen_band 3) szB_reg5I
-
-end Instances
 
 end RBM.BA
 

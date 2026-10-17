@@ -193,11 +193,6 @@ theorem lwSymmTwistG_dotted (c t : Bool) (Γ : LGraph E I) :
     (lwSymmTwistG c t Γ).dotted = Γ.dotted := by
   cases c <;> cases t <;> simp [lwSymmTwistG, LGraph.conj, LGraph.transpose]
 
-theorem lwSymmTwistG_coeff (c t : Bool) (Γ : LGraph E I) :
-    (lwSymmTwistG c t Γ).coeff = lwSymmCj c Γ.coeff := by
-  cases c <;> cases t <;> simp [lwSymmTwistG, lwSymmCj, LGraph.conj, LGraph.transpose]
-
-
 /-! ### The values -/
 
 variable [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
@@ -337,16 +332,6 @@ theorem lwSymmTwistG_counters (c t : Bool) (Γ : LGraph E I) :
   · simp only [LGraph.nS, lwSymmTwistG_solid, List.length_map]
   · cases c <;> cases t <;> simp [LGraph.nW, lwSymmTwistG, LGraph.conj, LGraph.transpose]
 
-theorem lwSymmTwistG_counters_eq (c t : Bool) (Γ : LGraph E I) :
-    (lwSymmTwistG c t Γ).counters = Γ.counters := by
-  obtain ⟨h1, h2, h3, h4⟩ := lwSymmTwistG_counters c t Γ
-  simp only [LGraph.counters, h1, h2, h3, h4]
-
-/-- `ord` is twist invariant. -/
-theorem lwSymmTwistG_ord (c t : Bool) (Γ : LGraph E I) :
-    ord (lwSymmTwistG c t Γ).counters = ord Γ.counters := by
-  rw [lwSymmTwistG_counters_eq]
-
 end TwistCounters
 
 end Twist
@@ -474,51 +459,6 @@ end Flip
 * `conj (Γ.val D ℓe) = Γ.conj.val D.conj ℓe` with the entrywise conjugate data `D.conj = (Ḡ, M̄, S, S⁺)` is false:
   `Γ.conj` already reads `Ḡ` from `G` through the flipped `σ`, so the conjugate data conjugates twice. -/
 
-section Negations
-
-/-- The ticket's flip: the coordinates with `b = true` (the real parts) are negated. -/
-def lwSymmFlipLitF {d : ℕ} (L W : ℕ) (ω : Ω d L W) : Ω d L W := fun c => (if c.2.2 then -1 else 1) * ω c
-
-theorem lwSymm_Xentry_flipLit {d : ℕ} (L W : ℕ) [NeZero L] [NeZero W] (ω : Ω d L W) (i j : Idx d L W) :
-    Xentry d L W (lwSymmFlipLitF L W ω) i j = -Xentry d L W ω j i := by
-  unfold Xentry
-  rcases idxKey_lt_or_eq_or_lt d L W i j with h | h | h
-  · have h' : ¬ idxKey d L W j < idxKey d L W i := not_lt.mpr h.le
-    simp only [h, h', ite_true, ite_false, lwSymmFlipLitF, Bool.false_eq_true]
-    push_cast
-    ring
-  · subst h
-    simp [lwSymmFlipLitF]
-  · have h' : ¬ idxKey d L W i < idxKey d L W j := not_lt.mpr h.le
-    simp only [h, h', ite_true, ite_false, lwSymmFlipLitF, Bool.false_eq_true]
-    push_cast
-    ring
-
-/-- **The ticket's flip does not transpose**: at the constant sample `1` the diagonal entry of `X(ω')` is `-1`, that of `X(ω)ᵀ`
-is `1`. -/
-theorem lwSymm_flipLit_ne {d : ℕ} (L W : ℕ) [NeZero L] [NeZero W] :
-    ∃ ω : Ω d L W, Xmat d L W (lwSymmFlipLitF L W ω) ≠ (Xmat d L W ω)ᵀ := by
-  refine ⟨fun _ => 1, fun h => ?_⟩
-  have h1 := congrFun (congrFun h 0) 0
-  simp [Xmat, Xentry, lwSymmFlipLitF] at h1
-  norm_num at h1
-
-/-- The entrywise conjugate data `(Ḡ, M̄, S, S⁺)`: the ticket's reading of `D.conj`. -/
-def lwSymmDataConj {ι : Type*} (D : LData ι) : LData ι := ⟨D.G.map star, D.M.map star, D.S, D.Sp⟩
-
-/-- **The literal `conj (Γ.val D ℓe) = Γ.conj.val D.conj ℓe` is false** (one blue edge `G_{01} = i`: the left side is `-i`, the
-right side `i`).  The true statement is `LGraph.val_conj`: the same data `D`. -/
-theorem lwSymm_conj_literal_false :
-    ¬ (∀ (Γ : LGraph (Fin 2) (Fin 0)) (D : LData (Fin 2)) (ℓe : Fin 2 → Fin 2),
-        star (Γ.val D ℓe) = Γ.conj.val (lwSymmDataConj D) ℓe) := by
-  intro h
-  have := h ⟨[⟨true, false, Sum.inl 0, Sum.inl 1⟩], [], [], 1⟩ ⟨!![0, Complex.I; 0, 0], 0, 0, 0⟩ ![0, 1]
-  simp [LGraph.val, LGraph.term, LGraph.conj, SEdge.conj, SEdge.val, lwSymmDataConj] at this
-  have h2 := congrArg Complex.im this
-  norm_num at h2
-
-end Negations
-
 /-! ## 3. The twists in expectation
 
 For the sample data `lwSampleData sz n z u M S Sp` with `S` real (true for `lwS`), `Mᵀ = M`, `Sᵀ = S`, `S⁺ᵀ = S⁺`
@@ -536,17 +476,6 @@ theorem lwSymm_transpose_integral (hM : Mᵀ = M) (hS : Sᵀ = S) (hSp : Spᵀ =
       ∫ ω, Γ.val (lwSampleData sz n z u M S Sp ω) ℓe ∂(Sizes.seqP sz) := by
   simp only [LGraph.val_transpose, lwSymm_data_flip hM hS hSp]
   exact lwSymm_integral_flip sz (fun ω => Γ.val (lwSampleData sz n z u M S Sp ω) ℓe)
-
-/-- **(S1) in expectation**: `∫ Γ.conj.val = conj ∫ Γ.val`, for real `S`. -/
-theorem lwSymm_conj_integral (hS : ∀ i j, star (S i j) = S i j) (Γ : LGraph E I)
-    (ℓe : E → Idx d (sz.L n) (sz.W n)) :
-    ∫ ω, Γ.conj.val (lwSampleData sz n z u M S Sp ω) ℓe ∂(Sizes.seqP sz) =
-      star (∫ ω, Γ.val (lwSampleData sz n z u M S Sp ω) ℓe ∂(Sizes.seqP sz)) := by
-  have h : ∀ ω, Γ.conj.val (lwSampleData sz n z u M S Sp ω) ℓe =
-      (starRingEnd ℂ) (Γ.val (lwSampleData sz n z u M S Sp ω) ℓe) :=
-    fun ω => LGraph.val_conj (lwSampleData sz n z u M S Sp ω) hS Γ ℓe
-  simp only [h, Complex.star_def]
-  exact integral_conj
 
 theorem lwSymm_integral_cj (c : Bool) {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (f : Ω → ℂ) :
     ∫ ω, lwSymmCj c (f ω) ∂P = lwSymmCj c (∫ ω, f ω ∂P) := by
@@ -617,18 +546,6 @@ def owxET4 (m : ℂ) (Γ : LGraph E I) (x : E ⊕ I) (q : SEdge (E ⊕ I) × Lis
       ⟨true, false, Sum.inr (Sum.inr 1), Sum.inr (Sum.inr 0)⟩]
     [⟨true, true, owxEmb 2 x, Sum.inr (Sum.inr 0)⟩,
       ⟨false, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 1)⟩]
-
-/-- At an internal vertex the new terms are the merged ones. -/
-theorem owxET1_inr (m : ℂ) (Γ : LGraph E I) (x : I) : owxET1 m Γ (Sum.inr x) = owxT1 m Γ x := rfl
-
-theorem owxET2_inr (m : ℂ) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (x : I) :
-    owxET2 m Γ p (Sum.inr x) = owxT2 m Γ p x := rfl
-
-theorem owxET3_inr (m : ℂ) (Γ : LGraph E I) (x : I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
-    owxET3 m Γ (Sum.inr x) q = owxT3 m Γ x q := rfl
-
-theorem owxET4_inr (m : ℂ) (Γ : LGraph E I) (x : I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
-    owxET4 m Γ (Sum.inr x) q = owxT4 m Γ x q := rfl
 
 end OwxE
 
@@ -818,36 +735,6 @@ theorem owxET4_counters (m : ℂ) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List
       rcases he with rfl | rfl <;> first | rfl | exact lwSymmRho_emb _ _ _
     rw [h]
     exact lwStein_nM_congr _ _ rfl rfl
-
-theorem owxET1_ord (m : ℂ) (Γ : LGraph E I) (x : E ⊕ I) :
-    ord (owxET1 m Γ x).counters = ord Γ.counters + 1 := by
-  obtain ⟨h1, h2, h3, h4⟩ := owxET1_counters m Γ x
-  simp only [LGraph.counters, ord, h1, h2, h3, h4]
-  push_cast
-  ring
-
-theorem owxET2_ord (m : ℂ) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) (x : E ⊕ I) : ord (owxET2 m Γ p x).counters = ord Γ.counters + 1 := by
-  obtain ⟨h1, h2, h3, h4⟩ := owxET2_counters m Γ p hp x
-  simp only [LGraph.counters, ord, h1, h2, h3, h4]
-  push_cast
-  ring
-
-theorem owxET3_ord (m : ℂ) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) (x : E ⊕ I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hq : q ∈ lwSplit p.2) : ord (owxET3 m Γ x q).counters = ord Γ.counters + 1 := by
-  obtain ⟨h1, h2, h3, h4⟩ := owxET3_counters m Γ p hp x q hq
-  simp only [LGraph.counters, ord, h1, h2, h3, h4]
-  push_cast
-  ring
-
-theorem owxET4_ord (m : ℂ) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) (x : E ⊕ I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hq : q ∈ lwSplit p.2) : ord (owxET4 m Γ x q).counters = ord Γ.counters + 1 := by
-  obtain ⟨h1, h2, h3, h4⟩ := owxET4_counters m Γ p hp x q hq
-  simp only [LGraph.counters, ord, h1, h2, h3, h4]
-  push_cast
-  ring
 
 end OwxECounters
 
@@ -1495,20 +1382,6 @@ theorem lwSymmUncirc2_counters (Γ : LGraph E I) (p q : SEdge (E ⊕ I) × List 
   exact ⟨by simp only [lwSymmUncirc2, LGraph.nS, List.length_cons]; omega, rfl, rfl,
     lwStein_nM_congr _ _ rfl rfl⟩
 
-/-- **The frame keeps the counters.** -/
-theorem lwSymmFrame_counters (c t : Bool) (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) : (lwSymmFrame c t Γ p).counters = Γ.counters := by
-  obtain ⟨h1, h2, h3, h4⟩ := lwSymmUncirc_counters Γ p hp
-  rw [lwSymmFrame, lwSymmTwistG_counters_eq]
-  simp only [LGraph.counters, h1, h2, h3, h4]
-
-theorem lwSymmFrame2_counters (c t : Bool) (Γ : LGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
-    (lwSymmFrame2 c t Γ p q).counters = Γ.counters := by
-  obtain ⟨h1, h2, h3, h4⟩ := lwSymmUncirc2_counters Γ p q hp hq
-  rw [lwSymmFrame2, lwSymmTwistG_counters_eq]
-  simp only [LGraph.counters, h1, h2, h3, h4]
-
 end FrameCounters
 
 /-! ### The data hypotheses of the sample data -/
@@ -2037,290 +1910,16 @@ The size sequence `lwWxInstSz`, the flow data `z_{1/2} = i/2`, `m = i`, `M = m I
 instances (`Graph/LWWeightExp.lean`); `gaussIBP` is the merged proof.  Every deterministic hypothesis is discharged, the
 new ones (`M a b = 0`, `S⁺ᵀ = S⁺`) by `lwSymm_inst_hM0`, `lwSymm_inst_hSpT`. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst
-
-theorem lwSymm_inst_hM0 (a b : Idx 3 (lwWxInstSz.L 0) (lwWxInstSz.W 0)) (h : a ≠ b) : lwWxInstM a b = 0 := by
-  simp [lwWxInstM, h]
-
-theorem lwSymm_inst_hMs : lwWxInstMᵀ = lwWxInstM := lwSymm_M_symm lwSymm_inst_hM0
-
-theorem lwSymm_inst_hSpT : lwWxInstSpᵀ = lwWxInstSp :=
-  lwSymm_lwSplus_symm (sz := lwWxInstSz) (n := 0) (by norm_num) lwWx_inst_norm
-
-/-- The labels of the two external vertices of the instances. -/
-def lwSymmInstL : Fin 2 → Idx 3 (lwWxInstSz.L 0) (lwWxInstSz.W 0) := ![0, Pi.single 0 1]
-
 /-! ### (1) Conjugation on a concrete record with both colours -/
-
-/-- A graph with both colours, a circled weight of each colour, a black waved edge, both coloured waved edges, a `×`-dotted
-edge and the complex coefficient `1 + i`; one internal vertex, two external. -/
-def lwSymmInstGraph : LGraph (Fin 2) (Fin 1) where
-  solid := [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨false, false, Sum.inr 0, Sum.inl 1⟩,
-    ⟨true, true, Sum.inr 0, Sum.inr 0⟩, ⟨false, true, Sum.inl 0, Sum.inl 0⟩]
-  waved := [⟨false, true, Sum.inr 0, Sum.inl 0⟩, ⟨true, true, Sum.inl 0, Sum.inr 0⟩,
-    ⟨true, false, Sum.inr 0, Sum.inl 1⟩]
-  dotted := [⟨false, Sum.inl 0, Sum.inl 1⟩]
-  coeff := 1 + Complex.I
-
-/-- Data on `Fin 3` with complex `G`, `M = i·1`, a real symmetric `S` and a non-symmetric complex `S⁺`. -/
-def lwSymmInstD : LData (Fin 3) where
-  G := !![1 + Complex.I, 2, Complex.I; -1, 1 - Complex.I, 1 / 2; Complex.I, 3, 2 + Complex.I]
-  M := Matrix.of fun a b => if a = b then Complex.I else 0
-  S := !![1 / 2, 1 / 4, 0; 1 / 4, 1 / 2, 1 / 4; 0, 1 / 4, 1 / 2]
-  Sp := !![Complex.I, 1, 2; 0, 1, Complex.I; 1, 0, 1]
-
-theorem lwSymmInstD_hS (i j : Fin 3) : star (lwSymmInstD.S i j) = lwSymmInstD.S i j := by
-  fin_cases i <;> fin_cases j <;> simp [lwSymmInstD]
-
-/-- **Target 1 at the concrete record**: `conj (Γ.val D ℓe) = Γ.conj.val D ℓe` (the same data `D`, real `S`). -/
-example : lwSymmInstGraph.conj.val lwSymmInstD ![0, 1] = star (lwSymmInstGraph.val lwSymmInstD ![0, 1]) :=
-  LGraph.val_conj lwSymmInstD lwSymmInstD_hS lwSymmInstGraph _
-
-/-- The conjugate is a different graph (the colours of all solid edges flip), with the same counters. -/
-example : lwSymmInstGraph.conj ≠ lwSymmInstGraph ∧ lwSymmInstGraph.conj.counters = lwSymmInstGraph.counters := by
-  refine ⟨fun h => ?_, (lwSymmTwistG_counters_eq true false lwSymmInstGraph :)⟩
-  have := congrArg LGraph.solid h
-  simp [LGraph.conj, lwSymmInstGraph, SEdge.conj] at this
-
-/-- `n_S, n_W, n_V, n_M` of the record and of its conjugate and transpose, computed. -/
-example : (lwSymmInstGraph.nS, lwSymmInstGraph.nW, lwSymmInstGraph.nV, lwSymmInstGraph.nM) = (4, 3, 1, 0) ∧
-    (lwSymmInstGraph.conj.nS, lwSymmInstGraph.conj.nW, lwSymmInstGraph.conj.nV, lwSymmInstGraph.conj.nM) = (4, 3, 1, 0) ∧
-    (lwSymmInstGraph.transpose.nS, lwSymmInstGraph.transpose.nW, lwSymmInstGraph.transpose.nV,
-      lwSymmInstGraph.transpose.nM) = (4, 3, 1, 0) := by
-  decide
-
-/-- The conjugate of the conjugate is the graph. -/
-example : lwSymmInstGraph.conj.conj = lwSymmInstGraph := lwSymm_conj_conj _
-
 
 /-! ### (2) Transposition on `p2Graph` -/
 
-/-- **Target 2 on `p2Graph`** (`E|f_xy|²` of `(eq:p=2graph)`: both colours, black waved edges, `×`-dotted edges): `E Γᵀ.val =
-E Γ.val` at the instance data, for the two external labels `0 ≠ Pi.single 0 1`.  `M`, `S`, `S⁺` symmetric. -/
-example :
-    ∫ ω, p2Graph.transpose.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-        (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      ∫ ω, p2Graph.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-        (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) :=
-  lwSymm_transpose_integral lwSymm_inst_hMs (lwSymm_lwS_symm lwWxInstSz 0 (1 / 2)) lwSymm_inst_hSpT p2Graph _
-
-/-- The same with conjugation: `E p2Graph.conj.val = conj E p2Graph.val`. -/
-example :
-    ∫ ω, p2Graph.conj.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-        (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      star (∫ ω, p2Graph.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-        (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)) :=
-  lwSymm_conj_integral (lwSymm_lwS_real lwWxInstSz 0 (1 / 2)) p2Graph _
-
-/-- The flip is not the identity (the imaginary-part coordinates of the constant sample `1` change sign) and it
-transposes the resolvent at the instance, for every sample. -/
-example : (∃ ω : Sizes.SeqΩ lwWxInstSz, lwSymmFlip lwWxInstSz ω ≠ ω) ∧
-    ∀ ω : Sizes.SeqΩ lwWxInstSz, lwGm lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) (lwSymmFlip lwWxInstSz ω) =
-      (lwGm lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) ω)ᵀ := by
-  refine ⟨⟨fun _ => 1, fun h => ?_⟩, fun ω => lwSymm_lwGm_flip lwWxInstSz 0 _ _ ω⟩
-  have := congrFun h ⟨0, (0, 0, false)⟩
-  simp [lwSymmFlip, lwSymmSgn] at this
-  linarith
-
 /-! ### (3) `(Owx)` at an external vertex -/
-
-/-- The graph `Ǧ_{aa} G_{ax}` with the **external** vertex `a = inl 0` carrying the light-weight, and the internal vertex
-`x = inr 0`. -/
-def lwSymmInstExtGraph (m : ℂ) : LGraph (Fin 1) (Fin 1) where
-  solid := [⟨true, true, Sum.inl 0, Sum.inl 0⟩, ⟨true, false, Sum.inl 0, Sum.inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := m
-
-theorem lwSymmInstExt_mem (m : ℂ) :
-    ((⟨true, true, Sum.inl 0, Sum.inl 0⟩ : SEdge (Fin 1 ⊕ Fin 1)), [⟨true, false, Sum.inl 0, Sum.inr 0⟩]) ∈
-      lwSplit (lwSymmInstExtGraph m).solid := by
-  simp [lwSplit, lwSymmInstExtGraph]
-
-/-- **Target 3 at an external vertex**: the identity of expectations of values for `Ǧ_{aa} G_{ax}`, the weight at the external
-vertex `a = inl 0` (label `0`), at the instance data of T2107. -/
-example := owxE_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwWx_inst_hSp lwWx_inst_hM (lwSymmInstExtGraph (mE 0))
-  (⟨true, true, Sum.inl 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩]) (lwSymmInstExt_mem _)
-  (Sum.inl 0) rfl (fun _ => 0)
-
-/-- The counters of `Γ` and of the four terms at the external vertex, computed: `Γ = (2, 0, 1, 1)`;
-`owxET1 = (3, 1, 2, 1)`, `owxET2 = (3, 2, 3, 1)`, `owxET3 = (3, 1, 2, 1)`, `owxET4 = (3, 2, 3, 1)`: `n_M` is unchanged (the
-leaves join the external molecule of `a`), `ord + 1`. -/
-example :
-    let Γ := lwSymmInstExtGraph 1
-    let p : SEdge (Fin 1 ⊕ Fin 1) × List (SEdge (Fin 1 ⊕ Fin 1)) :=
-      (⟨true, true, Sum.inl 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩])
-    let q : SEdge (Fin 1 ⊕ Fin 1) × List (SEdge (Fin 1 ⊕ Fin 1)) := (⟨true, false, Sum.inl 0, Sum.inr 0⟩, [])
-    (Γ.nS, Γ.nW, Γ.nV, Γ.nM) = (2, 0, 1, 1) ∧
-    ((owxET1 1 Γ (Sum.inl 0)).nS, (owxET1 1 Γ (Sum.inl 0)).nW, (owxET1 1 Γ (Sum.inl 0)).nV,
-      (owxET1 1 Γ (Sum.inl 0)).nM) = (3, 1, 2, 1) ∧
-    ((owxET2 1 Γ p (Sum.inl 0)).nS, (owxET2 1 Γ p (Sum.inl 0)).nW, (owxET2 1 Γ p (Sum.inl 0)).nV,
-      (owxET2 1 Γ p (Sum.inl 0)).nM) = (3, 2, 3, 1) ∧
-    ((owxET3 1 Γ (Sum.inl 0) q).nS, (owxET3 1 Γ (Sum.inl 0) q).nW, (owxET3 1 Γ (Sum.inl 0) q).nV,
-      (owxET3 1 Γ (Sum.inl 0) q).nM) = (3, 1, 2, 1) ∧
-    ((owxET4 1 Γ (Sum.inl 0) q).nS, (owxET4 1 Γ (Sum.inl 0) q).nW, (owxET4 1 Γ (Sum.inl 0) q).nV,
-      (owxET4 1 Γ (Sum.inl 0) q).nM) = (3, 2, 3, 1) := by
-  decide
-
-
-/-- The theorems `owxET*_ord` and the flip at the instance. -/
-example := owxET1_ord (mE 0) (lwSymmInstExtGraph (mE 0)) (Sum.inl 0)
-
-example := owxET2_ord (mE 0) (lwSymmInstExtGraph (mE 0))
-  (⟨true, true, Sum.inl 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩]) (lwSymmInstExt_mem _) (Sum.inl 0)
-
-example := owxET3_ord (mE 0) (lwSymmInstExtGraph (mE 0))
-  (⟨true, true, Sum.inl 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩]) (lwSymmInstExt_mem _) (Sum.inl 0)
-  (⟨true, false, Sum.inl 0, Sum.inr 0⟩, []) (by simp [lwSplit])
-
-example := owxET4_ord (mE 0) (lwSymmInstExtGraph (mE 0))
-  (⟨true, true, Sum.inl 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 0⟩]) (lwSymmInstExt_mem _) (Sum.inl 0)
-  (⟨true, false, Sum.inl 0, Sum.inr 0⟩, []) (by simp [lwSplit])
-
-example := lwSymm_flip_measurePreserving lwWxInstSz
 
 /-! ### (4a) A red light-weight, external or internal -/
 
-/-- `Ḡ̊_{aa} Ḡ_{ax}`: a **red** light-weight at the external vertex `a = inl 0`. -/
-def lwSymmInstRedGraph (m : ℂ) : LGraph (Fin 1) (Fin 1) where
-  solid := [⟨false, true, Sum.inl 0, Sum.inl 0⟩, ⟨false, false, Sum.inl 0, Sum.inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := star m
-
-/-- **Form (a), a red light-weight at an external vertex**: selector `(c, t) = (true, false)`. -/
-example := lwSymm_weight_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 (lwSymmInstRedGraph (mE 0))
-  (⟨false, true, Sum.inl 0, Sum.inl 0⟩, [⟨false, false, Sum.inl 0, Sum.inr 0⟩])
-  (by simp [lwSplit, lwSymmInstRedGraph]) (Sum.inl 0) true false rfl (fun _ => 0)
-
-/-- `Ḡ̊_{xx} Ḡ_{ax}`: a red light-weight at the **internal** vertex `x = inr 0`. -/
-def lwSymmInstRedIntGraph (m : ℂ) : LGraph (Fin 1) (Fin 1) where
-  solid := [⟨false, true, Sum.inr 0, Sum.inr 0⟩, ⟨false, false, Sum.inl 0, Sum.inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := star m
-
-/-- **Form (a), a red light-weight at an internal vertex**; the counters of the four families by `lwSymm_weight_counters`. -/
-example := lwSymm_weight_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 (lwSymmInstRedIntGraph (mE 0))
-  (⟨false, true, Sum.inr 0, Sum.inr 0⟩, [⟨false, false, Sum.inl 0, Sum.inr 0⟩])
-  (by simp [lwSplit, lwSymmInstRedIntGraph]) (Sum.inr 0) true false rfl (fun _ => 0)
-
-example := lwSymm_weight_counters (mE 0) (lwSymmInstRedGraph (mE 0))
-  (⟨false, true, Sum.inl 0, Sum.inl 0⟩, [⟨false, false, Sum.inl 0, Sum.inr 0⟩])
-  (by simp [lwSplit, lwSymmInstRedGraph]) (Sum.inl 0) true false
-
 /-! ### (4b) `(Oe1x)` at a circled red in-edge -/
 
-/-- `x = inr 0` with the circled red in-edge `(Ḡ-M)_{ax}` (selected), the blue out-edge `G_{xb}`, the blue in-edge `G_{bx}`, the
-red out-edge `Ḡ_{xw}`, the red edge `Ḡ_{wa}`, the waved edge `S⁺_{xw}` and the `×`-dotted edge between `a` and `x`. -/
-def lwSymmInstEdgeGraph (m : ℂ) : LGraph (Fin 2) (Fin 2) where
-  solid := [⟨false, true, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩,
-    ⟨true, false, Sum.inl 1, Sum.inr 0⟩, ⟨false, false, Sum.inr 0, Sum.inr 1⟩,
-    ⟨false, false, Sum.inr 1, Sum.inl 0⟩]
-  waved := [⟨false, true, Sum.inr 0, Sum.inr 1⟩]
-  dotted := [⟨false, Sum.inl 0, Sum.inr 0⟩]
-  coeff := m
-
-/-- The selected edge `(Ḡ-M)_{ax}` and the other four. -/
-def lwSymmInstEdgeP : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
-  (⟨false, true, Sum.inl 0, Sum.inr 0⟩, [⟨true, false, Sum.inr 0, Sum.inl 1⟩,
-    ⟨true, false, Sum.inl 1, Sum.inr 0⟩, ⟨false, false, Sum.inr 0, Sum.inr 1⟩,
-    ⟨false, false, Sum.inr 1, Sum.inl 0⟩])
-
-theorem lwSymmInstEdge_mem (m : ℂ) : lwSymmInstEdgeP ∈ lwSplit (lwSymmInstEdgeGraph m).solid := by
-  simp [lwSymmInstEdgeP, lwSymmInstEdgeGraph, lwSplit]
-
-theorem lwSymmInstEdge_hv : (Sum.inl 0 : Fin 2 ⊕ Fin 2) ≠ Sum.inr 0 := by simp
-
-/-- **Form (b), a circled red in-edge** (`c = t = true`: conjugate and transpose): the identity of expectations of values at
-the instance data.  The circle of the selected edge is removed by `M a b = 0` and the `×`-dotted edge `a ≠ x`. -/
-example := lwSymm_oe1x_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 (lwSymmInstEdgeGraph (mE 0))
-  lwSymmInstEdgeP (lwSymmInstEdge_mem _) 0 (Sum.inl 0) lwSymmInstEdge_hv true true rfl
-  (fun _ => ⟨⟨false, Sum.inl 0, Sum.inr 0⟩, by simp [lwSymmInstEdgeGraph], rfl, Or.inl ⟨rfl, rfl⟩⟩) lwSymmInstL
-
-/-- The selector of the selected edge `(Ḡ-M)_{ax}`, derived by `lwSymm_selector_edge`. -/
-example : ∃ (c t : Bool) (v : Fin 2 ⊕ Fin 2), v ≠ Sum.inr 0 ∧
-    lwSymmTwistS c t lwSymmInstEdgeP.1 = ⟨true, lwSymmInstEdgeP.1.circ, Sum.inr 0, v⟩ :=
-  lwSymm_selector_edge _ (Sum.inr 0) (Or.inr ⟨rfl, by simp [lwSymmInstEdgeP]⟩)
-
-/-- The counters of the outputs at the instance (`lwSymm_oe1x_counters`). -/
-example := lwSymm_oe1x_counters (mE 0) (lwSymmInstEdgeGraph (mE 0)) lwSymmInstEdgeP (lwSymmInstEdge_mem _) 0
-  (Sum.inl 0) lwSymmInstEdge_hv true true
-
-/-- The numbers of derivative graphs for the four edges of the rest, in the frame of the circled red in-edge: the blue out-edge
-`G_{xb}` becomes a red in-edge (1 graph), the blue in-edge `G_{bx}` a red out-edge (the pair `oe1xP5`, `oe1xP3`: 2), the red
-out-edge `Ḡ_{xw}` a blue in-edge (the pair `oe1xP6`, `oe1xP4`: 2), the red edge `Ḡ_{wa}` an edge not at `x` (1). -/
-example : ((lwSplit lwSymmInstEdgeP.2).map fun q =>
-    (lwSymmOe1xDs true true 1 (lwSymmInstEdgeGraph 1) lwSymmInstEdgeP 0 (Sum.inl 0) q).length) = [1, 2, 2, 1] := by
-  decide
-
 /-! ### (4c) `(Oe2x)` at a transposed blue pair and at a red pair -/
-
-/-- The transposed pair `(G_{bx}, G_{xa})` (the in-edge first) of the merged instance graph `G_{xa} G_{bx} G_{aw} Ḡ_{wb}`,
-`x = inr 0`: `y = b = inl 1`, `y' = a = inl 0`, selector `(c, t) = (false, true)`. -/
-def lwSymmInstPairP : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
-  (⟨true, false, Sum.inl 1, Sum.inr 0⟩, [⟨true, false, Sum.inr 0, Sum.inl 0⟩,
-    ⟨true, false, Sum.inl 0, Sum.inr 1⟩, ⟨false, false, Sum.inr 1, Sum.inl 1⟩])
-
-def lwSymmInstPairQ : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
-  (⟨true, false, Sum.inr 0, Sum.inl 0⟩, [⟨true, false, Sum.inl 0, Sum.inr 1⟩, ⟨false, false, Sum.inr 1, Sum.inl 1⟩])
-
-theorem lwSymmInstPair_hp (m : ℂ) : lwSymmInstPairP ∈ lwSplit (oe2xInstGraph m).solid := by
-  simp [lwSplit, oe2xInstGraph, lwSymmInstPairP]
-
-theorem lwSymmInstPair_hq : lwSymmInstPairQ ∈ lwSplit lwSymmInstPairP.2 := by
-  simp [lwSplit, lwSymmInstPairP, lwSymmInstPairQ]
-
-theorem lwSymmInstPair_hy : (Sum.inl 1 : Fin 2 ⊕ Fin 2) ≠ Sum.inr 0 := by simp
-
-/-- **Form (c), the transposed blue pair `G_{yx} G_{xy'}`**: `E Γ.val = Σ_{k = 1}^8 E R_k^{(c,t)}.val`. -/
-example := lwSymm_oe2x_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 (oe2xInstGraph (mE 0)) 0
-  (Sum.inl 1) (Sum.inl 0) lwSymmInstPair_hy lwSymmInstPairP (lwSymmInstPair_hp _) lwSymmInstPairQ lwSymmInstPair_hq
-  false true rfl rfl (fun h => absurd h (by decide)) (fun h => absurd h (by decide)) lwSymmInstL
-
-example := lwSymm_oe2x_counters (mE 0) (oe2xInstGraph (mE 0)) lwSymmInstPairP lwSymmInstPairQ (lwSymmInstPair_hp _)
-  lwSymmInstPair_hq 0 (Sum.inl 1) (Sum.inl 0) lwSymmInstPair_hy false true
-
-/-- `Ḡ_{xa} Ḡ_{bx} G_{ab}`: the red pair at `x = inr 0`. -/
-def lwSymmInstRedPairGraph (m : ℂ) : LGraph (Fin 2) (Fin 1) where
-  solid := [⟨false, false, Sum.inr 0, Sum.inl 0⟩, ⟨false, false, Sum.inl 1, Sum.inr 0⟩,
-    ⟨true, false, Sum.inl 0, Sum.inl 1⟩]
-  waved := []
-  dotted := []
-  coeff := star m
-
-def lwSymmInstRedPairP : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) :=
-  (⟨false, false, Sum.inr 0, Sum.inl 0⟩, [⟨false, false, Sum.inl 1, Sum.inr 0⟩, ⟨true, false, Sum.inl 0, Sum.inl 1⟩])
-
-def lwSymmInstRedPairQ : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) :=
-  (⟨false, false, Sum.inl 1, Sum.inr 0⟩, [⟨true, false, Sum.inl 0, Sum.inl 1⟩])
-
-theorem lwSymmInstRedPair_hp (m : ℂ) : lwSymmInstRedPairP ∈ lwSplit (lwSymmInstRedPairGraph m).solid := by
-  simp [lwSplit, lwSymmInstRedPairGraph, lwSymmInstRedPairP]
-
-theorem lwSymmInstRedPair_hq : lwSymmInstRedPairQ ∈ lwSplit lwSymmInstRedPairP.2 := by
-  simp [lwSplit, lwSymmInstRedPairP, lwSymmInstRedPairQ]
-
-/-- **Form (c), the red pair `Ḡ_{xy} Ḡ_{y'x}`**: selector `(c, t) = (true, false)`, `y = a`, `y' = b`. -/
-example := lwSymm_oe2x_graph_E (sz := lwWxInstSz) (n := 0) (gaussIBP lwWxInstSz) lwWx_inst_im
-  (by norm_num : (0 : ℝ) < 1 / 2) (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE)
-  lwWxInstSp lwWxInstM lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM lwSymm_inst_hM0 (lwSymmInstRedPairGraph (mE 0)) 0
-  (Sum.inl 0) (Sum.inl 1) (by simp) lwSymmInstRedPairP (lwSymmInstRedPair_hp _) lwSymmInstRedPairQ
-  lwSymmInstRedPair_hq true false rfl rfl (fun h => absurd h (by decide)) (fun h => absurd h (by decide))
-  lwSymmInstL
-
-end Instances
 
 end RBM.Graph

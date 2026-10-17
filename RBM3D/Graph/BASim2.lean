@@ -352,14 +352,6 @@ theorem BASim_baSplit_cons_circ' {V : Type*} (e : SEdge V) (es : List (SEdge V))
   simp only [baSplitSolid, List.mem_flatMap]
   exact ⟨r', hr', by simp [he]⟩
 
-theorem BASim_baSplit_cons_unc' {V : Type*} (e : SEdge V) (es : List (SEdge V)) (he : e.circ = false) :
-    (∀ r' ∈ baSplitSolid es, ({ e with circ := true } :: r'.1, r'.2) ∈ baSplitSolid (e :: es)) ∧
-      ∀ r' ∈ baSplitSolid es, (r'.1, BAMEdge.mk e.σ e.src e.dst :: r'.2) ∈ baSplitSolid (e :: es) := by
-  refine ⟨fun r' hr' => ?_, fun r' hr' => ?_⟩ <;>
-  · simp only [baSplitSolid, List.mem_flatMap]
-    refine ⟨r', hr', ?_⟩
-    simp [he]
-
 theorem BASim_baSplit_append {V : Type*} (A B : List (SEdge V)) :
     ∀ r ∈ baSplitSolid (A ++ B), ∃ rA ∈ baSplitSolid A, ∃ rB ∈ baSplitSolid B, r = (rA.1 ++ rB.1, rA.2 ++ rB.2) := by
   induction A with
@@ -504,9 +496,6 @@ theorem BASim_owxEmb1_inr {E' I' : Type} (x : I') : (owxEmb 1 (Sum.inr x) : E' �
 def BASim_L1 {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I')
     (p : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : BAGraph E' (I' ⊕ Fin 2) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS false (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)]
-
-theorem BASim_lanlwT1_eq {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I')
-    (p : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : BAGraph.lanlwT1 Γ p = BASim_L1 Γ p := rfl
 
 /-- **`L1` ↔ `owxT1` at the frame** (`α ↦ x̄`, `β ↦ n0`; the frame has the selected edge uncircled) -/
 def BASim_B_L1 (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
@@ -963,8 +952,6 @@ theorem BASim_locStep_gg (P : BAPGraph E) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I')
     · change lwSymmTwistS false true (BAScost_imgE P.g q'.1) = ⟨true, (BAScost_imgE P.g q'.1).circ, (promoteC P.g).vmap p.1.dst, Sum.inr x'⟩
       simp only [lwSymmTwistS, h2, BAScost_imgE, h.1, hxa, SEdge.transpose]
       rfl
-
-theorem BASim_twistS_ff {V : Type} (e : SEdge V) : lwSymmTwistS false false e = e := rfl
 
 theorem BASim_frame2Q_ff {E' I' : Type} (q : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) :
     lwSymmFrame2Q false false q = ({ q.1 with circ := false }, q.2) := by

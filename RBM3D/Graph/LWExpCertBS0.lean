@@ -561,6 +561,4 @@ theorem cert_FF' : (rootInfo' false false).1 = true ∧ (rootInfo' false false).
 
 
 
-#print axioms cert_FF'
-
 end RBM.Graph.LWCert

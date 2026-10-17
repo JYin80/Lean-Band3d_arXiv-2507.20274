@@ -45,17 +45,13 @@ open private expIntIQ_star_abs expIntIQ_Psum_comb expIntIQ_Psum_mul_zero expIntI
 
 open private expIniI_Bctl_le from RBM3D.Induction.ExpIniI
 
-open private ExpIniIGen_envelope ExpIniIGen_Kb_band ExpIniIGen_bandData from RBM3D.Chain.ExpIniIGen
+open private ExpIniIGen_envelope from RBM3D.Chain.ExpIniIGen
 
 open private ExpIntIIGen_drift_pi from RBM3D.Chain.ExpIntIIGen
 
 open private Step5CasesGen_prec_mono from RBM3D.Chain.Step5CasesGen
 
 open private Step5KerGen_cmp_pos from RBM3D.Chain.Step5KerGen
-
-open private Step6KitGen_KerFR1_band from RBM3D.Chain.Step6KitGen
-
-open private QopDecayGen_sz0_lam QopDecayGen_ellT_le_one QopDecayGen_sz0_nontriv from RBM3D.Chain.QopDecayGen
 
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
@@ -1189,34 +1185,6 @@ end Pin
 
 /-! ## 7. The band re-derivation (V1L-C1 (ii)) -/
 
-/-- `|E_n| ≤ 2` along a band flow (`Im z_n > 0`, `abs_lemE_lt_two`). -/
-private theorem ExpIntIQGen_flowE_abs {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
-    (n : ℕ) : |STflowE z n| ≤ 2 :=
-  (abs_lemE_lt_two (lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1)).le
-
-/-- **The band pin `STExpIntIgL'` from `stExpIntIgL'_of`**: the premises at the band tuple `(seqP, STFlow, bandFM ∘ STflowE, lemT)` are the merged `step5CasesGen_flowFacts_band`, `iniTermGen_cltFlow_band`,
-`stKbound_holds`, `stek_sumRes2NALgL_band`, `stek_sumRes2gL_band`, the class `STEKBandKer` with `gK = sz.lam`, `Aof = 1`, `step5KerGen_thDecay_band` (`|E_n| ≤ 2` from the flow), `b45Gen_facts_band` and
-`STExpDuhamelQ_to_gL` of the merged `stExpDuhamelQ_holds`. -/
-theorem ExpIntIQGen_stExpIntIgL'_band (d : ℕ) :
-    STExpIntIgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := fun hd =>
-  stExpIntIgL'_of (Ker := @STEKBandKer d) (Aof := fun _ => 1) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band d) (iniTermGen_cltFlow_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hflow => ExpIniIGen_Kb_band hd sz κ ε 𝔠 𝔡 z hκ hflow) (stek_sumRes2NALgL_band d)
-    (stek_sumRes2gL_band d) (fun _ _ => le_rfl) Step6KitGen_KerFR1_band
-    (fun 𝔡 h𝔡 κ hκ => by
-      obtain ⟨C₆, hC₆, H⟩ := step5KerGen_thDecay_band d 𝔡⁻¹ hd (inv_pos.2 h𝔡)
-      exact ⟨C₆, hC₆, fun sz ε 𝔠 z hflow => H sz (STflowE z) (ExpIntIQGen_flowE_abs sz hflow)⟩)
-    (b45Gen_facts_band d) (STExpDuhamelQ_to_gL d hd (stExpDuhamelQ_holds d)) hd
-
-/-- **Band `stExpIntI'_holds` re-derived** (`ExpIntIQ:1346`) from `stExpIntIgL'_of` through `STExpIntI'_of_gL'` (the Duhamel identity is eventual in the generic pin, D725). -/
-theorem ExpIntIQGen_stExpIntI'_band (d : ℕ) : STExpIntI' d :=
-  STExpIntI'_of_gL' d (ExpIntIQGen_stExpIntIgL'_band d)
-
-/-- **Band `stStep6I_of_LW` re-derived** (`ExpIntIQ:1362`; V1L-C1 (ii)): `ST_step6I_of_LW_Int_gen_band` (row a: the global average recovered through 16b) with the integrated pin `stExpIntIgL'_of` at the band. -/
-theorem ExpIntIQGen_stStep6I_of_LW_band (d : ℕ) (h : LWtermEXP d) : STStep6I d :=
-  ST_step6I_of_LW_Int_gen_band d h (ExpIntIQGen_stExpIntIgL'_band d)
-
 /-! ## 8. Compiled nonempty instances at `d = 3` (regime (i) data of the band: `szB`, `zB`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `𝔠d = 1/300`, `(s, t) = (7/8, 15/16)`, `gK = lam`, `Aof = 1`)
 
 `szB`: `L = 4`, `W_n = n + 4`, `lam = 1`.  Discharged at every example: flow, times, regime, `(con_st_ind)` (`conStInd_const`), admissibility, probability law, the class `IniTermGen_CltFlow` (`κ'`, `δ`, `CltRepg`, the range),
@@ -1224,191 +1192,6 @@ theorem ExpIntIQGen_stStep6I_of_LW_band (d : ℕ) (h : LWtermEXP d) : STStep6I d
 (`expIntIQ_star_props`) and the `𝒬`-Duhamel identity (`stExpDuhamelQ_holds`).  What stays a hypothesis is another gate's pin: `STExpDriftHiConclgL`, `STExpDriftDecayConclgL`, `STExpWardIConclgL'` (T2506 rows a, c) and the
 initial-term bound `PrecL …` of `𝒬_s f_s` (`STExpIniIConclgL'`, T2506 row b). -/
 
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- The envelopes `(1-v)⁻¹ ≤ N` and `‖f_v‖ ≤ N³` at the band data (`expIntIQ_f_leg`: row 9' data, `STKboundgL`; no hypothesis). -/
-private theorem ExpIntIQGen_bandEnv :
-    (∀ᶠ n in atTop, ∀ v : ℝ, v ≤ (fun _ : ℕ => (15 / 16 : ℝ)) n → (1 - v)⁻¹ ≤ ((szB.size n : ℕ) : ℝ)) ∧
-    (∀ᶠ n in atTop, ∀ v : ℝ, (fun _ : ℕ => (7 / 8 : ℝ)) n ≤ v → v ≤ (fun _ : ℕ => (15 / 16 : ℝ)) n →
-      ∀ σ : Fin 2 → Bool, ‖(fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n v σ b)‖ ≤
-        ((szB.size n : ℕ) : ℝ) ^ 3) := by
-  obtain ⟨κ', δ, H₀, g', E, hκ', hδ, hm', hev, hrep⟩ := ExpIniIGen_bandData
-  exact expIntIQ_f_leg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto hrep hκ' hδ hm'
-    (ExpIniIGen_Kb_band (by norm_num) szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) flow_zB)
-    (s := fun _ => 7 / 8) (t := fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hev
-
-/-- **Target 10, `expIntIQ_src_sumZerog`** at the band data: `ZeroModeGen_KerSums` is `zeroModeGen_kerSums_band`; no hypothesis remains. -/
-example (n : ℕ) (σ : Fin 2 → Bool) :
-    EKSumZero (STExpQsrcg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) σ (expIntIQ_star szB n)) :=
-  expIntIQ_src_sumZerog _ _ n (zeroModeGen_kerSums_band szB (STflowE zB) n) (by norm_num [szB]) (7 / 8) (by norm_num) σ
-
-/-- **Target 10, the envelopes** `expIntIQ_f_leg` at the band data (no hypothesis) and `expIntIQ_D_leg` (the drift bounds `STExpDriftHiConclgL`, T2506 row a, stay a hypothesis). -/
-example : (∀ᶠ n in atTop, ∀ v : ℝ, v ≤ 15 / 16 → (1 - v)⁻¹ ≤ ((szB.size n : ℕ) : ℝ)) ∧
-    (∀ᶠ n in atTop, ∀ v : ℝ, 7 / 8 ≤ v → v ≤ 15 / 16 → ∀ σ : Fin 2 → Bool,
-      ‖(fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n v σ b)‖ ≤ ((szB.size n : ℕ) : ℝ) ^ 3) :=
-  ExpIntIQGen_bandEnv
-
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    ∀ᶠ n in atTop, ∀ v : ℝ, 7 / 8 ≤ v → v ≤ 15 / 16 → ∀ σ : Fin 2 → Bool,
-      ‖fun b => STExpDriftg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n v σ b‖ ≤ ((szB.size n : ℕ) : ℝ) ^ 6 :=
-  expIntIQ_D_leg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto (s := fun _ => 7 / 8)
-    (t := fun _ => 15 / 16) (fun _ => by norm_num) hdr ExpIntIQGen_bandEnv.1
-
-/-- The envelopes `(1-v)⁻¹ ≤ N` and `‖f_v‖ ≤ N³` along the band flow `(sz0, z0)` on the window `[0, 1/16]` (`expIntIQ_f_leg`: the row-9' data of `iniTermGen_cltFlow_band`, `1/16 ≤ lemT z0`,
-`STKboundgL`; no hypothesis). -/
-private theorem ExpIntIQGen_sz0Env :
-    (∀ᶠ n in atTop, ∀ v : ℝ, v ≤ (fun _ : ℕ => (1 / 16 : ℝ)) n → (1 - v)⁻¹ ≤ ((sz0.size n : ℕ) : ℝ)) ∧
-    (∀ᶠ n in atTop, ∀ v : ℝ, (fun _ : ℕ => (0 : ℝ)) n ≤ v → v ≤ (fun _ : ℕ => (1 / 16 : ℝ)) n →
-      ∀ σ : Fin 2 → Bool, ‖(fun b => STExpErrg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) n v σ b)‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ 3) := by
-  obtain ⟨κ', δ, hκ', -, hδ, HC⟩ := iniTermGen_cltFlow_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num) (by norm_num)
-  obtain ⟨H₀, g', E, hm', hev', hrep, -⟩ := HC (1 / 6) sz0 z0 flow_z0
-  have hev : ∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - (fun _ : ℕ => (1 / 16 : ℝ)) n :=
-    hev'.mono fun n hn => hn.trans (by have := sixteenth_le_lemT n; simp only; linarith)
-  exact expIntIQ_f_leg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) inferInstance sz0_tendsto hrep hκ' hδ hm'
-    (ExpIniIGen_Kb_band (by norm_num) sz0 (1 / 10) (1 / 10) (1 / 6) (1 / 10) z0 (by norm_num) flow_z0)
-    (s := fun _ => 0) (t := fun _ => 1 / 16) (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num) hev
-
-/-- **Target 10, `expIntIQ_src_decayg`** along the band flow `(sz0, z0)` (`L_n = 4(n+1) → ∞`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`) on the window `[0, 1/16]`, at `ε' = 1/5`, `D = 1`:
-the class `Step5KerGen_ThDecay` is `step5KerGen_thDecay_band` at `gK = lam`, `Λ = 𝔡⁻¹ = 10`; the row sums are those of `b45Gen_facts_band`; the envelopes are `ExpIntIQGen_sz0Env`; the drift bounds and the drift
-decay (T2506 rows a, c) stay hypotheses.  The second conjunct: the `(1/5, 1)` decay condition is not empty at any `n` and `v ∈ [0, 1/16]` (`ℓ_v = 1`, `W_n^{1/5} = L_n/2`; `QopDecayGen_sz0_nontriv`).
-(At `szB`, `L = 4`, the window `W^{ε'} ℓ ≤ zdistD ≤ 6` is empty for large `W`, so `szB` is not used here.) -/
-example (hdr : STExpDriftHiConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) (fun _ => 1 / 16))
-    (hdd : STExpDriftDecayConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) (fun _ => 1 / 16)) :
-    (∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ 1 / 16 → ∀ σ : Fin 2 → Bool,
-      EKFastDecay (sz0.lam n) v ((sz0.W n : ℕ) : ℝ) (1 / 5) 1
-        (STExpQsrcg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) n v σ (expIntIQ_star sz0 n))) ∧
-    ∀ (n : ℕ) (v : ℝ), 0 ≤ v → v ≤ 1 / 16 →
-      ¬ ∀ A : (Fin 2 → Zd 3 (sz0.L n)) → ℂ, EKFastDecay (sz0.lam n) v ((sz0.W n : ℕ) : ℝ) (1 / 5) 1 A := by
-  obtain ⟨C₆, hC₆, hTh⟩ := step5KerGen_thDecay_band 3 (1 / 10 : ℝ)⁻¹ (by norm_num) (by norm_num)
-  obtain ⟨K₆, hK₆, G⟩ := b45Gen_facts_band 3 (1 / 10) (by norm_num)
-  obtain ⟨-, -, -, -, hrow⟩ := G sz0 (1 / 10) (1 / 6) (1 / 10) z0 flow_z0
-  refine ⟨expIntIQ_src_decayg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (by norm_num) sz0_admissible inferInstance hK₆
-    (fun n σ σ' t ht0 ht1 a => (hrow n σ σ' t ht0 ht1).1 a) hC₆ sz0.lam
-    (hTh sz0 (STflowE z0) (ExpIntIQGen_flowE_abs sz0 flow_z0)) (step34Gen_band_hg sz0_admissible) (fun n _ => le_rfl)
-    (s := fun _ => 0) (t := fun _ => 1 / 16) (fun _ => le_rfl) (fun _ => by norm_num) ExpIntIQGen_sz0Env.1
-    ExpIntIQGen_sz0Env.2
-    (expIntIQ_D_leg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) inferInstance sz0_tendsto (s := fun _ => 0)
-      (t := fun _ => 1 / 16) (fun _ => by norm_num) hdr ExpIntIQGen_sz0Env.1) hdd (1 / 5) 1 (by norm_num) one_pos, ?_⟩
-  intro n v hv0 hv1
-  exact QopDecayGen_sz0_nontriv n (le_refl _) one_pos
-    (QopDecayGen_ellT_le_one ((QopDecayGen_sz0_lam n).2) (by linarith))
-
-/-- The kernel data at the band flow: `κm`, the class `STEKBandKer` at `gK = lam`, `0 < lam ≤ 𝔡⁻¹`, R1 at `Aof = 1` (merged `Step6KitGen_KerFR1_band`). -/
-private theorem ExpIntIQGen_bandKer :
-    ∃ κm : ℝ, 0 < κm ∧ STEKBandKer szB (bandFM szB (STflowE zB)) szB.lam κm ∧
-      (∀ᶠ n in atTop, 0 < szB.lam n ∧ szB.lam n ≤ (1 / 10 : ℝ)⁻¹) ∧
-      ∀ n, 0 ≤ szB.lam n * szB.lam n ∧ szB.lam n ^ 2 ≤ szB.lam n ^ 2 ∧ szB.lam n ^ 2 ≤ (fun _ : ℝ => (1 : ℝ)) 0 * szB.lam n ^ 2 := by
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact ⟨κm, hκm, hKer, hg, hR1⟩
-
-/-- **Target 11, `expIntIQ_inig`** at the band data (`σ₁ ≠ σ₂`, the family `ϑ = ϑ*`): the kernel pin `stek_sumRes2gL_band`, the class `STEKBandKer` with R1 at `Aof = 1`, `(con_st_ind)` and the envelope are discharged; the Ward
-conclusion `STExpWardIConclgL'` and the initial-term bound `hF1` (T2506 rows) stay hypotheses. -/
-example (hW : STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hF1 : PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖Step2Gen_UN (bandFM szB (STflowE zB)) n p.2.1.1 (7 / 8) (p.1 : ℝ)
-        (STQop (d := 3) (expIntIQ_star szB n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) p.2.1.1 b)) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ))) :
-    PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖Step2Gen_UN (bandFM szB (STflowE zB)) n p.2.1.1 (7 / 8) (p.1 : ℝ)
-        (STQop (d := 3) (expIntIQ_star szB n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) p.2.1.1 b)) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ) + szB.Bctl n (p.1 : ℝ) ^ 3) := by
-  obtain ⟨κm, hκm, hKer, hg, hR1⟩ := ExpIntIQGen_bandKer
-  exact expIntIQ_inig (Aof := fun _ => 1) (Ker := @STEKBandKer 3) (stek_sumRes2gL_band 3) (by norm_num) hκm le_rfl
-    (𝔠d := 1 / 300) (by norm_num) (by norm_num) szB_admissible (bandFM szB (STflowE zB)) szB.lam hKer hg hR1 inferInstance
-    (s := fun _ => 7 / 8) (t := fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) szB_reg5I
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) ExpIntIQGen_bandEnv.2 hW
-    ((1 + 40 * ((3 * 1 : ℕ) : ℝ)) * 6 ^ (3 * 1)) (1 / 2) (by positivity) (by norm_num) (expIntIQ_star szB)
-    (expIntIQ_star_props 3 szB (1 / 10) szB_WO) (fun n p => STExpTarget szB n (p.1 : ℝ))
-    (fun n p => st6_target_nonneg szB n (lt_of_le_of_lt p.1.2.2 (by norm_num))) hF1
-
-/-- **Target 11, `expIntIQ_star_boundg`** at the band data (the family `ϑ*`): as `expIntIQ_inig`, with the `𝒬`-Duhamel identity of `ϑ*` (`st6_duhEqQ_of_ping` of `stExpDuhamelQ_holds`), `step5KerGen_thDecay_band`,
-`b45Gen_facts_band`; the drift bounds, the drift decay, the Ward conclusion and the bound `hG1` on the initial term of `ϑ*` stay hypotheses. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hdd : STExpDriftDecayConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hW : STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hG1 : PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖Step2Gen_UN (bandFM szB (STflowE zB)) n p.2.1.1 (7 / 8) (p.1 : ℝ)
-        (STQop (d := 3) (expIntIQ_star szB n) (7 / 8) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (7 / 8) p.2.1.1 b)) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ))) :
-    PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖STQop (d := 3) (expIntIQ_star szB n) (p.1 : ℝ)
-        (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ) + STExpTarget szB n (p.1 : ℝ)) := by
-  obtain ⟨κm, hκm, hKer, hg, hR1⟩ := ExpIntIQGen_bandKer
-  obtain ⟨C₆, hC₆, hTh⟩ := step5KerGen_thDecay_band 3 (1 / 10 : ℝ)⁻¹ (by norm_num) (by norm_num)
-  obtain ⟨K₆, hK₆, G⟩ := b45Gen_facts_band 3 (1 / 10) (by norm_num)
-  obtain ⟨-, -, -, hKS, hrow⟩ := G szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact expIntIQ_star_boundg (Aof := fun _ => 1) (Ker := @STEKBandKer 3) (stek_sumRes2gL_band 3) (by norm_num) hκm le_rfl
-    (𝔠d := 1 / 300) (𝔡 := 1 / 10) (by norm_num) (by norm_num) szB_admissible (bandFM szB (STflowE zB)) szB.lam hKer hg hR1
-    (fun n _ => le_rfl) inferInstance (s := fun _ => 7 / 8) (t := fun _ => 15 / 16) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) szB_reg5I
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) hK₆
-    (fun n σ σ' t ht0 ht1 a => (hrow n σ σ' t ht0 ht1).1 a) hKS hC₆ (hTh szB (STflowE zB) (ExpIntIQGen_flowE_abs szB flow_zB))
-    ExpIntIQGen_bandEnv.1 ExpIntIQGen_bandEnv.2
-    (expIntIQ_D_leg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto (s := fun _ => 7 / 8)
-      (t := fun _ => 15 / 16) (fun _ => by norm_num) hdr ExpIntIQGen_bandEnv.1) hdr hdd hW
-    (fun Cq c ϑ hϑ => st6_duhEqQ_of_ping (STExpDuhamelQ_to_gL 3 (by norm_num) (stExpDuhamelQ_holds 3))
-      (by norm_num : (0 : ℝ) < 1 / 10) flow_zB (fun _ => by norm_num) (fun _ => by norm_num) Cq c ϑ hϑ)
-    (fun n p => STExpTarget szB n (p.1 : ℝ)) hG1
-
-/-- **Target 11, `expIntIQ_backg`** at the band data (`ϑ = ϑ*`, `G = T`): the Ward conclusion and the bound on `𝒬*_u f_u` stay hypotheses. -/
-example (hW : STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hG1 : PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖STQop (d := 3) (expIntIQ_star szB n) (p.1 : ℝ)
-        (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ))) :
-    PrecL szB (Sizes.seqP szB) (U := STIdx2P szB STSigMixed (fun _ => 7 / 8) (fun _ => 15 / 16))
-      (fun n p _ => ‖STQop (d := 3) (expIntIQ_star szB n) (p.1 : ℝ)
-        (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
-      (fun n p _ => STExpTarget szB n (p.1 : ℝ) + szB.Bctl n (p.1 : ℝ) ^ 3) :=
-  expIntIQ_backg (bandFM szB (STflowE zB)) (Sizes.seqP szB) szB_tendsto hW ((1 + 40 * ((3 * 1 : ℕ) : ℝ)) * 6 ^ (3 * 1)) (1 / 2)
-    (by positivity) (by norm_num) (expIntIQ_star szB) (expIntIQ_star_props 3 szB (1 / 10) szB_WO)
-    (expIntIQ_star_props 3 szB (1 / 10) szB_WO) (fun n p => STExpTarget szB n (p.1 : ℝ))
-    (fun n p => st6_target_nonneg szB n (lt_of_le_of_lt p.1.2.2 (by norm_num))) hG1
-
-/-- **Target 11, `expIntIQ_conclg`** at the band data: every deterministic premise is discharged; the drift bounds, the drift decay and the Ward conclusion stay hypotheses. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hdd : STExpDriftDecayConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hW : STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STExpIntQConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) := by
-  obtain ⟨κm, hκm, hKer, hg, hR1⟩ := ExpIntIQGen_bandKer
-  obtain ⟨C₆, hC₆, hTh⟩ := step5KerGen_thDecay_band 3 (1 / 10 : ℝ)⁻¹ (by norm_num) (by norm_num)
-  obtain ⟨K₆, hK₆, G⟩ := b45Gen_facts_band 3 (1 / 10) (by norm_num)
-  obtain ⟨-, -, -, hKS, hrow⟩ := G szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact expIntIQ_conclg (Aof := fun _ => 1) (Ker := @STEKBandKer 3) (stek_sumRes2gL_band 3) (by norm_num) hκm le_rfl
-    (𝔠d := 1 / 300) (𝔡 := 1 / 10) (by norm_num) (by norm_num) szB_admissible (bandFM szB (STflowE zB)) szB.lam hKer hg hR1
-    (fun n _ => le_rfl) inferInstance (s := fun _ => 7 / 8) (t := fun _ => 15 / 16) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) szB_reg5I
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) (by norm_num)) hK₆
-    (fun n σ σ' t ht0 ht1 a => (hrow n σ σ' t ht0 ht1).1 a) hKS hC₆ (hTh szB (STflowE zB) (ExpIntIQGen_flowE_abs szB flow_zB))
-    ExpIntIQGen_bandEnv.1 ExpIntIQGen_bandEnv.2
-    (expIntIQ_D_leg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto (s := fun _ => 7 / 8)
-      (t := fun _ => 15 / 16) (fun _ => by norm_num) hdr ExpIntIQGen_bandEnv.1) hdr hdd hW
-    (fun Cq c ϑ hϑ => st6_duhEqQ_of_ping (STExpDuhamelQ_to_gL 3 (by norm_num) (stExpDuhamelQ_holds 3))
-      (by norm_num : (0 : ℝ) < 1 / 10) flow_zB (fun _ => by norm_num) (fun _ => by norm_num) Cq c ϑ hϑ)
-
-/-- **Target 12, `stExpIntIgL'_of`** applied at the band tuple (`ExpIntIQGen_stExpIntIgL'_band`: every family premise by its merged band proof; no hypothesis remains), and the pin read at the data of regime (i)
-through `STExpIntI'_of_gL'` and the merged `inst_ing6_I`. -/
-example : STExpIntIgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  ExpIntIQGen_stExpIntIgL'_band 3
-
-example : InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t → STExpDriftDecayConcl sz E s t →
-      STExpWardIConcl' sz E s t → STExpIntConcl sz ∅ STSigSame E s t ∧ STExpIntQConcl' sz E s t) szB zB
-    (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ (ExpIntIQGen_stExpIntI'_band 3) szB_reg5I
-
-/-- **The band re-derivations** `ExpIntIQGen_stExpIntI'_band`, `ExpIntIQGen_stStep6I_of_LW_band` at `d = 3`, read at the data of regime (i) through the merged `inst_step6I`: `LWtermEXP` stays a hypothesis. -/
-example (hLW : LWtermEXP 3) :
-    InstIng6Concl (fun sz E s t => STStep6Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_step6I (ExpIntIQGen_stStep6I_of_LW_band 3 hLW)
-
-end Instances
 end RBM.BA
 
 end

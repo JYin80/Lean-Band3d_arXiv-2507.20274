@@ -84,11 +84,4 @@ theorem hasDerivAt_inverse_apply {A : Matrix n n ℂ} (hA : IsUnit A) (α w i j 
     simp [ent, E, mul_single_mul_apply]
   exact hent.congr_deriv hval
 
-/-- The same derivative for a light-weight `Ǧ = G - M` with `M` independent of `H`. -/
-theorem hasDerivAt_inverse_sub_apply {A : Matrix n n ℂ} (hA : IsUnit A) (M : Matrix n n ℂ)
-    (α w i j : n) :
-    HasDerivAt (fun s : ℂ => (Ring.inverse (A + s • single α w (1 : ℂ)) - M) i j)
-      (-(Ring.inverse A i α * Ring.inverse A w j)) 0 := by
-  exact (hasDerivAt_inverse_apply hA α w i j).sub_const (M i j)
-
 end RBM.Graph

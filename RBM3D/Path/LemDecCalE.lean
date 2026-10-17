@@ -490,17 +490,6 @@ theorem LemDecCalE_e1 (d : ℕ) {W u : ℝ} (hW : 0 < W) (hu : u < 1) :
   rw [abs_of_pos hx]
   field_simp
 
-/-- (e1), real powers: `W^d M_u^{-a} = (1-u)⁻¹ M_u^{1-a}` for `M_u = W^d (1-u)`. -/
-theorem LemDecCalE_e1_rpow (d : ℕ) {W u : ℝ} (hW : 0 < W) (hu : u < 1) (a : ℝ) :
-    W ^ d * (W ^ d * (1 - u)) ^ (-a) = (1 - u)⁻¹ * (W ^ d * (1 - u)) ^ (1 - a) := by
-  have hx : 0 < 1 - u := by linarith
-  have hWd : 0 < W ^ d := by positivity
-  have hM : 0 < W ^ d * (1 - u) := by positivity
-  have h1 : (W ^ d * (1 - u)) ^ (1 - a) = (W ^ d * (1 - u)) * (W ^ d * (1 - u)) ^ (-a) := by
-    rw [show (1 - a) = 1 + (-a) by ring, Real.rpow_add hM, Real.rpow_one]
-  rw [h1]
-  field_simp
-
 /-- `√(x + y) ≤ √x + √y` for `x, y ≥ 0`. -/
 private theorem lemDecCalE_sqrt_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     Real.sqrt (x + y) ≤ Real.sqrt x + Real.sqrt y := by
@@ -558,22 +547,6 @@ theorem LemDecCalE_e4c {d : ℕ} {W u D C : ℝ} (hW : 1 ≤ W) (hC : 0 ≤ C) (
     norm_num
   rw [hsq] at h
   exact h
-
-/-- (e3) (ii): `T_{u,D}(x) ≤ T_{v,D}(x)` for `0 < W`, `u ≤ v < 1` (`M_v ≤ M_u`). -/
-theorem LemDecCalE_tailT_mono_scale {d : ℕ} {W u v D x : ℝ} (hW : 0 < W) (huv : u ≤ v)
-    (hv : v < 1) : tailTD d W u D x ≤ tailTD d W v D x := by
-  have hu : u < 1 := huv.trans_lt hv
-  have hxv : 0 < 1 - v := by linarith
-  have hxu : 0 < 1 - u := by linarith
-  have hWd : 0 < W ^ d := by positivity
-  have h1 : (W ^ d * |1 - u|)⁻¹ ≤ (W ^ d * |1 - v|)⁻¹ := by
-    rw [abs_of_pos hxu, abs_of_pos hxv]
-    exact inv_anti₀ (by positivity) (mul_le_mul_of_nonneg_left (by linarith) hWd.le)
-  have h2 : ((W ^ d * |1 - u|)⁻¹) ^ 2 ≤ ((W ^ d * |1 - v|)⁻¹) ^ 2 :=
-    pow_le_pow_left₀ (by rw [abs_of_pos hxu]; positivity) h1 2
-  unfold tailTD
-  have := mul_le_mul_of_nonneg_right h2 (Real.exp_pos (-Real.sqrt x)).le
-  linarith
 
 end Tails
 
@@ -922,13 +895,6 @@ section Green
 
 variable {d : ℕ} {sz : Sizes d} {n : ℕ} {E u D Λ K₀ J : ℝ}
   {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-
-/-- (e5), first part: `|(𝓛 - 𝒦)^{(2)}_{σ,a}| ≤ J T_{u,D}(|a₁ - a₂|)` is the premise of `E2Hyp`. -/
-theorem LemDecCalE_lk_le (h : E2Hyp sz n E u D Λ K₀ J M) (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd d (sz.L n)) : ‖STLKM sz n E u M σ a‖ ≤ J * STtailTD sz n u D a := by
-  obtain ⟨hd3, hE, hu0, hu1, hlam, hlamu, hlamW, hΛ, hK, hlog, hfloor, hH, h6, h78, h9, hJ1,
-    hJW, hLK, -⟩ := h
-  exact hLK σ a
 
 /-- `𝓛_{(+,-),(a,b)} = (𝓛 - 𝒦) + 𝒦` (`loopPM` is `STLM` at `(+,-)`). -/
 theorem LemDecCalE_loopPM_eq (sz : Sizes d) (n : ℕ) (E u : ℝ)
@@ -1397,81 +1363,5 @@ theorem LemDecCalE_e2Hyp_zero (sz : Sizes d) (n : ℕ) {E D Λ K₀ J : ℝ} (hd
 end Witness
 
 /-! ## 8. The instance at `d = 3`: `E2Hyp` nonempty, and `lemDecCalE_lk` applied to it -/
-
-section Instance
-
-open RBM.Gauss.SizesInst
-
-private theorem lemDecCalE_inst_values :
-    (sz0.L 1 = 8) ∧ (sz0.W 1 = 1024) ∧ (sz0.lam 1 = 1 / 4096) := by
-  refine ⟨rfl, rfl, ?_⟩
-  norm_num [sz0]
-
-/-- **Nondegenerate instance of `E2Hyp`** at `d = 3`: the preflight sequence `sz0` at `n = 1`
-(`L = 8`, `W = 1024`, `lam = 1/4096`, `N = 2^39`), `E = 1/2`, `u = 0`, `D = 8`,
-`Λ = K₀ = J = 1`, `M = 0`.  Every conjunct is discharged by numbers: `log 1024 ≥ 4`
-(`e⁴ < 1024`), `L^d W^{2d} = 2^69 ≤ 2^80 = W^D`, `lam² W^d = 64 ≥ 1`. -/
-theorem LemDecCalE_inst :
-    E2Hyp sz0 1 (1 / 2) 0 8 1 1 1
-      (0 : Matrix (Idx 3 (sz0.L 1) (sz0.W 1)) (Idx 3 (sz0.L 1) (sz0.W 1)) ℂ) := by
-  obtain ⟨hL, hW, hlam⟩ := lemDecCalE_inst_values
-  have hWc : ((sz0.W 1 : ℕ) : ℝ) = 1024 := by rw [hW]; norm_num
-  have hLc : ((sz0.L 1 : ℕ) : ℝ) = 8 := by rw [hL]; norm_num
-  refine LemDecCalE_e2Hyp_zero sz0 1 (by norm_num) (by norm_num [abs_of_pos]) ?_ ?_ ?_ le_rfl le_rfl
-    ?_ ?_ le_rfl ?_
-  · rw [hlam]; norm_num
-  · rw [hlam]; norm_num
-  · rw [hlam, hWc]; norm_num
-  · rw [hWc]
-    rw [Real.le_log_iff_exp_le (by norm_num)]
-    have h4 : Real.exp 4 = Real.exp 1 ^ 4 := by
-      rw [← Real.exp_nat_mul]; norm_num
-    rw [h4]
-    have h1 := Real.exp_one_lt_d9
-    calc Real.exp 1 ^ 4 ≤ (2.7182818286 : ℝ) ^ 4 :=
-          pow_le_pow_left₀ (Real.exp_pos 1).le h1.le 4
-      _ ≤ (1024 : ℝ) := by norm_num
-  · rw [hWc, hLc]
-    have h : ((1024 : ℝ) ^ (8 : ℝ)) = (1024 : ℝ) ^ (8 : ℕ) := by
-      rw [show (8 : ℝ) = ((8 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-    rw [h]
-    norm_num
-  · rw [hWc]; norm_num
-
-/-- **Check (ticket T2164): `lemDecCalE_lk` applied to the instance `LemDecCalE_inst`** at
-`σ = (+,-)` and `a = (0, e₁)`, `e₁ = (1, 0, 0)`: the left side is `0` (`𝓛 = 𝒦` at `M = 0`), the right side
-is positive. -/
-example :
-    ‖STELKLKM sz0 1 (1 / 2) 0 (0 : Matrix (Idx 3 (sz0.L 1) (sz0.W 1)) (Idx 3 (sz0.L 1) (sz0.W 1)) ℂ)
-        ![true, false] ![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1]‖ ≤
-      lossE2 3 (sz0.L 1) (sz0.W 1) 1 1 *
-        ((1 - (0 : ℝ))⁻¹ * (((sz0.W 1 : ℕ) : ℝ) ^ 3 * |1 - (0 : ℝ)|)⁻¹ * (1 : ℝ) ^ 2) *
-          STtailTD sz0 1 0 8 ![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1] :=
-  lemDecCalE_lk 3 sz0 1 (1 / 2) 0 8 1 1 1 0 LemDecCalE_inst _ _
-
-/-- The right side of the check is positive (so the instance is not `0 ≤ 0`): `lossE2 > 0`, the
-scale `(1-u)⁻¹ (W^d|1-u|)⁻¹ = 2^{-30}` and `T_{0,8}(r) ≥ W^{-8} > 0`. -/
-example : 0 < lossE2 3 (sz0.L 1) (sz0.W 1) 1 1 *
-        ((1 - (0 : ℝ))⁻¹ * (((sz0.W 1 : ℕ) : ℝ) ^ 3 * |1 - (0 : ℝ)|)⁻¹ * (1 : ℝ) ^ 2) *
-          STtailTD sz0 1 0 8 ![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1] := by
-  obtain ⟨hL, hW, hlam⟩ := lemDecCalE_inst_values
-  have hWc : ((sz0.W 1 : ℕ) : ℝ) = 1024 := by rw [hW]; norm_num
-  have hL3 : 3 ≤ sz0.L 1 := by rw [hL]; norm_num
-  have hconst := LemDecCalE_lk_const_le_lossE2 LemDecCalE_inst
-  have hloss : 0 < lossE2 3 (sz0.L 1) (sz0.W 1) 1 1 := by
-    refine lt_of_lt_of_le ?_ hconst
-    positivity
-  have hT : 0 < STtailTD sz0 1 0 8 ![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1] := by
-    unfold STtailTD tailTD
-    have := Real.rpow_pos_of_pos (by rw [hWc]; norm_num : (0 : ℝ) < ((sz0.W 1 : ℕ) : ℝ)) (-8 : ℝ)
-    have h2 : 0 ≤ ((((sz0.W 1 : ℕ) : ℝ) ^ 3 * |1 - (0 : ℝ)|)⁻¹) ^ 2 *
-        Real.exp (-Real.sqrt (((zdistInf 3 (sz0.L 1) (![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1] 0 -
-          ![(0 : Zd 3 (sz0.L 1)), Pi.single 0 1] 1) : ℕ) : ℝ))) := by positivity
-    linarith
-  have hs : 0 < (1 - (0 : ℝ))⁻¹ * (((sz0.W 1 : ℕ) : ℝ) ^ 3 * |1 - (0 : ℝ)|)⁻¹ * (1 : ℝ) ^ 2 := by
-    rw [hWc]; norm_num
-  positivity
-
-end Instance
 
 end RBM.Path

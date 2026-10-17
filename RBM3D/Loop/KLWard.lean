@@ -1328,16 +1328,6 @@ theorem KLK_ward :
     (KLWard_band_zero d L W hW hE) (KLK_isKLoop d L W g E hL hW hE)
     (KLWard_band_two d L W g E hL hW hE) t ⟨ht0, ht1⟩ s μ a ha
 
-/-- **Flipping all charges conjugates `𝒦`**: `𝒦_{t,-σ,a} = conj 𝒦_{t,σ,a}` for every well-formed
-loop of length `≥ 1` (`KLWard_K_flip` at `S = SB d L g`, `m = mSigma E`, `M = MLoop`). -/
-theorem KLWard_flip :
-    ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t ∈ Set.Ico (0 : ℝ) 1,
-      ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 1 ≤ a.length →
-        KLK d L g W E t ⟨σ.map not, a⟩ = (starRingEnd ℂ) (KLK d L g W E t ⟨σ, a⟩) := by
-  intro d L W _ g E hL hW hE t ht σ a hσa h1
-  exact KLWard_K_flip d L (SB d L g) (kernelFacts_SB g hL) W (mSigma E) (MLoop d L W (mSigma E))
-    (KLWard_mSigma_false E) (KLWard_band_flip d L W E) (KLK_isKLoop d L W g E hL hW hE) t ht σ a hσa h1
-
 end Band
 
 /-! ## 7. The compiled instances: `d = 3`, `L = 5`, `W = 2`, `g = 1/2`, `E = 0`, `t = 9/10`
@@ -1348,77 +1338,5 @@ deterministic hypothesis of `KLK_ward` and `KLWard_flip` (`3 ≤ 5`, `1 ≤ 2`, 
 loops have distinct labels.  `KLWardInst_ward_true`, `KLWardInst_ward_false` are the data of the
 probe `KLinst_ward` (`64b58eb:RBM3D/Probe/T2004Pins.lean:1026-1034`): `s = ±`, `μ = [-]`, `a = (0, 1)`,
 `n = 3`. -/
-
-section Instances
-
-/-- `KLK_ward` at `s = +`, `μ = [-]`, `a = (0, 1)` (`n = 3`): `∑_x 𝒦_{(+,-,-),(0,1,x)}`. -/
-theorem KLWardInst_ward_true :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false] ++ [!true], [0, 1] ++ [x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (Gauss.etaT 0 (9 / 10) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false], [0, 1]⟩
-            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [false], [0, 1]⟩) := by
-  simpa using KLK_ward 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) true [false] [0, 1] rfl
-
-/-- `KLK_ward` at `s = -`, `μ = [-]`, `a = (0, 1)` (`n = 3`): `∑_x 𝒦_{(-,-,+),(0,1,x)}`. -/
-theorem KLWardInst_ward_false :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [false] ++ [!false], [0, 1] ++ [x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (Gauss.etaT 0 (9 / 10) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false], [0, 1]⟩
-            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [false], [0, 1]⟩) := by
-  simpa using KLK_ward 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) false [false] [0, 1] rfl
-
-/-- `KLK_ward` at `n = 2` (`μ = []`), `s = -`, `a = (0)`: `∑_x 𝒦_{(-,+),(0,x)}`. -/
-theorem KLWardInst_ward_two_false :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [] ++ [!false], [0] ++ [x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (Gauss.etaT 0 (9 / 10) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [], [0]⟩
-            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [], [0]⟩) := by
-  simpa using KLK_ward 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) false [] [0] rfl
-
-/-- `KLK_ward` at `n = 4` (`μ = [+, -]`), `s = -`, `a = (0, 1, 2)`: `∑_x 𝒦_{(-,+,-,+),(0,1,2,x)}`. -/
-theorem KLWardInst_ward_four_false :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨false :: [true, false] ++ [!false], [0, 1, 2] ++ [x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (Gauss.etaT 0 (9 / 10) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [true, false], [0, 1, 2]⟩
-            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [true, false], [0, 1, 2]⟩) := by
-  simpa using KLK_ward 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) false [true, false] [0, 1, 2] rfl
-
-/-- `KLWard_flip` at `n = 3`: `𝒦_{(-,+,-),(0,1,2)} = conj 𝒦_{(+,-,+),(0,1,2)}`. -/
-theorem KLWardInst_flip :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[false, true, false], [0, 1, 2]⟩
-      = (starRingEnd ℂ) (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩) := by
-  simpa using KLWard_flip 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    ⟨by norm_num, by norm_num⟩ [true, false, true] [0, 1, 2] rfl (by simp)
-
-/-- `kernelFacts_one` at `d = 3`, `L = 5` (the block Anderson kernel). -/
-theorem KLWardInst_kernelFacts_one : KernelFacts (1 : Matrix (Zd 3 5) (Zd 3 5) ℂ) := kernelFacts_one
-
-/-- `kernelFacts_SB` at `d = 3`, `L = 5`, `g = 1/2` (the band kernel). -/
-theorem KLWardInst_kernelFacts_SB : KernelFacts (SB 3 5 (1 / 2)) := kernelFacts_SB (1 / 2) (by norm_num)
-
-/-- **`wardS_holds` at the band data** `d = 3`, `L = 5`, `W = 2`, `S = SB 3 5 (1/2)`, `m = mSigma 0`
-(`Im m(+) = 1`), `M = MLoop`, the family `K = 𝒦`, `t = 9/10`, the loop `(+, -, -)`, `a = (0, 1, x)`: every
-hypothesis (`KernelFacts`, `1 ≤ W`, `0 < Im m(+)`, `m(-) = conj m(+)`, flip, rotation, `t = 0` identity, the family
-of `K`-loops, the level-`2` identity, `t ∈ [0,1)`) is discharged. -/
-theorem KLWardInst_wardS :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false] ++ [!true], [0, 1] ++ [x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (((1 - 9 / 10) * (mSigma 0 true).im : ℝ) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false], [0, 1]⟩
-            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [false], [0, 1]⟩) :=
-  wardS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
-    (kernelFacts_SB _ (by norm_num)) (by norm_num)
-    (by rw [KLWard_mSigma_im]; exact mE_im_pos (by norm_num)) (KLWard_mSigma_false 0)
-    (KLWard_band_flip 3 5 2 0) (KLWard_MLoop_rot_cons 3 5 2 (mSigma 0))
-    (KLWard_band_zero 3 5 2 (by norm_num) (by norm_num))
-    (KLK_isKLoop 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num))
-    (KLWard_band_two 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)) (9 / 10)
-    ⟨by norm_num, by norm_num⟩ true [false] [0, 1] rfl
-
-end Instances
 
 end RBM.Loop

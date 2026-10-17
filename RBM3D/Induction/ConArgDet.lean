@@ -440,47 +440,6 @@ private theorem green_sub_green_conj {H : Matrix n n ℂ} {z : ℂ}
 
 end Spectral
 
-section Telescope
-
-variable {R : Type*} [Ring R]
-
-/-- **(6.7)**, the telescoping product identity for noncommuting factors:
-\[ \prod_{k<m}(a_k+b_k) = \prod_{k<m}a_k
-    + \sum_{l<m}\Bigl(\prod_{j<l}(a_j+b_j)\Bigr)\,b_l\,\Bigl(\prod_{l<j<m}a_j\Bigr), \]
-all products taken in increasing order of the index. -/
-theorem list_prod_add_eq (a b : ℕ → R) (m : ℕ) :
-    ((List.range m).map fun k => a k + b k).prod
-      = ((List.range m).map a).prod
-        + ∑ l ∈ Finset.range m, ((List.range l).map fun k => a k + b k).prod * b l
-            * ((List.range' (l + 1) (m - (l + 1))).map a).prod := by
-  induction m with
-  | zero => simp
-  | succ m ih =>
-    have hsuf : ∀ l ∈ Finset.range m,
-        ((List.range' (l + 1) (m + 1 - (l + 1))).map a).prod
-          = ((List.range' (l + 1) (m - (l + 1))).map a).prod * a m := by
-      intro l hl
-      have hl' : l < m := Finset.mem_range.mp hl
-      have h1 : m + 1 - (l + 1) = (m - (l + 1)) + 1 := by omega
-      have h2 : l + 1 + 1 * (m - (l + 1)) = m := by omega
-      rw [h1, List.range'_concat, h2, List.map_append, List.prod_append]
-      simp
-    have hsum : ∑ l ∈ Finset.range m, ((List.range l).map fun k => a k + b k).prod * b l
-            * ((List.range' (l + 1) (m + 1 - (l + 1))).map a).prod
-          = (∑ l ∈ Finset.range m, ((List.range l).map fun k => a k + b k).prod * b l
-            * ((List.range' (l + 1) (m - (l + 1))).map a).prod) * a m := by
-      rw [Finset.sum_mul]
-      refine Finset.sum_congr rfl fun l hl => ?_
-      rw [hsuf l hl]; simp only [mul_assoc]
-    rw [Finset.sum_range_succ, hsum, List.range_succ, List.map_append, List.prod_append,
-      List.map_append, List.prod_append, Nat.sub_self]
-    simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one,
-      List.range'_zero]
-    rw [mul_add, ih, add_mul, add_mul]
-    abel
-
-end Telescope
-
 section ChainExpansion
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
@@ -584,22 +543,6 @@ section SymmetricLoop
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
   {z : ℂ}
-
-omit [NeZero W] in
-/-- **(6.5)**, the symmetric loop in normal form:
-\[ \mathcal L_{σ',a'} = \langle E_{a_0}\,C_{σ,a}\,E_{a_m}\,C_{σ,a}^\dagger\rangle, \]
-with `σ' = (σ_1, …, σ_m, \bar σ_m, …, \bar σ_1)` and
-`a' = (a_1, …, a_{m-1}, a_m, a_{m-1}, …, a_1, a_0)`. -/
-theorem gloop_symm_eq_trace (hH : H.IsHermitian) {τ : List Bool} {a : List (Zd d L)}
-    (h : τ.length = a.length + 1) (am a0 : Zd d L) :
-    loopL d L W H z ⟨τ ++ (τ.map (!·)).reverse, (a ++ [am]) ++ (a.reverse ++ [a0])⟩
-      = Matrix.trace (Eblk d L W a0 * gchain d L W H z τ a * Eblk d L W am
-          * (gchain d L W H z τ a)ᴴ) := by
-  have h' : (τ.map (!·)).reverse.length = a.reverse.length + 1 := by simpa using h
-  have hlen : τ.length = (a ++ [am]).length := by simpa using h
-  rw [gchain_conjTranspose hH h, Matrix.mul_assoc, Matrix.mul_assoc, Matrix.trace_mul_comm,
-    ← Matrix.mul_assoc, Matrix.mul_assoc _ _ (Eblk d L W a0), gchain_mul_Eblk h,
-    gchain_mul_Eblk h', cad_loopL_eq, cad_gloopProd_append hlen]
 
 omit [NeZero W] in
 /-- A chain ending in `G(s)` is the loop product of its first blocks times `G(s)`. -/
@@ -1099,12 +1042,6 @@ theorem blockSel_mul_transpose (b : Zd d L) :
     split_ifs with h1 h2 <;>
       first | rfl | exact absurd (h1.trans h2.symm) hxy | exact absurd (h1.trans h2.symm).symm hxy
 
-omit [NeZero W] in
-theorem transpose_blockSel_mul (b : Zd d L) :
-    (blockSel (W := W) b)ᵀ * blockSel (W := W) b = 1 := by
-  ext β β'
-  simp [blockSel, Matrix.mul_apply, Matrix.one_apply, eq_comm]
-
 theorem trace_transpose_mul_mul_pow_succ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m]
     [DecidableEq n] (R : Matrix m n ℂ) (K : Matrix m m ℂ) (p : ℕ) :
     trace ((Rᵀ * K * R) ^ (p + 1)) = trace ((K * (R * Rᵀ)) ^ (p + 1)) := by
@@ -1349,8 +1286,6 @@ theorem loopMax_two_mul_le_tilde (hH : H.IsHermitian) {z w : ℂ} (hz : 0 < z.im
 end Six11
 
 
-section Checks
-
 /-! ### Compiled instances at `d = 3`, `L = 3`, `W = 2`
 
 `N = (W L)^d = 216` sites, `W^d = 8` sites per block, `L^d = 27` block labels.  The matrix of
@@ -1361,251 +1296,6 @@ data are those of `E = 0`, `t₁ = 1/4`, `t₂ = 1/2`: `m^{(0)} = i`, `z = z_{t�
 The `H = 0`, `z = i` values at the end show the factor `W^{-d} = 1/8` of the Ward identity
 (`W^{-2} = 1/4` would give a different value). -/
 
-private noncomputable def cad_Hd : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ :=
-  Matrix.diagonal fun x => ((x.2 : ℕ) : ℂ)
-
-private theorem cad_Hd_herm : cad_Hd.IsHermitian := by
-  refine Matrix.isHermitian_diagonal_iff.mpr fun x => ?_
-  simp [IsSelfAdjoint]
-
-private theorem cad_mE_zero : mE 0 = Complex.I := by
-  have hsqrt : Real.sqrt (4 : ℝ) = 2 := by
-    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq_eq_abs]
-    norm_num
-  simp [mE, hsqrt]
-
-private theorem cad_im_z : (zt 0 (1 / 2)).im = 1 / 2 := by
-  rw [Gauss.spectralZ_im, cad_mE_zero]
-  simp
-  norm_num
-
-/-- `Im z̃ = 3√2/4` at `E = 0`, `t₁ = 1/4`, `t₂ = 1/2`. -/
-private theorem cad_im_w' : (ztTilde 0 (1 / 4) (1 / 2)).im = 3 * Real.sqrt 2 / 4 := by
-  rw [ztTilde_im, Gauss.etaT, Gauss.spectralM_im]
-  have h4 : Real.sqrt (4 - (0 : ℝ) ^ 2) = 2 := by
-    rw [show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq_eq_abs]
-    norm_num
-  rw [h4, show (1 / 2 : ℝ) / (1 / 4) = 2 by norm_num]
-  ring
-
-private theorem cad_im_w : 0 < (ztTilde 0 (1 / 4) (1 / 2)).im := by
-  rw [cad_im_w']
-  positivity
-
-private theorem cad_z_pos : 0 < (zt 0 (1 / 2)).im := by
-  rw [cad_im_z]; norm_num
-
-private theorem cad_conj_im_ne {z : ℂ} (hz : 0 < z.im) : ((starRingEnd ℂ) z).im ≠ 0 := by
-  simpa using hz.ne'
-
-/-- **Target `green_sub_green`** (`RBM.green_sub_green`) at `H = cad_Hd` on `Vtx 3 3 2`,
-`z = z_{t₂}`, `w = z̃_{t₁}`. -/
-example :
-    green cad_Hd (zt 0 (1 / 2)) - green cad_Hd (ztTilde 0 (1 / 4) (1 / 2))
-      = (zt 0 (1 / 2) - ztTilde 0 (1 / 4) (1 / 2)) •
-          (green cad_Hd (zt 0 (1 / 2)) * green cad_Hd (ztTilde 0 (1 / 4) (1 / 2))) :=
-  green_sub_green (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_z_pos.ne')
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_im_w.ne')
-
-/-- **Target `sum_gloop_ward_last_div`** at `H = cad_Hd`, `z = z_{t₂}`, `μ = (−, +)`,
-`x = 0`, `a' = (0, 1)`: a loop of length `4` with the last label summed over `Zd 3 3`
-(27 labels). -/
-example :
-    (∑ b : Zd 3 3, loopL 3 3 2 cad_Hd (zt 0 (1 / 2))
-        ⟨true :: [false, true] ++ [false], (0 : Zd 3 3) :: [0, 1] ++ [b]⟩)
-      = (loopL 3 3 2 cad_Hd (zt 0 (1 / 2)) ⟨true :: [false, true], (0 : Zd 3 3) :: [0, 1]⟩
-          - loopL 3 3 2 cad_Hd (zt 0 (1 / 2)) ⟨false :: [false, true], (0 : Zd 3 3) :: [0, 1]⟩)
-        / (2 * Complex.I * (2 : ℂ) ^ 3 * ((zt 0 (1 / 2)).im : ℂ)) :=
-  sum_gloop_ward_last_div 3 3 2
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_z_pos.ne')
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm (cad_conj_im_ne cad_z_pos)) cad_z_pos.ne'
-    [false, true] 0 [0, 1] rfl
-
-/-- `sum_gloop_ward_last` (the undivided form), same data. -/
-example :
-    (2 * Complex.I * ((zt 0 (1 / 2)).im : ℂ)) *
-      ∑ b : Zd 3 3, loopL 3 3 2 cad_Hd (zt 0 (1 / 2))
-        ⟨true :: [false, true] ++ [false], (0 : Zd 3 3) :: [0, 1] ++ [b]⟩
-      = (((2 : ℂ) ^ 3)⁻¹) *
-        (loopL 3 3 2 cad_Hd (zt 0 (1 / 2)) ⟨true :: [false, true], (0 : Zd 3 3) :: [0, 1]⟩
-          - loopL 3 3 2 cad_Hd (zt 0 (1 / 2))
-              ⟨false :: [false, true], (0 : Zd 3 3) :: [0, 1]⟩) :=
-  sum_gloop_ward_last 3 3 2
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_z_pos.ne')
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm (cad_conj_im_ne cad_z_pos))
-    [false, true] 0 [0, 1] rfl
-
-/-- `sum_gloop_two_ward`, same data. -/
-example (a : Zd 3 3) :
-    (2 * Complex.I * ((zt 0 (1 / 2)).im : ℂ)) *
-      ∑ b : Zd 3 3, loopL 3 3 2 cad_Hd (zt 0 (1 / 2)) ⟨[true, false], [a, b]⟩
-      = (((2 : ℂ) ^ 3)⁻¹) *
-        (Matrix.trace (green cad_Hd (zt 0 (1 / 2)) * Eblk 3 3 2 a)
-          - Matrix.trace (green cad_Hd ((starRingEnd ℂ) (zt 0 (1 / 2))) * Eblk 3 3 2 a)) :=
-  sum_gloop_two_ward 3 3 2
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_z_pos.ne')
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm (cad_conj_im_ne cad_z_pos)) a
-
-/-- **Target `ztTilde_arith`** at `c = t₁ = 1/4`, `κ = 1`, `E = 1/2`, `t₂ = 1/2`: all hypotheses
-(`c ≤ t₁ ≤ t₂ ≤ 1`, `|E| ≤ 2 - κ`) hold, and the five conclusions are available. -/
-example :
-    ∃ C > 0, ‖zt (1 / 2) (1 / 2) - ztTilde (1 / 2) (1 / 4) (1 / 2)‖ ≤ C * (1 - 1 / 4)
-      ∧ ‖zt (1 / 2) (1 / 2) - ztTilde (1 / 2) (1 / 4) (1 / 2)‖ ^ 2
-          ≤ C * Gauss.etaT (1 / 2) (1 / 4) ^ 2
-      ∧ ‖zt (1 / 2) (1 / 2) - ztTilde (1 / 2) (1 / 4) (1 / 2)‖ ^ 2
-          / (ztTilde (1 / 2) (1 / 4) (1 / 2)).im ≤ C * Gauss.etaT (1 / 2) (1 / 4)
-      ∧ Gauss.etaT (1 / 2) (1 / 4) ≤ (ztTilde (1 / 2) (1 / 4) (1 / 2)).im
-      ∧ (ztTilde (1 / 2) (1 / 4) (1 / 2)).im ≤ C * Gauss.etaT (1 / 2) (1 / 4) := by
-  obtain ⟨C, hC, h⟩ := ztTilde_arith (c := 1 / 4) (κ := 1) (by norm_num) (by norm_num)
-  exact ⟨C, hC, h (1 / 2) (1 / 4) (1 / 2) le_rfl (by norm_num) (by norm_num)
-    (by rw [abs_of_pos (by norm_num)]; norm_num)⟩
-
-/-- **Target `loopMax_two_mul_le_tilde`** at `H = cad_Hd` on `Vtx 3 3 2`, `z = z_{t₂}`,
-`w = z̃_{t₁}`, `m = 1`, `p = 1`. -/
-example :
-    loopMax 3 3 2 cad_Hd (zt 0 (1 / 2)) (2 * 1)
-      ≤ ((1 : ℕ) + 1 : ℝ) * (loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (2 * 1)
-        + ‖zt 0 (1 / 2) - ztTilde 0 (1 / 4) (1 / 2)‖ ^ 2
-          * (((zt 0 (1 / 2)).im * (ztTilde 0 (1 / 4) (1 / 2)).im)⁻¹
-            * ∑ l ∈ Finset.range 1, loopMax 3 3 2 cad_Hd (zt 0 (1 / 2)) (2 * l + 1)
-              * loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (1 * (2 * (1 - l) - 1))
-                ^ (1 / ((1 : ℕ) : ℝ)))) :=
-  loopMax_two_mul_le_tilde cad_Hd_herm cad_z_pos cad_im_w le_rfl le_rfl
-
-/-- `loopMax_two_mul_le_tilde` at `m = 2`, `p = 2`. -/
-example :
-    loopMax 3 3 2 cad_Hd (zt 0 (1 / 2)) (2 * 2)
-      ≤ ((2 : ℕ) + 1 : ℝ) * (loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (2 * 2)
-        + ‖zt 0 (1 / 2) - ztTilde 0 (1 / 4) (1 / 2)‖ ^ 2
-          * (((zt 0 (1 / 2)).im * (ztTilde 0 (1 / 4) (1 / 2)).im)⁻¹
-            * ∑ l ∈ Finset.range 2, loopMax 3 3 2 cad_Hd (zt 0 (1 / 2)) (2 * l + 1)
-              * loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (2 * (2 * (2 - l) - 1))
-                ^ (1 / ((2 : ℕ) : ℝ)))) :=
-  loopMax_two_mul_le_tilde cad_Hd_herm cad_z_pos cad_im_w (by norm_num) (by norm_num)
-
-/-- **Target `trace_gram_rpow_le`** at `H = cad_Hd`, `w = z̃_{t₁}`, the chain `τ = (+)`,
-`c = ()` (`k = 1`), block `b = 0`, `p = 1`. -/
-example :
-    (trace (gram ℂ (blockCols (gchain 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) [true] [])
-        (0 : Zd 3 3)) ^ 1)).re ^ (1 / ((1 : ℕ) : ℝ))
-      ≤ (2 : ℝ) ^ 3 * ((ztTilde 0 (1 / 4) (1 / 2)).im)⁻¹
-        * loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (1 * (2 * [true].length - 1))
-          ^ (1 / ((1 : ℕ) : ℝ)) :=
-  trace_gram_rpow_le cad_Hd_herm cad_im_w rfl 0 le_rfl
-
-/-- `trace_gram_rpow_le` at a chain of two resolvents, `τ = (+, −)`, `c = (1)`, `b = 2`,
-`p = 2`. -/
-example :
-    (trace (gram ℂ (blockCols (gchain 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) [true, false]
-        [(1 : Zd 3 3)]) (2 : Zd 3 3)) ^ 2)).re ^ (1 / ((2 : ℕ) : ℝ))
-      ≤ (2 : ℝ) ^ 3 * ((ztTilde 0 (1 / 4) (1 / 2)).im)⁻¹
-        * loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (2 * (2 * [true, false].length - 1))
-          ^ (1 / ((2 : ℕ) : ℝ)) :=
-  trace_gram_rpow_le cad_Hd_herm cad_im_w rfl 2 (by norm_num)
-
-/-- `wmass_gchain_mul_gchain_le` (6.10), `ρ = b₁ = ()`, `s = +`, `τ = (+)`, `c = ()`, `p = 1`. -/
-example :
-    wmass (bw (0 : Zd 3 3)) (bw (1 : Zd 3 3))
-        (gchain 3 3 2 cad_Hd (zt 0 (1 / 2)) ([] ++ [true]) [] *
-          gchain 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) [true] [])
-      ≤ ((zt 0 (1 / 2)).im * (ztTilde 0 (1 / 4) (1 / 2)).im)⁻¹
-        * loopMax 3 3 2 cad_Hd (zt 0 (1 / 2)) (2 * ([] : List Bool).length + 1)
-        * loopMax 3 3 2 cad_Hd (ztTilde 0 (1 / 4) (1 / 2)) (1 * (2 * [true].length - 1))
-          ^ (1 / ((1 : ℕ) : ℝ)) :=
-  wmass_gchain_mul_gchain_le cad_Hd_herm cad_z_pos cad_im_w rfl true rfl le_rfl 0 1
-
-/-- **(6.12)** `ward_chain_row` at `H = cad_Hd`, `z = z_{t₂}`, `ρ = (+)`, `b = (0)`, `s = −`. -/
-example :
-    (2 * Complex.I * ((zt 0 (1 / 2)).im : ℂ)) * (((2 : ℂ) ^ 3)⁻¹ *
-        ∑ α : Fin (2 ^ 3), ∑ k : Vtx 3 3 2,
-          (Complex.normSq (gchain 3 3 2 cad_Hd (zt 0 (1 / 2)) ([true] ++ [false]) [(0 : Zd 3 3)]
-            ((1 : Zd 3 3), α) k) : ℂ))
-      = loopL 3 3 2 cad_Hd (zt 0 (1 / 2))
-          ⟨[true] ++ true :: ([true].map (!·)).reverse,
-            [(0 : Zd 3 3)] ++ ([(0 : Zd 3 3)].reverse ++ [(1 : Zd 3 3)])⟩
-        - loopL 3 3 2 cad_Hd (zt 0 (1 / 2))
-          ⟨[true] ++ false :: ([true].map (!·)).reverse,
-            [(0 : Zd 3 3)] ++ ([(0 : Zd 3 3)].reverse ++ [(1 : Zd 3 3)])⟩ :=
-  ward_chain_row cad_Hd_herm
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm cad_z_pos.ne')
-    (isUnit_sub_smul_one_of_im_ne_zero cad_Hd_herm (cad_conj_im_ne cad_z_pos)) rfl false 1
-
 /-! #### Values at `H = 0`, `z = i` (the factor `W^{-d} = 1/8`) -/
-
-/-- For `H = 0` the Green function is `(-z)⁻¹ · 1`. -/
-private theorem cad_green_zero {n : Type*} [Fintype n] [DecidableEq n] {z : ℂ} (hz : z ≠ 0) :
-    green (0 : Matrix n n ℂ) z = (-z)⁻¹ • (1 : Matrix n n ℂ) := by
-  unfold green
-  rw [Matrix.inv_eq_right_inv]
-  simp [smul_smul, hz]
-
-private theorem cad_green_zero_I :
-    green (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-      = Complex.I • (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) := by
-  rw [cad_green_zero Complex.I_ne_zero]
-  simp
-
-private theorem cad_green_zero_conj_I :
-    green (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) ((starRingEnd ℂ) Complex.I)
-      = (-Complex.I) • (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) := by
-  rw [cad_green_zero (by simp)]
-  simp
-
-/-- At `H = 0`, `z = i`: `𝓛_{(+),(x)} = i` and `𝓛_{(-),(x)} = -i` (`tr E_x = 1`). -/
-private theorem cad_loop_one_true (x : Zd 3 3) :
-    loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I ⟨[true], [x]⟩ = Complex.I := by
-  rw [cad_loopL_eq, cad_gloopProd_cons, cad_gloopProd_nil, Matrix.mul_one, cad_Gres_true,
-    cad_green_zero_I, Matrix.smul_mul, Matrix.one_mul, Matrix.trace_smul, trace_Eblk, smul_eq_mul,
-    mul_one]
-
-private theorem cad_loop_one_false (x : Zd 3 3) :
-    loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I ⟨[false], [x]⟩
-      = -Complex.I := by
-  rw [cad_loopL_eq, cad_gloopProd_cons, cad_gloopProd_nil, Matrix.mul_one, cad_Gres_false,
-    cad_green_zero_conj_I, Matrix.smul_mul, Matrix.one_mul, Matrix.trace_smul, trace_Eblk,
-    smul_eq_mul, mul_one]
-
-/-- **`sum_gloop_ward_last_div` at `H = 0`, `z = i`, `μ = a' = ()`**: the sum over the last block
-label of the two-loops `𝓛_{(+,-),(x,b)}` equals `(i - (-i)) / (2i · 8 · 1) = 1/8 ≠ 0`: the factor
-is `W^{-d} = 1/8`, not the `d = 2` factor `W^{-2} = 1/4`. -/
-private theorem cad_ward_div_value (x : Zd 3 3) :
-    (∑ b : Zd 3 3, loopL 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-        ⟨true :: ([] : List Bool) ++ [false], x :: ([] : List (Zd 3 3)) ++ [b]⟩) = 1 / 8 := by
-  have h := sum_gloop_ward_last_div 3 3 2
-    (H := (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ)) (z := Complex.I)
-    (isUnit_sub_smul_one_of_im_ne_zero Matrix.isHermitian_zero (by simp))
-    (isUnit_sub_smul_one_of_im_ne_zero Matrix.isHermitian_zero (by simp)) (by simp)
-    [] x [] rfl
-  rw [h]
-  have e1 : (⟨true :: ([] : List Bool), x :: ([] : List (Zd 3 3))⟩ : Loop.LoopIdx (Zd 3 3))
-      = ⟨[true], [x]⟩ := rfl
-  have e2 : (⟨false :: ([] : List Bool), x :: ([] : List (Zd 3 3))⟩ : Loop.LoopIdx (Zd 3 3))
-      = ⟨[false], [x]⟩ := rfl
-  rw [e1, e2, cad_loop_one_true, cad_loop_one_false]
-  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  simp only [Complex.I_im, Complex.ofReal_one]
-  field_simp
-  norm_num
-
-/-- **(6.12)** at `H = 0`, `z = i`: the row sum is `∑_{α ∈ Fin 8} ∑_k |G_{(a₀,α),k}|² = 8`, so
-`W^{-d} ∑ = 1`, whereas the `d = 2` normalisation `W^{-2}` would give `2`. -/
-private theorem cad_check_ward_row (a0 : Zd 3 3) :
-    ∑ α : Fin (2 ^ 3), ∑ k : Vtx 3 3 2,
-        (Complex.normSq (gchain 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-          ([] ++ [true]) [] (a0, α) k) : ℂ) = 8 := by
-  have hG : gchain 3 3 2 (0 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I ([] ++ [true]) []
-      = Complex.I • (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) := by
-    rw [List.nil_append, gchain_single, cad_Gres_true, cad_green_zero_I]
-  have hk : ∀ p : Vtx 3 3 2,
-      ∑ k : Vtx 3 3 2,
-        (Complex.normSq ((Complex.I • (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ)) p k) : ℂ)
-        = 1 := by
-    intro p
-    simp [Matrix.one_apply, apply_ite Complex.normSq, apply_ite (Complex.ofReal)]
-  rw [hG]
-  simp only [hk]
-  simp
-
-end Checks
 
 end RBM.Ind

@@ -71,11 +71,6 @@ def GridDriftNgAt (Cm : Step2Mat sz) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : 
           uStepC k (gridStep s t K n) (gridTime s t K n (j + 1)) *
             ((Cm.eta n (gridTime s t K n j))⁻¹ ^ k * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (k - 1) + Bk)
 
-/-- The merged pin `GridDriftNg` is the form at every index (`Iff.rfl`). -/
-theorem gridDriftNg_iff_at (Cm : Step2Mat sz) (s t : ℕ → ℝ) (K : ℕ → ℕ) :
-    GridDriftNg Cm s t K ↔ ((∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) → (∀ n, K n ≠ 0) →
-      ∀ n, GridDriftNgAt Cm s t K n) := Iff.rfl
-
 /-- **D5, the concluder of `GridDriftNgAt`**: the per-index classes `Expand`, `KLoop`, `KTwo`, `UStep`, the row sums and the link, with the
 window at `n`, give the drift at `n` (`gridDriftNg_at`, `HierDriftGen.lean:818`). -/
 theorem gridDriftNgAt_of_classes {Cm : Step2Mat sz} {E lam' : ℕ → ℝ}
@@ -153,25 +148,6 @@ theorem gridDriftNg_envelope_ev (Cm : Step2Mat sz) (μ : Measure sz.SeqΩ) [IsPr
     have h := hgd j hj k hk σ _ hBk (hn j hj)
     exact h.mono fun ω hω _ => hω
   · exact Eventually.of_forall fun ω h => absurd h hj
-
-/-- The merged envelope is the eventual one at the merged drift (`Eventually.of_forall`; band recovery of `gridDriftNg_envelope`). -/
-theorem gridDriftNg_envelope_of_merged (Cm : Step2Mat sz) (μ : Measure sz.SeqΩ) [IsProbabilityMeasure μ]
-    (k : ℕ) (hk : 2 ≤ k) (τK : ℝ) (hτK : 0 < τK) {s t : ℕ → ℝ} {K : ℕ → ℕ} (hsize : sz.SizeTendsto)
-    (hKb : STKboundgL Cm.toFlowFM μ)
-    (hKK : ∀ (n : ℕ) (w : ℝ) (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
-      Cm.KI n w (KLloopOf d (sz.L n) σ a) = Cm.K n w σ a)
-    (hη : ∀ (n : ℕ) (v : ℝ), 0 ≤ v → v < 1 → 0 < Cm.eta n v ∧ Cm.eta n v ≤ 1 - v)
-    (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1) (hK0 : ∀ n, K n ≠ 0)
-    (hGD : GridDriftNg Cm s t K) (σ : Fin k → Bool) :
-    ∀ᶠ n : ℕ in atTop, ∀ᵐ ω ∂Cm.Pp, ∀ j, j < K n → ∀ a : Fin k → Zd d (sz.L n),
-      ‖predIncNg Cm s t K n j σ ω a - (gridStep s t K n : ℂ) *
-          (∑ l ∈ Finset.Icc 3 k, STksimLKMg Cm n (gridTime s t K n j) (Cm.Hpath s t K n j ω) l (KLloopOf d (sz.L n) σ a) +
-            STelklkMg Cm n (gridTime s t K n j) (Cm.Hpath s t K n j ω) (KLloopOf d (sz.L n) σ a) +
-            STegtMg Cm n (gridTime s t K n j) (Cm.Hpath s t K n j ω) (KLloopOf d (sz.L n) σ a))‖ ≤
-        stepErrNg Cm.toFlowFM n k (gridTime s t K n j) (gridTime s t K n (j + 1)) (gridStep s t K n)
-          (((sz.size n : ℕ) : ℝ) ^ τK * (Cm.eta n (gridTime s t K n (j + 1)))⁻¹ ^ k) :=
-  gridDriftNg_envelope_ev Cm μ k hk τK hτK hsize hKb hKK hη hs0 hst ht1 hK0
-    (Eventually.of_forall fun n => hGD hs0 hst ht1 hK0 n) σ
 
 end D5
 
@@ -822,78 +798,6 @@ end Endpoint5
 
 /-! ## 6. The band re-derivation of `nqGridEndLinN` -/
 
-section BandReDerivation
-
-/-- **Band re-derivation of `nqGridEndLinN`** (`NQEndLin:1067`, the same statement): the merged band theorem from `nqGridEndLinNg` at the
-carrier `bandStep2Mat sz E` with the law `seqP sz`: `A = 1`, `gK = sz.lam`, `Cv = Ck = nqGood1C d k 𝔡⁻¹ (min κ (4/5))`; `LoopForm`, `WalkForm`,
-the spectral data `√κ/2`, `‖mE‖ = 1`, the row sums, the kernel class and the four drift classes are the band lemmas; `STKbound` is `stKbound_holds`;
-D1 is `nqGoodGen_kerNAL_band_at`. -/
-theorem nqGridEndLinN_of_gen :
-  ∀ {d : ℕ} (sz : Sizes d) (κ 𝔠 τ 𝔡 : ℝ) (E s t : ℕ → ℝ),
-    3 ≤ d → 0 < κ → 0 < 𝔠 → 0 < τ → 0 < 𝔡 →
-    sz.SizeTendsto → sz.Bandwidth 𝔠 → sz.WO 𝔡 →
-    (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
-    sz.STCaseI s t → sz.RangeCond τ t →
-    (∀ᶠ n : ℕ in atTop, (((sz.W n : ℕ) : ℝ))⁻¹ ≤ (1 - t n) / (1 - s n)) →
-    ∀ k : ℕ, 2 ≤ k →
-    ∀ Λ Φ₁ Φ₂ Φ₃ : ℕ → ℝ, (∀ n, 0 ≤ Λ n) → (∀ᶠ n : ℕ in atTop, 1 ≤ Λ n) →
-      (∀ n, 0 ≤ Φ₁ n) → (∀ n, 0 ≤ Φ₂ n) → (∀ n, 0 ≤ Φ₃ n) →
-    ∀ v : ℕ → ℝ, (∀ n, s n ≤ v n) → (∀ n, v n ≤ t n) →
-    ∀ ε₀ : ℝ, 0 < ε₀ → ∀ D₁ : ℝ, 0 < D₁ →
-    ∃ ε₁ τ' D' C_K : ℝ, 0 < ε₁ ∧ 0 < τ' ∧ 0 < D' ∧ 0 ≤ C_K ∧
-    ∀ (Φc : ℕ → ℝ) (K : ℕ → ℕ), (∀ n, K n ≠ 0) →
-      (∀ᶠ n : ℕ in atTop, ((sz.size n : ℕ) : ℝ) ^ C_K ≤ (K n : ℝ)) →
-      (∀ᶠ n : ℕ in atTop, K n ≤ ⌈((sz.size n : ℕ) : ℝ) ^ C_K⌉₊) →
-      ∀ᶠ n : ℕ in atTop, ∃ G : Set (PathΩ sz),
-        (pathP sz).real Gᶜ ≤ ((sz.size n : ℕ) : ℝ) ^ (-D₁) ∧
-        ∀ ω ∈ G,
-          (∀ j ≤ K n, pathH sz s v K n j ω ∈
-            sz.GoodSetN n (E n) (gridTime s v K n j) k (((sz.size n : ℕ) : ℝ) ^ ε₁) (Λ n)
-                (Φc n) τ' D' ∩
-              GoodLinN sz n (E n) (gridTime s v K n j) k (((sz.size n : ℕ) : ℝ) ^ ε₁)
-                (Φ₁ n) (Φ₂ n) (Φ₃ n)) →
-          (∀ σ : Fin k → Bool, (∃ i, σ i = σ (finRotate k i)) → ∀ a : Fin k → Zd d (sz.L n),
-            ‖sz.STLKM n (E n) (s n) (pathH sz s v K n 0 ω) σ a‖ ≤
-              ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ k) →
-          ∀ σ : Fin k → Bool, (∃ i, σ i = σ (finRotate k i)) → ∀ a : Fin k → Zd d (sz.L n),
-            ‖sz.STLKM n (E n) (v n) (pathH sz s v K n (K n) ω) σ a‖ ≤
-              ((sz.size n : ℕ) : ℝ) ^ ε₀ * (Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n) *
-                (sz.Bctl n (v n)) ^ k := by
-  intro d sz κ 𝔠 τ 𝔡 E s t hd hκ h𝔠 hτ h𝔡 hsize hband hWO hE hs0 hst ht1 hcase hrange hWt k hk
-    Λ Φ₁ Φ₂ Φ₃ hΛ0 hΛ1 hΦ₁ hΦ₂ hΦ₃ v hsv hvt ε₀ hε₀ D₁ hD₁
-  have hE2 : ∀ n, |E n| < 2 := fun n => by have := hE n; linarith [abs_nonneg (E n)]
-  obtain ⟨κ', hκ'def⟩ : ∃ κ' : ℝ, κ' = min κ (4 / 5) := ⟨_, rfl⟩
-  obtain ⟨Λg, hΛgdef⟩ : ∃ Λg : ℝ, Λg = 𝔡⁻¹ := ⟨_, rfl⟩
-  have hκ' : 0 < κ' := by rw [hκ'def]; exact lt_min hκ (by norm_num)
-  have hκm : ∀ n, κ' ≤ (mE (E n)).im := fun n => by
-    rw [hκ'def]; exact RBM.Ind.nqGood1_mE_im_ge hκ (hE n)
-  have hΛg : 0 < Λg := by rw [hΛgdef]; exact inv_pos.2 h𝔡
-  have hlam : ∀ᶠ n : ℕ in atTop, 0 < sz.lam n ∧ sz.lam n ≤ Λg := by
-    rw [hΛgdef]
-    filter_upwards [hWO] with n hn
-    have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
-    exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos hW _) hn.1, hn.2⟩
-  have hKb : sz.STKbound E := stKbound_holds sz hd hκ hΛg hsize (Eventually.of_forall hE) hlam
-  have hKer : ∀ᶠ n : ℕ in atTop, NQGoodGen_KerNAL (bandStep2Mat sz E).toFlowFM sz.lam k (nqGood1C d k Λg κ') n := by
-    filter_upwards [hlam] with n hn
-    exact nqGoodGen_kerNAL_band_at sz E hd hk hΛg hκ' n hn.1 hn.2 (hE2 n).le (hκm n)
-  obtain ⟨ε₁, τ', D', C_K, h1, h2, h3, h4, hend⟩ := nqGridEndLinNg (bandStep2Mat sz E) (Sizes.seqP sz) (E := E)
-    (lam' := sz.lam) (Ψ := fun _ => 0) (gK := sz.lam) (A := 1) (κm := Real.sqrt κ / 2) s t hd h𝔠 hτ h𝔡
-    (stepDecompGen_loopForm_band sz E hE2) (stepDecompGen_walkForm_band sz E) (DecayGen_bandSpec sz hκ hE)
-    (fun n => (norm_mE (hE2 n).le).le) (fun n => rfl) (fun n a => hierDriftGen_SB_row sz n a)
-    (fun n => gridRepTailGen_ker_band sz E n (hE2 n).le) (fun n w k σ a => rfl) hKb
-    (Eventually.of_forall fun n s' t' K' => hierDriftGen_expand_band sz E hE2 s' t' K' n)
-    (Eventually.of_forall (hierDriftGen_kLoop_band sz E hE2)) (Eventually.of_forall (hierDriftGen_kTwo_band sz E hE2))
-    (Eventually.of_forall (hierDriftGen_uStep_band sz E hE2)) hsize hband hWO hs0 hst ht1 hcase hrange hWt
-    (fun n => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩) le_rfl k hk (nqGood1C d k Λg κ') (nqGood1C d k Λg κ')
-    (RBM.Ind.nqGood1C_pos hd hk hΛg hκ') le_rfl (Or.inr rfl) hKer Λ Φ₁ Φ₂ Φ₃ hΛ0 hΛ1 hΦ₁ hΦ₂ hΦ₃ v hsv hvt ε₀ hε₀ D₁ hD₁
-  refine ⟨ε₁, τ', D', C_K, h1, h2, h3, h4, fun Φc K hK0 hKN hKU => ?_⟩
-  filter_upwards [hend Φc K hK0 hKN hKU] with n ⟨G, hG, hGb⟩
-  refine ⟨G, hG, fun ω hω hgood hinit σ hσ a => ?_⟩
-  exact hGb ω hω (fun j hj => ⟨(bandStep2_GoodSetN sz E n _ k _ _ _ τ' D' _).1 (hgood j hj).1, (hgood j hj).2⟩) hinit σ hσ a
-
-end BandReDerivation
-
 /-! ## 7. Compiled nonempty instances (`d = 3`, band carrier `bandStep2Mat sz0 Einst`)
 
 Data of the band instances `NQEndLinInst` (`Induction/NQEndLin.lean:1277-1592`, public facts by name): `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2^21`,
@@ -902,120 +806,7 @@ Data of the band instances `NQEndLinInst` (`Induction/NQEndLin.lean:1277-1592`, 
 `Ck = nqGood1C 3 k 10 κ'` (abstract, `> 0`); `A = 1`, `Cv = Ck`.  Every hypothesis is discharged (`STKboundgL` by `stKbound_holds`; the drift classes,
 the kernel class, `LoopForm`, `WalkForm`, the spectral data by the band lemmas). -/
 
-section Instances
-
-namespace NQEndLinGenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.GridGoodNInst RBM.Gauss.Step34Inst RBM.Ind.AzumaProxyNInst
-open RBM.Ind.NQEndLinInst (KC KC_ne_zero KC_low KC_up window_nondegenerate hE_i hlam_i WtInst rangeCond_tInst κi sInst_le_tInst
-  vg_le_tInst)
-
-private abbrev Cm1 : Step2Mat sz0 := bandStep2Mat sz0 Einst
-
-/-- **`nqGridEndLinNg` at the data**: the conclusion is unfolded to the eventual event statement at the grid `KC C_K` (`N^{C_K} ≤ K_n ≤
-⌈N^{C_K}⌉`) for the exponents the theorem produces, at one size index, on the non-collapsed window (`window_nondegenerate`). -/
-private theorem nqEndLinNg_instance (k : ℕ) (hk : 2 ≤ k) :
-    ∃ ε₁ τ' D' C_K : ℝ, 0 < ε₁ ∧ 0 < τ' ∧ 0 < D' ∧ 0 ≤ C_K ∧
-      ∃ n : ℕ, sInst n < vg n ∧ 0 < gridStep sInst vg (KC C_K) n ∧
-        ∃ G : Set (PathΩ sz0), Cm1.Pp.real Gᶜ ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) ∧
-        ∀ ω ∈ G,
-          (∀ j ≤ KC C_K n, Cm1.Hpath sInst vg (KC C_K) n j ω ∈
-            {H | GoodSetNg Cm1 n (gridTime sInst vg (KC C_K) n j) k (((sz0.size n : ℕ) : ℝ) ^ ε₁) (Λ3 n) (Φ1 n) τ' D' H} ∩
-              GoodLinNg Cm1 n (gridTime sInst vg (KC C_K) n j) k (((sz0.size n : ℕ) : ℝ) ^ ε₁) (Φ1 n) (12 : ℝ) (Φ1 n)) →
-          (∀ σ : Fin k → Bool, (∃ i, σ i = σ (finRotate k i)) → ∀ a : Fin k → Zd 3 (sz0.L n),
-            ‖STLKMg Cm1 n (sInst n) (Cm1.Hpath sInst vg (KC C_K) n 0 ω) σ a‖ ≤
-              ((sz0.size n : ℕ) : ℝ) ^ ε₁ * (sz0.Bctl n (sInst n)) ^ k) →
-          ∀ σ : Fin k → Bool, (∃ i, σ i = σ (finRotate k i)) → ∀ a : Fin k → Zd 3 (sz0.L n),
-            ‖STLKMg Cm1 n (vg n) (Cm1.Hpath sInst vg (KC C_K) n (KC C_K n) ω) σ a‖ ≤
-              ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * (Λ3 n ^ ((1 : ℝ) / 2) + Φ1 n + 12 + Φ1 n) *
-                (sz0.Bctl n (vg n)) ^ k := by
-  have hκ' : 0 < κi := lt_min one_pos (by norm_num)
-  have hKb : sz0.STKbound Einst := stKbound_holds sz0 (by norm_num) one_pos (by norm_num : (0 : ℝ) < 10) sz0_tendsto
-    (Eventually.of_forall hE_i) hlam_i
-  have hKer : ∀ᶠ n : ℕ in atTop, NQGoodGen_KerNAL Cm1.toFlowFM sz0.lam k (nqGood1C 3 k 10 κi) n := by
-    filter_upwards [hlam_i] with n hn
-    exact nqGoodGen_kerNAL_band_at sz0 Einst le_rfl hk (by norm_num) hκ' n hn.1 hn.2 (Einst_abs_lt n).le
-      (RBM.Ind.NQEndLinInst.hκm_i n)
-  obtain ⟨ε₁, τ', D', C_K, h1, h2, h3, h4, hend⟩ := nqGridEndLinNg Cm1 (Sizes.seqP sz0) (E := Einst)
-    (lam' := sz0.lam) (Ψ := fun _ => 0) (gK := sz0.lam) (A := 1) (κm := Real.sqrt 1 / 2) sInst tInst (𝔠 := 1 / 6) (τ := 1 / 2)
-    (𝔡 := 1 / 10) le_rfl (by norm_num) (by norm_num) (by norm_num)
-    (stepDecompGen_loopForm_band sz0 Einst Einst_abs_lt) (stepDecompGen_walkForm_band sz0 Einst)
-    (DecayGen_bandSpec sz0 one_pos hE_i) (fun n => (norm_mE (Einst_abs_lt n).le).le) (fun n => rfl)
-    (fun n a => hierDriftGen_SB_row sz0 n a) (fun n => gridRepTailGen_ker_band sz0 Einst n (Einst_abs_lt n).le)
-    (fun n w k σ a => rfl) hKb
-    (Eventually.of_forall fun n s' t' K' => hierDriftGen_expand_band sz0 Einst Einst_abs_lt s' t' K' n)
-    (Eventually.of_forall (hierDriftGen_kLoop_band sz0 Einst Einst_abs_lt))
-    (Eventually.of_forall (hierDriftGen_kTwo_band sz0 Einst Einst_abs_lt))
-    (Eventually.of_forall (hierDriftGen_uStep_band sz0 Einst Einst_abs_lt)) sz0_tendsto sz0_bandwidth sz0_WO
-    sInst_nonneg sInst_le_tInst tInst_lt_one sz0_caseI rangeCond_tInst WtInst
-    (fun n => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩) le_rfl k hk (nqGood1C 3 k 10 κi) (nqGood1C 3 k 10 κi)
-    (RBM.Ind.nqGood1C_pos le_rfl hk (by norm_num) hκ') le_rfl (Or.inr rfl) hKer Λ3 Φ1 (fun _ => 12) Φ1
-    (fun _ => by norm_num) (Eventually.of_forall fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) vg sInst_le_vg vg_le_tInst (1 / 10) (by norm_num) 1 one_pos
-  refine ⟨ε₁, τ', D', C_K, h1, h2, h3, h4, ?_⟩
-  obtain ⟨n, G, hG, hGb⟩ := (hend Φ1 (KC C_K) (KC_ne_zero C_K)
-    (Eventually.of_forall (KC_low C_K)) (Eventually.of_forall (KC_up C_K))).exists
-  exact ⟨n, (window_nondegenerate C_K n).1, (window_nondegenerate C_K n).2, G, hG, hGb⟩
-
-
 /-! ### D5 at the data -/
-
-private theorem hKb1 : sz0.STKbound Einst := stKbound_holds sz0 (by norm_num) one_pos (by norm_num : (0 : ℝ) < 10) sz0_tendsto
-  (Eventually.of_forall hE_i) hlam_i
-
-private theorem hL1 : StepDecompGen_LoopForm Cm1 Einst := stepDecompGen_loopForm_band sz0 Einst Einst_abs_lt
-
-private theorem hW1 : StepDecompGen_WalkForm Cm1 sz0.lam (fun _ => 0) := stepDecompGen_walkForm_band sz0 Einst
-
-private theorem hm1 : ∀ n, ‖Cm1.m n‖ ≤ 1 := fun n => (norm_mE (Einst_abs_lt n).le).le
-
-/-- **D5, `gridDriftNgAt_of_classes`** at the data (`k` arbitrary, window `s ≡ 0`, `t ≡ 1/16`, `K ≡ 4`, size index `n`): the per-index classes
-(`Expand`, `KLoop`, `KTwo`, `UStep`, the row sums, the link) are the band lemmas; `GridDriftNgAt` holds at every `n`. -/
-example (n : ℕ) : GridDriftNgAt Cm1 sInst tInst (fun _ => 4) n :=
-  gridDriftNgAt_of_classes hL1 hW1 sInst tInst (fun _ => 4) n (hierDriftGen_expand_band sz0 Einst Einst_abs_lt _ _ _ n)
-    (hierDriftGen_kLoop_band sz0 Einst Einst_abs_lt n) (hierDriftGen_kTwo_band sz0 Einst Einst_abs_lt n)
-    (hierDriftGen_uStep_band sz0 Einst Einst_abs_lt n) (fun a => hierDriftGen_SB_row sz0 n a)
-    (hierDriftGen_kLink_band sz0 Einst n) (sInst_nonneg n) (sInst_le_tInst n) (tInst_lt_one n) (by norm_num)
-
-/-- **D5, `gridDriftNg_envelope_ev`** at the data (`k = 3`, `τ_K = 1/2`, `s ≡ 0`, `t ≡ 1/16`, `K ≡ 4`, every sign vector): the drift premise is
-`∀ᶠ n, GridDriftNgAt` from the classes; `STKboundgL` is `stKbound_holds`; nothing is left open. -/
-example (σ : Fin 3 → Bool) :=
-  gridDriftNg_envelope_ev Cm1 (Sizes.seqP sz0) 3 (by norm_num) (1 / 2) (by norm_num) (s := sInst) (t := tInst) (K := fun _ => 4)
-    sz0_tendsto hKb1 (fun n w k σ a => rfl) (NQEndLinGen_eta_win hL1 hm1) sInst_nonneg sInst_le_tInst tInst_lt_one
-    (fun _ => by norm_num)
-    (Eventually.of_forall fun n => gridDriftNgAt_of_classes hL1 hW1 sInst tInst (fun _ => 4) n
-      (hierDriftGen_expand_band sz0 Einst Einst_abs_lt _ _ _ n) (hierDriftGen_kLoop_band sz0 Einst Einst_abs_lt n)
-      (hierDriftGen_kTwo_band sz0 Einst Einst_abs_lt n) (hierDriftGen_uStep_band sz0 Einst Einst_abs_lt n)
-      (fun a => hierDriftGen_SB_row sz0 n a) (hierDriftGen_kLink_band sz0 Einst n) (sInst_nonneg n) (sInst_le_tInst n)
-      (tInst_lt_one n) (by norm_num)) σ
-
-/-- **D5, the merged recovery** `gridDriftNg_envelope_of_merged` at the data: `GridDriftNg` is `gridDriftNg` with every class at the band. -/
-example (σ : Fin 3 → Bool) :=
-  gridDriftNg_envelope_of_merged Cm1 (Sizes.seqP sz0) 3 (by norm_num) (1 / 2) (by norm_num) (s := sInst) (t := tInst)
-    (K := fun _ => 4) sz0_tendsto hKb1 (fun n w k σ a => rfl) (NQEndLinGen_eta_win hL1 hm1) sInst_nonneg sInst_le_tInst
-    tInst_lt_one (fun _ => by norm_num)
-    (gridDriftNg hL1 hW1 _ _ _ (fun n => hierDriftGen_expand_band sz0 Einst Einst_abs_lt _ _ _ n)
-      (hierDriftGen_kLoop_band sz0 Einst Einst_abs_lt) (hierDriftGen_kTwo_band sz0 Einst Einst_abs_lt)
-      (hierDriftGen_uStep_band sz0 Einst Einst_abs_lt) (fun n a => hierDriftGen_SB_row sz0 n a)
-      (hierDriftGen_kLink_band sz0 Einst)) σ
-
-/-- The merged pin is the form at every index (`gridDriftNg_iff_at` at the data). -/
-example : GridDriftNg Cm1 sInst tInst (fun _ => 4) ↔ ((∀ n, 0 ≤ sInst n) → (∀ n, sInst n ≤ tInst n) → (∀ n, tInst n < 1) →
-    (∀ n, (fun _ => 4 : ℕ → ℕ) n ≠ 0) → ∀ n, GridDriftNgAt Cm1 sInst tInst (fun _ => 4) n) :=
-  gridDriftNg_iff_at Cm1 sInst tInst (fun _ => 4)
-
-/-- The instance at `k = 2` (no `l ∈ [3,k]`; the sign vectors `σ` of length `2` with `σ_0 = σ_1`). -/
-example := nqEndLinNg_instance 2 le_rfl
-
-/-- The instance at `k = 3`. -/
-example := nqEndLinNg_instance 3 (by norm_num)
-
-/-- The instance at `k = 4`. -/
-example := nqEndLinNg_instance 4 (by norm_num)
-
-end NQEndLinGenCheck
-
-end Instances
 
 end RBM.BA
 

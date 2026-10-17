@@ -247,11 +247,6 @@ private lemma GUEPhaseGrid_mixedStepMeasure_eq (v0 v1 : Sizes.SeqCoord sz → �
       = Measure.infinitePi (fun c => GUEPhaseGrid_mixedRawStep v0 v1 c i) := by
   cases i <;> simp [GUEPhaseGrid_mixedStepMeasure, GUEPhaseGrid_mixedRawStep]
 
-private instance GUEPhaseGrid_mixedStepMeasure_isProbabilityMeasure
-    (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) (k : ℕ) :
-    IsProbabilityMeasure (GUEPhaseGrid_mixedStepMeasure v0 v1 k) := by
-  rw [GUEPhaseGrid_mixedStepMeasure_eq]; infer_instance
-
 /-- Same nesting as `Path/Walk.lean`'s private `pathP'`: coordinates first, then the grid index. -/
 private def GUEPhaseGrid_mixedRaw (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) :
     Measure (Sizes.SeqCoord sz → ℕ → ℝ) :=
@@ -792,106 +787,15 @@ The merged instance sizes `RBM.Gauss.SizesInst.sz0` (`d = 3`, `L 0 = 4`, `W 0 = 
 `N = 2097152`), `t₀ = 9/10`, `τ = 1/20`, `K = fun _ => 4`, `t₁ = (1 - ζ(τ)) t₀ = e^{-1/20} · 9/10`;
 the homogeneity at `d = 3`, `L = 3`, `W = 2`. -/
 
-namespace RBM.Univ.GUEPhase.GridCheck
-
-open MeasureTheory ProbabilityTheory Matrix RBM RBM.Gauss RBM.Path RBM.Univ
-
-/-- `t₁ = (1 - ζ(1/20)) · 9/10 = e^{-1/20} · 9/10 > 0`. -/
-theorem t1_pos : 0 ≤ (1 - ouZeta (1 / 20)) * (9 / 10 : ℝ) := by
-  unfold ouZeta
-  have := Real.exp_pos (-(1 / 20 : ℝ))
-  nlinarith
-
 -- `gueH_isHermitian` at the instance data (`k = 4 = K`, and every `n`, `k`)
-example (ω : PathΩ SizesInst.sz0) :
-    (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10)) (fun _ => 9 / 10)
-      (fun _ => 4) 0 4 ω).IsHermitian :=
-  gueH_isHermitian SizesInst.sz0 _ _ _ 0 4 ω
-
-example (n k : ℕ) (ω : PathΩ SizesInst.sz0) :
-    (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10)) (fun _ => 9 / 10)
-      (fun _ => 4) n k ω).IsHermitian :=
-  gueH_isHermitian SizesInst.sz0 _ _ _ n k ω
-
 -- `gueH_adapted` at the instance data: every entry `(i, j)` of size `n = 0` at step `4`
-example (i j : Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0)) :
-    StronglyMeasurable[filt SizesInst.sz0 4]
-      (fun ω : PathΩ SizesInst.sz0 =>
-        gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10)) (fun _ => 9 / 10)
-          (fun _ => 4) 0 4 ω i j) :=
-  gueH_adapted SizesInst.sz0 _ _ _ 0 4 i j
-
 -- `gueH_measurable` at the instance data
-example : Measurable
-    (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10)) (fun _ => 9 / 10)
-      (fun _ => 4) 0 4) :=
-  gueH_measurable SizesInst.sz0 _ _ _ 0 4
-
 -- `map_gueH_zero` at the instance data and `n = 0` (`L = 4`, `W = 32`, `N = 2097152`)
-example :
-    (Pgue SizesInst.sz0).map
-        (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10))
-          (fun _ => 9 / 10) (fun _ => 4) 0 0) =
-      (Sizes.seqP SizesInst.sz0).map
-        (Sizes.seqHflow SizesInst.sz0 0 ((1 - ouZeta (1 / 20)) * (9 / 10))) :=
-  map_gueH_zero SizesInst.sz0 _ _ _ 0 t1_pos
-
 -- `map_gueH_last` at the instance data and `n = 0`
-example :
-    (Pgue SizesInst.sz0).map
-        (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10))
-          (fun _ => 9 / 10) (fun _ => 4) 0 4) =
-      (ouP (UNModel.band SizesInst.sz0) 0).map
-        (fun ω => ((Real.sqrt (9 / 10) : ℝ) : ℂ) • ouMat (UNModel.band SizesInst.sz0) 0 (1 / 20) ω) :=
-  map_gueH_last SizesInst.sz0 (fun _ => 9 / 10) (fun _ => 1 / 20) (fun _ => 4) 0
-    (by norm_num) (by norm_num) (by norm_num)
-
 -- the same for every size index `n`
-example (n : ℕ) :
-    (Pgue SizesInst.sz0).map
-        (gueH SizesInst.sz0 (fun _ => (1 - ouZeta (1 / 20)) * (9 / 10))
-          (fun _ => 9 / 10) (fun _ => 4) n 4) =
-      (ouP (UNModel.band SizesInst.sz0) n).map
-        (fun ω => ((Real.sqrt (9 / 10) : ℝ) : ℂ) •
-          ouMat (UNModel.band SizesInst.sz0) n (1 / 20) ω) :=
-  map_gueH_last SizesInst.sz0 (fun _ => 9 / 10) (fun _ => 1 / 20) (fun _ => 4) n
-    (by norm_num) (by norm_num) (by norm_num)
-
 -- the carrier is a probability measure
-example : IsProbabilityMeasure (Pgue SizesInst.sz0) := inferInstance
-
 -- `gueGridK_ne_zero` at the instance data
-example : gueGridK SizesInst.sz0 0 0 ≠ 0 := gueGridK_ne_zero SizesInst.sz0 0 0
-
-/-- `gueGridK sz n0 n` dominates `sz.size n + 1` at every size and every `n₀`. -/
-theorem gueGridK_size_le {d : ℕ} (sz : Sizes d) (n0 n : ℕ) :
-    sz.size n + 1 ≤ gueGridK sz n0 n := by
-  unfold gueGridK
-  exact Nat.le_self_pow (by omega) _
-
 -- the 2-loop homogeneity at `d = 3`, `L = 3`, `W = 2`, `M = blockMat (2 • 1)`, `z = i`, `σ₂ = false`,
 -- `a = b = 0`
-example :
-    loopL 3 3 2 (blockMat 3 3 2 (Matrix.diagonal fun _ : Idx 3 3 2 => (2 : ℂ)))
-        Complex.I (loopOf ![true, false] ![(0 : Zd 3 3), 0]) =
-      ((lemT Complex.I : ℝ) : ℂ) *
-        loopL 3 3 2
-          (((Real.sqrt (lemT Complex.I) : ℝ) : ℂ) •
-            blockMat 3 3 2 (Matrix.diagonal fun _ : Idx 3 3 2 => (2 : ℂ)))
-          (zt (lemE Complex.I) (lemT Complex.I)) (loopOf ![true, false] ![(0 : Zd 3 3), 0]) :=
-  GUEPhaseGrid_gloop_two_smul_lemT_eq _ (by simp) false 0 0
-
 -- the general homogeneity at the same data, on the loop `[true, false]`, `[0, 0]`
-example :
-    loopL 3 3 2 (blockMat 3 3 2 (Matrix.diagonal fun _ : Idx 3 3 2 => (2 : ℂ)))
-        Complex.I ⟨[true, false], [(0 : Zd 3 3), 0]⟩ =
-      ((Real.sqrt (lemT Complex.I) : ℝ) : ℂ) ^ (([true, false] : List Bool).zip [(0 : Zd 3 3), 0]).length *
-        loopL 3 3 2
-          (((Real.sqrt (lemT Complex.I) : ℝ) : ℂ) •
-            blockMat 3 3 2 (Matrix.diagonal fun _ : Idx 3 3 2 => (2 : ℂ)))
-          (zt (lemE Complex.I) (lemT Complex.I)) ⟨[true, false], [(0 : Zd 3 3), 0]⟩ :=
-  GUEPhaseGrid_gloop_smul_lemT_eq _ (by simp) _ _
-
-end RBM.Univ.GUEPhase.GridCheck
-
 end

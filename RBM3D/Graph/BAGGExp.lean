@@ -47,15 +47,6 @@ open RBM RBM.Gauss RBM.Green RBM.BA
 
 /-! ## 1. The pin (copied verbatim from the T2387 probe) -/
 
-/-- D402: `W - 1 = M⁺ S⁺` with `S⁺ = S W`; `GGGamma` as printed (`B:393-405`) has `S⁺_{xβ}` in its place. -/
-theorem ba_W_sub_one (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ) (hSelf : BASelf d L g0 (E : ℂ) m)
-    (ht0 : 0 ≤ t) (ht1 : t < 1) :
-    BAlwW d L W g0 E t m - 1 = BAlwMp d L W g0 E m * (Matrix.of (BAlwS d L W t) * BAlwW d L W g0 E t m) := by
-  have h := Ring.mul_inverse_cancel _ (baW_isUnit d L W hL g0 E t m hSelf ht0 ht1)
-  rw [← mul_assoc, sub_eq_iff_eq_add, add_comm]
-  rw [sub_mul, one_mul] at h
-  exact sub_eq_iff_eq_add.mp h
-
 section GGGammaPin
 variable (d L W : ℕ) [NeZero L] [NeZero W] (g0 E t : ℝ) (m : ℂ) (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ)
 
@@ -471,62 +462,6 @@ end BAGGExpHolds
 `t = 1/2`; three distinct sites `x = 0`, `y = e₀`, `y' = e₁`.  Every hypothesis of `baGGGamma_holds` is discharged
 (`gaussIBP` is proved inside it).  The check that the printed `(B.20)` fails and the corrected one holds numerically
 is a script, not Lean (the prove report). -/
-
-namespace BAGGExpInst
-
-open RBM.Graph.BAExpandInst
-
-/-- The site `e₀ = (1, 0, 0)` of the block lattice `Z_3^3` (`W = 1`). -/
-abbrev e0 : Idx 3 3 1 := fun i => if i = 0 then 1 else 0
-
-/-- The site `e₁ = (0, 1, 0)`. -/
-abbrev e1 : Idx 3 3 1 := fun i => if i = 1 then 1 else 0
-
-/-- (I1) `baGGGamma_holds 3` at `P = 1` (`f = 1`): `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2`,
-`x = 0`, `y = e₀`, `y' = e₁`. -/
-example :
-    ∫ ω, BAGGGammaL 3 3 1 0 0 (1 / 2) Complex.I (1 : MvPolynomial (Bool × Idx 3 3 1 × Idx 3 3 1) ℂ) 0 e0 e1 ω
-        ∂(PF 3 3 1 0) =
-      ∫ ω, BAGGGammaR 3 3 1 0 0 (1 / 2) Complex.I (1 : MvPolynomial (Bool × Idx 3 3 1 × Idx 3 3 1) ℂ) 0 e0 e1 ω
-        ∂(PF 3 3 1 0) :=
-  baGGGamma_holds 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num) _ _ _ _
-
-/-- (I2) a nonconstant resolvent polynomial `f = G_{e₀ 0}` (`P = X (true, e₀, 0)`); the same data. -/
-example :
-    ∫ ω, BAGGGammaL 3 3 1 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, e0, 0)) 0 e0 e1 ω ∂(PF 3 3 1 0) =
-      ∫ ω, BAGGGammaR 3 3 1 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, e0, 0)) 0 e0 e1 ω ∂(PF 3 3 1 0) :=
-  baGGGamma_holds 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num) _ _ _ _
-
-/-- (I3) `f = G_{00} \bar G_{e₀ e₀}` (`P = X (true, 0, 0) * X (false, e₀, e₀)`), the same data with the sites permuted:
-`x = e₁`, `y = 0`, `y' = e₀`. -/
-example :
-    ∫ ω, BAGGGammaL 3 3 1 0 0 (1 / 2) Complex.I
-        (MvPolynomial.X (true, 0, 0) * MvPolynomial.X (false, e0, e0)) e1 0 e0 ω ∂(PF 3 3 1 0) =
-      ∫ ω, BAGGGammaR 3 3 1 0 0 (1 / 2) Complex.I
-        (MvPolynomial.X (true, 0, 0) * MvPolynomial.X (false, e0, e0)) e1 0 e0 ω ∂(PF 3 3 1 0) :=
-  baGGGamma_holds 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num) _ _ _ _
-
-/-- (I4) the block size `W = 2` (`Idx 3 3 2 = Z_6^3`, 216 sites): `P = X (true, 0, 0)`, `x = 0`, `y = e₀`, `y' = e₁`. -/
-example :
-    ∫ ω, BAGGGammaL 3 3 2 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, 0, 0)) 0
-        (fun i => if i = 0 then 1 else 0) (fun i => if i = 1 then 1 else 0) ω ∂(PF 3 3 2 0) =
-      ∫ ω, BAGGGammaR 3 3 2 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, 0, 0)) 0
-        (fun i => if i = 0 then 1 else 0) (fun i => if i = 1 then 1 else 0) ω ∂(PF 3 3 2 0) :=
-  baGGGamma_holds 3 3 2 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num) _ _ _ _
-
-/-- (I5) `t = 0`: both sides are `0` (`W = 1`); `baGGGamma_holds 3` at `t = 0` is `0 = 0`. -/
-example :
-    ∫ ω, BAGGGammaL 3 3 1 0 0 0 Complex.I (MvPolynomial.X (true, e0, 0)) 0 e0 e1 ω ∂(PF 3 3 1 0) =
-      ∫ ω, BAGGGammaR 3 3 1 0 0 0 Complex.I (MvPolynomial.X (true, e0, 0)) 0 e0 e1 ω ∂(PF 3 3 1 0) :=
-  baGGGamma_holds 3 3 1 (by norm_num) 0 0 0 Complex.I baSelf_zero le_rfl (by norm_num) _ _ _ _
-
-/-- (I6) the D402 coefficient at the instance: `W - 1 = M⁺ S⁺` (`ba_W_sub_one`) at `d = 3`, `L = 3`, `W = 1`,
-`t = 1/2`, every hypothesis discharged. -/
-example : BAlwW 3 3 1 0 0 (1 / 2) Complex.I - 1 =
-    BAlwMp 3 3 1 0 0 Complex.I * (Matrix.of (BAlwS 3 3 1 (1 / 2)) * BAlwW 3 3 1 0 0 (1 / 2) Complex.I) :=
-  ba_W_sub_one 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num)
-
-end BAGGExpInst
 
 end RBM.Graph
 

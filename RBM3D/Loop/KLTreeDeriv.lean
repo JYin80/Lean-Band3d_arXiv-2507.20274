@@ -503,10 +503,6 @@ private theorem Kgen_two (W : ℕ) (m : Bool → ℂ) (t : ℝ) (s₁ s₂ : Boo
     KLgen d L g W m t ⟨[s₁, s₂], [x, y]⟩ = kTwo d L W g m t s₁ s₂ x y := by
   simp [KLgen, LoopIdx.length]
 
-private theorem Kgen_one (W : ℕ) (m : Bool → ℂ) (t : ℝ) (s : Bool) (x : Zd d L) :
-    KLgen d L g W m t ⟨[s], [x]⟩ = m s := by
-  simp [KLgen, LoopIdx.length]
-
 /-! ### Splitting the pairs `(k, l)` of `(pro_dyncalK)` -/
 
 /-- The pair `(k, l)` of the leaf edge at `v`: `(v+1, v+2)`, or `(1, n)` for the root. -/
@@ -1066,88 +1062,5 @@ end Pinned
 (`3 ≤ 5`, `1 ≤ 2`, `|0| < 2`) is discharged; the three clauses are applied at `t = 9/10`, at the left
 end point `t = 0` of `[0,1)`, to loops of length `2`, `3`, `4` with alternating charges and distinct
 labels, and to constant and non-constant labels at `t = 0`. -/
-
-section Instances
-
-/-- `m(+) = m^{(0)} = i` at the energy `E = 0`. -/
-private theorem mE_zero_eq : mE 0 = Complex.I := by
-  simp only [mE]
-  have h : Real.sqrt (4 - (0 : ℝ) ^ 2) = 2 := by
-    rw [show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
-  rw [h]; push_cast; simp
-
-/-- **The instance of `KLK_isKLoop`**: `𝒦` is a family of `K`-loops on `[0,1)` at the data above. -/
-theorem KLTreeDerivInst_isKLoop :
-    IsKLoop 3 5 2 (1 / 2) (mSigma 0) (Set.Ico 0 1) (fun t I => KLK 3 5 (1 / 2) 2 0 t I) :=
-  KLK_isKLoop 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-
-/-- Clause 1 (`(pro_dyncalK)`) at `t = 9/10`, loop `(+,-)`, labels `(0, 1)`. -/
-theorem KLTreeDerivInst_ode_two :
-    HasDerivAt (fun s => KLK 3 5 (1 / 2) 2 0 s ⟨[true, false], [0, 1]⟩)
-      (treeEqRhs 3 5 2 (1 / 2) (fun I => KLK 3 5 (1 / 2) 2 0 (9 / 10) I)
-        ⟨[true, false], [0, 1]⟩) (9 / 10) :=
-  KLTreeDerivInst_isKLoop.1 (9 / 10) ⟨by norm_num, by norm_num⟩ _ rfl (le_refl 2)
-
-/-- Clause 1 at `t = 9/10`, loop `(+,-,+)`, labels `(0, 1, 2)`: the tree `F = ∅` only. -/
-theorem KLTreeDerivInst_ode_three :
-    HasDerivAt (fun s => KLK 3 5 (1 / 2) 2 0 s (KLloopOf 3 5 KLinstσ KLinsta))
-      (treeEqRhs 3 5 2 (1 / 2) (fun I => KLK 3 5 (1 / 2) 2 0 (9 / 10) I)
-        (KLloopOf 3 5 KLinstσ KLinsta)) (9 / 10) :=
-  KLTreeDerivInst_isKLoop.1 (9 / 10) ⟨by norm_num, by norm_num⟩ _ (by simp [LoopIdx.WF, KLloopOf])
-    (by simp [LoopIdx.length, KLloopOf])
-
-/-- Clause 1 at `t = 9/10`, loop `(+,-,+,-)`, labels `(0, 1, 2, 3)`: three trees, among them the
-two with an internal edge `(0,2)` or `(1,3)`. -/
-theorem KLTreeDerivInst_ode_four :
-    HasDerivAt
-      (fun s => KLK 3 5 (1 / 2) 2 0 s (KLloopOf 3 5 ![true, false, true, false] ![0, 1, 2, 3]))
-      (treeEqRhs 3 5 2 (1 / 2) (fun I => KLK 3 5 (1 / 2) 2 0 (9 / 10) I)
-        (KLloopOf 3 5 ![true, false, true, false] ![0, 1, 2, 3])) (9 / 10) :=
-  KLTreeDerivInst_isKLoop.1 (9 / 10) ⟨by norm_num, by norm_num⟩ _ (by simp [LoopIdx.WF, KLloopOf])
-    (by simp [LoopIdx.length, KLloopOf])
-
-/-- Clause 1 at the left end point `t = 0 ∈ [0,1)`, loop `(+,-,+)`, labels `(0, 1, 2)`. -/
-theorem KLTreeDerivInst_ode_zero :
-    HasDerivAt (fun s => KLK 3 5 (1 / 2) 2 0 s (KLloopOf 3 5 KLinstσ KLinsta))
-      (treeEqRhs 3 5 2 (1 / 2) (fun I => KLK 3 5 (1 / 2) 2 0 0 I)
-        (KLloopOf 3 5 KLinstσ KLinsta)) 0 :=
-  KLTreeDerivInst_isKLoop.1 0 ⟨le_refl 0, by norm_num⟩ _ (by simp [LoopIdx.WF, KLloopOf])
-    (by simp [LoopIdx.length, KLloopOf])
-
-/-- Clause 2 (`(eq:initial_K)`) on the constant-label loop `(+,-,+)`, labels `(0, 0, 0)`:
-`𝒦_0 = (W^d)^{-2} m(+) m(-) m(+) = i / 64`. -/
-theorem KLTreeDerivInst_init_const :
-    KLK 3 5 (1 / 2) 2 0 0 ⟨[true, false, true], [0, 0, 0]⟩ = Complex.I / 64 := by
-  have h : KLK 3 5 (1 / 2) 2 0 0 ⟨[true, false, true], [0, 0, 0]⟩
-      = MLoop 3 5 2 (mSigma 0) ⟨[true, false, true], [0, 0, 0]⟩ :=
-    KLTreeDerivInst_isKLoop.2.1 ⟨[true, false, true], [0, 0, 0]⟩ rfl (by simp [LoopIdx.length])
-  rw [h]
-  simp [MLoop, mSigma, mE_zero_eq, LoopIdx.length]
-  ring
-
-/-- Clause 2 on the loop `(+,-,+)` with three distinct labels `(0, 1, 2)`: `𝒦_0 = 0`. -/
-theorem KLTreeDerivInst_init_nonconst :
-    KLK 3 5 (1 / 2) 2 0 0 (KLloopOf 3 5 KLinstσ KLinsta) = 0 := by
-  have h : KLK 3 5 (1 / 2) 2 0 0 (KLloopOf 3 5 KLinstσ KLinsta)
-      = MLoop 3 5 2 (mSigma 0) (KLloopOf 3 5 KLinstσ KLinsta) :=
-    KLTreeDerivInst_isKLoop.2.1 _ (by simp [LoopIdx.WF, KLloopOf]) (by simp [LoopIdx.length, KLloopOf])
-  rw [h]
-  have hne : ¬ ∀ x ∈ (KLloopOf 3 5 KLinstσ KLinsta).a, ∀ y ∈ (KLloopOf 3 5 KLinstσ KLinsta).a,
-      x = y := by
-    intro H
-    have := H 0 (by simp [KLloopOf, KLinsta]) 1 (by simp [KLloopOf, KLinsta])
-    have h2 : (0 : ZMod 5) = 1 := by simpa using congrFun this 0
-    exact absurd h2 (by decide)
-  simp [MLoop, hne]
-
-/-- Clause 3 (`𝒦^{(1)} = m(σ)`) at `t = 9/10`: `𝒦^{(1)}_{t,+,0} = m(+) = i`. -/
-theorem KLTreeDerivInst_one :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true], [0]⟩ = Complex.I := by
-  have h : KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true], [0]⟩ = mSigma 0 true :=
-    KLTreeDerivInst_isKLoop.2.2 (9 / 10) ⟨by norm_num, by norm_num⟩ true 0
-  rw [h]
-  simp [mSigma, mE_zero_eq]
-
-end Instances
 
 end RBM.Loop

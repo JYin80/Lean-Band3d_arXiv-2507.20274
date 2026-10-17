@@ -387,20 +387,6 @@ private theorem BAEngine_frame_ne_nil {E : Type} {P : BAPGraph E} {F : List (BAP
     exact fun hF => BAEngine_outsOf_ne_nil P _ (List.cons_ne_nil _ _)
       (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 hF).1).1).1
 
-/-- every start term at `p = 2` has a solid loop edge `e.src = e.dst` (`fxyPowGraph` has the loops `Ǧ_{β_iβ_i}`; checked by `decide` on `splitG`), which `merge` keeps a loop, hence is not locally standard (a solid edge inside an atom) -/
-private theorem BAEngine_start_not_locStd : ∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ¬ P0.g.LocStd := by
-  have hD : ∀ Δ ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).splitG, ∃ e ∈ Δ.solid, e.src = e.dst := by decide +kernel
-  intro P0 hP0 hLS
-  simp only [BAGraph.partition, List.mem_map] at hP0
-  obtain ⟨Δ, hΔ, rfl⟩ := hP0
-  obtain ⟨e, he, hl⟩ := hD Δ hΔ
-  have he' : SEdge.map Δ.toLGraph.vmap e ∈ (BAGraph.packMerge Δ).g.solid :=
-    List.mem_map.2 ⟨e, he, rfl⟩
-  have h1 := hLS.2.1 _ he'
-  simp only [SEdge.map, hl] at h1
-  rw [Bool.eq_false_iff] at h1
-  exact h1 ((BAGraph.BAAtomic_sameAtom_iff_atom_eq _ _ _).2 rfl)
-
 /-- a locally standard graph (`E = Fin 2`, `I = Fin 3`: blue `x → a`, red `y → a`, the atom `{b, c}` by an `M`-dot, five waved edges; as `BAStepS.lean:493`) -/
 def BAEngine_pL : BAGraph (Fin 2) (Fin 3) :=
   ⟨⟨[⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inl 1, .inr 0⟩],
@@ -413,93 +399,6 @@ def BAEngine_pL : BAGraph (Fin 2) (Fin 3) :=
 theorem BAEngine_pL_locStd : BAEngine_pL.LocStd := by decide
 
 end InstHelpers
-
-namespace BAEngineInst
-
-open RBM.BA.CouplingWindowInst BASymm1Inst
-
-/-- **Conjunct (a) of `BALocRegConcl`** at a concrete locally standard graph (`ord = 8`) at `p = 2`: `LocStd`, `2p = 4 ≤ ord`, and `3p = 6 ≤ ord` (distinct external atoms). -/
-example : ∀ Q ∈ [baPG BAEngine_pL], Q.g.LocStd ∧ 2 * ((2 : ℕ) : ℤ) ≤ Q.scalingOrder ∧
-    (¬ atomSetoid Q.g (Sum.inl (Q.ext 0)) (Sum.inl (Q.ext 1)) → 3 * ((2 : ℕ) : ℤ) ≤ Q.scalingOrder) := by
-  intro Q hQ
-  obtain rfl := List.mem_singleton.1 hQ
-  have ho : (baPG BAEngine_pL).scalingOrder = 8 := by decide +kernel
-  exact ⟨BAEngine_pL_locStd, by rw [ho]; norm_num, fun _ => by rw [ho]; norm_num⟩
-
-/-- **Instance of `baStart_nWS`** at `p = 2`: the partition has `16` start terms, none locally standard, each with exactly `2` black waved edges. -/
-example : ((BAGraph.ofLGraph (fxyPowGraph 2)).partition).length = 16 ∧
-    (∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ¬ P0.g.LocStd) ∧
-    ∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, P0.g.waved.countP (fun e => !e.col) = 2 := by
-  refine ⟨?_, BAEngine_start_not_locStd, baStart_nWS 2⟩
-  rw [BAGraph.partition, List.length_map]
-  decide
-
-/-- **Instance of `baStep_nWS`**: a start term `P0` at `p = 2` (not locally standard), a step from `baLvl1ExistsStep_holds`, a nonempty list of outputs, each with
-at least the `2` black waved edges of `P0`. -/
-example : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ¬ P0.g.LocStd ∧
-    ∃ outs, BALocStep P0 outs ∧ outs ≠ [] ∧ ∀ Q ∈ outs, 2 ≤ Q.g.waved.countP (fun e => !e.col) := by
-  obtain ⟨P0, hP0⟩ := List.exists_mem_of_ne_nil _ (BAEngine_partition_ne_nil (BAGraph.ofLGraph (fxyPowGraph 2)))
-  have hnl := BAEngine_start_not_locStd P0 hP0
-  obtain ⟨outs, hst⟩ := baLvl1ExistsStep_holds P0 (BAGraph.partition_normal _ P0 hP0) hnl
-  refine ⟨P0, hP0, hnl, outs, hst, ?_, fun Q hQ => ?_⟩
-  · obtain ⟨c, t, F, hF, rfl⟩ := hst
-    simpa using BAEngine_frame_ne_nil hF
-  · have h := baStep_nWS P0 outs hst Q hQ
-    rwa [baStart_nWS 2 P0 hP0] at h
-
-/-- **Instance of `ba_nWS_ge`**: a graph `Q` reached by one step (`BAReach.step`, cutoff `K = ord P0 + 1`) from a start term `P0` at `p = 2` has at least `2` black
-waved edges. -/
-example : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ∃ Q : BAPGraph (Fin 2), BAReach (P0.g.scalingOrder + 1) P0 Q ∧
-    2 ≤ Q.g.waved.countP (fun e => !e.col) := by
-  obtain ⟨P0, hP0⟩ := List.exists_mem_of_ne_nil _ (BAEngine_partition_ne_nil (BAGraph.ofLGraph (fxyPowGraph 2)))
-  have hnl := BAEngine_start_not_locStd P0 hP0
-  obtain ⟨outs, hst⟩ := baLvl1ExistsStep_holds P0 (BAGraph.partition_normal _ P0 hP0) hnl
-  have hne : outs ≠ [] := by
-    obtain ⟨c, t, F, hF, rfl⟩ := hst
-    simpa using BAEngine_frame_ne_nil hF
-  obtain ⟨Q, hQ⟩ := List.exists_mem_of_ne_nil _ hne
-  have hr : BAReach (P0.g.scalingOrder + 1) P0 Q :=
-    BAReach.step P0 P0 Q outs (BAReach.refl P0) (Int.lt_succ _) hnl hst hQ
-  have h := ba_nWS_ge hr
-  rw [baStart_nWS 2 P0 hP0] at h
-  exact ⟨P0, hP0, Q, hr, h⟩
-
-/-- **Instance of `baEngine_assemble`** at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10`: the lists `fo`, `fe` per start term are those of `baLvl1LemmaSize_holds` (all hypotheses
-of the assembly discharged at the `16` start terms); the conclusion `BALocRegConcl` holds for the concatenated lists.  The shape binder of `BALocReg6` (O2R-C3, T2447) is the
-only hypothesis of the example. -/
-example (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN) :
-    ∃ fo fe : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)), ((BAGraph.ofLGraph (fxyPowGraph 2)).partition).length = 16 ∧
-      BALocRegConcl 2 (1 / 4) 2 3 10 (((BAGraph.ofLGraph (fxyPowGraph 2)).partition).flatMap fo)
-        (((BAGraph.ofLGraph (fxyPowGraph 2)).partition).flatMap fe) := by
-  obtain ⟨fo, fe, hfo⟩ := BAEngine_lists (1 / 4) (by norm_num) 2 2 3 10
-  refine ⟨fo, fe, ?_, baEngine_assemble hX 2 (1 / 4) 2 3 10 fo fe hfo⟩
-  rw [BAGraph.partition, List.length_map]
-  decide
-
-/-- **Instance of `ba_localregularX`** at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10`: the start list is nonempty (`16` terms); the outputs are locally standard with
-`4 ≤ ord`; the errors have scaling size `≤ 4^{-10}` at `W = 4`, `L = 2`, `Ψ = 1/4` (`4^{-3/2} = 1/8 ≤ 1/4 ≤ 4^{-1/4}`, `2^3 ≤ 4^2`); every graph has at least `2` black waved edges; the
-identity of expectations holds at `d = 3`, `L = 4`, `W = 2`, `(g₀, E, t, m) = (g0P, EP, t0P, m0P)`, `ℓ0` (`flowP_data`: `BASelf`, `0 < t₀ < 1`).  The shape binder (O2R-C3, T2447) is the
-only hypothesis of the example. -/
-example (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN) :
-    ((BAGraph.ofLGraph (fxyPowGraph 2)).partition).length = 16 ∧ ∃ outs errs : List (BAPGraph (Fin 2)),
-      BALocRegConcl 2 (1 / 4) 2 3 10 outs errs ∧ (∀ Q ∈ outs, Q.g.LocStd ∧ 4 ≤ Q.scalingOrder) ∧
-      (∀ Q ∈ errs, Q.g.scalingSize (1 / 4) 4 3 2 ≤ (4 : ℝ) ^ (-(10 : ℝ))) ∧
-      (∀ Q ∈ outs ++ errs, 2 ≤ Q.g.waved.countP (fun e => !e.col)) ∧
-      ∫ ω, (BAGraph.ofLGraph (fxyPowGraph 2)).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
-        ∫ ω, BAComb.val (outs ++ errs) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) := by
-  refine ⟨by rw [BAGraph.partition, List.length_map]; decide, ?_⟩
-  obtain ⟨outs, errs, h, hw⟩ := ba_localregularX hX 2 (1 / 4) (by norm_num) 2 3 10
-  refine ⟨outs, errs, h, fun Q hQ => ⟨(h.1 Q hQ).1, by have := (h.1 Q hQ).2.1; push_cast at this; omega⟩, fun Q hQ => ?_, hw,
-    h.2.2.2 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 ℓ0⟩
-  refine h.2.1 Q hQ 4 2 (1 / 4) (by norm_num) (by norm_num) (by norm_num) ?_ ?_
-  · calc ((4 : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2) = (4 : ℝ) ^ (-(3 : ℝ) / 2) := by norm_num
-      _ ≤ (4 : ℝ) ^ (-1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 1 / 4 := by rw [Real.rpow_neg_one]; norm_num
-  · calc (1 / 4 : ℝ) = (4 : ℝ) ^ (-1 : ℝ) := by rw [Real.rpow_neg_one]; norm_num
-      _ ≤ (4 : ℝ) ^ (-(1 / 4 : ℝ)) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = ((4 : ℕ) : ℝ) ^ (-(1 / 4 : ℝ)) := by norm_num
-
-end BAEngineInst
 
 end RBM.Graph
 

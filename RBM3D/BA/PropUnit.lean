@@ -477,38 +477,6 @@ private lemma baPU_head {N M p : ℕ} (hN : N = p + 2) (hp : 2 ≤ p) (hpM : p +
           have h1 : 0 ≤ CA * 2 ^ p * ((g2 + e)⁻¹ * (((A + 1) ^ p)⁻¹)) := by positivity
           nlinarith [h1]
 
-/-- **The new Laplace lemma** (public; the polynomial twin of `lg_bulk`).  For `0 < t < 1`, `A ≥ 0`,
-`n ∈ {1, 2}`, `d ≥ 3`, `γ = baP5Gam g t = t g²`, `ε = baP5Eps g t = (1 - t)/γ`:
-`e^{-ετ} min(1, τ^{-(d+n)/2}) (1 + A²/max(τ,1))^{-M}`, `M = ⌊d/2⌋ + 1`, is integrable on `(0, ∞)` and
-`γ⁻¹ ∫₀^∞ e^{-ετ} min(1, τ^{-(d+n)/2}) (1 + A²/max(τ,1))^{-M} dτ ≤ C (g² + 1 - t)⁻¹ (A + 1)^{-(d+n-2)}`.
-The integral over `(0, ∞)` dominates the one over `(0, L²]` (the integrand is nonnegative). -/
-theorem baPropUnit_laplace_head (d n : ℕ) (hd : 3 ≤ d) (hn1 : 1 ≤ n) (hn2 : n ≤ 2) {Λ : ℝ}
-    (hΛ : 0 < Λ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (g t A : ℝ), 0 < g → g ≤ Λ → 0 < t → t < 1 → 0 ≤ A →
-      IntegrableOn (fun τ : ℝ => Real.exp (-(baP5Eps g t) * τ) *
-          (min 1 (τ ^ (-((d : ℝ) + n) / 2)) * (1 + A ^ 2 / max τ 1) ^ (-(((d / 2 + 1 : ℕ) : ℝ)))))
-        (Ioi 0) ∧
-      (baP5Gam g t)⁻¹ * ∫ τ in Ioi (0 : ℝ), Real.exp (-(baP5Eps g t) * τ) *
-          (min 1 (τ ^ (-((d : ℝ) + n) / 2)) * (1 + A ^ 2 / max τ 1) ^ (-(((d / 2 + 1 : ℕ) : ℝ))))
-        ≤ C * ((g ^ 2 + (1 - t))⁻¹ * (((A + 1) ^ (d + n - 2))⁻¹)) := by
-  obtain ⟨CA, hCA, hconv⟩ := baP5_convA Λ hΛ
-  obtain ⟨CH, hCH, hhead⟩ := baPU_head (N := d + n) (M := d / 2 + 1) (p := d + n - 2)
-    (by omega) (by omega) (by omega) hCA
-  refine ⟨CH, hCH, ?_⟩
-  intro g t A hg hgΛ ht0 ht1 hA
-  have hγ := baP5_gam_pos hg ht0
-  have he : 0 < 1 - t := by linarith
-  have hg2 : 0 < g ^ 2 := by positivity
-  obtain ⟨hA1, hA2⟩ := hconv g t hg hgΛ ht0 ht1
-  have hεeq : baP5Eps g t = (1 - t) / baP5Gam g t := rfl
-  rw [hεeq] at hA1 hA2
-  have hh := hhead (baP5Gam g t) (1 - t) (g ^ 2) A hγ he hg2 hA hA1 hA2
-  have hcast : ∀ τ : ℝ, baPU_h (d + n) (d / 2 + 1) A τ
-      = min 1 (τ ^ (-((d : ℝ) + n) / 2)) * (1 + A ^ 2 / max τ 1) ^ (-(((d / 2 + 1 : ℕ) : ℝ))) := by
-    intro τ; unfold baPU_h; push_cast; rfl
-  simp only [← hcast]
-  exact hh
-
 /-! ## 4. The tail and the abstract integral bound (ports of `pu_tail`, `pu_int_bound`) -/
 
 /-- The tail: `γ⁻¹ L^{-m} min(1/ε, L²/c_G) ≤ C_T (g² + e)⁻¹ (N + 1)^{-p}` for `N ≤ dL/2`. -/
@@ -1007,113 +975,11 @@ theorem baPropUnit2mixed_holds (d : ℕ) (Λ κ : ℝ) : BAPropUnit2mixed d Λ �
     rw [hp] at hbd
     exact hbd.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) hTg0)
 
-example (d : ℕ) (Λ κ : ℝ) : BAPropUnit1mixed d Λ κ := baPropUnit1mixed_holds d Λ κ
-example (d : ℕ) (Λ κ : ℝ) : BAPropUnit2mixed d Λ κ := baPropUnit2mixed_holds d Λ κ
-
 /-! ## 9. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P`)
 
 Both targets at the `KKernel` instance data (`BAReal 3 4 g₀ (Im m₀) E m₀`, `g₀ ≈ 4.67 ≤ 10`), with every
 deterministic hypothesis discharged (`3 ≤ d`, `0 < Λ`, `0 < κ`, `3 ≤ L`, `0 < g ≤ Λ`, `BAReal`,
 `0 ≤ t < 1`, `σ₁ ≠ σ₂`); the constants `C` stay existential, as in the statements.  Pattern of
 `BA/Prop5.lean:1428`. -/
-
-namespace PropUnitInst
-
-open RBM.BA.MFixedPointInst
-
-/-- `baPropUnit1mixed_holds` at `t = 1/2` (`ε ≈ 0.046 < 1`), `σ = (+,-)`, `a = (1, 0, 0) ≠ 0`
-(`|a| = 1`), `j = 0`. -/
-theorem inst_unit1 : ∃ C : ℝ, 0 < C ∧ (![1, 0, 0] : Zd 3 4) ≠ 0 ∧
-    zdistD 3 4 (![1, 0, 0] : Zd 3 4) = 1 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 (![1, 0, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 2 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) + 1) ^ (3 - 1))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit1mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, by decide, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num)
-      true false (by decide) ![1, 0, 0] 0⟩
-
-/-- `baPropUnit1mixed_holds` at the other mixed charge `σ = (-,+)`, `t = 1/100` (`ε ≈ 4.5 ≥ 1`),
-`a = (2, 1, 0)` (`|a| = 3`), `j = 1`. -/
-theorem inst_unit1_large_eps : ∃ C : ℝ, 0 < C ∧ zdistD 3 4 (![2, 1, 0] : Zd 3 4) = 3 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 ((![2, 1, 0] : Zd 3 4) + Pi.single 1 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 (![2, 1, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 100 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![2, 1, 0] : Zd 3 4) : ℝ) + 1) ^ (3 - 1))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit1mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 100) (by norm_num) (by norm_num)
-      false true (by decide) ![2, 1, 0] 1⟩
-
-/-- `baPropUnit1mixed_holds` at `t = 0` (`Θ_0 = 1`), `a = (1, 0, 0)`, `j = 0`. -/
-theorem inst_unit1_zero : ∃ C : ℝ, 0 < C ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 0 true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 0 true false 0 (![1, 0, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (0 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) + 1) ^ (3 - 1))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit1mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real 0 le_rfl (by norm_num)
-    true false (by decide) ![1, 0, 0] 0⟩
-
-/-- `baPropUnit2mixed_holds` at `t = 1/2`, `σ = (+,-)`, `a = (1, 0, 0) ≠ 0`, `i = j = 0`. -/
-theorem inst_unit2 : ∃ C : ℝ, 0 < C ∧ (![1, 0, 0] : Zd 3 4) ≠ 0 ∧
-    zdistD 3 4 (![1, 0, 0] : Zd 3 4) = 1 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0
-          ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1 + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1)
-        + BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 (![1, 0, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 2 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) + 1) ^ 3)⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit2mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, by decide, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num)
-      true false (by decide) ![1, 0, 0] 0 0⟩
-
-/-- `baPropUnit2mixed_holds` at `σ = (-,+)`, `t = 1/100` (`ε ≥ 1`), `a = (2, 1, 0)` (`|a| = 3`),
-mixed directions `(i, j) = (0, 2)`. -/
-theorem inst_unit2_large_eps : ∃ C : ℝ, 0 < C ∧ zdistD 3 4 (![2, 1, 0] : Zd 3 4) = 3 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0
-          ((![2, 1, 0] : Zd 3 4) + Pi.single 0 1 + Pi.single 2 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 ((![2, 1, 0] : Zd 3 4) + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 ((![2, 1, 0] : Zd 3 4) + Pi.single 2 1)
-        + BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 (![2, 1, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 100 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![2, 1, 0] : Zd 3 4) : ℝ) + 1) ^ 3)⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit2mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 100) (by norm_num) (by norm_num)
-      false true (by decide) ![2, 1, 0] 0 2⟩
-
-/-- `baPropUnit2mixed_holds` at `t = 0` (`Θ_0 = 1`), `a = (1, 0, 0)`, mixed directions
-`(i, j) = (0, 2)`. -/
-theorem inst_unit2_zero : ∃ C : ℝ, 0 < C ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 0 true false 0
-          ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1 + Pi.single 2 1)
-        - BATheta 3 4 P.g0 P.E P.m0 0 true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 0 1)
-        - BATheta 3 4 P.g0 P.E P.m0 0 true false 0 ((![1, 0, 0] : Zd 3 4) + Pi.single 2 1)
-        + BATheta 3 4 P.g0 P.E P.m0 0 true false 0 (![1, 0, 0] : Zd 3 4)‖
-      ≤ C * (P.g0 ^ 2 + |1 - (0 : ℝ)|)⁻¹
-        * (((zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) + 1) ^ 3)⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baPropUnit2mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real 0 le_rfl (by norm_num)
-    true false (by decide) ![1, 0, 0] 0 2⟩
-
-/-- The new Laplace lemma `baPropUnit_laplace_head` at `d = 3`, `n = 2`, `Λ = 10`, `g = 1`, `t = 1/2`,
-`A = 1` (every deterministic hypothesis discharged; `ε = baP5Eps 1 (1/2) = 1`). -/
-theorem inst_laplace_head : ∃ C : ℝ, 0 < C ∧
-    IntegrableOn (fun τ : ℝ => Real.exp (-(baP5Eps 1 (1 / 2)) * τ) *
-        (min 1 (τ ^ (-(((3 : ℕ) : ℝ) + ((2 : ℕ) : ℝ)) / 2))
-          * (1 + (1 : ℝ) ^ 2 / max τ 1) ^ (-(((3 / 2 + 1 : ℕ) : ℝ))))) (Ioi 0) ∧
-    (baP5Gam 1 (1 / 2))⁻¹ * ∫ τ in Ioi (0 : ℝ), Real.exp (-(baP5Eps 1 (1 / 2)) * τ) *
-        (min 1 (τ ^ (-(((3 : ℕ) : ℝ) + ((2 : ℕ) : ℝ)) / 2))
-          * (1 + (1 : ℝ) ^ 2 / max τ 1) ^ (-(((3 / 2 + 1 : ℕ) : ℝ))))
-      ≤ C * (((1 : ℝ) ^ 2 + (1 - 1 / 2))⁻¹ * ((((1 : ℝ) + 1) ^ (3 + 2 - 2))⁻¹)) := by
-  obtain ⟨C, hC, H⟩ := baPropUnit_laplace_head 3 2 le_rfl (by norm_num) le_rfl (Λ := 10)
-    (by norm_num)
-  exact ⟨C, hC, H 1 (1 / 2) 1 one_pos (by norm_num) (by norm_num) (by norm_num) zero_le_one⟩
-
-end PropUnitInst
 
 end RBM.BA

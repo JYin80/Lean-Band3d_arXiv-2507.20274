@@ -233,20 +233,6 @@ with the profile rows `baOUProfRowk_holds` (`BA/GUEKPrim:584`), `unG1RowkBAD_hol
 theorem unOURowBAD_holds : ∀ Dm : ℕ → Prop, UNOURowBAD Dm :=
   fun Dm => ouRowk_of_pinsD Dm _ _ (fun d _ hd => baOUProfRowk_holds d hd) (unG1RowkBAD_holds Dm) (g2bRowk _ _)
 
-/-- `unG1RowkBA_holds`: the unfiltered layer row of the block Anderson kind (the merged reading
-`RandomLayerBGBA:199-212` at T2519's producers, which are stated for every `d`). -/
-theorem unG1RowkBA_holds :
-    UNG1Rowk (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d) (∀ d : ℕ, UNMLOutBA d) UNLocAvgBA UNQueBA :=
-  g1Rowk_of_inputsG (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d) _ _ _ BAEd BAfE BAfT
-    (fun d sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAMO BAKFam BAPB (fun d _ => ba_flowG d) (fun d _ => ba_domG d)
-    (fun d _ => RandomLayerBGBA_comp d (baProfComp d)) ba_prodG ba_LLG ba_QueG
-    (fun hML' d hd => ba_mlout d hd (hML' d))
-
-/-- `unOURowBA_holds`: the merged `∀ d` implication `UNOURowBA` (`UNPins:123`; its premise `∀ d, UNMLOutBA d` stays a
-premise): `ouRowk_of_pins` with `baOUProfRowk_holds`, `unG1RowkBA_holds`, `g2bRowk`. -/
-theorem unOURowBA_holds : UNOURowBA :=
-  ouRowk_of_pins _ _ baOUProfRowk_holds unG1RowkBA_holds (g2bRowk _ _)
-
 end RBM.Univ
 
 /-! ## 4. The end -/
@@ -271,11 +257,6 @@ theorem baEnd_BUnivL_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOut
 theorem baThm27L_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOutBA d) : BAThm27L d :=
   ⟨baEnd_decolL d hML, baEnd_locSCL d hML, baEnd_QUEL d hML, baEnd_BUnivL_of_ML d hd h32 hML, baEnd_QDiffL d hML⟩
 
-/-- **`baEnd_BUnivL_three`** (D6, closing condition (vi)): the block Anderson `Thm: B_Univ` at `d = 3`.  The only
-hypothesis is `UNL32` (borrowed, `Universality/Pins:281`). -/
-theorem baEnd_BUnivL_three : UNL32 → BAEnd_BUnivL 3 :=
-  fun h32 => baEnd_BUnivL_of_ML 3 le_rfl h32 unMLOutBA_three
-
 /-- **`baThm27L_three`** (D6, closing condition (vi)): the block Anderson Theorem 2.7 pins at `d = 3` (D723): the input of
 MA-06b.  The only hypothesis is `UNL32`. -/
 theorem baThm27L_three : UNL32 → BAThm27L 3 :=
@@ -296,102 +277,3 @@ Data of the merged instances `UNPins:1027-1066`: `S0` (`UNPins:884`), `κ_* = cl
 `k = 1` (`n_f = 1, 2` for the claim rows), `E' = 0`, `𝒪 = bump`.  Every deterministic hypothesis and every producer
 is discharged by a merged or C5 name; the one hypothesis left is the borrowed `UNL32` (`inst_univ_baD`, the two end
 theorems). -/
-
-namespace RBM.Univ.BAInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA RBM.BA.UNPinsInst RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.Univ
-
-private theorem UNBUniv_hML3 : ∀ d : ℕ, d = 3 → UNMLOutBA d := fun _ h => h ▸ unMLOutBA_three
-
-private theorem UNBUniv_hLoc3 : UNLocAvgBAD (· = 3) :=
-  (unLocAvgBAD_iff_at 3).2 fun hd => unLocAvgBAAt_of_locSCL 3 hd baEnd_locSCL_three
-
-private theorem UNBUniv_hQ3 : UNQueBAD (· = 3) := (unQueBAD_iff_at 3).2 fun _ => unQueBAAt_three
-
-/-- `unOURowBAD_holds` applied at the class sequence: no hypothesis. -/
-theorem inst_UNOURowBAD :
-    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNOUQUEk (UNKind.ba 3) S0 (1 / 10) τU ∧ UNOUDiagk (UNKind.ba 3) S0 τU :=
-  unOURowBAD_holds (· = 3) UNBUniv_hML3 UNBUniv_hLoc3 UNBUniv_hQ3 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm
-
-/-- `unEMCTE2RowBAD_holds` applied at the class sequence, `κ_*`, `E_*`, `n_f = 1`: no hypothesis. -/
-theorem inst_UNEMCTE2RowBAD :
-    ∃ Cn τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNEMCTE2k (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 1 τU Cn :=
-  unEMCTE2RowBAD_holds (· = 3) 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 UNPins_hg_3_10)
-    (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 1
-
-/-- `jakUywRowkD` at the block Anderson kind applied at the class sequence, `κ_*`, `E_*`, `n_f = 2`: no hypothesis (the
-`𝐇_t` claims it reads are `unOURowBAD_holds`). -/
-theorem inst_UNJakUywRowBAD :
-    ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNJakk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU C (1 / 6 * (1 / 10) / 30) ∧
-        UNUywk (UNKind.ba 3) S0 (fp 4 UNPins_hg_3_10).E 2 τU C (1 / 6 * (1 / 10) / 30) :=
-  jakUywRowkD (· = 3) (fun d => UNKind.ba d) UNBulkWindowk_ba UNBadBoundk_ba UNBad2Boundk_ba _ UNBUniv_hLoc3
-    (unOURowBAD_holds (· = 3) UNBUniv_hML3 UNBUniv_hLoc3 UNBUniv_hQ3) 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm
-    (clsκ 4 UNPins_hg_3_10) (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 2
-
-/-- **`un_claimAll_of_rowsBAD` at the class sequence**: `UNClaimAllC S0 (UNModelC.ba S0) E_*` from the proved filtered rows;
-no hypothesis. -/
-theorem inst_claimAll_baD : UNClaimAllC S0 (UNModelC.ba S0) (fp 4 UNPins_hg_3_10).E :=
-  un_claimAll_of_rowsBAD (· = 3) (unClaimRowkD _ _) (unEMCTE2RowBAD_holds _)
-    (jakUywRowkD _ _ UNBulkWindowk_ba UNBadBoundk_ba UNBad2Boundk_ba _) (unOURowBAD_holds _) UNBUniv_hML3
-    UNBUniv_hLoc3 UNBUniv_hQ3 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 UNPins_hg_3_10)
-    (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk
-
-/-- **`baBUniv_of_rowsD` at the class sequence** (`Dm = (· = 3)`, `k = 1`, `𝒪 = UNInst.bump`, `E' = 0`): every input is
-discharged by a proved name; the hypothesis is the borrowed `UNL32`. -/
-theorem inst_univ_baD (h32 : UNL32) :
-    UNUnivDilAt S0 (UNModel.ba S0) (fun n => BArho 3 (S0.L n) (S0.lam n) (fp 4 UNPins_hg_3_10).E)
-      (fp 4 UNPins_hg_3_10).E 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) :=
-  baBUniv_of_rowsD (· = 3) unCoreC''_holds h32 (un_gueLocal_of_tail gueSchurTail) greenCorrAllC unDensBARow'_holds
-    unTrLocalBAAt_of_locAvg unTrLocalInitBAAt'_of_locAvg unNormBARow_holds (unClaimRowkD _ _)
-    (unEMCTE2RowBAD_holds _) (jakUywRowkD _ _ UNBulkWindowk_ba UNBadBoundk_ba UNBad2Boundk_ba _)
-    (unOURowBAD_holds _) UNBUniv_hML3 UNBUniv_hLoc3 UNBUniv_hQ3 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm 1 le_rfl
-    (clsκ 4 UNPins_hg_3_10) (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 0 (by norm_num)
-    UNInst.bump UNInst.bump_testFun
-
-/-- **`unNormBARow_holds` at the class sequence**: the norm bound of `H = V + λ Ψ` at `S0`, no hypothesis. -/
-theorem inst_unNormBARow : ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound S0 (UNModelC.ba S0).toUNModel CV₀ :=
-  unNormBARow_holds 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm
-
-/-- **`unG1RowkBAD_holds` at the class sequence** (`τ_U = ouTauMax (1/6) (1/10)`): `UNOULLk`, `UNOUEq747k` at `S0`, no
-hypothesis. -/
-theorem inst_unG1RowkBAD :
-    UNOULLk (UNKind.ba 3) S0 (ouTauMax (1 / 6) (1 / 10)) ∧
-      UNOUEq747k (UNKind.ba 3) (UNOUProfile.ba 3) S0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  unG1RowkBAD_holds (· = 3) UNBUniv_hML3 UNBUniv_hLoc3 UNBUniv_hQ3 3 rfl le_rfl (1 / 6) (1 / 10) S0 S0_adm _
-    (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-/-- **`unG1RowkBA_holds` at the class sequence** (the unfiltered row, with the `∀ d` consumed inputs as hypotheses). -/
-theorem inst_unG1RowkBA (hML : ∀ d : ℕ, UNMLOutBA d) (hLoc : UNLocAvgBA) (hQ : UNQueBA) :
-    UNOULLk (UNKind.ba 3) S0 (ouTauMax (1 / 6) (1 / 10)) ∧
-      UNOUEq747k (UNKind.ba 3) (UNOUProfile.ba 3) S0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  unG1RowkBA_holds hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm _ (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-/-- **`unOURowBA_holds` at the class sequence** (the merged `inst_UNOURowBA` with its row discharged). -/
-theorem inst_unOURowBA (hML : ∀ d : ℕ, UNMLOutBA d) (hLoc : UNLocAvgBA) (hQ : UNQueBA) :
-    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-      UNOUQUEk (UNKind.ba 3) S0 (1 / 10) τU ∧ UNOUDiagk (UNKind.ba 3) S0 τU :=
-  unOURowBA_holds hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm
-
-/-- **`baEnd_BUnivL_three` at the class sequence** (`k = 1`, `E' = 0`, `𝒪 = bump`): the one hypothesis is `UNL32`. -/
-theorem inst_baEnd_BUnivL_three (h32 : UNL32) :
-    UNUnivDilAt S0 (UNModel.ba S0) (fun n => BArho 3 (S0.L n) (S0.lam n) (fp 4 UNPins_hg_3_10).E)
-      (fp 4 UNPins_hg_3_10).E 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) :=
-  baEnd_BUnivL_three h32 le_rfl (1 / 6) (1 / 10) S0 S0_adm 1 le_rfl (clsκ 4 UNPins_hg_3_10)
-    (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 0 (by norm_num) UNInst.bump UNInst.bump_testFun
-
-/-- **`baThm27L_three` at the class sequence**: the `Thm: B_Univ` conjunct of `BAThm27L 3`; the one hypothesis is `UNL32`. -/
-theorem inst_baThm27L_three (h32 : UNL32) :
-    UNUnivDilAt S0 (UNModel.ba S0) (fun n => BArho 3 (S0.L n) (S0.lam n) (fp 4 UNPins_hg_3_10).E)
-      (fp 4 UNPins_hg_3_10).E 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) :=
-  (baThm27L_three h32).2.2.2.1 le_rfl (1 / 6) (1 / 10) S0 S0_adm 1 le_rfl (clsκ 4 UNPins_hg_3_10)
-    (clsκ_pos 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E S0_bulk 0 (by norm_num) UNInst.bump UNInst.bump_testFun
-
-/-- The per-`d` forms at `d = 3` and the general-`d` form at `d = 3` under the proved `baStep5III_holds`. -/
-example (h32 : UNL32) : BAEnd_BUnivL 3 ∧ BAThm27L 3 ∧ BAThm27L 3 :=
-  ⟨baEnd_BUnivL_of_ML 3 le_rfl h32 unMLOutBA_three, baThm27L_of_ML 3 le_rfl h32 unMLOutBA_three,
-    baThm27L_any 3 le_rfl baStep5III_holds h32⟩
-
-end RBM.Univ.BAInst

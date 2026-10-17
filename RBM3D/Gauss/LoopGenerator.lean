@@ -50,14 +50,6 @@ def spectralEdgeSplits : List (Bool × Zd d L) → List (SpectralEdgeSplit d L)
       (spectralEdgeSplits l).map fun s => ⟨p :: s.pre, s.edge, s.post⟩
 
 omit [NeZero L] [NeZero W] in
-/-- `RBM2D/Gauss/LoopSpectralDriftCuts.lean:35` (`length_spectralEdgeSplits`). -/
-theorem length_spectralEdgeSplits (l : List (Bool × Zd d L)) :
-    (spectralEdgeSplits d L l).length = l.length := by
-  induction l with
-  | nil => rfl
-  | cons p l ih => simp [spectralEdgeSplits, ih]
-
-omit [NeZero L] [NeZero W] in
 /-- Every generated split reconstructs its original paired word.
 `RBM2D/Gauss/LoopSpectralDriftCuts.lean:42` (`spectralEdgeSplits_reconstruct`). -/
 theorem spectralEdgeSplits_reconstruct (l : List (Bool × Zd d L))
@@ -361,14 +353,6 @@ theorem deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts
 /-! ## 4. The initial value of a finite Gaussian resolvent loop
 (`RBM2D/Gauss/LoopInitialValue.lean`) -/
 
-/-- At time zero the flow vanishes at every sample.
-`RBM2D/Gauss/LoopInitialValue.lean:17` (`HflowBlock_zero`). -/
-@[simp] theorem HflowBlock_zero (ω : Ω d L W) :
-    HflowBlock d L W 0 ω = 0 := by
-  rw [HflowBlock, Hflow_eq_realSmul]
-  simp only [Real.sqrt_zero, zero_smul]
-  exact blockMat_zero d L W
-
 /-- The exact deterministic initial loop value, retaining the normalized block insertions
 `E_a` (entries `W^{-d}`) in `loopL`.
 `RBM2D/Gauss/LoopInitialValue.lean:22` (`initialLoopValue`). -/
@@ -382,24 +366,6 @@ theorem initialLoopValue_eq_trace_product (E : ℝ) (I : Loop.LoopIdx (Zd d L)) 
       Matrix.trace ((I.σ.zip I.a).foldr
         (fun p M => Gres (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ)
           ((E : ℂ) + mE E) p.1 * Eblk d L W p.2 * M) 1) := rfl
-
-/-- Each sample has the same initial loop value.
-`RBM2D/Gauss/LoopInitialValue.lean:38` (`gloop_HflowBlock_zero`). -/
-theorem gloop_HflowBlock_zero (ω : Ω d L W) (E : ℝ)
-    (I : Loop.LoopIdx (Zd d L)) :
-    loopL d L W (HflowBlock d L W 0 ω) (zt E 0) I =
-      initialLoopValue d L W E I := by
-  simp [initialLoopValue, zt]
-
-/-- The expected finite loop starts at the deterministic zero-matrix value.
-`RBM2D/Gauss/LoopInitialValue.lean:47` (`integral_gloop_HflowBlock_zero`); `g` is an extra
-argument (paper-delta candidate `T2077a`). -/
-theorem integral_gloop_HflowBlock_zero (E : ℝ) (I : Loop.LoopIdx (Zd d L)) :
-    ∫ ω : Ω d L W,
-      loopL d L W (HflowBlock d L W 0 ω) (zt E 0) I ∂(PF d L W g) =
-        initialLoopValue d L W E I := by
-  simp only [gloop_HflowBlock_zero]
-  simp
 
 /-! ## 5. Scalar initial values of short loops
 (`RBM2D/Gauss/LoopInitialValueScalar.lean`) -/
@@ -471,33 +437,6 @@ private theorem Eblk_mul_Eblk (a b : Zd d L) :
     split_ifs <;> simp_all
   · simp only [hab, ite_false, diagonal_apply, Matrix.zero_apply]
     split_ifs <;> simp_all
-
-/-- Two block projectors have nonzero trace exactly when their labels agree; the value is
-`W^{-d}` (RBM2D: `W^{-2}`).
-`RBM2D/Gauss/LoopInitialValueScalar.lean:88` (`trace_Eblk_mul_Eblk`). -/
-theorem trace_Eblk_mul_Eblk (a b : Zd d L) :
-    Matrix.trace (Eblk d L W a * Eblk d L W b) =
-      if a = b then (W : ℂ)⁻¹ ^ d else 0 := by
-  rw [Eblk_mul_Eblk d L W a b]
-  split_ifs <;> simp [trace_Eblk_eq_one, inv_pow]
-
-/-- Exact two-edge initial value, with the block-label equality indicator and the weight
-`W^{-d}` (RBM2D: `W^{-2}`).  No variance profile enters: the value is `s_1 s_2 1(a = b) W^{-d}`.
-`RBM2D/Gauss/LoopInitialValueScalar.lean:95` (`initialLoopValue_two_edges`). -/
-theorem initialLoopValue_two_edges {E : ℝ} (hE : |E| < 2)
-    (σ₁ σ₂ : Bool) (a b : Zd d L) :
-    initialLoopValue d L W E ⟨[σ₁, σ₂], [a, b]⟩ =
-      initialGreenScalar E σ₁ * initialGreenScalar E σ₂ *
-        (if a = b then (W : ℂ)⁻¹ ^ d else 0) := by
-  rw [initialLoopValue_eq_trace_product]
-  change Matrix.trace
-    (Gres (0 : Matrix (Vtx d L W) (Vtx d L W) ℂ)
-      ((E : ℂ) + mE E) σ₁ * Eblk d L W a *
-      (Gres 0 ((E : ℂ) + mE E) σ₂ * Eblk d L W b * 1)) = _
-  rw [mul_one, Gres_zero_eq_scalar d L W _ (initial_spectral_ne_zero hE) σ₁,
-    Gres_zero_eq_scalar d L W _ (initial_spectral_ne_zero hE) σ₂]
-  simp [initialGreenScalar, trace_Eblk_mul_Eblk, mul_assoc]
-  split_ifs <;> ring
 
 /-! ## 6. Arbitrary products of normalized block projectors
 (`RBM2D/Gauss/LoopInitialValueProjectionWords.lean`) -/
@@ -583,16 +522,6 @@ theorem initialLoopValue_nonempty {E : ℝ} (hE : |E| < 2)
   rw [hlabels, ha, trace_blockProjectorWord_cons]
   rfl
 
-omit [NeZero L] [NeZero W] in
-/-- Three edges give the equality indicator for all three labels and `(W^{-d})^2 = W^{-2d}`
-(RBM2D: `W^{-4}`: the two matching adjacent pairs each carry `W^{-d}`).
-`RBM2D/Gauss/LoopInitialValueProjectionWords.lean:107` (`adjacentBlockWeight_three`). -/
-theorem adjacentBlockWeight_three (a b c : Zd d L) :
-    adjacentBlockWeight d L W [a, b, c] =
-      if a = b ∧ b = c then ((W : ℂ)⁻¹ ^ d) ^ 2 else 0 := by
-  by_cases hab : a = b <;> by_cases hbc : b = c <;>
-    simp [adjacentBlockWeight, hab, hbc, pow_two]
-
 /-! ## 7. Support and normalization of the initial-loop value
 (`RBM2D/Gauss/LoopInitialValueSupport.lean`) -/
 
@@ -639,29 +568,6 @@ theorem adjacentBlockWeight_all_same (a : Zd d L) (as : List (Zd d L))
       simp only [ite_true]
       ring
 
-/-- The initial value vanishes as soon as two consecutive block labels differ.
-`RBM2D/Gauss/LoopInitialValueSupport.lean:57` (`initialLoopValue_zero_of_adjacentMismatch`). -/
-theorem initialLoopValue_zero_of_adjacentMismatch {E : ℝ} (hE : |E| < 2)
-    (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
-    (a : Zd d L) (as : List (Zd d L)) (ha : I.a = a :: as)
-    (hm : AdjacentMismatch d L (a :: as)) :
-    initialLoopValue d L W E I = 0 := by
-  rw [initialLoopValue_nonempty d L W hE I hI a as ha,
-    adjacentBlockWeight_zero_of_mismatch d L W (a :: as) hm, mul_zero]
-
-/-- With constant block label, a length `n` loop carries `W^{-d(n-1)}` (RBM2D: `W^{-2(n-1)}`).
-`RBM2D/Gauss/LoopInitialValueSupport.lean:70` (`initialLoopValue_all_same`). -/
-theorem initialLoopValue_all_same {E : ℝ} (hE : |E| < 2)
-    (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
-    (a : Zd d L) (as : List (Zd d L)) (ha : I.a = a :: as)
-    (hsame : ∀ b ∈ as, b = a) :
-    initialLoopValue d L W E I =
-      ((I.σ.zip I.a).map fun p => initialGreenScalar E p.1).prod *
-        (W : ℂ)⁻¹ ^ (d * as.length) := by
-  rw [initialLoopValue_nonempty d L W hE I hI a as ha,
-    adjacentBlockWeight_all_same d L W a as hsame]
-  rw [← pow_mul]
-
 /-! ## 8. Block-label sums of finite cut-loop bounds
 (`RBM2D/Hierarchy/LoopHierarchyCutBlockSumBound.lean`)
 
@@ -672,13 +578,6 @@ name `RBM.Gauss.sum_norm_SB_row` that would make `sum_norm_SB_row` ambiguous in 
 RBM.Gauss`.  The two double-sum bounds (`:38`, `:78`) are stated through
 `sameEdgeCutIntegrand`/`pairCutIntegrand`, defined in the dead-code RBM2D file
 `Hierarchy/ContractionSecondLoopExpectedCuts` (portmap class d), and are not ported. -/
-
-/-- The exact crude resolvent-loop envelope: one dimension factor and one normalized projector
-factor `W^{-d}` per Green edge.
-`RBM2D/Hierarchy/LoopHierarchyCutBlockSumBound.lean:25` (`cutResolventEnvelope`). -/
-noncomputable def cutResolventEnvelope (η : ℝ) (n : ℕ) : ℝ :=
-  (Fintype.card (Vtx d L W) : ℝ) *
-    (η⁻¹ * (((W : ℝ) ^ d)⁻¹)) ^ n
 
 /-! ## 9. Time continuity of finite expected loops
 (`RBM2D/Hierarchy/LoopHierarchyCutContinuity.lean`)
@@ -739,134 +638,6 @@ theorem norm_gloop_any_window_le {s t η : ℝ} (hη : 0 < η)
           ‖gloopProd d L W (HflowBlock d L W u ω) (z u) I‖ := ht
     _ ≤ _ := mul_le_mul_of_nonneg_left hw (Nat.cast_nonneg _)
 
-/-- Dominated continuity for the expectation of a product of two finite loops.
-`RBM2D/Hierarchy/LoopHierarchyCutContinuity.lean:71` (`continuousOn_integral_gloop_product_window`);
-`g` is an extra argument (paper-delta candidate `T2077a`). -/
-theorem continuousOn_integral_gloop_product_window {s t η : ℝ}
-    (hst : s ≤ t) (hη : 0 < η) {z : ℝ → ℂ}
-    (hzcont : Continuous z)
-    (hzlow : ∀ u ∈ Set.Icc s t, η ≤ |(z u).im|)
-    (I J : Loop.LoopIdx (Zd d L)) (k : ℂ) :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω d L W,
-      loopL d L W (HflowBlock d L W u ω) (z u) I * k *
-        loopL d L W (HflowBlock d L W u ω) (z u) J ∂(PF d L W g))
-      (Set.Icc s t) := by
-  let C (K : Loop.LoopIdx (Zd d L)) : ℝ :=
-    (Fintype.card (Vtx d L W) : ℝ) *
-      (η⁻¹ * (((W : ℝ) ^ d)⁻¹)) ^ (K.σ.zip K.a).length
-  let B : ℝ := C I * ‖k‖ * C J
-  have hzim : ∀ u ∈ Set.Icc s t, (z u).im ≠ 0 := by
-    intro u hu
-    exact abs_pos.mp (hη.trans_le (hzlow u hu))
-  have hmeas : ∀ u ∈ Set.Icc s t,
-      AEStronglyMeasurable (fun ω : Ω d L W =>
-        loopL d L W (HflowBlock d L W u ω) (z u) I * k *
-          loopL d L W (HflowBlock d L W u ω) (z u) J) (PF d L W g) := by
-    intro u hu
-    have hK (K : Loop.LoopIdx (Zd d L)) :
-        Continuous (fun ω : Ω d L W =>
-          loopL d L W (HflowBlock d L W u ω) (z u) K) :=
-      (continuous_matrixTrace d L W).comp
-        (continuous_gloopProd_HflowBlock_sample d L W u (hzim u hu) K)
-    exact (((hK I).mul continuous_const).mul (hK J)).measurable.aestronglyMeasurable
-  have hbound : ∀ u ∈ Set.Icc s t, ∀ᵐ ω ∂(PF d L W g),
-      ‖loopL d L W (HflowBlock d L W u ω) (z u) I * k *
-        loopL d L W (HflowBlock d L W u ω) (z u) J‖ ≤ B := by
-    intro u hu
-    exact Filter.Eventually.of_forall fun ω => by
-      have hI := norm_gloop_any_window_le d L W hη hzlow I hu ω
-      have hJ := norm_gloop_any_window_le d L W hη hzlow J hu ω
-      calc
-        ‖loopL d L W (HflowBlock d L W u ω) (z u) I * k *
-            loopL d L W (HflowBlock d L W u ω) (z u) J‖ ≤
-            ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖ * ‖k‖ *
-              ‖loopL d L W (HflowBlock d L W u ω) (z u) J‖ := by
-                exact (norm_mul_le _ _).trans
-                  (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
-        _ ≤ B := by
-          dsimp [B]
-          gcongr
-  have hcont : ∀ᵐ ω ∂(PF d L W g), ContinuousOn (fun u : ℝ =>
-      loopL d L W (HflowBlock d L W u ω) (z u) I * k *
-        loopL d L W (HflowBlock d L W u ω) (z u) J) (Set.Icc s t) :=
-    Filter.Eventually.of_forall fun ω =>
-      ((continuousOn_gloop_any_window d L W hst ω hzcont hzim I).mul
-        continuousOn_const).mul
-        (continuousOn_gloop_any_window d L W hst ω hzcont hzim J)
-  exact MeasureTheory.continuousOn_of_dominated hmeas hbound
-    (integrable_const B) hcont
-
-/-- Specialization to the spectral path on a compact interior time window.
-`RBM2D/Hierarchy/LoopHierarchyCutContinuity.lean:126`
-(`continuousOn_integral_gloop_product_spectralZ`);
-`g` is an extra argument (paper-delta candidate `T2077a`). -/
-theorem continuousOn_integral_gloop_product_spectralZ
-    {E a b : ℝ} (hE : |E| < 2) (hab : a ≤ b) (hb : b < 1)
-    (I J : Loop.LoopIdx (Zd d L)) (k : ℂ) :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω d L W,
-      loopL d L W (HflowBlock d L W u ω) (zt E u) I * k *
-        loopL d L W (HflowBlock d L W u ω) (zt E u) J ∂(PF d L W g))
-      (Set.Icc a b) := by
-  let η : ℝ := (1 - b) * (mE E).im
-  have hη : 0 < η := mul_pos (by linarith) (spectralM_im_pos hE)
-  have hlow : ∀ u ∈ Set.Icc a b, η ≤ |(zt E u).im| := by
-    intro u hu
-    exact spectralZ_im_gap hE hb hu
-  exact continuousOn_integral_gloop_product_window d L W g hab hη
-    (continuous_spectralZ E) hlow I J k
-
-/-- Dominated continuity for a single expected finite loop.
-`RBM2D/Hierarchy/LoopHierarchyCutContinuity.lean:229` (`continuousOn_integral_gloop_window`);
-`g` is an extra argument (paper-delta candidate `T2077a`). -/
-theorem continuousOn_integral_gloop_window {s t η : ℝ}
-    (hst : s ≤ t) (hη : 0 < η) {z : ℝ → ℂ}
-    (hzcont : Continuous z)
-    (hzlow : ∀ u ∈ Set.Icc s t, η ≤ |(z u).im|)
-    (I : Loop.LoopIdx (Zd d L)) :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω d L W,
-      loopL d L W (HflowBlock d L W u ω) (z u) I ∂(PF d L W g))
-      (Set.Icc s t) := by
-  let B : ℝ := (Fintype.card (Vtx d L W) : ℝ) *
-    (η⁻¹ * (((W : ℝ) ^ d)⁻¹)) ^ (I.σ.zip I.a).length
-  have hzim : ∀ u ∈ Set.Icc s t, (z u).im ≠ 0 := by
-    intro u hu
-    exact abs_pos.mp (hη.trans_le (hzlow u hu))
-  have hmeas : ∀ u ∈ Set.Icc s t,
-      AEStronglyMeasurable (fun ω : Ω d L W =>
-        loopL d L W (HflowBlock d L W u ω) (z u) I) (PF d L W g) := by
-    intro u hu
-    exact ((continuous_matrixTrace d L W).comp
-      (continuous_gloopProd_HflowBlock_sample d L W u (hzim u hu) I)).measurable
-      |>.aestronglyMeasurable
-  have hbound : ∀ u ∈ Set.Icc s t, ∀ᵐ ω ∂(PF d L W g),
-      ‖loopL d L W (HflowBlock d L W u ω) (z u) I‖ ≤ B := by
-    intro u hu
-    exact Filter.Eventually.of_forall fun ω =>
-      norm_gloop_any_window_le d L W hη hzlow I hu ω
-  have hcont : ∀ᵐ ω ∂(PF d L W g), ContinuousOn (fun u : ℝ =>
-      loopL d L W (HflowBlock d L W u ω) (z u) I) (Set.Icc s t) :=
-    Filter.Eventually.of_forall fun ω =>
-      continuousOn_gloop_any_window d L W hst ω hzcont hzim I
-  exact MeasureTheory.continuousOn_of_dominated hmeas hbound
-    (integrable_const B) hcont
-
-/-- Continuity of the expectation of any fixed cut loop along the spectral path.
-`RBM2D/Hierarchy/LoopHierarchyCutContinuity.lean:261` (`continuousOn_integral_gloop_spectralZ`);
-`g` is an extra argument (paper-delta candidate `T2077a`). -/
-theorem continuousOn_integral_gloop_spectralZ
-    {E a b : ℝ} (hE : |E| < 2) (hab : a ≤ b) (hb : b < 1)
-    (I : Loop.LoopIdx (Zd d L)) :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω d L W,
-      loopL d L W (HflowBlock d L W u ω) (zt E u) I ∂(PF d L W g))
-      (Set.Icc a b) := by
-  let η : ℝ := (1 - b) * (mE E).im
-  have hη : 0 < η := mul_pos (by linarith) (spectralM_im_pos hE)
-  have hlow : ∀ u ∈ Set.Icc a b, η ≤ |(zt E u).im| := by
-    intro u hu
-    exact spectralZ_im_gap hE hb hu
-  exact continuousOn_integral_gloop_window d L W g hab hη
-    (continuous_spectralZ E) hlow I
-
 /-! ## 10. Compiled nonempty instances (`d = 3`, `L = 3`, `W = 2`, `N = (W L)^d = 216`)
 
 Every deterministic hypothesis is discharged at `E = 3/10` (`|E| < 2`), `u = 1/2` (`0 < u < 1`),
@@ -874,144 +645,5 @@ the window `[1/4, 3/4]` (`0 < 1/4 ≤ 3/4 < 1`), `g = 1` and the well-formed 2-l
 `(+, -)` and distinct block labels `(0,0,0)`, `(1,2,0)` of `Z_3^3` (27 blocks of `W^d = 8` sites,
 216 vertices, 46656 real coordinates); the initial-value theorems at labels `(0,0,0)` (equal) and a
 3-loop with three equal labels. -/
-
-section Instances
-
-/-- A 2-loop with charges `(+, -)` and two distinct block labels of `Z_3^3`. -/
-private def genLoop : Loop.LoopIdx (Zd 3 3) :=
-  ⟨[true, false], [![0, 0, 0], ![1, 2, 0]]⟩
-
-private theorem genLoop_wf : genLoop.WF := rfl
-
-/-- A 3-loop with charges `(+, -, +)` and three equal block labels. -/
-private def genLoop3 : Loop.LoopIdx (Zd 3 3) :=
-  ⟨[true, false, true], [![0, 0, 0], ![0, 0, 0], ![0, 0, 0]]⟩
-
-private theorem genLoop3_wf : genLoop3.WF := rfl
-
-private theorem gen_hE : |(3 / 10 : ℝ)| < 2 := by norm_num [abs_lt]
-
-private theorem gen_hzim (u : ℝ) (hu : u ∈ Set.Icc (1 / 4 : ℝ) (3 / 4)) :
-    (zt (3 / 10) u).im ≠ 0 := by
-  rw [spectralZ_im]
-  exact ne_of_gt (mul_pos (by linarith [hu.2]) (spectralM_im_pos gen_hE))
-
-/-- **Instance of `trace_spectralWordDeriv_eq_sum_original_cuts`** at every sample. -/
-example (ω : Ω 3 3 2) :
-    Matrix.trace (spectralWordDeriv 3 3 2 ω (3 / 10) (1 / 2) (genLoop.σ.zip genLoop.a)) =
-      ((spectralEdgeSplits 3 3 (genLoop.σ.zip genLoop.a)).map fun s =>
-        -(spectralMSign (3 / 10) s.edge.1 * (2 : ℂ) ^ 3) *
-          ∑ b : Zd 3 3,
-            loopL 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) (zt (3 / 10) (1 / 2))
-              (genLoop.cutGlue (s.pre.length + 1) b)).sum := by
-  simpa using trace_spectralWordDeriv_eq_sum_original_cuts 3 3 2 ω (3 / 10) (1 / 2)
-    genLoop genLoop_wf
-
-/-- **Instance of `samplewise_loop_generator_eq_cuts`** at every sample, `g = 1`. -/
-example (ω : Ω 3 3 2) :
-    (1 / (2 * ((1 / 2 : ℝ) : ℂ))) *
-        ∑ γ : CoordF 3 3 2,
-          (((gvarF 3 3 2 1 γ : ℝ) : ℂ) *
-            Matrix.trace (coordinateSecondWordDeriv 3 3 2 (1 / 2) ω γ
-              (zt (3 / 10) (1 / 2)) (genLoop.σ.zip genLoop.a))) +
-      Matrix.trace (spectralWordDeriv 3 3 2 ω (3 / 10) (1 / 2) (genLoop.σ.zip genLoop.a)) =
-        samplewiseLoopGeneratorCuts 3 3 2 1 ω (3 / 10) (1 / 2) genLoop :=
-  samplewise_loop_generator_eq_cuts 3 3 2 1 ω (E := 3 / 10) (u := 1 / 2) (by norm_num)
-    (by norm_num) genLoop genLoop_wf
-
-/-- **Instance of `integrable_samplewiseLoopGeneratorCuts`** under `PF 3 3 2 1`. -/
-example : Integrable (fun ω : Ω 3 3 2 => samplewiseLoopGeneratorCuts 3 3 2 1 ω (3 / 10) (1 / 2)
-    genLoop) (PF 3 3 2 1) :=
-  integrable_samplewiseLoopGeneratorCuts 3 3 2 1 gen_hE (by norm_num) (by norm_num) genLoop
-    genLoop_wf
-
-/-- **Instance of `deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts`**:
-`d/du E 𝓛_u |_{u = 1/2}` under `PF 3 3 2 1`. -/
-example :
-    deriv (fun v : ℝ => ∫ ω : Ω 3 3 2,
-      loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) genLoop ∂(PF 3 3 2 1)) (1 / 2) =
-      ∫ ω : Ω 3 3 2, samplewiseLoopGeneratorCuts 3 3 2 1 ω (3 / 10) (1 / 2) genLoop
-        ∂(PF 3 3 2 1) :=
-  deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts 3 3 2 1 gen_hE (by norm_num)
-    (by norm_num) genLoop genLoop_wf
-
-/-- **Instance of `integral_gloop_HflowBlock_zero`** under `PF 3 3 2 1`. -/
-example :
-    ∫ ω : Ω 3 3 2, loopL 3 3 2 (HflowBlock 3 3 2 0 ω) (zt (3 / 10) 0) genLoop ∂(PF 3 3 2 1) =
-      initialLoopValue 3 3 2 (3 / 10) genLoop :=
-  integral_gloop_HflowBlock_zero 3 3 2 1 (3 / 10) genLoop
-
-/-- **Instance of `initialLoopValue_two_edges`** at equal labels: the value is
-`s_+ s_- W^{-d}` with `W^{-d} = (1/2)^3`, a nonzero number. -/
-example :
-    initialLoopValue 3 3 2 (3 / 10) ⟨[true, false], [![0, 0, 0], ![0, 0, 0]]⟩ =
-      initialGreenScalar (3 / 10) true * initialGreenScalar (3 / 10) false *
-        ((2 : ℂ)⁻¹) ^ 3 := by
-  rw [initialLoopValue_two_edges 3 3 2 gen_hE]
-  simp
-
-/-- **Instance of `initialLoopValue_two_edges`** at distinct labels: the value is zero. -/
-example : initialLoopValue 3 3 2 (3 / 10) genLoop = 0 := by
-  have h := initialLoopValue_two_edges 3 3 2 (E := 3 / 10) gen_hE true false ![0, 0, 0] ![1, 2, 0]
-  rw [show genLoop = ⟨[true, false], [![0, 0, 0], ![1, 2, 0]]⟩ from rfl, h]
-  have hne : (![0, 0, 0] : Zd 3 3) ≠ ![1, 2, 0] := by
-    intro hc
-    have := congrFun hc 0
-    simp at this
-  simp [hne]
-
-/-- **Instance of `adjacentBlockWeight_three`** at three equal labels: `(W^{-d})^2 = (1/2)^6`. -/
-example : adjacentBlockWeight 3 3 2 [(![0, 0, 0] : Zd 3 3), ![0, 0, 0], ![0, 0, 0]] =
-    (((2 : ℂ)⁻¹) ^ 3) ^ 2 := by
-  rw [adjacentBlockWeight_three 3 3 2]
-  simp
-
-/-- **Instance of `initialLoopValue_all_same`**: a 3-loop with three equal labels carries
-`W^{-d(n-1)} = (1/2)^6`. -/
-example :
-    initialLoopValue 3 3 2 (3 / 10) genLoop3 =
-      ((genLoop3.σ.zip genLoop3.a).map fun p => initialGreenScalar (3 / 10) p.1).prod *
-        (2 : ℂ)⁻¹ ^ (3 * 2) := by
-  have h := initialLoopValue_all_same 3 3 2 (E := 3 / 10) gen_hE genLoop3 genLoop3_wf
-    ![0, 0, 0] [![0, 0, 0], ![0, 0, 0]] rfl (by simp)
-  simpa using h
-
-/-- **Instance of `continuousOn_gloop_any_window`**: at every sample, on `[1/4, 3/4]`. -/
-example (ω : Ω 3 3 2) :
-    ContinuousOn (fun u : ℝ => loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (3 / 10) u) genLoop)
-      (Set.Icc (1 / 4) (3 / 4)) :=
-  continuousOn_gloop_any_window 3 3 2 (by norm_num) ω (continuous_spectralZ (3 / 10))
-    gen_hzim genLoop
-
-/-- **Instance of `norm_gloop_any_window_le`** at `u = 1/2` in the window `[1/4, 3/4]`, with the
-gap `η = (1 - 3/4) Im m(3/10) > 0`. -/
-example (ω : Ω 3 3 2) :
-    ‖loopL 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) (zt (3 / 10) (1 / 2)) genLoop‖ ≤
-      (Fintype.card (Vtx 3 3 2) : ℝ) *
-        (((1 - 3 / 4) * (mE (3 / 10)).im)⁻¹ * (((2 : ℝ) ^ 3)⁻¹)) ^
-          (genLoop.σ.zip genLoop.a).length :=
-  norm_gloop_any_window_le 3 3 2 (s := 1 / 4) (t := 3 / 4)
-    (mul_pos (by norm_num) (spectralM_im_pos gen_hE)) (z := zt (3 / 10))
-    (fun _ hu => spectralZ_im_gap gen_hE (by norm_num) hu) genLoop
-    (u := 1 / 2) (by norm_num [Set.mem_Icc]) ω
-
-/-- **Instance of `continuousOn_integral_gloop_product_spectralZ`** (`k = 1`), under
-`PF 3 3 2 1`. -/
-example :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω 3 3 2,
-      loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (3 / 10) u) genLoop * 1 *
-        loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (3 / 10) u) genLoop3 ∂(PF 3 3 2 1))
-      (Set.Icc (1 / 4) (3 / 4)) :=
-  continuousOn_integral_gloop_product_spectralZ 3 3 2 1 gen_hE (by norm_num) (by norm_num)
-    genLoop genLoop3 1
-
-/-- **Instance of `continuousOn_integral_gloop_spectralZ`** under `PF 3 3 2 1`. -/
-example :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω 3 3 2,
-      loopL 3 3 2 (HflowBlock 3 3 2 u ω) (zt (3 / 10) u) genLoop ∂(PF 3 3 2 1))
-      (Set.Icc (1 / 4) (3 / 4)) :=
-  continuousOn_integral_gloop_spectralZ 3 3 2 1 gen_hE (by norm_num) (by norm_num) genLoop
-
-end Instances
 
 end RBM.Gauss

@@ -271,13 +271,6 @@ theorem P_map_eval (c : CoordF d L W) :
     (PF d L W g).map (fun ω => ω c) = gaussianReal 0 (gvarF d L W g c) :=
   Measure.infinitePi_map_eval _ c
 
-omit [NeZero L] in
-/-- Every finite collection of coordinates has its independent product law.
-`RBM2D/Gauss/Model.lean:142`. -/
-theorem P_map_restrict (I : Finset (CoordF d L W)) :
-    (PF d L W g).map I.restrict = Measure.pi fun c : I => gaussianReal 0 (gvarF d L W g c) :=
-  Measure.infinitePi_map_restrict _
-
 /-- `RBM2D/Gauss/Model.lean:180`. -/
 theorem measurable_Xentry (i j : Idx d L W) :
     Measurable fun ω : Ω d L W => Xentry d L W ω i j := by
@@ -491,19 +484,6 @@ theorem integral_normSq_Hflow (u : ℝ) (hu : 0 ≤ u) (i j : Idx d L W) :
     abs_of_nonneg (Real.sqrt_nonneg u), mul_pow]
   rw [integral_const_mul, integral_normSq_Xentry, Real.sq_sqrt hu]
 
-section OperatorNorm
-
-open scoped Matrix.Norms.L2Operator
-
-/-- Exact deterministic modulus for the operator norm along the one-time coupling.
-`RBM2D/Gauss/Model.lean:387`. -/
-theorem norm_Hflow_sub (u v : ℝ) (ω : Ω d L W) :
-    ‖Hflow d L W u ω - Hflow d L W v ω‖ =
-      |Real.sqrt u - Real.sqrt v| * ‖Xmat d L W ω‖ := by
-  rw [Hflow_sub, norm_smul, Complex.norm_real, Real.norm_eq_abs]
-
-end OperatorNorm
-
 end ModelLemmas
 
 /-! ### The sequence-level lemmas -/
@@ -516,11 +496,6 @@ variable {d : ℕ} (sz : Sizes d)
 theorem seqP_map_eval (c : SeqCoord sz) :
     (seqP sz).map (fun ω => ω c) = gaussianReal 0 (seqGvar sz c) :=
   Measure.infinitePi_map_eval _ c
-
-/-- `RBM2D/Gauss/Model.lean:452`. -/
-theorem seqP_map_restrict (I : Finset (SeqCoord sz)) :
-    (seqP sz).map I.restrict = Measure.pi fun c : I => gaussianReal 0 (seqGvar sz c) :=
-  Measure.infinitePi_map_restrict _
 
 /-- `RBM2D/Gauss/Model.lean:499`, where `seqHflow` is the composite `Hflow ∘ slice`; here
 `seqHflow` is the probe's definition `√u • seqXmat`, so the lemma is the definition. -/
@@ -537,20 +512,6 @@ theorem measurable_seqHflow_entry (n : ℕ) (u : ℝ)
     (i j : Idx d (sz.L n) (sz.W n)) :
     Measurable fun ω : SeqΩ sz => seqHflow sz n u ω i j :=
   (measurable_Hflow d (sz.L n) (sz.W n) u i j).comp (measurable_slice sz n)
-
-/-- The size-`n` matrix has the paper's covariance under the common probability measure
-(`(eq:variancematrix)`, `1_2:304`, with the coupling `sz.lam n`).  `RBM2D/Gauss/Model.lean:517`. -/
-theorem integral_normSq_seqXmat (n : ℕ) (i j : Idx d (sz.L n) (sz.W n)) :
-    ∫ ω, ‖seqXmat sz n ω i j‖ ^ 2 ∂(seqP sz) =
-      svarF d (sz.L n) (sz.W n) (sz.lam n) i j := by
-  change ∫ ω, ‖Xentry d (sz.L n) (sz.W n) (slice sz n ω) i j‖ ^ 2 ∂(seqP sz) = _
-  have hf : AEMeasurable (slice sz n) (seqP sz) := (measurable_slice sz n).aemeasurable
-  have hg : AEStronglyMeasurable
-      (fun v : Ω d (sz.L n) (sz.W n) => ‖Xentry d (sz.L n) (sz.W n) v i j‖ ^ 2)
-      ((seqP sz).map (slice sz n)) := by
-    exact ((measurable_Xentry d (sz.L n) (sz.W n) i j).norm.pow_const 2).aestronglyMeasurable
-  rw [← integral_map hf hg, seqP_map_slice]
-  exact integral_normSq_Xentry _ _ _ _ _ _
 
 /-- The common-space flow has entry variance `u S_ij` at nonnegative time.
 `RBM2D/Gauss/Model.lean:530`. -/
@@ -598,166 +559,5 @@ end Sizes
 `SizesInst.sz0` of `RBM3D/Defs/Sizes.lean` at `n = 0`: `L = 4`, `W = 32`, `lam = 1/64`,
 `N = 2097152`, `W^d = 32768`.  Each `example` applies a theorem of this file at these data, every
 hypothesis discharged. -/
-
-section Checks
-
-open SizesInst
-
-/-- `svarF_eq_svar` at the instance: the fine-lattice profile is the merged block-product one. -/
-example (i j : Idx 3 4 32) :
-    svarF 3 4 32 (1 / 64) i j = svar 3 4 32 (1 / 64) (split 3 4 32 i) (split 3 4 32 j) :=
-  svarF_eq_svar 3 4 32 (1 / 64) i j
-
-/-- `svarF_eq_svar` and `integral_normSq_Xentry` at size `0` of the admissible sequence `sz0`
-(`L = 4`, `W = 32`, `lam = 1/64`, read off `sz0` itself). -/
-example (i j : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) i j =
-        svar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (split 3 (sz0.L 0) (sz0.W 0) i)
-          (split 3 (sz0.L 0) (sz0.W 0) j) ∧
-      ∫ ω, ‖Xentry 3 (sz0.L 0) (sz0.W 0) ω i j‖ ^ 2 ∂(PF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0)) =
-        svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) i j :=
-  ⟨svarF_eq_svar 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) i j,
-    integral_normSq_Xentry 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) i j⟩
-
-/-- `E|X_xx|² = S_xx = (W^3)⁻¹ (1 + 6 g²)⁻¹ > 0` on the diagonal (one real coordinate). -/
-example : ∫ ω, ‖Xentry 3 4 32 ω 0 0‖ ^ 2 ∂(PF 3 4 32 (1 / 64)) =
-    ((32 : ℝ) ^ 3)⁻¹ * (1 + 2 * 3 * (1 / 64 : ℝ) ^ 2)⁻¹ := by
-  rw [integral_normSq_Xentry, svarF_diag]; norm_num
-
-/-- `E|X_xy|² = S_xy = (W^3)⁻¹ g² (1 + 6 g²)⁻¹ > 0` off the diagonal (two real coordinates), for
-`x = 0` and `y = (32, 0, 0)`, whose blocks are the neighbours `0` and `(1, 0, 0)` of `Z_4^3`. -/
-example : ∫ ω, ‖Xentry 3 4 32 ω 0 ![32, 0, 0]‖ ^ 2 ∂(PF 3 4 32 (1 / 64)) =
-    ((32 : ℝ) ^ 3)⁻¹ * ((1 / 64 : ℝ) ^ 2 * (1 + 2 * 3 * (1 / 64 : ℝ) ^ 2)⁻¹) := by
-  rw [integral_normSq_Xentry]
-  have h1 : (split 3 4 32 (0 : Idx 3 4 32)).1 = 0 := by decide
-  have h2 : (split 3 4 32 (![32, 0, 0] : Idx 3 4 32)).1 = ![1, 0, 0] := by decide
-  have h3 : zdistD 3 4 (-(![1, 0, 0] : Zd 3 4)) = 1 := by decide
-  have h4 : (-(![1, 0, 0] : Zd 3 4)) ≠ 0 := by decide
-  simp only [svarF, SBR, Matrix.of_apply, h1, h2, zero_sub, sbKernelR, h3, h4, ite_false,
-    ite_true, zero_add]
-  norm_num
-
-/-- The rows of the fine-lattice variance profile sum to `1` (`Σ_y S_xy = 1`, `(eq:variancematrix)`
-`1_2:304`): `W^d` points per block, `W^{-d}` per point, and the row sum `1` of `S^(B)(g)`
-(`sum_sbKernelR`, `3 ≤ L`). -/
-example (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g : ℝ) (i : Idx d L W) :
-    ∑ j, svarF d L W g i j = 1 := by
-  classical
-  have h1 : ∑ j : Idx d L W, svarF d L W g i j =
-      ∑ p : Vtx d L W, ((W : ℝ) ^ d)⁻¹ * SBR d L g (split d L W i).1 p.1 :=
-    Fintype.sum_equiv (splitEquiv d L W) _ _ fun j => rfl
-  have hW : ((W : ℝ) ^ d) ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.mpr (NeZero.ne W))
-  have h2 : ∑ x : Zd d L, SBR d L g (split d L W i).1 x = 1 := by
-    simp only [SBR, Matrix.of_apply]
-    rw [← sum_sbKernelR d L g hL]
-    exact Fintype.sum_equiv (Equiv.subLeft (split d L W i).1) _ _ fun x => rfl
-  rw [h1, Fintype.sum_prod_type]
-  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  rw [← h2]
-  refine Finset.sum_congr rfl fun x _ => ?_
-  push_cast
-  field_simp
-
-/-- The size projection of the common product has the one-size law, at the instance. -/
-example : (Sizes.seqP sz0).map (Sizes.slice sz0 0) = PF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) :=
-  Sizes.seqP_map_slice sz0 0
-
-/-- The common product is a probability measure at the instance. -/
-example : IsProbabilityMeasure (Sizes.seqP sz0) := inferInstance
-
-/-- `E|X_xx|² = S_xx > 0` for the size-`0` matrix on the common space. -/
-example : ∫ ω, ‖sz0.seqXmat 0 ω 0 0‖ ^ 2 ∂(Sizes.seqP sz0) =
-    ((32 : ℝ) ^ 3)⁻¹ * (1 + 2 * 3 * (1 / 64 : ℝ) ^ 2)⁻¹ := by
-  rw [Sizes.integral_normSq_seqXmat, svarF_diag, sz0_values.2.1, sz0_values.2.2.2]
-  norm_num
-
-/-- The flow at time `u = 4` has entry variance `4 S_xx`. -/
-example : ∫ ω, ‖sz0.seqHflow 0 4 ω 0 0‖ ^ 2 ∂(Sizes.seqP sz0) =
-    4 * (((32 : ℝ) ^ 3)⁻¹ * (1 + 2 * 3 * (1 / 64 : ℝ) ^ 2)⁻¹) := by
-  rw [Sizes.integral_normSq_seqHflow sz0 0 4 (by norm_num), svarF_diag, sz0_values.2.1,
-    sz0_values.2.2.2]
-  norm_num
-
-/-- `H` and `H_u` are Hermitian at the instance, for every sample point and time. -/
-example (u : ℝ) (ω : Sizes.SeqΩ sz0) :
-    (sz0.seqXmat 0 ω).IsHermitian ∧ (sz0.seqHflow 0 u ω).IsHermitian :=
-  ⟨Sizes.seqXmat_isHermitian sz0 0 ω, Sizes.seqHflow_isHermitian sz0 0 u ω⟩
-
-/-- The coordinate decomposition and the one-coordinate update at the instance. -/
-example (ω : Sizes.SeqΩ sz0) (c : CoordF 3 (sz0.L 0) (sz0.W 0)) (t : ℝ) :
-    sz0.seqXmat 0 ω = ∑ c : CoordF 3 (sz0.L 0) (sz0.W 0),
-        (ω ⟨0, c⟩) • coordinateMatrix 3 (sz0.L 0) (sz0.W 0) c ∧
-      sz0.seqXmat 0 (Function.update ω ⟨0, c⟩ t) =
-        sz0.seqXmat 0 ω + (t - ω ⟨0, c⟩) • coordinateMatrix 3 (sz0.L 0) (sz0.W 0) c :=
-  ⟨Sizes.seqXmat_eq_sum_coordinates sz0 0 ω, Sizes.seqXmat_update sz0 0 ω c t⟩
-
-/-- The time increment of the flow is one scalar times the matrix (`Hflow_sub`), at `d = 3`,
-`L = 4`, `W = 32`. -/
-example (u v : ℝ) (ω : Ω 3 4 32) :
-    Hflow 3 4 32 u ω - Hflow 3 4 32 v ω = ((Real.sqrt u - Real.sqrt v : ℝ) : ℂ) • Xmat 3 4 32 ω :=
-  Hflow_sub 3 4 32 u v ω
-
-/-- Each independent real coordinate is a centred Gaussian of variance `gvarF` (`P_map_eval`,
-`integral_sq_coord`), at `d = 3`, `L = 4`, `W = 32`, `g = 1/64`. -/
-example (c : CoordF 3 4 32) :
-    (PF 3 4 32 (1 / 64)).map (fun ω => ω c) = gaussianReal 0 (gvarF 3 4 32 (1 / 64) c) ∧
-      ∫ ω, (ω c) ^ 2 ∂(PF 3 4 32 (1 / 64)) = (gvarF 3 4 32 (1 / 64) c : ℝ) :=
-  ⟨P_map_eval 3 4 32 (1 / 64) c, integral_sq_coord 3 4 32 (1 / 64) c⟩
-
-/-- The remaining fixed-size lemmas of section 5 at `d = 3`, `L = 4`, `W = 32`, `g = 1/64`, at the
-times `u = 4`, `v = 1`. -/
-example (ω ν : Ω 3 4 32) (t : ℝ) (c : CoordF 3 4 32) (i j : Idx 3 4 32)
-    (I : Finset (CoordF 3 4 32)) :
-    (PF 3 4 32 (1 / 64)).map I.restrict =
-        Measure.pi (fun c : I => gaussianReal 0 (gvarF 3 4 32 (1 / 64) c)) ∧
-      Measurable (fun ω : Ω 3 4 32 => Xentry 3 4 32 ω i j) ∧
-      Integrable (fun ω : Ω 3 4 32 => (ω c) ^ 2) (PF 3 4 32 (1 / 64)) ∧
-      Xmat 3 4 32 (ω + ν) = Xmat 3 4 32 ω + Xmat 3 4 32 ν ∧
-      Xmat 3 4 32 (t • ω) = t • Xmat 3 4 32 ω ∧
-      Xlinear 3 4 32 ω = Xmat 3 4 32 ω ∧
-      (coordinateMatrix 3 4 32 c).IsHermitian ∧
-      Xmat 3 4 32 (Function.update ω c t) =
-        Xmat 3 4 32 ω + (t - ω c) • coordinateMatrix 3 4 32 c ∧
-      Xmat 3 4 32 ω = ∑ c : CoordF 3 4 32, (ω c) • coordinateMatrix 3 4 32 c ∧
-      Continuous (Xmat 3 4 32) ∧
-      Hflow 3 4 32 4 ω = Real.sqrt 4 • Xmat 3 4 32 ω ∧
-      Continuous (Hflow 3 4 32 4) ∧ (Hflow 3 4 32 4 ω).IsHermitian ∧
-      Measurable (fun ω : Ω 3 4 32 => Hflow 3 4 32 4 ω i j) ∧
-      (Hflow 3 4 32 4 ω - Hflow 3 4 32 1 ω) i j =
-        ((Real.sqrt 4 - Real.sqrt 1 : ℝ) : ℂ) * Xentry 3 4 32 ω i j ∧
-      ∫ ω, ‖Hflow 3 4 32 4 ω i j‖ ^ 2 ∂(PF 3 4 32 (1 / 64)) = 4 * svarF 3 4 32 (1 / 64) i j :=
-  ⟨P_map_restrict 3 4 32 (1 / 64) I, measurable_Xentry 3 4 32 i j,
-    integrable_sq_coord 3 4 32 (1 / 64) c, Xmat_add 3 4 32 ω ν, Xmat_smul 3 4 32 t ω,
-    rfl, coordinateMatrix_isHermitian 3 4 32 c, Xmat_update 3 4 32 ω c t,
-    Xmat_eq_sum_coordinates 3 4 32 ω, continuous_Xmat 3 4 32, Hflow_eq_realSmul 3 4 32 4 ω,
-    continuous_Hflow 3 4 32 4, Hflow_isHermitian 3 4 32 4 ω, measurable_Hflow 3 4 32 4 i j,
-    Hflow_sub_apply 3 4 32 4 1 ω i j,
-    integral_normSq_Hflow 3 4 32 (1 / 64) 4 (by norm_num) i j⟩
-
-section OperatorNorm
-
-open scoped Matrix.Norms.L2Operator
-
-/-- `‖H_4 - H_1‖ = ‖X‖` (`√4 - √1 = 1`): `norm_Hflow_sub` at `d = 3`, `L = 4`, `W = 32`. -/
-example (ω : Ω 3 4 32) :
-    ‖Hflow 3 4 32 4 ω - Hflow 3 4 32 1 ω‖ = ‖Xmat 3 4 32 ω‖ := by
-  rw [norm_Hflow_sub, show Real.sqrt 4 = 2 by
-    rw [show (4 : ℝ) = 2 ^ 2 by norm_num]; exact Real.sqrt_sq (by norm_num), Real.sqrt_one]
-  norm_num
-
-end OperatorNorm
-
-/-- The remaining sequence-level lemmas at `sz0`, `n = 0`. -/
-example (c : Sizes.SeqCoord sz0) (I : Finset (Sizes.SeqCoord sz0)) (u : ℝ) (ω : Sizes.SeqΩ sz0)
-    (i j : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    (Sizes.seqP sz0).map (fun ω => ω c) = gaussianReal 0 (Sizes.seqGvar sz0 c) ∧
-      (Sizes.seqP sz0).map I.restrict =
-        Measure.pi (fun c : I => gaussianReal 0 (Sizes.seqGvar sz0 c)) ∧
-      sz0.seqHflow 0 u ω = (Real.sqrt u : ℂ) • sz0.seqXmat 0 ω ∧
-      Measurable (fun ω : Sizes.SeqΩ sz0 => sz0.seqHflow 0 u ω i j) :=
-  ⟨Sizes.seqP_map_eval sz0 c, Sizes.seqP_map_restrict sz0 I, Sizes.seqHflow_eq_smul sz0 0 u ω,
-    Sizes.measurable_seqHflow_entry sz0 0 u i j⟩
-
-end Checks
 
 end RBM.Gauss

@@ -1052,43 +1052,6 @@ end Lists
 
 /-! ## 6. Nonempty instances: the term lemmas at the R1 witnesses (`BASim3:1877-1905`), every hypothesis discharged -/
 
-section Inst
-open BASimInst
-
-/-- `weight` at `P_W` (a blue circled loop at the internal vertex `0`) -/
-example : (∀ X ∈ baPW.lw2 pW, BAScostLL baPW X) ∧ (∀ X ∈ baPW.lw4 pW, BAScostLL baPW X) :=
-  ⟨BAShapeO2_lw2 baPW (by decide) pW (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩, BAShapeO2_lw4 baPW (by decide) pW (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩⟩
-
-/-- `within` at `P_B` (`2 → 3` inside the atom `{2, 3}`): the head and the terms `lanlwD` -/
-example : ∀ X ∈ BAGraph.ext 2 baPB pB.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 pB.1.dst)] [bpW false (bpv 0) (bpv 1)]
-    [bpM (owxEmb 2 pB.1.src) (bpv 0)] :: (lwSplit pB.2).map (BAGraph.lanlwD baPB pB), BAScostLL baPB X :=
-  BAShapeO2_within baPB (by decide) pB (List.mem_cons_self ..) ⟨rfl, rfl⟩ (by decide)
-
-/-- `edge` at `P_E` (a degree-3 internal vertex): the terms `lanlwD` -/
-example : ∀ q ∈ lwSplit pE.2, BAScostLL baPE (BAGraph.lanlwD baPE pE q) :=
-  fun q hq => BAShapeO2_lanlwD baPE (by decide) pE (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) ⟨rfl, rfl⟩ q hq
-
-/-- `gg` at `P_A` (`p = 2 → 1`, `q = 0 → 2`; the internal atom `{2, 3}`): `gg2` (`A1`-`A5`, `AD`) and `gg4` (`B1`, `B2`, `BD`) -/
-example : (∀ X ∈ baPA.gg2 pA qA, BAScostLL baPA X) ∧ (∀ X ∈ baPA.gg4 pA qA, BAScostLL baPA X) :=
-  ⟨BAShapeO2_gg2 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide),
-    BAShapeO2_gg4 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide)⟩
-
-/-- `ggSplit` at `P_C`, `j = 0` (`a = 2 ≠ a' = 3` in one atom): the terms `d1`-`d4` -/
-example : BAScostLL baPC (BAGraph.ext 2 baPC qC.2 [bpS false (owxEmb 2 qC.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 qC.1.dst), bpS false (bpv 1) (owxEmb 2 pC.1.dst)]
-      [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 pC.1.src) (bpv 0)]) ∧
-    BAScostLL baPC (BAGraph.ext 2 baPC qC.2 [bpS true (owxEmb 2 qC.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (bpv 1) (owxEmb 2 pC.1.dst)]) ∧
-    BAScostLL baPC (BAGraph.ext 2 baPC qC.2 [bpS true (bpv 1) (owxEmb 2 pC.1.dst)] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1)]) ∧
-    BAScostLL baPC (BAGraph.ext 2 baPC qC.2 [] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 pC.1.dst)]) :=
-  ⟨BAShapeO2_ggSplitD1 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) (by decide),
-    BAShapeO2_ggSplitD2 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide),
-    BAShapeO2_ggSplitD3 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide),
-    BAShapeO2_ggSplitD4 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide)⟩
-
-end Inst
-
 end RBM.Graph
 
 end

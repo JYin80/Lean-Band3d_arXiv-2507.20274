@@ -724,64 +724,6 @@ theorem stIniTermIgL_of (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
 
 /-! ## 5. Band re-derivation and compiled nonempty instances (target 10; `d = 3`, `szB`, `zB`) -/
 
-/-- **Target 9 at the band** (re-derivation of `stIniTermI_holds`, `IniTermI:3715`): the generic pin at the band tuple
-`(seqP, STFlow, bandFM ∘ STflowE, lemT)`, `gK = sz.lam`, through `STIniTermI_iff_gL`; the Ward class is `zeroModeGen_wardCls_band`
-(`|E n| < 2` from `Im z_n > 0`). -/
-theorem iniTermIGen_band_holds (d : ℕ) : STIniTermI d :=
-  (STIniTermI_iff_gL d).2 (stIniTermIgL_of d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band d) (iniTermGen_kerFacts_band d)
-    (fun sz κ ε 𝔠 𝔡 z _ hflow => zeroModeGen_wardCls_band sz (STflowE z) fun n => abs_lemE_lt_two
-      (lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1))
-    (iniTermGen_cltFlow_band d))
-
-section Inst
-
-open RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst
-
-/-- **Target 9 at the band, instantiated**: the generic pin `stIniTermIgL_of`, applied to the band tuple, gives the instance of
-`Step5Pins` at `(szB, zB, 7/8, 15/16)` for every `Cd > 0` (as `inst_iniTermI_proved`, `IniTermI:3819`): the five hypotheses of the
-pin are discharged by the band results (`step5CasesGen_flowFacts_band`, `iniTermGen_kerFacts_band`, `zeroModeGen_wardCls_band`,
-`iniTermGen_cltFlow_band`, `isProbabilityMeasure_seqP`); the stochastic premises of Steps 1-4 are the premises of the instance. -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STIniTermConcl sz ∅ STSigAll E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_iniTermI ((STIniTermI_iff_gL 3).2 (stIniTermIgL_of 3 (fun sz => Sizes.seqP sz)
-    (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))
-    (fun sz _ => sz.lam) (fun sz => inferInstance) (step5CasesGen_flowFacts_band 3) (iniTermGen_kerFacts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ hflow => zeroModeGen_wardCls_band sz (STflowE z) fun n => abs_lemE_lt_two
-      (lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1))
-    (iniTermGen_cltFlow_band 3))) Cd hCd
-
-/-- **Target 9, band re-derivation, instantiated**: `iniTermIGen_band_holds` gives the instance of `Step5Pins` at
-`(szB, zB, 7/8, 15/16)` with the pin proved. -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STIniTermConcl sz ∅ STSigAll E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_iniTermI (iniTermIGen_band_holds 3) Cd hCd
-
-/-- **Target 9 applied at `(szB, zB, 7/8, 15/16)`**: the pin `stIniTermIgL_of` at the band tuple, as the previous example. -/
-example (Cd : ℝ) (hCd : 0 < Cd)
-    (hKb : STKboundgL (bandFM szB (STflowE zB)) (Sizes.seqP szB)) (hKw : STKwardgL (bandFM szB (STflowE zB)) (Sizes.seqP szB))
-    (hLK : STLKgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hDec : STDecaygL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hDecS : STDecayStronggL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8))
-    (hS1 : STStep1LoopgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hS2 : STStep2ConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) Cd)
-    (hLmax : STLmaxUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16))
-    (hLKU : STLKUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      STIniTermConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) ∅ STSigAll (fun _ => 7 / 8) (fun _ => 15 / 16) := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := stIniTermIgL_of 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band 3) (iniTermGen_kerFacts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ hflow => zeroModeGen_wardCls_band sz (STflowE z) fun n => abs_lemE_lt_two
-      (lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1))
-    (iniTermGen_cltFlow_band 3) le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, H (1 / 6) szB zB flow_zB (fun _ => 7 / 8) (fun _ => 15 / 16) (fun _ => by norm_num) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5I hKb hKw hLK hDec hDecS
-    (conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h0) hS1 hS2 hLmax hLKU⟩
-
-end Inst
-
 end RBM.BA
 
 end

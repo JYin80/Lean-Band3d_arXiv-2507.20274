@@ -71,26 +71,11 @@ def STmaxLKM (n : ℕ) (E v : ℝ) (k : ℕ)
     (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
       ‖loopFine d (sz.L n) (sz.W n) H (zt E v) p.1 p.2 - STKloop sz n E v p.1 p.2‖)
 
-/-- **`Ξ̂^{(𝓛)}_{v,k}(H)`** of `(def:XiL)` (`3_5:1010`) at a fine matrix `H`:
-`1 + max_{σ,a} |𝓛^{(k)}_{v,σ,a}(H)| / (W^{-d}B_{v,0})^{k-1}`. -/
-def STXiLM (n : ℕ) (E v : ℝ) (k : ℕ)
-    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
-  1 + STmaxLM sz n E v k H / (sz.Bctl n v) ^ (k - 1)
-
 /-- **`Ξ̂^{(𝓛-𝒦)}_{v,k}(H)`** of `(def:XIL-K)` (`3_5:1012`) at a fine matrix `H`:
 `1 + max_{σ,a} |(𝓛-𝒦)^{(k)}_{v,σ,a}(H)| / (W^{-d}B_{v,0})^k`. -/
 def STXiLKM (n : ℕ) (E v : ℝ) (k : ℕ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
   1 + STmaxLKM sz n E v k H / (sz.Bctl n v) ^ k
-
-theorem gridGood_STmaxLM_seqHflow (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
-    STmaxLM sz n E v k (sz.seqHflow n v ω) = STmaxL sz n E v k ω := rfl
-
-theorem gridGood_STmaxLKM_seqHflow (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
-    STmaxLKM sz n E v k (sz.seqHflow n v ω) = STmaxLK sz n E v k ω := rfl
-
-theorem gridGood_STXiLM_seqHflow (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
-    STXiLM sz n E v k (sz.seqHflow n v ω) = STXiL sz n E v k ω := rfl
 
 theorem gridGood_STXiLKM_seqHflow (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
     STXiLKM sz n E v k (sz.seqHflow n v ω) = STXiLK sz n E v k ω := rfl
@@ -171,12 +156,6 @@ def gridExitTauN (s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     PathΩ sz → ℕ :=
   firstHit (fun j (ω : PathΩ sz) =>
     (G j)ᶜ.indicator (fun _ => (1 : ℝ)) (pathH sz s v K n j ω)) (1 / 2) (K n)
-
-/-- **Pin (`goodExitTauN`)**: the exit time of the grid walk from `GoodSetN`. -/
-def goodExitTauN (E : ℕ → ℝ) (s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' : ℝ)
-    (n : ℕ) : PathΩ sz → ℕ :=
-  gridExitTauN sz s v K n (fun j =>
-    sz.GoodSetN n (E n) (gridTime s v K n j) k (Γ n) (Λ n) (Φ n) τ' D')
 
 variable {sz} {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ}
   {G : ℕ → Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)}
@@ -268,20 +247,6 @@ private theorem gridGood_meas_loopFine (E u : ℝ) {j : ℕ} (σ : Fin j → Boo
     Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
       loopFine d (sz.L n) (sz.W n) H (zt E u) σ a :=
   walk_measurable_loopFine d (sz.L n) (sz.W n) (zt E u) σ a
-
-private theorem gridGood_meas_STmaxLM (E u : ℝ) (k : ℕ) :
-    Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
-      STmaxLM sz n E u k H := by
-  have h : (fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
-      STmaxLM sz n E u k H) = Finset.univ.sup' Finset.univ_nonempty
-      (fun (p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
-        (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) =>
-          ‖loopFine d (sz.L n) (sz.W n) H (zt E u) p.1 p.2‖) := by
-    funext H
-    rw [Finset.sup'_apply (C := fun _ => ℝ)]
-    rfl
-  rw [h]
-  exact Finset.measurable_sup' _ fun p _ => (gridGood_meas_loopFine sz n E u p.1 p.2).norm
 
 private theorem gridGood_meas_STmaxLKM (E u : ℝ) (k : ℕ) :
     Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
@@ -397,35 +362,6 @@ theorem measurableGoodSetN (d : ℕ) : MeasurableGoodSetN d := by
         measurableSet_le (gridGood_meas_STeeM sz n E u σ a a').norm measurable_const
 
 end RBM.Gauss.Sizes
-
-namespace RBM.Path
-
-open RBM RBM.Gauss RBM.Gauss.Sizes
-
-section ExitMeasurable
-
-variable {d : ℕ} (sz : Sizes d)
-
-/-- **Pin (measurability of `{j < goodExitTauN}`, the form `StoppedAzumaN` takes)**: for every
-size index `n`, loop length `k`, levels and exponents, `{j < goodExitTauN}` is `filt sz j`-measurable. -/
-def GoodExitMeasN (E : ℕ → ℝ) (s v : ℕ → ℝ) (K : ℕ → ℕ) : Prop :=
-  ∀ (n k : ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' : ℝ) (j : ℕ),
-    MeasurableSet[filt sz j] {ω | j < goodExitTauN sz E s v K k Γ Λ Φ τ' D' n ω}
-
-/-- The matrix-level measurability gives the exit-time measurability pin. -/
-private theorem goodExitMeasN_of_measurable {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ}
-    (hM : MeasurableGoodSetN d) : GoodExitMeasN sz E s v K :=
-  fun n k Γ Λ Φ τ' D' j =>
-    gridExitTauN_measurableSet (fun j => hM sz n _ _ _ _ _ _ _ _) j
-
-/-- **Target `goodExitMeasN`**: `{j < goodExitTauN}` is `filt sz j`-measurable (from
-`measurableGoodSetN` and `goodExitMeasN_of_measurable`), no hypothesis. -/
-theorem goodExitMeasN (E s v : ℕ → ℝ) (K : ℕ → ℕ) : GoodExitMeasN sz E s v K :=
-  goodExitMeasN_of_measurable sz (measurableGoodSetN d)
-
-end ExitMeasurable
-
-end RBM.Path
 
 /-! ## 5. `GridGoodN`: the grid walk stays in the good set with high probability
 
@@ -965,139 +901,6 @@ holds with `Λ_n = max 1 (W^{-d}B_{s_n,0})^{-1/(2q)}` (`B_{u,0}` is non-decreasi
 The four lemmas are used by the instance of `gridGoodN_holds` (section 7); the other gates' pins `STLmaxU`,
 `STLKU` stay hypotheses there. -/
 
-namespace RBM.Gauss.Sizes
-
-open RBM RBM.Loop RBM.Path RBM.Gauss
-
-section LevelsOne
-
-variable {d : ℕ}
-
-/-- `Prec` from its `w.h.p.` form for every exponent (`Prec.whp` converse). -/
-private theorem gridGood_prec_of_whp (sz : Sizes d) {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
-    (h : ∀ τ : ℝ, 0 < τ → Whp sz (fun n => {ω | ∀ u : U n,
-      ξ n u ω ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω})) : Prec sz ξ ζ := by
-  intro τ hτ D hD
-  filter_upwards [h τ hτ D hD] with n hn
-  refine le_trans (le_of_eq ?_) hn
-  congr 1
-  ext ω
-  simp [badSetAt]
-
-private theorem gridGood_one_add_le {a : ℝ} (ha : 2 ≤ a) : 1 + a ≤ a * a := by nlinarith
-
-/-- `Ξ̂^{(𝓛)}_m ≺ 1` on the window from `STLmaxU`. -/
-private theorem gridGood_prec_XiL_one (sz : Sizes d) (hsz : sz.SizeTendsto) {E s t : ℕ → ℝ}
-    (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1) (hL : STLmaxU sz E s t) {m : ℕ} (hm : 1 ≤ m) :
-    Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiL sz n (E n) (u : ℝ) m ω)
-      (fun _ _ _ => (1 : ℝ)) := by
-  refine gridGood_prec_of_whp sz fun τ hτ => ?_
-  have hw := (hL m hm).whp sz (half_pos hτ)
-  refine hw.mono ?_
-  filter_upwards [((tendsto_rpow_atTop (half_pos hτ)).comp hsz).eventually_ge_atTop 2] with n hN2 ω hω u
-  have hBpos : 0 < sz.Bctl n (u : ℝ) := st_Bctl_pos sz ((u.2.2).trans_lt (ht1 n))
-  have hpb : 0 < (sz.Bctl n (u : ℝ)) ^ (m - 1) := pow_pos hBpos _
-  have hmax : STmaxL sz n (E n) (u : ℝ) m ω ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) *
-      (sz.Bctl n (u : ℝ)) ^ (m - 1) :=
-    Finset.sup'_le _ _ fun p _ => hω (u, p)
-  have hdiv : STmaxL sz n (E n) (u : ℝ) m ω / (sz.Bctl n (u : ℝ)) ^ (m - 1) ≤
-      ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
-    rw [div_le_iff₀ hpb]; exact hmax
-  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hsq : ((sz.size n : ℕ) : ℝ) ^ τ =
-      ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
-    rw [← Real.rpow_add' hN0 (by linarith)]; ring_nf
-  calc STXiL sz n (E n) (u : ℝ) m ω = 1 + STmaxL sz n (E n) (u : ℝ) m ω /
-        (sz.Bctl n (u : ℝ)) ^ (m - 1) := rfl
-    _ ≤ 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by linarith
-    _ ≤ _ := gridGood_one_add_le hN2
-    _ = ((sz.size n : ℕ) : ℝ) ^ τ * 1 := by rw [hsq, mul_one]
-
-/-- `Ξ̂^{(𝓛-𝒦)}_m ≺ 1` on the window from `STLKU`. -/
-private theorem gridGood_prec_XiLK_one (sz : Sizes d) (hsz : sz.SizeTendsto) {E s t : ℕ → ℝ}
-    (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1) (hL : STLKU sz E s t) {m : ℕ} (hm : 1 ≤ m) :
-    Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) m ω)
-      (fun _ _ _ => (1 : ℝ)) := by
-  refine gridGood_prec_of_whp sz fun τ hτ => ?_
-  have hw := (hL m hm).whp sz (half_pos hτ)
-  refine hw.mono ?_
-  filter_upwards [((tendsto_rpow_atTop (half_pos hτ)).comp hsz).eventually_ge_atTop 2] with n hN2 ω hω u
-  have hBpos : 0 < sz.Bctl n (u : ℝ) := st_Bctl_pos sz ((u.2.2).trans_lt (ht1 n))
-  have hpb : 0 < (sz.Bctl n (u : ℝ)) ^ m := pow_pos hBpos _
-  have hmax : STmaxLK sz n (E n) (u : ℝ) m ω ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) *
-      (sz.Bctl n (u : ℝ)) ^ m :=
-    Finset.sup'_le _ _ fun p _ => hω (u, p)
-  have hdiv : STmaxLK sz n (E n) (u : ℝ) m ω / (sz.Bctl n (u : ℝ)) ^ m ≤
-      ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
-    rw [div_le_iff₀ hpb]; exact hmax
-  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hsq : ((sz.size n : ℕ) : ℝ) ^ τ =
-      ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
-    rw [← Real.rpow_add' hN0 (by linarith)]; ring_nf
-  calc STXiLK sz n (E n) (u : ℝ) m ω = 1 + STmaxLK sz n (E n) (u : ℝ) m ω /
-        (sz.Bctl n (u : ℝ)) ^ m := rfl
-    _ ≤ 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by linarith
-    _ ≤ _ := gridGood_one_add_le hN2
-    _ = ((sz.size n : ℕ) : ℝ) ^ τ * 1 := by rw [hsq, mul_one]
-
-/-- `hQ` at `Φ ≡ 1`: `Ξ̂_{a} (Ξ̂_{b}/B)^{r} ≺ max 1 B_s^{-r}` for `0 ≤ r ≤ 1` from `Ξ̂_a ≺ 1`, `Ξ̂_b ≺ 1`
-(`B_{u,0}` is non-decreasing in `u`). -/
-private theorem gridGood_prec_Q_one (sz : Sizes d) (hsz : sz.SizeTendsto) {E s t : ℕ → ℝ}
-    (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1) {a b : ℕ} {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r ≤ 1)
-    (ha : Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiL sz n (E n) (u : ℝ) a ω)
-      (fun _ _ _ => (1 : ℝ)))
-    (hb : Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiL sz n (E n) (u : ℝ) b ω)
-      (fun _ _ _ => (1 : ℝ))) :
-    Prec sz (U := fun n => TimeIcc s t n)
-      (fun n u ω => STXiL sz n (E n) (u : ℝ) a ω *
-        (STXiL sz n (E n) (u : ℝ) b ω / sz.Bctl n (u : ℝ)) ^ r)
-      (fun n _ _ => max 1 ((sz.Bctl n (s n)) ^ (-r))) := by
-  refine gridGood_prec_of_whp sz fun τ hτ => ?_
-  have hw := gridGood_whp_and (tendsto_size sz hsz) (ha.whp sz (half_pos hτ)) (hb.whp sz (half_pos hτ))
-  refine hw.mono ?_
-  filter_upwards with n ω ⟨hωa, hωb⟩ u
-  have hu1 : (u : ℝ) < 1 := (u.2.2).trans_lt (ht1 n)
-  have hBu : 0 < sz.Bctl n (u : ℝ) := st_Bctl_pos sz hu1
-  have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz ((hst n).trans_lt (ht1 n))
-  have hBsu : sz.Bctl n (s n) ≤ sz.Bctl n (u : ℝ) := STBctl_mono sz n u.2.1 hu1
-  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
-  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
-  have hXa := hωa u
-  have hXb := hωb u
-  rw [mul_one] at hXa hXb
-  have hXb0 : 0 ≤ STXiL sz n (E n) (u : ℝ) b ω :=
-    zero_le_one.trans (gridGood_one_le_STXiL sz b ω hBu)
-  have hXa0 : 0 ≤ STXiL sz n (E n) (u : ℝ) a ω :=
-    zero_le_one.trans (gridGood_one_le_STXiL sz a ω hBu)
-  set Nh : ℝ := ((sz.size n : ℕ) : ℝ) ^ (τ / 2) with hNh
-  have hNh1 : 1 ≤ Nh := Real.one_le_rpow hN1 (half_pos hτ).le
-  have h1 : (STXiL sz n (E n) (u : ℝ) b ω / sz.Bctl n (u : ℝ)) ^ r ≤ (Nh / sz.Bctl n (u : ℝ)) ^ r :=
-    Real.rpow_le_rpow (div_nonneg hXb0 hBu.le) (div_le_div_of_nonneg_right hXb hBu.le) hr0
-  have h2 : (Nh / sz.Bctl n (u : ℝ)) ^ r = Nh ^ r * (sz.Bctl n (u : ℝ)) ^ (-r) := by
-    rw [Real.div_rpow (by linarith) hBu.le, Real.rpow_neg hBu.le, div_eq_mul_inv]
-  have h3 : (sz.Bctl n (u : ℝ)) ^ (-r) ≤ (sz.Bctl n (s n)) ^ (-r) :=
-    Real.rpow_le_rpow_of_nonpos hBs hBsu (by linarith)
-  have h4 : Nh ^ r ≤ Nh := by
-    calc Nh ^ r ≤ Nh ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hNh1 hr1
-      _ = Nh := Real.rpow_one _
-  have hΛ : (sz.Bctl n (s n)) ^ (-r) ≤ max 1 ((sz.Bctl n (s n)) ^ (-r)) := le_max_right _ _
-  have hsq : ((sz.size n : ℕ) : ℝ) ^ τ = Nh * Nh := by
-    rw [hNh, ← Real.rpow_add hN0]; ring_nf
-  have hΛ0 : 0 ≤ max 1 ((sz.Bctl n (s n)) ^ (-r)) := zero_le_one.trans (le_max_left _ _)
-  have hB0 : 0 ≤ (sz.Bctl n (u : ℝ)) ^ (-r) := Real.rpow_nonneg hBu.le _
-  calc STXiL sz n (E n) (u : ℝ) a ω * (STXiL sz n (E n) (u : ℝ) b ω / sz.Bctl n (u : ℝ)) ^ r
-      ≤ Nh * (Nh ^ r * (sz.Bctl n (u : ℝ)) ^ (-r)) := by
-        rw [← h2]
-        exact mul_le_mul hXa h1 (Real.rpow_nonneg (div_nonneg hXb0 hBu.le) _) (by linarith)
-    _ ≤ Nh * (Nh * max 1 ((sz.Bctl n (s n)) ^ (-r))) := by
-        refine mul_le_mul_of_nonneg_left ?_ (by linarith)
-        exact mul_le_mul h4 (h3.trans hΛ) hB0 (by linarith)
-    _ = ((sz.size n : ℕ) : ℝ) ^ τ * max 1 ((sz.Bctl n (s n)) ^ (-r)) := by rw [hsq]; ring
-
-end LevelsOne
-
-end RBM.Gauss.Sizes
-
 /-! ## 7. Compiled nonempty instances (`d = 3`)
 
 Data: the merged size sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; at `n = 0`:
@@ -1114,136 +917,4 @@ Data: the merged size sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(
   `K ≠ 0`, `K + 1 ≤ N^C` are proved at the data.  Then the good event is eventually nonempty
   (`HighProbAt.nonempty`): for large `n` there is a sample of the grid walk that is in the good set at every grid time. -/
 
-namespace RBM.Gauss.GridGoodNInst
-
-open Filter RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.Step34Inst
-
-/-- The grid end `v ≡ 1/32`. -/
-def vg : ℕ → ℝ := fun _ => 1 / 32
-
-/-- The grid size `K ≡ 4`. -/
-def Kg : ℕ → ℕ := fun _ => 4
-
-/-- The grid is nondegenerate: `Δ = 1/128 > 0`, `u_0 = 0`, `u_1 = 1/128`, `u_4 = 1/32 ≤ 1/16`. -/
-theorem grid_data : gridStep sInst vg Kg 0 = 1 / 128 ∧ gridTime sInst vg Kg 0 0 = 0 ∧
-    gridTime sInst vg Kg 0 1 = 1 / 128 ∧ gridTime sInst vg Kg 0 4 = 1 / 32 := by
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> norm_num [gridStep, gridTime, sInst, vg, Kg]
-
-/-- The nondegenerate size data: `d = 3`, `L = 4`, `W = 32`, `N = 2097152`, `K + 1 = 5`. -/
-example : sz0.L 0 = 4 ∧ sz0.W 0 = 32 ∧ sz0.size 0 = 2097152 ∧ Kg 0 + 1 = 5 :=
-  ⟨sz0_values.1, sz0_values.2.1, sz0_values.2.2.1, rfl⟩
-
-/-- **`measurableGoodSetN` at `sz0`**: `d = 3`, `n = 0`, `E = 1/2`, `u = 1/32`, `k = 2`, `Γ = 4`, `Λ = 3`, `Φ = 1`,
-`τ' = 1/2`, `D' = 1`. -/
-example : MeasurableSet (sz0.GoodSetN 0 (1 / 2) (1 / 32) 2 4 3 1 (1 / 2) 1) :=
-  measurableGoodSetN 3 sz0 0 (1 / 2) (1 / 32) 2 4 3 1 (1 / 2) 1
-
-/-- **`goodExitMeasN` at `sz0`**: for every `j`, `{j < goodExitTauN}` is `filt sz0 j`-measurable (grid
-`(s, v, K) = (0, 1/32, 4)`, `k = 2`, levels `(4, 3, 1)`, `τ' = 1/2`, `D' = 1`, `n = 0`). -/
-example (j : ℕ) : MeasurableSet[filt sz0 j] {ω | j < goodExitTauN sz0 (fun _ => 1 / 2) sInst vg Kg 2
-    (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω} :=
-  goodExitMeasN sz0 (fun _ => 1 / 2) sInst vg Kg 0 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 j
-
-example : GoodExitMeasN sz0 (fun _ => 1 / 2) sInst vg Kg := goodExitMeasN sz0 _ _ _ _
-
-/-- The exit time lemmas at the instance: the exit time is `≤ K 0 = 4`, and it is `4` when the grid state is in
-the good set at every `j ≤ 4`. -/
-example (ω : PathΩ sz0) : goodExitTauN sz0 (fun _ => 1 / 2) sInst vg Kg 2 (fun _ => 4) (fun _ => 3)
-    (fun _ => 1) (1 / 2) 1 0 ω ≤ 4 :=
-  gridExitTauN_le ω
-
-example (ω : PathΩ sz0)
-    (h : ∀ j ≤ Kg 0, pathH sz0 sInst vg Kg 0 j ω ∈ sz0.GoodSetN 0 (1 / 2) (gridTime sInst vg Kg 0 j) 2 4 3 1
-      (1 / 2) 1) :
-    goodExitTauN sz0 (fun _ => 1 / 2) sInst vg Kg 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω = 4 :=
-  gridExitTauN_eq_of_forall_mem h
-
-example (ω : PathΩ sz0) (j : ℕ)
-    (h : j < goodExitTauN sz0 (fun _ => 1 / 2) sInst vg Kg 2 (fun _ => 4) (fun _ => 3) (fun _ => 1)
-      (1 / 2) 1 0 ω) :
-    pathH sz0 sInst vg Kg 0 j ω ∈ sz0.GoodSetN 0 (1 / 2) (gridTime sInst vg Kg 0 j) 2 4 3 1 (1 / 2) 1 :=
-  mem_of_lt_gridExitTauN h
-
-theorem tInst_lt_one : ∀ n, tInst n < 1 := fun n => by simp only [tInst]; norm_num
-
-/-- **`gridGoodN_holds` at `sz0`** (`k = 2`, `q = 5`, `K ≡ 4`, `v ≡ 1/32`, `ε = 1/10`, `τ' = 1/2`, `D' = 1`,
-`Φ ≡ 1`, `Λ_n = max 1 (W^{-d}B_{0,0})^{-1/10}`): with high probability the grid walk stays in `GoodSetN`
-at every `j ≤ 4`.  The hypotheses `STKbound`, `STKward`, `STLK`, `STStep2Concl` of `STIngR` and the Step 3-4
-conclusions `STLmaxU`, `STLKU` (other gates' pins) are hypotheses; everything else is discharged. -/
-theorem gridGood_instance (k : ℕ) (hk : 2 ≤ k) (hKb : STKbound sz0 (STflowE z0)) (hKw : STKward sz0 (STflowE z0))
-    (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
-    (hL : STLmaxU sz0 (STflowE z0) sInst tInst) (hLKU : STLKU sz0 (STflowE z0) sInst tInst) :
-    HighProbAt (pathP sz0) sz0.size (fun n => {ω | ∀ j ≤ Kg n,
-      pathH sz0 sInst vg Kg n j ω ∈ sz0.GoodSetN n (STflowE z0 n) (gridTime sInst vg Kg n j) k
-        (((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ))
-        (max 1 ((sz0.Bctl n (sInst n)) ^ (-(1 / (2 * ((5 : ℕ) : ℝ))))))
-        1 (1 / 2) 1}) := by
-  obtain ⟨𝔠d, -, -, hG⟩ := inst_ing STAny (fun sz E s t => GridGoodNConcl sz E s t) (gridGoodN_holds 3)
-    sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht trivial sz0_con 1 one_pos
-  have hGG := hG hKb hKw hLK hStep2
-  have hst : ∀ n, sInst n ≤ tInst n := fun n => (sz0_hst n).le
-  have hXone : ∀ m : ℕ, 1 ≤ m →
-      Prec sz0 (U := fun n => TimeIcc sInst tInst n)
-        (fun n u ω => STXiL sz0 n (STflowE z0 n) (u : ℝ) m ω) (fun _ _ _ => (1 : ℝ)) :=
-    fun m hm => gridGood_prec_XiL_one sz0 sz0_tendsto hst tInst_lt_one hL hm
-  refine hGG vg (fun n => by simp only [sInst, vg]; norm_num) (fun n => by simp only [tInst, vg]; norm_num)
-    Kg (fun n => by simp [Kg]) k hk (fun n => max 1 ((sz0.Bctl n (sInst n)) ^ (-(1 / (2 * ((5 : ℕ) : ℝ))))))
-    (fun _ => 1) (fun n => le_max_left _ _) (fun _ => le_rfl)
-    (fun m hm1 _ => hXone m hm1)
-    (fun m hm1 _ => gridGood_prec_XiLK_one sz0 sz0_tendsto hst tInst_lt_one hLKU hm1) 5 (by norm_num)
-    (gridGood_prec_Q_one sz0 sz0_tendsto hst tInst_lt_one (by positivity)
-      (by norm_num) (hXone (2 * k - 1) (by omega)) (hXone (4 * 5) (by norm_num)))
-    1 ?_ (1 / 10) (by norm_num) (1 / 2) (by norm_num) 1 one_pos
-  filter_upwards [sz0_tendsto.eventually_ge_atTop (5 : ℝ)] with n hn
-  rw [Real.rpow_one]
-  simpa [Kg] using hn
-
-/-- The good event of the instance is eventually nonempty: for large `n` some sample of the grid walk is in
-`GoodSetN` at every grid time `j ≤ 4` (so the good set is nonempty at each grid time). -/
-theorem gridGood_instance_nonempty (k : ℕ) (hk : 2 ≤ k) (hKb : STKbound sz0 (STflowE z0))
-    (hKw : STKward sz0 (STflowE z0))
-    (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
-    (hL : STLmaxU sz0 (STflowE z0) sInst tInst) (hLKU : STLKU sz0 (STflowE z0) sInst tInst) :
-    ∀ᶠ n in atTop, ∃ ω : PathΩ sz0, ∀ j ≤ Kg n,
-      pathH sz0 sInst vg Kg n j ω ∈ sz0.GoodSetN n (STflowE z0 n) (gridTime sInst vg Kg n j) k
-        (((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ))
-        (max 1 ((sz0.Bctl n (sInst n)) ^ (-(1 / (2 * ((5 : ℕ) : ℝ))))))
-        1 (1 / 2) 1 :=
-  (gridGood_instance k hk hKb hKw hLK hStep2 hL hLKU).nonempty (tendsto_size sz0 sz0_tendsto)
-    (measure_univ) |>.mono fun n hn => hn
-
-/-- The instance at the minimal loop length `k = 2` (no `l ∈ [3,k]`, empty sum over `n'`) and at `k = 4` (`l ∈ {3,4}`,
-`n' = 3`): the clauses (D1), (D2) are not vacuous at `k = 4`. -/
-example : Finset.Icc 3 2 = ∅ ∧ Finset.Icc ((2 + 1) / 2 + 1) (2 - 1) = ∅ ∧ Finset.Icc 3 4 = {3, 4} ∧
-    Finset.Icc ((4 + 1) / 2 + 1) (4 - 1) = {3} := by decide
-
-example (hKb : STKbound sz0 (STflowE z0)) (hKw : STKward sz0 (STflowE z0))
-    (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
-    (hL : STLmaxU sz0 (STflowE z0) sInst tInst) (hLKU : STLKU sz0 (STflowE z0) sInst tInst) :=
-  gridGood_instance 2 le_rfl hKb hKw hLK hStep2 hL hLKU
-
-example (hKb : STKbound sz0 (STflowE z0)) (hKw : STKward sz0 (STflowE z0))
-    (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
-    (hL : STLmaxU sz0 (STflowE z0) sInst tInst) (hLKU : STLKU sz0 (STflowE z0) sInst tInst) :=
-  gridGood_instance 4 (by norm_num) hKb hKw hLK hStep2 hL hLKU
-
-end RBM.Gauss.GridGoodNInst
-
 end
-
-#print axioms RBM.Gauss.Sizes.gridGood_STmaxLM_seqHflow
-#print axioms RBM.Gauss.Sizes.gridGood_STmaxLKM_seqHflow
-#print axioms RBM.Gauss.Sizes.gridGood_STXiLM_seqHflow
-#print axioms RBM.Gauss.Sizes.gridGood_STXiLKM_seqHflow
-#print axioms RBM.Path.gridExitTauN_le
-#print axioms RBM.Path.mem_of_lt_gridExitTauN
-#print axioms RBM.Path.gridExitTauN_eq_of_forall_mem
-#print axioms RBM.Path.gridExitTauN_measurableSet
-#print axioms RBM.Gauss.Sizes.measurableGoodSetN
-#print axioms RBM.Path.goodExitMeasN
-#print axioms RBM.Gauss.Sizes.gridGoodN_holds
-#print axioms RBM.Gauss.GridGoodNInst.grid_data
-#print axioms RBM.Gauss.GridGoodNInst.tInst_lt_one
-#print axioms RBM.Gauss.GridGoodNInst.gridGood_instance
-#print axioms RBM.Gauss.GridGoodNInst.gridGood_instance_nonempty

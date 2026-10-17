@@ -93,62 +93,6 @@ carrier `bandStep2Mat sz0 E0` with `E0 ≡ 0` (`Im m = 1`, `κ_m = 1/2` by `Deca
 `C = (1 + 40·9) 6^9`, `C₂ = 1000 (1 + 9)²`.  The four rows read `30 < 31`, `20 < 31`, `10.5 < 31`, `0.5 < 31`.  Every hypothesis is
 discharged; nothing is left as a hypothesis. -/
 
-namespace QGridGen2Check
-
-open RBM.Gauss.SizesInst RBM.Ind.GridEnvelopeNCheck
-
-private abbrev Cm0 : Step2Mat sz0 := bandStep2Mat sz0 (fun _ => 0)
-
-private theorem hspec0 : DecayGen_Spec Cm0.toFlowFM (Real.sqrt 1 / 2) :=
-  DecayGen_bandSpec sz0 (κ := 1) (by norm_num) (fun n => by norm_num)
-
-private theorem him1 (n : ℕ) : (Cm0.m n).im ≤ 1 := by
-  change (mE 0).im ≤ 1
-  rw [mE_im]
-  have h4 : Real.sqrt (4 - (0 : ℝ) ^ 2) = 2 := by
-    rw [show (4 - (0 : ℝ) ^ 2) = 2 ^ 2 by norm_num]
-    exact Real.sqrt_sq (by norm_num)
-  rw [h4]
-  norm_num
-
-/-- `K n = N_n^{31}`: the grid with `K n ≥ N^{C_K}`, `C_K = 31`. -/
-def QGridGen2_Kc31 (n : ℕ) : ℕ := sz0.size n ^ 31
-
-private theorem Kc31_ne_zero (n : ℕ) : QGridGen2_Kc31 n ≠ 0 := by
-  unfold QGridGen2_Kc31
-  have : 0 < sz0.size n := by
-    have := four_le_size n
-    exact_mod_cast (by linarith : (0 : ℝ) < ((sz0.size n : ℕ) : ℝ))
-  positivity
-
-private theorem rpow_31_le_Kc31 (n : ℕ) : ((sz0.size n : ℕ) : ℝ) ^ (31 : ℝ) ≤ (QGridGen2_Kc31 n : ℝ) := by
-  unfold QGridGen2_Kc31
-  rw [show (31 : ℝ) = ((31 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-  push_cast
-  exact le_rfl
-
-/-- **Instance of `sum_weighted_qErrQNg_le`** (target 8) at `sz0` (`d = 3`), `m = 3`, `τ' = τ_K = 1/2`, `C_K = 31`, `D_t = 1`,
-`K n = N_n^{31}`, `C = (1 + 40·9) 6^9`, `C₂ = 1000 (1 + 9)²`, `κ_m = 1/2`: every hypothesis is discharged
-(`SizeTendsto sz0`, `RangeCond`, `DecayGen_Spec`, `Im m ≤ 1`, the grid, the four numerical rows). -/
-theorem QGridGen2_sum_weighted_qErrQNg_instance :
-    ∀ᶠ n : ℕ in atTop, ∀ p ≤ QGridGen2_Kc31 n,
-      ∑ j ∈ Finset.range p,
-          (1 + (1 - gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) QGridGen2_Kc31 n p)⁻¹) ^ (3 + 1) *
-          qErrQNg Cm0.toFlowFM (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) QGridGen2_Kc31 n 3
-            ((1 + 40 * ((3 * 3 : ℕ) : ℝ)) * 6 ^ (3 * 3)) (1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2)
-            (((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) *
-              (Cm0.eta n (gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) QGridGen2_Kc31 n
-                (j + 1)))⁻¹ ^ (3 + 1)) j ≤
-        ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) :=
-  sum_weighted_qErrQNg_le 3 sz0 Cm0 (κm := Real.sqrt 1 / 2) (τ' := 1 / 2) (τK := 1 / 2) (C_K := 31) (D_t := 1)
-    (C := (1 + 40 * ((3 * 3 : ℕ) : ℝ)) * 6 ^ (3 * 3)) (C₂ := 1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2)
-    (s := fun _ => 0) (t := fun _ => 1 / 2) (K := QGridGen2_Kc31) 3 (by positivity) (by positivity) hspec0 him1
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) sz0_tendsto (fun _ => le_rfl)
-    (fun _ => by norm_num) (fun _ => by norm_num) Kc31_ne_zero rangeCond_half (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (Eventually.of_forall rpow_31_le_Kc31)
-
-end QGridGen2Check
-
 end RBM.BA
 
 end

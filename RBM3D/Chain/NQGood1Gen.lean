@@ -35,8 +35,6 @@ set_option linter.unusedSectionVars false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-open private nqGood1_STdiamInf_one from RBM3D.Induction.NQGood1
-
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
@@ -88,27 +86,6 @@ theorem nqGoodGen_kerNAL_band_at {d k : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (h
   rw [hCdef, ← bandStep2_Ugen]
   exact hEK (sz.L n) (sz.three_le_L n) (sz.lam n) hg hgΛ _ ε D hW hε0 hε1 hD hWε s t hs hst ht hWt (mE (E n)) (norm_mE hE) hκm σ hσ A hA
 
-private theorem NQGood1Gen_flow_im {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    0 < (z n).im :=
-  lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (h.2 n).2.1
-
-private theorem NQGood1Gen_flow_E {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (NQGood1Gen_flow_im h n)).trans (h.2 n).1
-
-/-- **D1, band discharge of the family form** (all `d ≥ 3`): `Ck = nqGood1C d k 𝔡⁻¹ (min κ (4/5))`; `0 < lam n ≤ 𝔡⁻¹` is `WO`,
-`|E| ≤ 2 - κ` is `abs_lemE_le` and `locDomain`, both eventual. -/
-theorem nqGoodGen_kerNAL_band (d : ℕ) : NQGoodGen_KerNALFam d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun sz _ => sz.lam) := by
-  intro hd k hk κ ε 𝔡 hκ hε h𝔡
-  have hκ' : 0 < min κ (4 / 5) := lt_min hκ (by norm_num)
-  refine ⟨nqGood1C d k 𝔡⁻¹ (min κ (4 / 5)), nqGood1C_pos hd hk (inv_pos.2 h𝔡) hκ', ?_⟩
-  intro sz 𝔠 z hflow
-  filter_upwards [hflow.1.2.2.2.2] with n hn
-  have hlam : 0 < sz.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1
-  have hE := NQGood1Gen_flow_E hflow n
-  exact nqGoodGen_kerNAL_band_at sz (STflowE z) hd hk (inv_pos.2 h𝔡) hκ' n hlam hn.2 (by linarith) (nqGood1_mE_im_ge hκ hE)
-
 end D1Band
 
 
@@ -125,31 +102,6 @@ def driftTensorNg (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx
   ∑ l ∈ Finset.Icc 3 k, STksimLKMg Cm n u H l (loopOf σ a) + STelklkMg Cm n u H (loopOf σ a) + STegtMg Cm n u H (loopOf σ a)
 
 variable {Cm}
-
-/-- **The drift sup bound on the good set** (band `driftTensorN_norm_le_of_goodSet`, `NQGood1:104`; clauses (D1)-(D3) of `GoodSetNg`):
-`‖Dr(σ,a)‖ ≤ Γ(ΓΦ)(B_u^k/η_u)((k-1) + kΓΦ)` with `η_u = Cm.eta n u`. -/
-theorem driftTensorNg_norm_le_of_goodSetNg {n : ℕ} {u Γ Λ Φ τ' D' : ℝ} {k : ℕ} (hk : 2 ≤ k)
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-    (hM : GoodSetNg Cm n u k Γ Λ Φ τ' D' M) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) :
-    ‖driftTensorNg Cm n u M σ a‖ ≤
-      Γ * (Γ * Φ) * ((sz.Bctl n u) ^ k / Cm.eta n u) * (((k : ℝ) - 1) + (k : ℝ) * (Γ * Φ)) := by
-  obtain ⟨-, -, -, hD1, hD2, hD3, -, -, -⟩ := hM
-  set X : ℝ := (sz.Bctl n u) ^ k / Cm.eta n u with hX
-  have h1 : ‖∑ l ∈ Finset.Icc 3 k, STksimLKMg Cm n u M l (loopOf σ a)‖ ≤ ((k - 2 : ℕ) : ℝ) * (Γ * (Γ * Φ) * X) := by
-    refine (norm_sum_le _ _).trans ?_
-    have hle : ∀ l ∈ Finset.Icc 3 k, ‖STksimLKMg Cm n u M l (loopOf σ a)‖ ≤ Γ * (Γ * Φ) * X := fun l hl =>
-      hD1 l (Finset.mem_Icc.1 hl).1 (Finset.mem_Icc.1 hl).2 σ a
-    refine (Finset.sum_le_card_nsmul _ _ _ hle).trans ?_
-    rw [nsmul_eq_mul, Nat.card_Icc]
-    have : (k + 1 - 3 : ℕ) = k - 2 := by omega
-    rw [this]
-  have h2 := hD2 σ a
-  have h3 := hD3 σ a
-  have hc : ((k - 2 : ℕ) : ℝ) = (k : ℝ) - 2 := by rw [Nat.cast_sub hk]; norm_num
-  unfold driftTensorNg
-  refine (norm_add₃_le).trans ?_
-  rw [hc] at h1
-  nlinarith [h1, h2, h3]
 
 /-- **The drift far decay on the good set** (band `driftTensorN_far_of_goodSet`, `NQGood1:133`; clause (Va)): `‖Dr(σ,a)‖ ≤ W^{-D'}`
 when `ℓ_u W^{τ'} ≤ diam_∞ a`. -/
@@ -390,27 +342,6 @@ theorem NQGood1Gen_qvFormNg_le_of_bounds (hd : 0 < d)
   exact (Complex.re_le_norm _).trans
     (NQGood1Gen_pair_le Cm.toFlowFM hd hcmp hA hKer hRow hCv hW hε0 hε1 hWε hdW hAk hD hv0 hvw hwL hWt hσ _ hδ hδD hT hTfar a)
 
-/-- **The quadratic-variation majorant on the good set, at the time `u` of the good set** (band `qvFormN_le_of_goodSetN`,
-`NQGood1:551`): for `M ∈ GoodSetNg … u`, clauses (D4) and (Vb) give `Mee = Γ(ΓΛ)B_u^{2k}/η_u`, `δ = W^{-D'}`; needs `D' > k + 1`. -/
-theorem qvFormNg_le_of_goodSetNg (hd : 0 < d)
-    (hcmp : ∀ m, 0 ≤ gK m * sz.lam m ∧ gK m ^ 2 ≤ sz.lam m ^ 2 ∧ sz.lam m ^ 2 ≤ A * gK m ^ 2) (hA : 1 ≤ A) {n : ℕ}
-    (hKer : NQGoodGen_KerNAL Cm.toFlowFM gK k Ck n) (hRow : GridRepTailGen_Ker Cm.toFlowFM n) (hCv : Ck ≤ Cv) {ε τ' D' : ℝ}
-    (hW : 1 < ((sz.W n : ℕ) : ℝ)) (hε0 : 0 < ε) (hε1 : ε < 1) (hWε : 4 ≤ ((sz.W n : ℕ) : ℝ) ^ ε)
-    (hdW : (d : ℝ) * Real.sqrt A * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε)
-    (hAk : A ^ (k - 1) ≤ ((sz.W n : ℕ) : ℝ) ^ ((Cv - Ck) * ε)) (hD' : (k : ℝ) + 1 < D') {u w : ℝ} (hu0 : 0 ≤ u) (huw : u ≤ w)
-    (hwL : w ≤ 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) (hWt : (((sz.W n : ℕ) : ℝ))⁻¹ ≤ (1 - w) / (1 - u))
-    {σ : Fin k → Bool} (hσ : ∃ i, σ i = σ (finRotate k i)) {Γ Λ Φ : ℝ}
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-    (hM : GoodSetNg Cm n u k Γ Λ Φ τ' D' M) (a : Fin k → Zd d (sz.L n)) :
-    qvFormNg Cm n u w σ M a ≤
-      (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (k - 1)) *
-          ((((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (k - 1)) *
-            (Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * k) / Cm.eta n u)) + ((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ (-D')) +
-        ((sz.W n : ℕ) : ℝ) ^ Cv * (((sz.W n : ℕ) : ℝ) ^ k * ((sz.W n : ℕ) : ℝ) ^ (-D')) := by
-  obtain ⟨-, -, -, -, -, -, hD4, -, hVb⟩ := hM
-  exact NQGood1Gen_qvFormNg_le_of_bounds Cm hd hcmp hA hKer hRow hCv hW hε0 hε1 hWε hdW hAk hD' hu0 huw hwL hWt hσ M
-    (Real.rpow_nonneg (by linarith) _) le_rfl (fun b b' => hD4 σ b b') (fun b b' hfar => hVb σ b b' hfar) a
-
 end QVBound
 
 
@@ -454,128 +385,6 @@ theorem NQGood1Gen_norm_zt_sub {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1) (u u' : ℝ) 
     simp only [ztOf]; push_cast; ring
   rw [h, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
   exact mul_le_of_le_one_right (abs_nonneg _) hm
-
-/-- **The shift of `η⁻¹` in the corrected form** (band `etaT_inv_shiftN_le`, `NQGood1:751`), `η_u = Cm.eta n u`: for `0 ≤ u ≤ u' < 1` and
-`2 Δ ≤ η_u`, `η_{u'}⁻¹ ≤ η_u⁻¹ (1 + 2 Δ η_u⁻¹)`, `Δ = u' - u`. -/
-theorem etaT_inv_shiftNg_le (hL : StepDecompGen_LoopForm Cm E) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1) {u u' : ℝ} (huu' : u ≤ u')
-    (hu'1 : u' < 1) (hΔ : 2 * (u' - u) ≤ Cm.eta n u) :
-    (Cm.eta n u')⁻¹ ≤ (Cm.eta n u)⁻¹ * (1 + 2 * (u' - u) * (Cm.eta n u)⁻¹) := by
-  have hη := NQGood1Gen_eta_pos hL n (huu'.trans_lt hu'1)
-  have hm1 := NQGood1Gen_im_le_one hm
-  have hm0 := (hL n).1
-  have hrel : Cm.eta n u' = Cm.eta n u - (u' - u) * (Cm.m n).im := by
-    rw [NQGood1Gen_eta_eq hL, NQGood1Gen_eta_eq hL]; ring
-  have hΔ0 : 0 ≤ u' - u := by linarith
-  set x := (u' - u) * (Cm.eta n u)⁻¹ with hx
-  have hx0 : 0 ≤ x := by positivity
-  have hx1 : x ≤ 1 / 2 := by
-    rw [hx, ← div_eq_mul_inv, div_le_iff₀ hη]; linarith
-  have hle : Cm.eta n u' ≥ Cm.eta n u * (1 - x) := by
-    have : (u' - u) * (Cm.m n).im ≤ (u' - u) := by nlinarith
-    have h2 : Cm.eta n u * x = u' - u := by rw [hx]; field_simp
-    rw [hrel]; nlinarith
-  have hpos : 0 < Cm.eta n u * (1 - x) := mul_pos hη (by linarith)
-  calc (Cm.eta n u')⁻¹ ≤ (Cm.eta n u * (1 - x))⁻¹ := inv_anti₀ hpos hle
-    _ = (Cm.eta n u)⁻¹ * (1 - x)⁻¹ := by rw [mul_inv]
-    _ ≤ (Cm.eta n u)⁻¹ * (1 + 2 * x) := by
-        refine mul_le_mul_of_nonneg_left ?_ (inv_nonneg.2 hη.le)
-        rw [inv_eq_one_div, div_le_iff₀ (by linarith)]
-        nlinarith
-    _ = _ := by rw [hx]; ring
-
-/-- **One fine-lattice loop at the shifted time** (band `loopFine_shiftN_le`, `NQGood1:782`): for Hermitian `M`, `0 ≤ u ≤ u' < 1`, `ℓ ≥ 1`,
-`|𝓛_{u',σ,a}(M)| ≤ |𝓛_{u,σ,a}(M)| + ℓ η_{u'}^{-(ℓ+1)} (W^{-d})^{ℓ-1} (u' - u)`. -/
-theorem loopFine_shiftNg_le (hL : StepDecompGen_LoopForm Cm E) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1)
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian) {u u' : ℝ} (huu' : u ≤ u')
-    (hu'1 : u' < 1) {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (σ : Fin ℓ → Bool) (a : Fin ℓ → Zd d (sz.L n)) :
-    ‖Cm.LM n u' M σ a‖ ≤ ‖Cm.LM n u M σ a‖ + loopShiftErrN d (sz.W n) (Cm.eta n u') ℓ (u' - u) := by
-  have hη := NQGood1Gen_eta_pos hL n hu'1
-  have hz : Cm.eta n u' ≤ |(ztOf (Cm.m n) (E n) u).im| := by
-    rw [NQGood1Gen_abs_zt_im hL n (huu'.trans_lt hu'1)]; exact NQGood1Gen_eta_anti hL n huu'
-  have hz' : Cm.eta n u' ≤ |(ztOf (Cm.m n) (E n) u').im| := by rw [NQGood1Gen_abs_zt_im hL n hu'1]
-  have hwf : (loopOf σ a).σ.length = (loopOf σ a).a.length := by simp [loopOf]
-  have hlen : (loopOf σ a).a.length = ℓ := by simp [loopOf]
-  have hMb : (blockMat d (sz.L n) (sz.W n) M).IsHermitian := hM.submatrix _
-  have h1 := norm_loopL_zshiftN_le hMb hη hz hz' (loopOf σ a) hwf (by rw [hlen]; exact hℓ)
-  rw [hlen] at h1
-  have hzt := NQGood1Gen_norm_zt_sub (E := E) hm u u'
-  rw [abs_of_nonneg (by linarith)] at hzt
-  have h2 : ℓ * ((Cm.eta n u')⁻¹ ^ (ℓ + 1) * (((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (ℓ - 1)) * ‖ztOf (Cm.m n) (E n) u' - ztOf (Cm.m n) (E n) u‖) ≤
-      loopShiftErrN d (sz.W n) (Cm.eta n u') ℓ (u' - u) := by
-    unfold loopShiftErrN
-    have : 0 ≤ (Cm.eta n u')⁻¹ := inv_nonneg.2 hη.le
-    gcongr
-  have h3 := norm_sub_norm_le (loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) M) (ztOf (Cm.m n) (E n) u') (loopOf σ a))
-    (loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) M) (ztOf (Cm.m n) (E n) u) (loopOf σ a))
-  rw [congrFun (StepDecompGen_LM_eq hL n u' σ a) M, congrFun (StepDecompGen_LM_eq hL n u σ a) M]
-  linarith
-
-/-- `STmaxLMg` shifts as one loop does (band `nqGood1_STmaxLM_shiftN_le`). -/
-private theorem NQGood1Gen_STmaxLMg_shift_le (hL : StepDecompGen_LoopForm Cm E) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1)
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian) {u u' : ℝ} (huu' : u ≤ u')
-    (hu'1 : u' < 1) {m : ℕ} (hm1 : 1 ≤ m) :
-    STmaxLMg Cm n u' m M ≤ STmaxLMg Cm n u m M + loopShiftErrN d (sz.W n) (Cm.eta n u') m (u' - u) := by
-  unfold STmaxLMg
-  refine Finset.sup'_le _ _ fun p _ => ?_
-  refine (loopFine_shiftNg_le hL hm hM huu' hu'1 hm1 p.1 p.2).trans ?_
-  gcongr
-  exact Finset.le_sup' (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖Cm.LM n u M p.1 p.2‖) (Finset.mem_univ p)
-
-private theorem NQGood1Gen_STmaxLMg_nonneg (n : ℕ) (u : ℝ) (m : ℕ)
-    (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : 0 ≤ STmaxLMg Cm n u m M :=
-  Finset.le_sup'_of_le _ (Finset.mem_univ ((fun _ => true), (fun _ => (0 : Zd d (sz.L n))))) (norm_nonneg _)
-
-/-- **The QV time shift, `Ξ̂^{(𝓛)}` part** (band `STXiLM_shiftN_le`, `NQGood1:844`; `B_u` increases along the flow, `STBctl_mono`). -/
-theorem STXiLMg_shiftNg_le (hL : StepDecompGen_LoopForm Cm E) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1)
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian) {u u' : ℝ} (huu' : u ≤ u')
-    (hu'1 : u' < 1) {m : ℕ} (hm1 : 1 ≤ m) :
-    STXiLMg Cm n u' m M ≤ STXiLMg Cm n u m M + loopShiftErrN d (sz.W n) (Cm.eta n u') m (u' - u) / (sz.Bctl n u) ^ (m - 1) := by
-  have hB : 0 < sz.Bctl n u := Sizes.STBctl_pos sz n (huu'.trans_lt hu'1)
-  have hBle : sz.Bctl n u ≤ sz.Bctl n u' := Sizes.STBctl_mono sz n huu' hu'1
-  have hpow : (sz.Bctl n u) ^ (m - 1) ≤ (sz.Bctl n u') ^ (m - 1) := pow_le_pow_left₀ hB.le hBle _
-  have hpos : 0 < (sz.Bctl n u) ^ (m - 1) := pow_pos hB _
-  have h1 := NQGood1Gen_STmaxLMg_shift_le hL hm hM huu' hu'1 hm1
-  have h0 := NQGood1Gen_STmaxLMg_nonneg (Cm := Cm) n u' m M
-  unfold STXiLMg
-  have h2 : STmaxLMg Cm n u' m M / (sz.Bctl n u') ^ (m - 1) ≤ STmaxLMg Cm n u' m M / (sz.Bctl n u) ^ (m - 1) :=
-    div_le_div_of_nonneg_left h0 hpos hpow
-  have h3 : STmaxLMg Cm n u' m M / (sz.Bctl n u) ^ (m - 1) ≤
-      (STmaxLMg Cm n u m M + loopShiftErrN d (sz.W n) (Cm.eta n u') m (u' - u)) / (sz.Bctl n u) ^ (m - 1) :=
-    div_le_div_of_nonneg_right h1 hpos.le
-  rw [add_div] at h3
-  linarith
-
-/-- **The decay clause of `GoodSetNg` under the shift** (band `goodSetN_dec_shiftN`, `NQGood1:880`): the loops of length
-`1 ≤ j ≤ 2k+2` with spread `≥ ℓ_{u'} W^{τ'}` are `≤ W^{-D''}` at `u'`, once `W^{-D'} + ℓ η_{u'}^{-(ℓ+1)} (W^{-d})^{ℓ-1} (u'-u) ≤ W^{-D''}`
-for every `2 ≤ ℓ ≤ 2k+2` (`ℓ = 1` is vacuous). -/
-theorem goodSetNg_dec_shiftNg (hL : StepDecompGen_LoopForm Cm E) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1) {k : ℕ} {Γ Λ Φ τ' D' D'' : ℝ}
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {u u' : ℝ}
-    (hM : GoodSetNg Cm n u k Γ Λ Φ τ' D' M) (huu' : u ≤ u') (hu'1 : u' < 1)
-    (hδ : ∀ ℓ : ℕ, 2 ≤ ℓ → ℓ ≤ 2 * k + 2 →
-      ((sz.W n : ℕ) : ℝ) ^ (-D') + loopShiftErrN d (sz.W n) (Cm.eta n u') ℓ (u' - u) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D'')) :
-    ∀ j : ℕ, 1 ≤ j → j ≤ 2 * k + 2 → ∀ (σ : Fin j → Bool) (a : Fin j → Zd d (sz.L n)),
-      ellT (sz.L n) (sz.lam n) u' * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ (STdiamInf a : ℝ) →
-        ‖Cm.LM n u' M σ a‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D'') := by
-  obtain ⟨hMh, -, hDec, -⟩ := hM
-  intro j hj1 hj2 σ a hfar
-  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
-  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
-  have hWτ : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ τ' := Real.rpow_nonneg hW0.le _
-  rcases Nat.lt_or_ge 1 j with hj | hj
-  · have hrad : ellT (sz.L n) (sz.lam n) u ≤ ellT (sz.L n) (sz.lam n) u' := nqGood1_ellT_mono _ _ huu' hu'1
-    have hfar' : ellT (sz.L n) (sz.lam n) u * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ (STdiamInf a : ℝ) :=
-      (mul_le_mul_of_nonneg_right hrad hWτ).trans hfar
-    have h0 := hDec j hj1 hj2 σ a hfar'
-    have hlk : 0 ≤ ‖Cm.LM n u M σ a - Cm.K n u σ a‖ := norm_nonneg _
-    have hsh := loopFine_shiftNg_le hL hm hMh huu' hu'1 hj1 σ a
-    have := hδ j hj hj2
-    linarith
-  · obtain rfl : j = 1 := le_antisymm hj hj1
-    exfalso
-    rw [nqGood1_STdiamInf_one a] at hfar
-    have : 0 < ellT (sz.L n) (sz.lam n) u' * ((sz.W n : ℕ) : ℝ) ^ τ' := mul_pos (ellT_pos hL1) (Real.rpow_pos_of_pos hW0 _)
-    simp at hfar
-    linarith
 
 /-- **Crude loop bound** (band `norm_loopFine_crudeN`, `NQGood1:916`): `|𝓛_{u,σ,a}(M)| ≤ η_u^{-ℓ}` for Hermitian `M`, `ℓ ≥ 1`. -/
 theorem norm_loopFine_crudeNg (hL : StepDecompGen_LoopForm Cm E) {n : ℕ}
@@ -711,125 +520,7 @@ Data of the band instances `NQGood1Inst` (reused by name, private facts by `open
 `aFar` has `diam_∞ = 2 ≥ ℓ_0 W^{τ'}`.  The comparison is R1 with `A = 1`, `gK = lam`, `Cv = Ck = nqGood1C 3 3 10 (1/2)`.  D1 is also
 instantiated at the flow `(szB, zB)` of `Induction/Step34Pins`. -/
 
-section Inst
-
-open private W0 lam0 rpow32_fifth ell0 im_mE_half hW_inst hWε_inst hdW_inst hWt_inst hwL_inst hσ_inst hδ_inst Bctl0_le
-  from RBM3D.Induction.NQGood1
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.GridGoodNInst RBM.Ind.AzumaProxyNInst RBM.Ind.NQGood1Inst
-  RBM.Gauss.Step34Inst
-
-private abbrev NQGood1Gen_Cm0 : Step2Mat sz0 := bandStep2Mat sz0 Einst
-
-private theorem NQGood1Gen_hL0 : StepDecompGen_LoopForm NQGood1Gen_Cm0 Einst := stepDecompGen_loopForm_band sz0 Einst Einst_abs_lt
-
-private theorem NQGood1Gen_hm0 : ‖NQGood1Gen_Cm0.m 0‖ ≤ 1 := (norm_mE (by norm_num [abs_of_pos])).le
-
-private theorem NQGood1Gen_goodSet0 :
-    GoodSetNg NQGood1Gen_Cm0 0 0 3 4 3 1 (1 / 5) 6 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :=
-  (bandStep2_GoodSetN sz0 Einst 0 0 3 4 3 1 (1 / 5) 6 0).1 zero_mem_goodSetN_inst
-
-/-- **Instance of D1, one index** (`nqGoodGen_kerNAL_band_at` at `sz0`, `n = 0`, `E = 1/2`, `Λ = 10`, `κ' = 1/2`). -/
-private theorem NQGood1Gen_kerNAL0 : NQGoodGen_KerNAL (bandFM sz0 Einst) sz0.lam 3 (RBM.Ind.nqGood1C 3 3 10 (1 / 2)) 0 :=
-  nqGoodGen_kerNAL_band_at sz0 Einst (by norm_num) (by norm_num) (by norm_num) (by norm_num) 0 (by rw [lam0]; norm_num)
-    (by rw [lam0]; norm_num) (by norm_num [Einst, abs_of_pos]) im_mE_half
-
-/-- **Instance of D1, family form** at the band flow `(szB, zB)`, `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`, `d = 3`, `k = 2`. -/
-example : ∃ Ck : ℝ, 0 < Ck ∧ ∀ᶠ n in atTop, NQGoodGen_KerNAL (bandFM szB (STflowE zB)) szB.lam 2 Ck n :=
-  (nqGoodGen_kerNAL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)).imp
-    fun _ h => ⟨h.1, h.2 szB (1 / 6) zB flow_zB⟩
-
-/-- **Instance of the drift sup bound**: `H_0 = 0 ∈ GoodSetNg`, `k = 3`, `σ = (+,-,+)`, every label vector. -/
-example (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    ‖driftTensorNg NQGood1Gen_Cm0 0 0 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) sig3 a‖ ≤
-      4 * (4 * 1) * ((sz0.Bctl 0 0) ^ 3 / NQGood1Gen_Cm0.eta 0 0) * (((3 : ℕ) : ℝ) - 1 + ((3 : ℕ) : ℝ) * (4 * 1)) :=
-  driftTensorNg_norm_le_of_goodSetNg (by norm_num) NQGood1Gen_goodSet0 sig3 a
-
-/-- **Instance of the drift far decay** at the far label vector `a = (0, (2,2,2), 0)` (`ℓ_0 W^{τ'} = 2 ≤ diam_∞ a = 2`). -/
-example : ‖driftTensorNg NQGood1Gen_Cm0 0 0 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) sig3 aFar‖ ≤
-    ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ)) := by
-  refine driftTensorNg_far_of_goodSetNg NQGood1Gen_goodSet0 sig3 aFar ?_
-  rw [ell0, W0, rpow32_fifth]
-  exact_mod_cast (by have := diam_aFar; omega : (1 : ℕ) * 2 ≤ STdiamInf aFar)
-
-/-- **Instance of `hker_of_case1Ng`** (R1 with `A = 1`, `Cv = Ck`): `(s, t) = (0, 1/128)`, `ε = 4/5`, `τ' = 1/5`, `D = 6`, `X = Xinst`
-(`M = 1`, `δ = W^{-6}`), every label vector. -/
-example (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    ‖Step2Gen_UN (bandFM sz0 Einst) 0 sig3 0 (1 / 128) Xinst a‖ ≤
-      ((sz0.W 0 : ℕ) : ℝ) ^ (RBM.Ind.nqGood1C 3 3 10 (1 / 2) * (4 / 5)) *
-          ((sz0.lam 0 ^ 2 + |1 - 0|) / (sz0.lam 0 ^ 2 + |1 - 1 / 128|)) ^ (3 - 1) * 1 +
-        ((sz0.W 0 : ℕ) : ℝ) ^ RBM.Ind.nqGood1C 3 3 10 (1 / 2) * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ)) :=
-  hker_of_case1Ng (bandFM sz0 Einst) (gK := sz0.lam) (A := 1) (by norm_num) (fun m => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩) le_rfl
-    NQGood1Gen_kerNAL0 le_rfl hW_inst (by norm_num) (by norm_num) hWε_inst (by rw [Real.sqrt_one, mul_one]; exact hdW_inst)
-    (by simp) (D := 6) (by norm_num) (s := 0) (t := 1 / 128) le_rfl (by norm_num) hwL_inst hWt_inst hσ_inst Xinst (M := 1)
-    (δ := ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) zero_le_one (Real.rpow_nonneg (by rw [W0]; norm_num) _) le_rfl Xinst_norm_le Xinst_far a
-
-/-- **Instance of `qvFormNg_le_of_goodSetNg`**: `H_0 = 0 ∈ GoodSetNg` at `u_0 = 0`, `w = u_1 = 1/128`, the far label vector. -/
-example :
-    qvFormNg NQGood1Gen_Cm0 0 0 (1 / 128) sig3
-        (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) aFar ≤
-      ((((sz0.W 0 : ℕ) : ℝ)) ^ (RBM.Ind.nqGood1C 3 3 10 (1 / 2) * (4 / 5)) *
-          ((sz0.lam 0 ^ 2 + |1 - 0|) / (sz0.lam 0 ^ 2 + |1 - 1 / 128|)) ^ (3 - 1)) *
-        ((((sz0.W 0 : ℕ) : ℝ) ^ (RBM.Ind.nqGood1C 3 3 10 (1 / 2) * (4 / 5)) *
-            ((sz0.lam 0 ^ 2 + |1 - 0|) / (sz0.lam 0 ^ 2 + |1 - 1 / 128|)) ^ (3 - 1)) *
-          (4 * (4 * 3) * ((sz0.Bctl 0 0) ^ (2 * 3) / NQGood1Gen_Cm0.eta 0 0)) +
-          ((sz0.W 0 : ℕ) : ℝ) ^ RBM.Ind.nqGood1C 3 3 10 (1 / 2) * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) +
-        ((sz0.W 0 : ℕ) : ℝ) ^ RBM.Ind.nqGood1C 3 3 10 (1 / 2) * (((sz0.W 0 : ℕ) : ℝ) ^ 3 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) :=
-  qvFormNg_le_of_goodSetNg NQGood1Gen_Cm0 (gK := sz0.lam) (A := 1) (Ck := RBM.Ind.nqGood1C 3 3 10 (1 / 2))
-    (Cv := RBM.Ind.nqGood1C 3 3 10 (1 / 2)) (by norm_num) (fun m => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩) le_rfl
-    NQGood1Gen_kerNAL0 (gridRepTailGen_ker_band sz0 Einst 0 (by norm_num [Einst, abs_of_pos])) le_rfl hW_inst (by norm_num) (by norm_num)
-    hWε_inst (by rw [Real.sqrt_one, mul_one]; exact hdW_inst) (by simp) (by norm_num) le_rfl (by norm_num) hwL_inst hWt_inst hσ_inst
-    NQGood1Gen_goodSet0 aFar
-
 /-! ### Target 3: the shift lemmas, one step `u_0 = 0 → u_1 = 1/128` -/
-
-private abbrev NQGood1Gen_H0 : Matrix (Idx 3 (sz0.L 0)  (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ := 0
-
-private theorem NQGood1Gen_hS0 : ∀ a : Zd 3 (sz0.L 0), ∑ b : Zd 3 (sz0.L 0), ‖NQGood1Gen_Cm0.S 0 a b‖ ≤ 1 :=
-  fun a => (sum_norm_SB_row 3 (sz0.L 0) (sz0.lam 0) (sz0.three_le_L 0) a).le
-
-/-- `etaT_inv_shiftNg_le` (`E = 1/2`, `Δ = 1/128`; `2Δ = 1/64 ≤ η_0`). -/
-example : (NQGood1Gen_Cm0.eta 0 (1 / 128))⁻¹ ≤ (NQGood1Gen_Cm0.eta 0 0)⁻¹ * (1 + 2 * (1 / 128 - 0) * (NQGood1Gen_Cm0.eta 0 0)⁻¹) :=
-  etaT_inv_shiftNg_le NQGood1Gen_hL0 NQGood1Gen_hm0 (by norm_num) (by norm_num) (by
-    have h := im_mE_half
-    change 2 * (1 / 128 - 0) ≤ (1 - 0) * (mE (1 / 2)).im
-    linarith)
-
-/-- `loopFine_shiftNg_le` (`H = 0`, `ℓ = 3`). -/
-example : ‖NQGood1Gen_Cm0.LM 0 (1 / 128) NQGood1Gen_H0 sig3 aFar‖ ≤
-    ‖NQGood1Gen_Cm0.LM 0 0 NQGood1Gen_H0 sig3 aFar‖ + RBM.Ind.loopShiftErrN 3 (sz0.W 0) (NQGood1Gen_Cm0.eta 0 (1 / 128)) 3 (1 / 128 - 0) :=
-  loopFine_shiftNg_le NQGood1Gen_hL0 NQGood1Gen_hm0 Matrix.isHermitian_zero (by norm_num) (by norm_num) (by norm_num) sig3 aFar
-
-/-- `STXiLMg_shiftNg_le` (`H = 0`, `m = 2`). -/
-example : STXiLMg NQGood1Gen_Cm0 0 (1 / 128) 2 NQGood1Gen_H0 ≤ STXiLMg NQGood1Gen_Cm0 0 0 2 NQGood1Gen_H0 +
-    RBM.Ind.loopShiftErrN 3 (sz0.W 0) (NQGood1Gen_Cm0.eta 0 (1 / 128)) 2 (1 / 128 - 0) / (sz0.Bctl 0 0) ^ (2 - 1) :=
-  STXiLMg_shiftNg_le NQGood1Gen_hL0 NQGood1Gen_hm0 Matrix.isHermitian_zero (by norm_num) (by norm_num) (by norm_num)
-
-/-- `goodSetNg_dec_shiftNg` (`H_0 = 0 ∈ GoodSetNg` at `u_0 = 0`, `u_1 = 1/128`, `D' = 6`, `D'' = 3`): the loops of length `1 ≤ j ≤ 8` with
-spread `≥ ℓ_{u_1} W^{τ'}` are `≤ W^{-3}` at `u_1`. -/
-example : ∀ j : ℕ, 1 ≤ j → j ≤ 2 * 3 + 2 → ∀ (σ : Fin j → Bool) (a : Fin j → Zd 3 (sz0.L 0)),
-    ellT (sz0.L 0) (sz0.lam 0) (1 / 128) * ((sz0.W 0 : ℕ) : ℝ) ^ (1 / 5 : ℝ) ≤ (STdiamInf a : ℝ) →
-      ‖NQGood1Gen_Cm0.LM 0 (1 / 128) NQGood1Gen_H0 σ a‖ ≤ ((sz0.W 0 : ℕ) : ℝ) ^ (-(3 : ℝ)) :=
-  goodSetNg_dec_shiftNg NQGood1Gen_hL0 NQGood1Gen_hm0 NQGood1Gen_goodSet0 (by norm_num) (by norm_num) hδ_inst
-
-/-- `norm_loopFine_crudeNg` (`H = 0`, `u = u_1`, `ℓ = 3`). -/
-example : ‖NQGood1Gen_Cm0.LM 0 (1 / 128) NQGood1Gen_H0 sig3 aFar‖ ≤ (NQGood1Gen_Cm0.eta 0 (1 / 128))⁻¹ ^ 3 :=
-  norm_loopFine_crudeNg NQGood1Gen_hL0 Matrix.isHermitian_zero (by norm_num) (by norm_num) sig3 aFar
-
-/-- `STmaxLKMg_crudeNg` (`H = 0`, `u = 0`, `m = n' = 2`, `M_K` the maximum of `‖𝒦‖`). -/
-example : STmaxLKMg NQGood1Gen_Cm0 0 0 2 NQGood1Gen_H0 ≤ (NQGood1Gen_Cm0.eta 0 0)⁻¹ ^ 2 + MKinst :=
-  STmaxLKMg_crudeNg NQGood1Gen_hL0 NQGood1Gen_hm0 Matrix.isHermitian_zero le_rfl (by norm_num) (by norm_num) le_rfl MKinst_spec
-
-/-- `STXiLKMg_crudeNg` (`B_0 ≤ 1`). -/
-example : STXiLKMg NQGood1Gen_Cm0 0 0 2 NQGood1Gen_H0 ≤ 1 + ((NQGood1Gen_Cm0.eta 0 0)⁻¹ ^ 2 + MKinst) / (sz0.Bctl 0 0) ^ 2 :=
-  STXiLKMg_crudeNg NQGood1Gen_hL0 NQGood1Gen_hm0 Matrix.isHermitian_zero le_rfl (by norm_num) Bctl0_le (by norm_num) le_rfl MKinst_spec
-
-/-- `norm_STeeMg_shiftNg_le` (`H = 0`, `k = 3`, `σ = (+,-,+)`, `a = a' = aFar`). -/
-example : ‖STeeMg NQGood1Gen_Cm0 0 (1 / 128) NQGood1Gen_H0 sig3 aFar aFar - STeeMg NQGood1Gen_Cm0 0 0 NQGood1Gen_H0 sig3 aFar aFar‖ ≤
-    eeShiftErrNg NQGood1Gen_Cm0 0 3 0 (1 / 128) :=
-  norm_STeeMg_shiftNg_le NQGood1Gen_hL0 NQGood1Gen_hm0 NQGood1Gen_hS0 Matrix.isHermitian_zero (by norm_num) (by norm_num) sig3 aFar aFar
-
-end Inst
 
 end RBM.BA
 

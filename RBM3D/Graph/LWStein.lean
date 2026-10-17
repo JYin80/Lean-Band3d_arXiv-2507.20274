@@ -196,158 +196,6 @@ theorem owx_defect_identity (z m s : ℂ) (hm0 : m ≠ 0) (hzm : z + s * m = -m�
 
 end OwxAlg
 
-section OwxSmallest
-
-variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-
-/-- The smallest nontrivial graph: the single light-weight `Ǧ_{xx}` at an external vertex
-(`n_S = 1`, `n_W = n_V = 0`, `ord = 1`). -/
-def owxG0 : LGraph Unit (Fin 0) where
-  solid := [⟨true, true, .inl (), .inl ()⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-
-/-- The first graph of `(Owx)`: `m Σ_α S_{xα} Ǧ_{xx} Ǧ_{αα}` (one new internal vertex `α = inr 0`, a
-waved edge and a second light-weight; `ord = 2`). -/
-def owxG1 (m : ℂ) : LGraph Unit (Fin 1) where
-  solid := [⟨true, true, .inl (), .inl ()⟩, ⟨true, true, .inr 0, .inr 0⟩]
-  waved := [⟨false, true, .inl (), .inr 0⟩]
-  dotted := []
-  coeff := m
-
-/-- The second graph of `(Owx)`: `m³ Σ_{α,β} S⁺_{xα} S_{αβ} Ǧ_{αα} Ǧ_{ββ}` (the original weight is
-removed; a blue waved edge `S⁺`, a black waved edge `S`; `ord = 2`). -/
-def owxG2 (m : ℂ) : LGraph Unit (Fin 2) where
-  solid := [⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inr 1, .inr 1⟩]
-  waved := [⟨true, true, .inl (), .inr 0⟩, ⟨false, true, .inr 0, .inr 1⟩]
-  dotted := []
-  coeff := m ^ 3
-
-/-- The counters: `ord` rises from `1` to `2` in both terms (the preflight table, `(a)(i)`). -/
-theorem owx_ord (m : ℂ) :
-    ord owxG0.counters = 1 ∧ ord (owxG1 m).counters = 2 ∧ ord (owxG2 m).counters = 2 := by
-  refine ⟨?_, ?_, ?_⟩ <;> simp [LGraph.counters, ord, LGraph.nS, LGraph.nW, LGraph.nV,
-    owxG0, owxG1, owxG2]
-
-/-- **`(Owx)` for the smallest graph, on the vocabulary**: with `f = 1` (so `∂f = 0`) the values of
-`owxG0`, `owxG1`, `owxG2` satisfy `val G₀ - (val G₁ + val G₂) = -m Σ_w (δ_{xw} + m² S⁺_{xw}) Z_w`
-exactly (the Stein defect `Z_w = 1 + z G_{ww} + G_{ww} Σ_α S_{wα} G_{αα}`). -/
-theorem owx_smallest (D : LData ι) (m z s : ℂ) (hm0 : m ≠ 0) (hzm : z + s * m = -m⁻¹)
-    (hM : ∀ i j, D.M i j = if i = j then m else 0) (hS : ∀ i, ∑ j, D.S i j = s)
-    (hSp : ∀ i j, D.Sp i j - m ^ 2 * ∑ w, D.Sp i w * D.S w j = D.S i j) (x : ι) :
-    owxG0.val D (fun _ => x) - ((owxG1 m).val D (fun _ => x) + (owxG2 m).val D (fun _ => x)) =
-      -m * ∑ w, ((if x = w then 1 else 0) + m ^ 2 * D.Sp x w) *
-        owxDefect z D.G D.S 1 (fun _ _ => 0) w := by
-  have h := owx_defect_identity z m s hm0 hzm D.G D.S D.Sp hS hSp 1 (fun _ _ => 0) x
-  unfold LGraph.val
-  simp only [sum_pi_fin_succ, sum_pi_fin_zero]
-  simp [owxG0, owxG1, owxG2, LGraph.term, SEdge.val, WEdge.val, hM]
-  simpa [mul_assoc, mul_comm, mul_left_comm, Finset.mul_sum] using h
-
-/-- The next graph, with a derivative term: `Ǧ_{xx} G_{xy}` (external `x = inl 0`, `y = inl 1`;
-`f = G_{xy}`, `∂_{h_{αw}} G_{xy} = -G_{xα} G_{wy}`). -/
-def owxH0 : LGraph (Fin 2) (Fin 0) where
-  solid := [⟨true, true, .inl 0, .inl 0⟩, ⟨true, false, .inl 0, .inl 1⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-
-/-- The four graphs of `(Owx)` for `owxH0`: the first two keep `f`, the last two carry the derivative:
-`G_{xy} ↦ -G_{xα} G_{wy}` replaces the edge by two edges (`w = x` in the third, `w = α` in the
-fourth); `ord` of each is `ord(owxH0) + 1`. -/
-def owxH1 (m : ℂ) : LGraph (Fin 2) (Fin 1) where
-  solid := [⟨true, true, .inl 0, .inl 0⟩, ⟨true, false, .inl 0, .inl 1⟩, ⟨true, true, .inr 0, .inr 0⟩]
-  waved := [⟨false, true, .inl 0, .inr 0⟩]
-  dotted := []
-  coeff := m
-
-def owxH2 (m : ℂ) : LGraph (Fin 2) (Fin 2) where
-  solid := [⟨true, false, .inl 0, .inl 1⟩, ⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inr 1, .inr 1⟩]
-  waved := [⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inr 0, .inr 1⟩]
-  dotted := []
-  coeff := m ^ 3
-
-def owxH3 (m : ℂ) : LGraph (Fin 2) (Fin 1) where
-  solid := [⟨true, false, .inr 0, .inl 0⟩, ⟨true, false, .inl 0, .inr 0⟩, ⟨true, false, .inl 0, .inl 1⟩]
-  waved := [⟨false, true, .inl 0, .inr 0⟩]
-  dotted := []
-  coeff := m
-
-def owxH4 (m : ℂ) : LGraph (Fin 2) (Fin 2) where
-  solid := [⟨true, false, .inr 1, .inr 0⟩, ⟨true, false, .inl 0, .inr 1⟩, ⟨true, false, .inr 0, .inl 1⟩]
-  waved := [⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inr 0, .inr 1⟩]
-  dotted := []
-  coeff := m ^ 3
-
-theorem owx_ord_H (m : ℂ) :
-    ord owxH0.counters = 2 ∧ ord (owxH1 m).counters = 3 ∧ ord (owxH2 m).counters = 3 ∧
-      ord (owxH3 m).counters = 3 ∧ ord (owxH4 m).counters = 3 := by
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> simp [LGraph.counters, ord, LGraph.nS, LGraph.nW, LGraph.nV,
-    owxH0, owxH1, owxH2, owxH3, owxH4]
-
-/-- **`(Owx)` for `Ǧ_{xx} G_{xy}`**, all four terms, on the vocabulary: the pathwise identity with the
-Stein defect of `f = G_{xy}`, `∂_{h_{αw}} f = -G_{xα} G_{wy}`. -/
-theorem owx_second (D : LData ι) (m z s : ℂ) (hm0 : m ≠ 0) (hzm : z + s * m = -m⁻¹)
-    (hM : ∀ i j, D.M i j = if i = j then m else 0) (hS : ∀ i, ∑ j, D.S i j = s)
-    (hSp : ∀ i j, D.Sp i j - m ^ 2 * ∑ w, D.Sp i w * D.S w j = D.S i j) (x y : ι) :
-    owxH0.val D ![x, y] - ((owxH1 m).val D ![x, y] + (owxH2 m).val D ![x, y] +
-        (owxH3 m).val D ![x, y] + (owxH4 m).val D ![x, y]) =
-      -m * ∑ w, ((if x = w then 1 else 0) + m ^ 2 * D.Sp x w) *
-        owxDefect z D.G D.S (D.G x y) (fun α w => -(D.G x α * D.G w y)) w := by
-  have h := owx_defect_identity z m s hm0 hzm D.G D.S D.Sp hS hSp (D.G x y)
-    (fun α w => -(D.G x α * D.G w y)) x
-  unfold LGraph.val
-  simp only [sum_pi_fin_succ, sum_pi_fin_zero]
-  simp [owxH0, owxH1, owxH2, owxH3, owxH4, LGraph.term, SEdge.val, WEdge.val, hM]
-  have e1 : ∑ a, m * ((D.G x x - m) * (D.G x y * (D.G a a - m))) * D.S x a =
-      m * ∑ α, D.S x α * (D.G x x - m) * (D.G α α - m) * D.G x y := by
-    rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun _ _ => by ring
-  have e2 : ∑ a, ∑ b, m ^ 3 * (D.G x y * ((D.G a a - m) * (D.G b b - m))) * (D.Sp x a * D.S a b) =
-      m ^ 3 * ∑ α, ∑ β, D.Sp x α * D.S α β * (D.G α α - m) * (D.G β β - m) * D.G x y := by
-    rw [Finset.mul_sum]
-    exact Finset.sum_congr rfl fun _ _ => by rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun _ _ => by ring
-  have e3 : ∑ a, m * (D.G a x * (D.G x a * D.G x y)) * D.S x a =
-      -(m * ∑ α, D.S x α * D.G α x * -(D.G x α * D.G x y)) := by
-    rw [Finset.mul_sum, ← Finset.sum_neg_distrib]
-    exact Finset.sum_congr rfl fun _ _ => by ring
-  have e4 : ∑ a, ∑ b, m ^ 3 * (D.G b a * (D.G x b * D.G a y)) * (D.Sp x a * D.S a b) =
-      -(m ^ 3 * ∑ α, ∑ β, D.Sp x α * D.S α β * D.G β α * -(D.G x β * D.G α y)) := by
-    rw [Finset.mul_sum, ← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl fun a _ => ?_
-    rw [Finset.mul_sum, ← Finset.sum_neg_distrib]
-    exact Finset.sum_congr rfl fun _ _ => by ring
-  rw [e1, e2, e3, e4]
-  linear_combination h
-
-/-- **`(Owx)` in expectation for the smallest graph.**  If the Stein defect of every row is
-integrable with mean zero (Gaussian integration by parts: merged `GaussIBP.stein` for the tame
-functions `ω ↦ Σ_α H_{wα} G_{αw}`; the data of the model has the deterministic `S`, `S⁺`), and the
-three values are integrable, then `E val G₀ = E val G₁ + E val G₂`: the identity of values. -/
-theorem owx_smallest_E {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Dω : Ω → LData ι) (m z s : ℂ)
-    (Sp₀ : Matrix ι ι ℂ) (hm0 : m ≠ 0) (hzm : z + s * m = -m⁻¹)
-    (hM : ∀ ω i j, (Dω ω).M i j = if i = j then m else 0) (hS : ∀ ω i, ∑ j, (Dω ω).S i j = s)
-    (hSp : ∀ ω i j, (Dω ω).Sp i j - m ^ 2 * ∑ w, (Dω ω).Sp i w * (Dω ω).S w j = (Dω ω).S i j)
-    (hSp0 : ∀ ω, (Dω ω).Sp = Sp₀) (x : ι)
-    (hZint : ∀ w, Integrable (fun ω => owxDefect z (Dω ω).G (Dω ω).S 1 (fun _ _ => 0) w) P)
-    (hZ : ∀ w, ∫ ω, owxDefect z (Dω ω).G (Dω ω).S 1 (fun _ _ => 0) w ∂P = 0)
-    (h0 : Integrable (fun ω => owxG0.val (Dω ω) (fun _ => x)) P)
-    (h1 : Integrable (fun ω => (owxG1 m).val (Dω ω) (fun _ => x)) P)
-    (h2 : Integrable (fun ω => (owxG2 m).val (Dω ω) (fun _ => x)) P) :
-    ∫ ω, owxG0.val (Dω ω) (fun _ => x) ∂P =
-      ∫ ω, (owxG1 m).val (Dω ω) (fun _ => x) ∂P + ∫ ω, (owxG2 m).val (Dω ω) (fun _ => x) ∂P := by
-  have hpt := fun ω => owx_smallest (Dω ω) m z s hm0 hzm (hM ω) (hS ω) (hSp ω) x
-  have hs : Integrable (fun ω => (owxG1 m).val (Dω ω) (fun _ => x) +
-      (owxG2 m).val (Dω ω) (fun _ => x)) P := h1.add h2
-  have hint : ∫ ω, (owxG0.val (Dω ω) (fun _ => x) - ((owxG1 m).val (Dω ω) (fun _ => x) +
-      (owxG2 m).val (Dω ω) (fun _ => x))) ∂P = 0 := by
-    simp_rw [hpt, hSp0]
-    rw [integral_const_mul, integral_finsetSum _ (fun w _ => (hZint w).const_mul _)]
-    simp [integral_const_mul, hZ]
-  rw [integral_sub h0 hs, integral_add h1 h2] at hint
-  linear_combination hint
-end OwxSmallest
-
 open RBM RBM.Gauss RBM.Green
 
 section CoordMat
@@ -621,21 +469,6 @@ theorem dhSample_lwG_star {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u)
       - (starRingEnd ℂ) (lwGm sz n z u ω i α) * (starRingEnd ℂ) (lwGm sz n z u ω w j))) * Complex.I_sq
 
 
-/-- **The convention of `dhSample` is the complex derivative along the matrix unit `E_{αw}`** (T2040i, the
-probe's `dH`): for `G_{ij}`, `∂_{h_{αw}} G_{ij} = d/ds ((H_u - z) + s E_{αw})⁻¹_{ij} |_{s = 0}`, the merged
-`hasDerivAt_inverse_apply` (`Graph/Expansions.lean:63`), with `h_{wα}` held fixed. -/
-theorem dhSample_lwG_eq_deriv {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u)
-    (α w i j : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
-    dhSample sz n u α w (lwG sz n z u i j) ω =
-      deriv (fun s : ℂ => Ring.inverse ((sz.seqHflow n u ω -
-        z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) +
-          s • single α w (1 : ℂ)) i j) 0 := by
-  have hU : IsUnit (sz.seqHflow n u ω -
-      z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) :=
-    isUnit_sub_smul_of_isHermitian (Sizes.seqHflow_isHermitian sz n u ω) hz.ne'
-  rw [dhSample_lwG sz n hz hu, (hasDerivAt_inverse_apply hU α w i j).deriv]
-  rfl
-
 /-! ### Tameness of the resolvent entries -/
 
 open Classical in
@@ -781,11 +614,6 @@ theorem Tame1.mul {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1
     rw [this]
     exact ((hF.tame_partial c).mul hG.tame).add (hF.tame.mul (hG.tame_partial c))
 
-/-- `C¹`-tame functions are closed under negation. -/
-theorem Tame1.neg {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) : Tame1 sz n (fun ω => -F ω) := by
-  have h := (Tame1.const (sz := sz) (n := n) 0).sub hF
-  simpa using h
-
 /-- `C¹`-tame functions are closed under complex conjugation (`star`). -/
 theorem Tame1.conj {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) :
     Tame1 sz n (fun ω => star (F ω)) where
@@ -818,13 +646,6 @@ theorem Tame1.listProd {κ : Type*} (l : List κ) {F : κ → Sizes.SeqΩ sz →
     have h₀ := h a (List.mem_cons_self ..)
     have hs := ih fun b hb => h b (List.mem_cons_of_mem _ hb)
     simpa using h₀.mul hs
-
-/-- `C¹`-tame functions are closed under powers. -/
-theorem Tame1.pow {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (k : ℕ) :
-    Tame1 sz n (fun ω => F ω ^ k) := by
-  induction k with
-  | zero => simpa using Tame1.const (sz := sz) (n := n) 1
-  | succ k ih => simpa [_root_.pow_succ] using ih.mul hF
 
 /-- `∂_{h_{αw}}` is determined by the real partials of its argument: if the partials of `H` at `ω` are
 `a` times those of `F` plus `b` times those of `G`, so is `dhSample`. -/
@@ -1104,14 +925,6 @@ theorem lwStein_tame_dhSample {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (
   · exact (Tame.const _).mul ((hF.tame_partial _).add ((Tame.const _).mul (hF.tame_partial _)))
   · exact (Tame.const _).mul (hF.tame_partial _)
 
-/-- **Stein for resolvent polynomials**: no tameness hypothesis is left; `GaussIBP sz` is the only input. -/
-theorem stein_lwPoly (hG : GaussIBP sz) {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 ≤ u)
-    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
-    (α w : Idx d (sz.L n) (sz.W n)) :
-    ∫ ω, sz.seqHflow n u ω w α * lwPoly sz n z u P ω ∂(Sizes.seqP sz) =
-      lwS sz n u w α * ∫ ω, dhSample sz n u α w (lwPoly sz n z u P) ω ∂(Sizes.seqP sz) :=
-  stein_sample hG (lwPoly_tame1 hz u P) hu α w
-
 /-- The resolvent identity `Σ_α H_{wα} G_{αw} = 1 + z G_{ww}`. -/
 theorem lwStein_resolvent_id {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (ω : Sizes.SeqΩ sz)
     (w : Idx d (sz.L n) (sz.W n)) :
@@ -1362,40 +1175,6 @@ The vertices of the derivative graphs are those of `Γ` (`inl a ↦ inl (inl a)`
 
 section GraphDeriv
 
-variable {E I : Type*}
-
-/-- The embedding of the vertices of `Γ` into those of its derivative graphs (two new external vertices). -/
-def lwEmb : E ⊕ I → (E ⊕ Fin 2) ⊕ I := Sum.map Sum.inl id
-
-/-- **The two edges replacing a solid edge `e` in its derivative** (`∂_{h_{αw}} G_{ab} = -G_{aα} G_{wb}`,
-`∂_{h_{αw}} \bar G_{ab} = -\bar G_{aw} \bar G_{αb}`; the circle is dropped, `M` is constant): the blue edge
-`a → b` becomes `a → α` and `w → b`, the red edge becomes `a → w` and `α → b`; `α = inl (inr 0)`,
-`w = inl (inr 1)`. -/
-def lwDEdges (e : SEdge (E ⊕ I)) : SEdge ((E ⊕ Fin 2) ⊕ I) × SEdge ((E ⊕ Fin 2) ⊕ I) :=
-  if e.σ then (⟨true, false, lwEmb e.src, Sum.inl (Sum.inr 0)⟩, ⟨true, false, Sum.inl (Sum.inr 1), lwEmb e.dst⟩)
-  else (⟨false, false, lwEmb e.src, Sum.inl (Sum.inr 1)⟩, ⟨false, false, Sum.inl (Sum.inr 0), lwEmb e.dst⟩)
-
-/-- **The derivative graph of the solid edge `p.1`** (with the other solid edges `p.2`): the edge `p.1` is
-replaced by the two edges of `lwDEdges`, the coefficient changes sign, the waved and dotted edges stay;
-`n_S + 1` solid edges, the two new vertices `α, w` are external. -/
-def LGraph.dTerm (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
-    LGraph (E ⊕ Fin 2) I where
-  solid := p.2.map (SEdge.map lwEmb) ++ [(lwDEdges p.1).1, (lwDEdges p.1).2]
-  waved := Γ.waved.map (WEdge.map lwEmb)
-  dotted := Γ.dotted.map (DEdge.map lwEmb)
-  coeff := -Γ.coeff
-
-/-- **The derivative of a graph**: one term for each solid edge of `Γ`, light-weights and weights included
-(`lwSplit`). -/
-def LGraph.dTerms (Γ : LGraph E I) : List (LGraph (E ⊕ Fin 2) I) :=
-  (lwSplit Γ.solid).map Γ.dTerm
-
-/-- `lwSplit` has one entry for each element of the list. -/
-theorem lwSplit_length {κ : Type*} (l : List κ) : (lwSplit l).length = l.length := by
-  induction l with
-  | nil => rfl
-  | cons a l ih => simp [lwSplit, ih]
-
 /-- Each entry of `lwSplit l` leaves one element out of `l`. -/
 theorem lwSplit_snd_length {κ : Type*} (l : List κ) :
     ∀ p ∈ lwSplit l, p.2.length + 1 = l.length := by
@@ -1474,29 +1253,6 @@ theorem lwStein_dh_sedge_val (hz : 0 < z.im) (hu : 0 < u) {V : Type*} (e : SEdge
     simp
 
 
-/-- The product of the edge factors of the derivative graph of the edge `p.1`: the factors of the two new
-edges are the two factors of the derivative of `p.1`, with the sign of the coefficient. -/
-theorem lwStein_dTerm_term (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (α w : Idx d (sz.L n) (sz.W n)) (ℓ' : (E ⊕ Fin 2) ⊕ I → Idx d (sz.L n) (sz.W n))
-    (hα : ℓ' (Sum.inl (Sum.inr 0)) = α) (hw : ℓ' (Sum.inl (Sum.inr 1)) = w) (ω : Sizes.SeqΩ sz) :
-    (Γ.dTerm p).term (lwSampleData sz n z u M S Sp ω) ℓ' =
-      (-Γ.coeff) * ((p.2.map (SEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb))).prod *
-        (if p.1.σ then lwG sz n z u (ℓ' (lwEmb p.1.src)) α ω * lwG sz n z u w (ℓ' (lwEmb p.1.dst)) ω
-          else star (lwG sz n z u (ℓ' (lwEmb p.1.src)) w ω) * star (lwG sz n z u α (ℓ' (lwEmb p.1.dst)) ω))) *
-        (Γ.waved.map (WEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb))).prod *
-        (Γ.dotted.map (DEdge.val (ℓ' ∘ lwEmb))).prod := by
-  have hS : (SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ') ∘ (SEdge.map lwEmb) =
-      SEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb) := funext fun e => rfl
-  have hW : (WEdge.val (lwSampleData sz n z u M S Sp ω) ℓ') ∘ (WEdge.map lwEmb) =
-      WEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb) := funext fun e => rfl
-  have hD : (DEdge.val ℓ') ∘ (DEdge.map lwEmb) = DEdge.val (ℓ' ∘ lwEmb) := funext fun e => rfl
-  simp only [LGraph.term, LGraph.dTerm, List.map_append, List.prod_append, List.map_map, hS, hW, hD,
-    List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
-  by_cases hσ : p.1.σ = true
-  · simp [lwDEdges, hσ, SEdge.val, lwSampleData, lwG, hα, hw]
-  · simp [lwDEdges, hσ, SEdge.val, lwSampleData, lwG, hα, hw]
-
-
 /-- The part of the value of a term that does not depend on the sample: coefficient, waved and dotted
 factors. -/
 def lwK {ι : Type*} [DecidableEq ι] (Γ : LGraph E I) (M S Sp : Matrix ι ι ℂ) (ℓ : E ⊕ I → ι) : ℂ :=
@@ -1519,66 +1275,12 @@ theorem lwStein_term_tame1 (hz : 0 < z.im) (Γ : LGraph E I) (ℓ : E ⊕ I → 
   rw [hfun]
   exact (Tame1.const _).mul (Tame1.listProd _ fun e _ => lwStein_sedge_val_tame1 hz e ℓ)
 
-/-- **The derivative of the term of a graph at a labelling**: the sum over the solid edges (`lwSplit`) of
-the term of the derivative graph `Γ.dTerm`, at the labelling that extends `ℓ'` by `α, w` on the two new
-external vertices. -/
-theorem lwStein_dh_term (hz : 0 < z.im) (hu : 0 < u) (Γ : LGraph E I) (α w : Idx d (sz.L n) (sz.W n))
-    (ℓ' : (E ⊕ Fin 2) ⊕ I → Idx d (sz.L n) (sz.W n))
-    (hα : ℓ' (Sum.inl (Sum.inr 0)) = α) (hw : ℓ' (Sum.inl (Sum.inr 1)) = w) (ω : Sizes.SeqΩ sz) :
-    dhSample sz n u α w (fun ω => Γ.term (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb)) ω =
-      (Γ.dTerms.map fun Γ' => Γ'.term (lwSampleData sz n z u M S Sp ω) ℓ').sum := by
-  have hfun : (fun ω => Γ.term (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb)) = fun ω =>
-      lwK Γ M S Sp (ℓ' ∘ lwEmb) *
-        (Γ.solid.map (SEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb))).prod :=
-    funext (lwStein_term_eq Γ _)
-  have hT : ∀ e ∈ Γ.solid, Tame1 sz n (fun ω => SEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb) e) :=
-    fun e _ => lwStein_sedge_val_tame1 hz e _
-  rw [hfun, lwStein_dh_const_mul _ (Tame1.listProd _ hT), lwStein_dh_listProd _ hT]
-  simp only [LGraph.dTerms, List.map_map]
-  rw [← List.sum_map_mul_left]
-  congr 1
-  refine List.map_congr_left fun p hp => ?_
-  simp only [Function.comp_apply]
-  rw [lwStein_dTerm_term Γ p α w ℓ' hα hw ω, lwStein_dh_sedge_val hz hu p.1 α w (ℓ' ∘ lwEmb) ω]
-  have hW : WEdge.val (lwSampleData sz n z u M S Sp ω) (ℓ' ∘ lwEmb) =
-      WEdge.val (⟨0, M, S, Sp⟩ : LData _) (ℓ' ∘ lwEmb) := rfl
-  unfold lwK
-  rw [hW]
-  by_cases hσ : p.1.σ = true <;> simp [hσ] <;> ring
-
 /-- A finite sum of list sums is the list of the finite sums. -/
 theorem lwStein_sum_list {β κ : Type*} [Fintype β] (L : List κ) (f : κ → β → ℂ) :
     ∑ b, (L.map fun x => f x b).sum = (L.map fun x => ∑ b, f x b).sum := by
   induction L with
   | nil => simp
   | cons a L ih => simp [Finset.sum_add_distrib, ih]
-
-/-- **The graph derivative** (item 5; `(Owx)` third and fourth terms, `7_8:298`): for a graph `Γ` with
-external labels `ℓe`, `∂_{h_{αw}}` of its value `Γ.val` (a function of the sample through `G = (H_u - z)⁻¹`;
-`M`, `S`, `S⁺` deterministic) is the sum over the solid edges of `Γ` -- weights and light-weights included, the
-light-weight `Ǧ = G - M` has the derivative of `G` -- of the values of the derivative graphs `Γ.dTerm`
-(`Γ.dTerms`), at the external labels `ℓe` extended by `α, w`.  The counters of each term:
-`LGraph.dTerm_counters`. -/
-theorem dhSample_graphVal [Fintype I] [DecidableEq I] (hz : 0 < z.im) (hu : 0 < u) (Γ : LGraph E I)
-    (ℓe : E → Idx d (sz.L n) (sz.W n)) (α w : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
-    dhSample sz n u α w (fun ω => Γ.val (lwSampleData sz n z u M S Sp ω) ℓe) ω =
-      (Γ.dTerms.map fun Γ' => Γ'.val (lwSampleData sz n z u M S Sp ω) (Sum.elim ℓe ![α, w])).sum := by
-  classical
-  unfold LGraph.val
-  rw [lwStein_dh_sum Finset.univ fun ℓi _ => lwStein_term_tame1 hz Γ _]
-  have hterm : ∀ ℓi : I → Idx d (sz.L n) (sz.W n),
-      dhSample sz n u α w (fun ω => Γ.term (lwSampleData sz n z u M S Sp ω) (Sum.elim ℓe ℓi)) ω =
-        (Γ.dTerms.map fun Γ' => Γ'.term (lwSampleData sz n z u M S Sp ω)
-          (Sum.elim (Sum.elim ℓe ![α, w]) ℓi)).sum := by
-    intro ℓi
-    have hcomp : (Sum.elim (Sum.elim ℓe ![α, w]) ℓi) ∘ lwEmb = Sum.elim ℓe ℓi := by
-      funext v
-      rcases v with a | b <;> simp [lwEmb]
-    have := lwStein_dh_term (M := M) (S := S) (Sp := Sp) hz hu Γ α w (Sum.elim (Sum.elim ℓe ![α, w]) ℓi)
-      (by simp) (by simp) ω
-    rwa [hcomp] at this
-  simp_rw [hterm]
-  rw [lwStein_sum_list]
 
 end GraphDerivVal
 
@@ -1603,293 +1305,10 @@ theorem lwStein_nM_congr (Γ₁ Γ₂ : LGraph E I) (hW : Γ₁.waved = Γ₂.wa
     simp only [LGraph.mol, hstep]
   simp only [LGraph.nM, hmol]
 
-/-- The graph with two vertices (external) and no edge has no internal molecule. -/
-theorem lwStein_nM_empty (Z : LGraph (Fin 2) (Fin 0)) : Z.nM = 0 := by
-  unfold LGraph.nM
-  rw [Finset.card_eq_zero, Finset.image_eq_empty, Finset.filter_eq_empty_iff]
-  intro v _ h
-  rcases v with a | b
-  · have := h (Sum.inl a) ((Z.mem_mol_iff _ _).2 (SimpleGraph.Reachable.refl _))
-    simp at this
-  · exact b.elim0
-
-/-- **The counters of the derivative graphs** (item 5): replacing a solid edge by its two edges through the
-new external vertices `α, w` adds one solid edge and nothing else: `n_S + 1`, `n_W`, `n_V` (the new
-vertices are external) and `n_M` (no waved or dotted edge is touched) are those of `Γ`, plus one in `n_S`. -/
-theorem LGraph.dTerm_counters (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) :
-    (Γ.dTerm p).nS = Γ.nS + 1 ∧ (Γ.dTerm p).nW = Γ.nW ∧ (Γ.dTerm p).nV = Γ.nV ∧
-      (Γ.dTerm p).nM = Γ.nM := by
-  refine ⟨?_, by simp [LGraph.nW, LGraph.dTerm], rfl, ?_⟩
-  · have := lwSplit_snd_length Γ.solid p hp
-    simp only [LGraph.nS, LGraph.dTerm, List.length_append, List.length_map, List.length_cons,
-      List.length_nil]
-    omega
-  · let Z : LGraph (Fin 2) (Fin 0) := ⟨[], [], [], 1⟩
-    let φ : (E ⊕ Fin 2) ⊕ (I ⊕ Fin 0) ≃ (E ⊕ Fin 2) ⊕ I :=
-      Equiv.sumCongr (Equiv.refl _) (Equiv.sumEmpty I (Fin 0))
-    have hφ : ∀ v, (φ v).isRight = v.isRight := by
-      intro v
-      rcases v with x | y <;> simp [φ]
-    have hc := (Γ.disjUnion Z).counters_relabel_equiv φ hφ
-    have hcomp : ∀ v : E ⊕ I, φ (lwUnionV₁ (E₂ := Fin 2) (I₂ := Fin 0) v) = lwEmb v := by
-      intro v
-      rcases v with a | b <;> simp [φ, lwUnionV₁, lwEmb]
-    have hW : (Γ.dTerm p).waved = ((Γ.disjUnion Z).relabel φ).waved := by
-      simp only [LGraph.dTerm, LGraph.relabel, LGraph.disjUnion, Z, List.map_nil, List.append_nil,
-        List.map_map]
-      refine List.map_congr_left fun e _ => ?_
-      simp only [Function.comp_apply, WEdge.map, hcomp]
-    have hD : (Γ.dTerm p).dotted = ((Γ.disjUnion Z).relabel φ).dotted := by
-      simp only [LGraph.dTerm, LGraph.relabel, LGraph.disjUnion, Z, List.map_nil, List.append_nil,
-        List.map_map]
-      refine List.map_congr_left fun e _ => ?_
-      simp only [Function.comp_apply, DEdge.map, hcomp]
-    rw [lwStein_nM_congr _ _ hW hD, hc.2.2.2, LGraph.nM_disjUnion, lwStein_nM_empty, add_zero]
-
-omit [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] in
-theorem LGraph.dTerms_length (Γ : LGraph E I) : Γ.dTerms.length = Γ.nS := by
-  simp [LGraph.dTerms, lwSplit_length, LGraph.nS]
-
-/-- **The scaling order of each derivative graph is that of `Γ` plus one** (`n_S + 1`, `n_W`, `n_V` as
-above): the derivative terms of `(Owx)` have `ord = ord(Γ) + 1`. -/
-theorem LGraph.dTerm_ord (Γ : LGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hp : p ∈ lwSplit Γ.solid) : ord (Γ.dTerm p).counters = ord Γ.counters + 1 := by
-  obtain ⟨h1, h2, h3, h4⟩ := Γ.dTerm_counters p hp
-  simp only [LGraph.counters, ord, h1, h2, h3, h4]
-  push_cast
-  ring
-
-/-- Every derivative graph has one solid edge more and the other counters of `Γ`. -/
-theorem LGraph.dTerms_counters (Γ : LGraph E I) :
-    ∀ Γ' ∈ Γ.dTerms, Γ'.nS = Γ.nS + 1 ∧ Γ'.nW = Γ.nW ∧ Γ'.nV = Γ.nV ∧ Γ'.nM = Γ.nM := by
-  intro Γ' hΓ'
-  obtain ⟨p, hp, rfl⟩ := List.mem_map.1 hΓ'
-  exact Γ.dTerm_counters p hp
-
 end DCounters
 
 
 /-! ## Compiled instances -/
-
-section Instances
-
-open RBM.Gauss.SizesInst
-
-/-- The small admissible-shape size sequence of the preflight (`d = 3`, `L = 3`, `W = 2`, `N = 216`, coupling `1/2`),
-constant in `n`. -/
-def lwSzT : Sizes 3 where
-  L := fun _ => 3
-  W := fun _ => 2
-  lam := fun _ => 1 / 2
-  three_le_L := fun _ => le_refl 3
-  W_pos := fun _ => by norm_num
-
-/-- The spectral parameter `z = 0.3 + 0.05 i` of the preflight. -/
-def lwZ : ℂ := (3 / 10 : ℝ) + (1 / 20 : ℝ) * Complex.I
-
-/-- `Im z > 0` at `z = 0.3 + 0.05 i`. -/
-theorem lwZ_im : 0 < lwZ.im := by simp [lwZ]
-
-/-- **Item 2 at `d = 3`, `L = 3`, `W = 2`** (`N = 216`), `z = 0.3 + 0.05 i`, `u = 7/10`, at every sample `ω`
-(in particular at the sample below) and every `α, w, i, j`: both closed forms. -/
-example (ω : Sizes.SeqΩ lwSzT) (α w i j : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) :
-    dhSample lwSzT 0 (7 / 10) α w (lwG lwSzT 0 lwZ (7 / 10) i j) ω =
-        -(lwG lwSzT 0 lwZ (7 / 10) i α ω * lwG lwSzT 0 lwZ (7 / 10) w j ω) ∧
-      dhSample lwSzT 0 (7 / 10) α w (fun ω => star (lwG lwSzT 0 lwZ (7 / 10) i j ω)) ω =
-        -star (lwG lwSzT 0 lwZ (7 / 10) i w ω * lwG lwSzT 0 lwZ (7 / 10) α j ω) :=
-  ⟨dhSample_lwG lwSzT 0 lwZ_im (by norm_num) α w i j ω,
-    dhSample_lwG_star lwSzT 0 lwZ_im (by norm_num) α w i j ω⟩
-
-/-- A fixed non-trivial sample: real part `1/2`, imaginary part `-1/3` in every coordinate. -/
-def lwOmega : Sizes.SeqΩ lwSzT := fun c => if c.2.2.2 then 1 / 2 else -(1 / 3)
-
-/-- **Item 2 at a fixed sample and fixed vertices** (`0` and `(1, 0, 0)` in `Z_6^3`). -/
-example :
-    dhSample lwSzT 0 (7 / 10) (0 : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) ![1, 0, 0]
-        (lwG lwSzT 0 lwZ (7 / 10) 0 ![1, 0, 0]) lwOmega =
-      -(lwG lwSzT 0 lwZ (7 / 10) 0 0 lwOmega * lwG lwSzT 0 lwZ (7 / 10) ![1, 0, 0] ![1, 0, 0] lwOmega) :=
-  dhSample_lwG lwSzT 0 lwZ_im (by norm_num) _ _ _ _ _
-
-/-- The resolvent polynomial `X (i, j, true)` is the entry `G_{ij}`. -/
-theorem lwPoly_X_true {d : ℕ} (sz : Sizes d) (n : ℕ) {z : ℂ} (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) :
-    lwPoly sz n z u (MvPolynomial.X (i, j, true)) = lwG sz n z u i j := by
-  funext ω
-  simp [lwPoly, lwVar]
-
-/-- `m = i/2`, `z = 7 i / 4`, `u = 1/2`: `z + u m = -1/m` (`2 i = 2 i`), `|m|² u = 1/8 < 1`, `Im z > 0`. -/
-def lwM0 : ℂ := Complex.I / 2
-
-def lwZ0 : ℂ := 7 * Complex.I / 4
-
-/-- `Im z > 0` at `z = 7i/4`. -/
-theorem lwZ0_im : 0 < lwZ0.im := by simp [lwZ0]
-
-/-- `m = i/2 ≠ 0`. -/
-theorem lwM0_ne : lwM0 ≠ 0 := by simp [lwM0]
-
-/-- `z + u m = -m⁻¹` at `u = 1/2`. -/
-theorem lwM0_hzm : lwZ0 + (((1 / 2 : ℝ)) : ℂ) * lwM0 = -lwM0⁻¹ := by
-  simp only [lwZ0, lwM0]
-  push_cast
-  field_simp
-  ring_nf
-  simp [Complex.I_sq]
-
-/-- `|m|² u = 1/8 < 1` at `u = 1/2`. -/
-theorem lwM0_norm : ‖lwM0‖ ^ 2 * (1 / 2 : ℝ) < 1 := by
-  simp [lwM0]
-  norm_num
-
-/-- **Tameness of a resolvent polynomial** at `d = 3`, `L = 3`, `W = 2`: `|G_{00}|² + 2`
-(`G_{00} \bar G_{00} + 2`), `u = 7/10`, `z = 0.3 + 0.05 i`; the bound `|G_{ij}| ≤ 20 = (Im z)⁻¹` of the envelope. -/
-example : Tame1 lwSzT 0 (lwPoly lwSzT 0 lwZ (7 / 10)
-    (MvPolynomial.X (0, 0, true) * MvPolynomial.X (0, 0, false) + MvPolynomial.C 2)) :=
-  lwPoly_tame1 lwZ_im _ _
-
-example (ω : Sizes.SeqΩ lwSzT) (i j : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) :
-    ‖lwG lwSzT 0 lwZ (7 / 10) i j ω‖ ≤ 20 := by
-  have h := lwStein_norm_lwG_le lwSzT 0 lwZ_im.ne' (7 / 10) i j ω
-  have e : |lwZ.im|⁻¹ = (20 : ℝ) := by simp [lwZ]
-  rwa [e] at h
-
-/-- **The convention of `dhSample` against the matrix-level complex derivative along `E_{αw}`**, at `d = 3`,
-`L = 3`, `W = 2` and the fixed sample `lwOmega`. -/
-example (α w i j : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) :
-    dhSample lwSzT 0 (7 / 10) α w (lwG lwSzT 0 lwZ (7 / 10) i j) lwOmega =
-      deriv (fun s : ℂ => Ring.inverse ((lwSzT.seqHflow 0 (7 / 10) lwOmega -
-        lwZ • (1 : Matrix (Idx 3 (lwSzT.L 0) (lwSzT.W 0)) (Idx 3 (lwSzT.L 0) (lwSzT.W 0)) ℂ)) +
-          s • single α w (1 : ℂ)) i j) 0 :=
-  dhSample_lwG_eq_deriv lwSzT 0 lwZ_im (by norm_num) α w i j lwOmega
-
-/-- **Item 3 at `sz0` (`d = 3`, `L = 4`, `W = 32`, `n = 0`)**, `F = G_{xx}`, `u = 1/2`: the complex Stein
-identity `E[(H_u)_{wα} G_{xx}] = u S_{wα} E[-G_{xα} G_{wx}]` for every `w, α, x`, with `GaussIBP sz0` the only
-hypothesis (another gate's pin, S1-19). -/
-example (hG : GaussIBP sz0) (x w α : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∫ ω, sz0.seqHflow 0 (1 / 2) ω w α * lwG sz0 0 lwZ0 (1 / 2) x x ω ∂(Sizes.seqP sz0) =
-      lwS sz0 0 (1 / 2) w α *
-        ∫ ω, -(lwG sz0 0 lwZ0 (1 / 2) x α ω * lwG sz0 0 lwZ0 (1 / 2) w x ω) ∂(Sizes.seqP sz0) := by
-  have h := stein_sample hG (lwG_tame1 (sz := sz0) (n := 0) lwZ0_im (1 / 2) x x) (u := 1 / 2)
-    (by norm_num) α w
-  simpa only [dhSample_lwG sz0 0 lwZ0_im (by norm_num : (0 : ℝ) < 1 / 2) α w x x] using h
-
-/-- **Item 3 at a concrete off-diagonal pair**: `w = 0`, `α = (32, 0, 0)` (the pair of the `FineModel` check of
-`E|X_{wα}|²`), `x = 0`. -/
-example (hG : GaussIBP sz0) :
-    ∫ ω, sz0.seqHflow 0 (1 / 2) ω 0 ![32, 0, 0] * lwG sz0 0 lwZ0 (1 / 2) 0 0 ω ∂(Sizes.seqP sz0) =
-      lwS sz0 0 (1 / 2) 0 ![32, 0, 0] *
-        ∫ ω, -(lwG sz0 0 lwZ0 (1 / 2) 0 ![32, 0, 0] ω * lwG sz0 0 lwZ0 (1 / 2) 0 0 ω) ∂(Sizes.seqP sz0) := by
-  have h := stein_sample hG (lwG_tame1 (sz := sz0) (n := 0) lwZ0_im (1 / 2) 0 0) (u := 1 / 2)
-    (by norm_num) ![32, 0, 0] 0
-  simpa only [dhSample_lwG sz0 0 lwZ0_im (by norm_num : (0 : ℝ) < 1 / 2) ![32, 0, 0] 0 0 0] using h
-
-/-- **Item 3 for a resolvent polynomial with a red factor** at `sz0`: `F = |G_{xy}|² = G_{xy} \bar G_{xy}` with
-`x = 0`, `y = (32, 0, 0)`, at the pair `(w, α) = (0, 0)`; no tameness hypothesis, `GaussIBP sz0` only. -/
-example (hG : GaussIBP sz0) :=
-  stein_lwPoly (n := 0) hG lwZ0_im (u := 1 / 2) (by norm_num)
-    (MvPolynomial.X (0, ![32, 0, 0], true) * MvPolynomial.X (0, ![32, 0, 0], false)) 0 0
-
-/-- **Item 4 at `sz0`**, `f = G_{xx}`, `df α w = -G_{xα} G_{wx}`: `E Z_w = 0` for the Stein defect of the row `w`. -/
-example (hG : GaussIBP sz0) (x w : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∫ ω, owxDefect lwZ0 (lwGm sz0 0 lwZ0 (1 / 2) ω) (lwS sz0 0 (1 / 2)) (lwG sz0 0 lwZ0 (1 / 2) x x ω)
-      (fun α w' => -(lwG sz0 0 lwZ0 (1 / 2) x α ω * lwG sz0 0 lwZ0 (1 / 2) w' x ω)) w ∂(Sizes.seqP sz0) = 0 := by
-  have h := integral_owxDefect hG lwZ0_im (u := 1 / 2) (by norm_num)
-    (MvPolynomial.X (x, x, true)) w
-  simpa only [lwPoly_X_true, dhSample_lwG sz0 0 lwZ0_im (by norm_num : (0 : ℝ) < 1 / 2)] using h
-
-/-- **Item 4, `(Owx)` in expectation, at `sz0`**: `f = G_{xx}`, `u = 1/2`, `m = i/2`, `z = 7i/4`,
-`S⁺ = S (1 - m² S)⁻¹`; every deterministic hypothesis is discharged (`m ≠ 0`, `z + u m = -1/m`,
-`S⁺ (1 - m² S) = S` from `|m|² u = 1/8 < 1`), `GaussIBP sz0` is the only hypothesis. -/
-example (hG : GaussIBP sz0) (x : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∫ ω, (lwG sz0 0 lwZ0 (1 / 2) x x ω - lwM0) * lwG sz0 0 lwZ0 (1 / 2) x x ω ∂(Sizes.seqP sz0) =
-      ∫ ω, (lwM0 * ∑ α, lwS sz0 0 (1 / 2) x α * (lwG sz0 0 lwZ0 (1 / 2) x x ω - lwM0) *
-            (lwG sz0 0 lwZ0 (1 / 2) α α ω - lwM0) * lwG sz0 0 lwZ0 (1 / 2) x x ω +
-          lwM0 ^ 3 * ∑ α, ∑ β, lwSplus sz0 0 (1 / 2) lwM0 x α * lwS sz0 0 (1 / 2) α β *
-            (lwG sz0 0 lwZ0 (1 / 2) α α ω - lwM0) * (lwG sz0 0 lwZ0 (1 / 2) β β ω - lwM0) *
-            lwG sz0 0 lwZ0 (1 / 2) x x ω -
-          lwM0 * ∑ α, lwS sz0 0 (1 / 2) x α * lwG sz0 0 lwZ0 (1 / 2) α x ω *
-            -(lwG sz0 0 lwZ0 (1 / 2) x α ω * lwG sz0 0 lwZ0 (1 / 2) x x ω) -
-          lwM0 ^ 3 * ∑ α, ∑ β, lwSplus sz0 0 (1 / 2) lwM0 x α * lwS sz0 0 (1 / 2) α β *
-            lwG sz0 0 lwZ0 (1 / 2) β α ω * -(lwG sz0 0 lwZ0 (1 / 2) x β ω * lwG sz0 0 lwZ0 (1 / 2) α x ω))
-        ∂(Sizes.seqP sz0) := by
-  have h := owx_integral hG lwZ0_im (u := 1 / 2) (by norm_num) lwM0_ne lwM0_hzm
-    (lwSplus sz0 0 (1 / 2) lwM0) (lwSplus_spec (by norm_num) lwM0_norm)
-    (MvPolynomial.X (x, x, true)) x
-  simpa only [lwPoly_X_true, dhSample_lwG sz0 0 lwZ0_im (by norm_num : (0 : ℝ) < 1 / 2)] using h
-
-/-- A two-edge graph: `S_{xa} G_{xa} \bar G_{ay}` (external `x, y`, internal `a`; `n_S = 2`, `n_W = 1`,
-`n_V = 1`, the waved edge joins `x` and `a`, so `n_M = 0`). -/
-def lwTwoEdge : LGraph (Fin 2) (Fin 1) where
-  solid := [⟨true, false, .inl 0, .inr 0⟩, ⟨false, false, .inr 0, .inl 1⟩]
-  waved := [⟨false, true, .inl 0, .inr 0⟩]
-  dotted := []
-  coeff := 1
-
-/-- The counters of `lwTwoEdge`. -/
-theorem lwTwoEdge_counters :
-    lwTwoEdge.nS = 2 ∧ lwTwoEdge.nW = 1 ∧ lwTwoEdge.nV = 1 ∧ lwTwoEdge.nM = 0 := by decide
-
-/-- The counters of `owxG1`: `n_S = 2`, `n_W = 1`, `n_V = 1`, `n_M = 0`. -/
-theorem lwStein_owxG1_counters (m : ℂ) :
-    (owxG1 m).nS = 2 ∧ (owxG1 m).nW = 1 ∧ (owxG1 m).nV = 1 ∧ (owxG1 m).nM = 0 := by
-  refine ⟨rfl, rfl, by simp [LGraph.nV], ?_⟩
-  have : (owxG1 m).nM = (owxG1 0).nM := lwStein_nM_congr _ _ rfl rfl
-  rw [this]
-  decide
-
-/-- **Item 5 on `owxG1`** (`m Σ_α S_{xα} Ǧ_{xx} Ǧ_{αα}`, `d = 3`, `L = 4`, `W = 32`): the derivative of the value
-is the sum of the two derivative graphs, each with `n_S = 3`, `n_W = 1`, `n_V = 1`, `n_M = 0`; all hypotheses
-discharged (`u = 1/2`, `z = 7i/4`, `M = (i/2) I`, `S = S^{(u)}`, `S⁺`). -/
-example (x α w : Idx 3 (sz0.L 0) (sz0.W 0)) (ω : Sizes.SeqΩ sz0) :
-    dhSample sz0 0 (1 / 2) α w (fun ω => (owxG1 lwM0).val
-        (lwSampleData sz0 0 lwZ0 (1 / 2) (lwM0 • 1) (lwS sz0 0 (1 / 2)) (lwSplus sz0 0 (1 / 2) lwM0) ω)
-        (fun _ => x)) ω =
-      ((owxG1 lwM0).dTerms.map fun Γ' => Γ'.val
-        (lwSampleData sz0 0 lwZ0 (1 / 2) (lwM0 • 1) (lwS sz0 0 (1 / 2)) (lwSplus sz0 0 (1 / 2) lwM0) ω)
-        (Sum.elim (fun _ => x) ![α, w])).sum ∧
-      (owxG1 lwM0).dTerms.length = 2 ∧
-      ∀ Γ' ∈ (owxG1 lwM0).dTerms, Γ'.nS = 3 ∧ Γ'.nW = 1 ∧ Γ'.nV = 1 ∧ Γ'.nM = 0 := by
-  refine ⟨dhSample_graphVal lwZ0_im (by norm_num) (owxG1 lwM0) (fun _ => x) α w ω, ?_, ?_⟩
-  · rw [LGraph.dTerms_length]; exact (lwStein_owxG1_counters lwM0).1
-  · intro Γ' hΓ'
-    obtain ⟨h1, h2, h3, h4⟩ := (owxG1 lwM0).dTerms_counters Γ' hΓ'
-    obtain ⟨c1, c2, c3, c4⟩ := lwStein_owxG1_counters lwM0
-    exact ⟨by omega, by omega, by omega, by omega⟩
-
-/-- **Item 5 on a two-edge graph** `S_{xa} G_{xa} \bar G_{ay}` (here with `d = 3`, `L = 3`, `W = 2`). -/
-example (x y α w : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) (ω : Sizes.SeqΩ lwSzT) :
-    dhSample lwSzT 0 (7 / 10) α w (fun ω => lwTwoEdge.val
-        (lwSampleData lwSzT 0 lwZ (7 / 10) 0 (lwS lwSzT 0 (7 / 10)) 0 ω) ![x, y]) ω =
-      (lwTwoEdge.dTerms.map fun Γ' => Γ'.val
-        (lwSampleData lwSzT 0 lwZ (7 / 10) 0 (lwS lwSzT 0 (7 / 10)) 0 ω)
-        (Sum.elim ![x, y] ![α, w])).sum ∧
-      lwTwoEdge.dTerms.length = 2 ∧
-      ∀ Γ' ∈ lwTwoEdge.dTerms, Γ'.nS = 3 ∧ Γ'.nW = 1 ∧ Γ'.nV = 1 ∧ Γ'.nM = 0 := by
-  refine ⟨dhSample_graphVal lwZ_im (by norm_num) lwTwoEdge ![x, y] α w ω, ?_, ?_⟩
-  · rw [LGraph.dTerms_length]; exact lwTwoEdge_counters.1
-  · intro Γ' hΓ'
-    obtain ⟨h1, h2, h3, h4⟩ := lwTwoEdge.dTerms_counters Γ' hΓ'
-    obtain ⟨c1, c2, c3, c4⟩ := lwTwoEdge_counters
-    exact ⟨by omega, by omega, by omega, by omega⟩
-
-/-- **Item 5 on the merged `figGraph`** (the left graph of `fig:p=2expansion`, `n_S = 8`, `n_W = 4`, `n_V = 6`,
-`n_M = 2`; `d = 3`, `L = 3`, `W = 2`): eight derivative graphs, each with `n_S = 9` and the other counters unchanged. -/
-example (x y α w : Idx 3 (lwSzT.L 0) (lwSzT.W 0)) (ω : Sizes.SeqΩ lwSzT) :
-    dhSample lwSzT 0 (7 / 10) α w (fun ω => figGraph.val
-        (lwSampleData lwSzT 0 lwZ (7 / 10) 0 (lwS lwSzT 0 (7 / 10)) 0 ω) ![x, y]) ω =
-      (figGraph.dTerms.map fun Γ' => Γ'.val
-        (lwSampleData lwSzT 0 lwZ (7 / 10) 0 (lwS lwSzT 0 (7 / 10)) 0 ω)
-        (Sum.elim ![x, y] ![α, w])).sum ∧
-      figGraph.dTerms.length = 8 ∧
-      ∀ Γ' ∈ figGraph.dTerms, Γ'.nS = 9 ∧ Γ'.nW = 4 ∧ Γ'.nV = 6 ∧ Γ'.nM = 2 := by
-  refine ⟨dhSample_graphVal lwZ_im (by norm_num) figGraph ![x, y] α w ω, ?_, ?_⟩
-  · rw [LGraph.dTerms_length]; exact figGraph_counters.1
-  · intro Γ' hΓ'
-    obtain ⟨h1, h2, h3, h4⟩ := figGraph.dTerms_counters Γ' hΓ'
-    obtain ⟨c1, c2, c3, c4⟩ := figGraph_counters
-    exact ⟨by omega, by omega, by omega, by omega⟩
-
-end Instances
 
 end RBM.Graph
 
@@ -1898,86 +1317,3 @@ end RBM.Graph
 The proved weight expansion at `m = i`, `z = 0`, `s = 1`, `S = J/2`, `S⁺ = J/4`, `M = m I`, `G` arbitrary on two
 vertices: every deterministic hypothesis is discharged; in `inst_owx_smallest_E` the Stein identity stays a hypothesis
 (`GaussIBP`, S1-19), in `inst_owx_smallest_E_unit` it is discharged on the point mass. -/
-
-namespace RBM.Graph.LWInstOwx
-
-open Matrix Complex
-
-/-- `S = J/2`: the rows sum to `1`. -/
-def S0 : Matrix (Fin 2) (Fin 2) ℂ := !![1 / 2, 1 / 2; 1 / 2, 1 / 2]
-
-/-- `S⁺ = S (1 - m² S)⁻¹ = J/4` for `m = i` (`m² = -1`). -/
-def Sp0 : Matrix (Fin 2) (Fin 2) ℂ := !![1 / 4, 1 / 4; 1 / 4, 1 / 4]
-
-/-- An arbitrary resolvent-like matrix (the identity is algebraic: it holds for every `G`). -/
-def G0 : Matrix (Fin 2) (Fin 2) ℂ := !![1 + I, 2; 3 - I, 4]
-
-/-- The data `D₀ = (G₀, M = i·1, S₀, S₀⁺)`. -/
-def D0 : LData (Fin 2) := ⟨G0, Matrix.diagonal fun _ => I, S0, Sp0⟩
-
-theorem hS0 : ∀ i, ∑ j, S0 i j = 1 := by
-  intro i
-  fin_cases i <;> simp [S0, Fin.sum_univ_two] <;> norm_num
-
-theorem hSp0 : ∀ i j, Sp0 i j - I ^ 2 * ∑ w, Sp0 i w * S0 w j = S0 i j := by
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [Sp0, S0, Fin.sum_univ_two] <;> norm_num
-
-theorem hzm0 : (0 : ℂ) + 1 * I = -I⁻¹ := by simp
-
-theorem hM0 : ∀ i j, D0.M i j = if i = j then I else 0 := by
-  intro i j
-  simp [D0, Matrix.diagonal_apply]
-
-/-- **`(Owx)` for `Ǧ_{xx}`, instantiated** (two vertices, `m = i`, `z = 0`, `s = 1`). -/
-theorem inst_owx_smallest (x : Fin 2) :
-    owxG0.val D0 (fun _ => x) - ((owxG1 I).val D0 (fun _ => x) + (owxG2 I).val D0 (fun _ => x)) =
-      -I * ∑ w, ((if x = w then 1 else 0) + I ^ 2 * D0.Sp x w) *
-        owxDefect 0 D0.G D0.S 1 (fun _ _ => 0) w :=
-  owx_smallest D0 I 0 1 I_ne_zero hzm0 hM0 hS0 hSp0 x
-
-/-- **`(Owx)` for `Ǧ_{xx} G_{xy}`, instantiated** (four terms, `x = 0`, `y = 1`). -/
-theorem inst_owx_second :
-    owxH0.val D0 ![0, 1] - ((owxH1 I).val D0 ![0, 1] + (owxH2 I).val D0 ![0, 1] +
-        (owxH3 I).val D0 ![0, 1] + (owxH4 I).val D0 ![0, 1]) =
-      -I * ∑ w, ((if (0 : Fin 2) = w then 1 else 0) + I ^ 2 * D0.Sp 0 w) *
-        owxDefect 0 D0.G D0.S (D0.G 0 1) (fun α w => -(D0.G 0 α * D0.G w 1)) w :=
-  owx_second D0 I 0 1 I_ne_zero hzm0 hM0 hS0 hSp0 0 1
-
-/-- **`(Owx)` in expectation, instantiated** on an arbitrary probability space with a random `G`
-(any measurable family): the Stein identity `E Z_w = 0` (Gaussian integration by parts, merged
-`GaussIBP`, another gate's pin) and the integrability stay hypotheses. -/
-theorem inst_owx_smallest_E {Ω : Type*} [MeasurableSpace Ω] (P : MeasureTheory.Measure Ω)
-    (Gω : Ω → Matrix (Fin 2) (Fin 2) ℂ) (x : Fin 2)
-    (hZint : ∀ w, MeasureTheory.Integrable
-      (fun ω => owxDefect 0 (Gω ω) S0 1 (fun _ _ => 0) w) P)
-    (hZ : ∀ w, ∫ ω, owxDefect 0 (Gω ω) S0 1 (fun _ _ => 0) w ∂P = 0)
-    (h0 : MeasureTheory.Integrable (fun ω => owxG0.val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x)) P)
-    (h1 : MeasureTheory.Integrable (fun ω => (owxG1 I).val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x)) P)
-    (h2 : MeasureTheory.Integrable (fun ω => (owxG2 I).val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x)) P) :
-    ∫ ω, owxG0.val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x) ∂P =
-      ∫ ω, (owxG1 I).val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x) ∂P +
-        ∫ ω, (owxG2 I).val ⟨Gω ω, D0.M, S0, Sp0⟩ (fun _ => x) ∂P :=
-  owx_smallest_E P (fun ω => ⟨Gω ω, D0.M, S0, Sp0⟩) I 0 1 Sp0 I_ne_zero hzm0
-    (fun _ => hM0) (fun _ => hS0) (fun _ => hSp0) (fun _ => rfl) x hZint hZ h0 h1 h2
-
-/-- At `G = M = i·1` the Stein defect of every row vanishes. -/
-theorem owxDefect_M0 (w : Fin 2) :
-    owxDefect 0 (Matrix.diagonal fun _ => I) S0 1 (fun _ _ => 0) w = 0 := by
-  fin_cases w <;> simp [owxDefect, S0, Fin.sum_univ_two, Matrix.diagonal_apply] <;> ring_nf <;> simp
-
-/-- **`(Owx)` in expectation at a fully concrete point** (`Ω = Unit` with the point mass, `G = M`):
-every hypothesis, the Stein identity included, is discharged. -/
-theorem inst_owx_smallest_E_unit (x : Fin 2) :
-    ∫ _ : Unit, owxG0.val ⟨Matrix.diagonal fun _ => I, D0.M, S0, Sp0⟩ (fun _ => x)
-        ∂(MeasureTheory.Measure.dirac ()) =
-      ∫ _ : Unit, (owxG1 I).val ⟨Matrix.diagonal fun _ => I, D0.M, S0, Sp0⟩ (fun _ => x)
-          ∂(MeasureTheory.Measure.dirac ()) +
-        ∫ _ : Unit, (owxG2 I).val ⟨Matrix.diagonal fun _ => I, D0.M, S0, Sp0⟩ (fun _ => x)
-          ∂(MeasureTheory.Measure.dirac ()) :=
-  inst_owx_smallest_E (MeasureTheory.Measure.dirac ()) (fun _ => Matrix.diagonal fun _ => I) x
-    (fun w => MeasureTheory.integrable_const _) (fun w => by simp [owxDefect_M0])
-    (MeasureTheory.integrable_const _) (MeasureTheory.integrable_const _)
-    (MeasureTheory.integrable_const _)
-
-end RBM.Graph.LWInstOwx

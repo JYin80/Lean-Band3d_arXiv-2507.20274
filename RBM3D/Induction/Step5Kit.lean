@@ -588,53 +588,6 @@ theorem stStep5IV_holds (d : ℕ) : STStep5IV d := by
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Path Filter
-
 /-! ### The four targets and the general statement -/
 
-/-- **Step 5, case (i)** applied at `(szB, zB, 7/8, 15/16)`: `1/16 ≤ 1-t = 1/16 ≤ 1-s = 1/8 ≤ 1`. -/
-theorem inst_step5I (h : STStep5I 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_ing5_I STReg5I _ h szB_reg5I Cd hCd
-
-/-- **Step 5, case (ii)** applied at `(szB, zB, 15/16, 31/32)`: `1/64 ≤ 1-t = 1/32 ≤ 1-s = 1/16 ≤ 1/16`. -/
-theorem inst_step5II (h : STStep5II 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_ing5_II STReg5II _ h szB_reg5II Cd hCd
-
-/-- **Step 5, case (iii)** applied at `(sz0, z0, 0, 1/16)`: `ilambda_n² ≤ 15/16 = 1-t`. -/
-theorem inst_step5III (h : STStep5III 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing5_III STReg5III _ h sz0_reg5III Cd hCd
-
-/-- **Step 5, case (iv)** applied at `(szG, zB, 5/8, 3/4)`: `1-t = 1/4 ≤ 1-s = 3/8 ≤ ilambda²/L^3 = 25/64`. -/
-theorem inst_step5IV (h : STStep5IV 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) Cd :=
-  inst_ing5_IV STReg5IV _ h szG_reg4 Cd hCd
-
-/-- Case (iv) is a theorem (`stStep5IV_holds`): the instance of the proved statement. -/
-theorem inst_step5IV_proved (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) Cd :=
-  inst_step5IV (stStep5IV_holds 3) Cd hCd
-
-/-- **Step 5, general** applied at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_step5 (h : STStep5 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing5_III STAny _ h trivial Cd hCd
-
-/-- **The assembly** `STDecay ∧ STDecayStrong` at `t` from the uniform Step-5 conclusion, at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_assembly (h : STStep5Concl sz0 (STflowE z0) sInst tInst) :
-    STDecay sz0 (STflowE z0) tInst ∧ STDecayStrong sz0 (STflowE z0) tInst :=
-  ST_step5_assembly sz0 (fun n => (sz0_hst n).le) h
-
 /-! ### The skeletons at the data (ingredients as hypotheses) -/
-
-/-- Case (i) from its ingredients, at `(szB, zB, 7/8, 15/16)`: the three ingredient pins give the target pin, which is then
-instantiated. -/
-theorem inst_skeletonI (hE : STEtermsMid 3) (hD : STDuhamelI 3) (hI : STIniTermI 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STStep5Concl sz E s t) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_step5I (ST_step5_caseI_of_pins hE hD hI) Cd hCd
-
-end RBM.Gauss.Step5Inst

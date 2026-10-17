@@ -40,7 +40,7 @@ set_option linter.unusedVariables false
 
 open private BAS3Close_pk from RBM3D.Graph.BAS3Close
 open private GreenSchur_zim_pos from RBM3D.BA.GreenSchur
-open private BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_LeafC_dec BAS3Close_CtxExD_dec BAS3Close_Iso BAS3Close_iso_symm
+open private BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm
   BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_iso_leaf BAS3Close_leaf_pk BAS3Close_ctxEx_pk BAS3Close_iso_cand
   BAS3Close_inv_iso BAS3Close_inv_pk BAS3Close_iso_root BAS3Close_lp_of_leaf BAS3Close_expand_none BAS3Close_out_stuck
   BAS3Close_Inv BAS3Close_rel BAS3Close_val_rel from RBM3D.Graph.BAS3Close
@@ -981,17 +981,6 @@ def BAFoldLeaf (q : BAPGraph (Fin 2)) : Prop :=
         ∀ a b : Zd d (sz.L n), (∀ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ‖ρ d sz z n t a b c₁ c₂ c₃ c₄‖ ≤ Cρ) ∧
           (∀ c₄, ∑ c₁, ∑ c₂, ∑ c₃, ‖ρ d sz z n t a b c₁ c₂ c₃ c₄‖ ≤ Cρ))
 
-/-- **Target 2, transfer.** -/
-theorem baFoldLeaf_congr : ∀ q q' : BAPGraph (Fin 2),
-    (∀ {ι : Type} [Fintype ι] [DecidableEq ι] (D : BALData ι) (ℓ : Fin 2 → ι), q.val D ℓ = q'.val D ℓ) →
-      BAFoldLeaf q → BAFoldLeaf q' := by
-  rintro q q' h ⟨σ, e, ρ, h1, h2⟩
-  refine ⟨σ, e, ρ, ?_, h2⟩
-  intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω a b
-  rw [← h1 d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω a b]
-  simp only [h]
-
-
 private def BAS3Close_Hq (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : ℕ) (Zk Nk : BAS3Close_Kern) : Prop :=
   ∀ (d : ℕ) (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ (n : ℕ) (t : ℝ), 0 ≤ t → t ≤ BAflowT0 sz z n → ∀ (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)),
@@ -1033,10 +1022,6 @@ private theorem BAS3Close_fold_gen_i (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : 
     simp only [BAS3Close_rho]
     split_ifs <;> field_simp <;> ring
 
-private theorem BAS3Close_fold_gen (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : ℕ) (Zk Nk : BAS3Close_Kern)
-    (hq : BAS3Close_Hq q σ e qq Zk Nk) (hbd : BAS3Close_Bd (2 + qq) Zk Nk) : BAFoldLeaf q :=
-  ⟨σ, e, BAS3Close_rho (2 + qq) Zk Nk, BAS3Close_fold_gen_i q σ e qq Zk Nk hq, hbd⟩
-
 private theorem BAS3Close_hG {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (a b : Idx d (sz.L n) (sz.W n)) :
     (BAS3Close_D sz z n t ω).G a b - (BAS3Close_D sz z n t ω).M a b = (baFMz sz z).GM n t ω a b := rfl
 
@@ -1052,10 +1037,6 @@ private theorem BAS3Close_hq00 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold00 (s : Bool) : BAFoldLeaf (baS3Stuck false 0 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kD BAS3Close_kD (BAS3Close_hq00 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_D BAS3Close_hN_D)
-
 private theorem BAS3Close_hq01 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 1 s) s false 0 BAS3Close_kD BAS3Close_kK := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1067,10 +1048,6 @@ private theorem BAS3Close_hq01 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK1_blk hm hr ht0 ht1 ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold01 (s : Bool) : BAFoldLeaf (baS3Stuck false 1 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kD BAS3Close_kK (BAS3Close_hq01 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_D BAS3Close_hN_K)
 
 private theorem BAS3Close_hq02 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 2 s) s false 0 BAS3Close_kK BAS3Close_kD := by
@@ -1084,10 +1061,6 @@ private theorem BAS3Close_hq02 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold02 (s : Bool) : BAFoldLeaf (baS3Stuck false 2 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kK BAS3Close_kD (BAS3Close_hq02 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_D)
-
 private theorem BAS3Close_hq03 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 3 s) s true 1 BAS3Close_kD BAS3Close_k1 := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1099,10 +1072,6 @@ private theorem BAS3Close_hq03 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK3_blk ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold03 (s : Bool) : BAFoldLeaf (baS3Stuck false 3 s) :=
-  BAS3Close_fold_gen _ s true 1 BAS3Close_kD BAS3Close_k1 (BAS3Close_hq03 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_D BAS3Close_hN_1)
 
 private theorem BAS3Close_hq04 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 4 s) s false 1 BAS3Close_kD BAS3Close_kB := by
@@ -1116,10 +1085,6 @@ private theorem BAS3Close_hq04 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold04 (s : Bool) : BAFoldLeaf (baS3Stuck false 4 s) :=
-  BAS3Close_fold_gen _ s false 1 BAS3Close_kD BAS3Close_kB (BAS3Close_hq04 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_D BAS3Close_hN_B)
-
 private theorem BAS3Close_hq05 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 5 s) s true 1 BAS3Close_kK BAS3Close_k1 := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1131,10 +1096,6 @@ private theorem BAS3Close_hq05 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK1_blk hm hr ht0 ht1 ω, BAS3Close_cK3_blk ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold05 (s : Bool) : BAFoldLeaf (baS3Stuck false 5 s) :=
-  BAS3Close_fold_gen _ s true 1 BAS3Close_kK BAS3Close_k1 (BAS3Close_hq05 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_1)
 
 private theorem BAS3Close_hq06 (s : Bool) :
     BAS3Close_Hq (baS3Stuck false 6 s) s false 1 BAS3Close_kK BAS3Close_kB := by
@@ -1148,10 +1109,6 @@ private theorem BAS3Close_hq06 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold06 (s : Bool) : BAFoldLeaf (baS3Stuck false 6 s) :=
-  BAS3Close_fold_gen _ s false 1 BAS3Close_kK BAS3Close_kB (BAS3Close_hq06 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_B)
-
 private theorem BAS3Close_hq10 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 0 s) s false 0 BAS3Close_kK BAS3Close_kD := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1163,10 +1120,6 @@ private theorem BAS3Close_hq10 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK1T_blk hm hr ht0 ht1 ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold10 (s : Bool) : BAFoldLeaf (baS3Stuck true 0 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kK BAS3Close_kD (BAS3Close_hq10 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_D)
 
 private theorem BAS3Close_hq11 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 1 s) s false 0 BAS3Close_kK BAS3Close_kK := by
@@ -1180,10 +1133,6 @@ private theorem BAS3Close_hq11 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold11 (s : Bool) : BAFoldLeaf (baS3Stuck true 1 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kK BAS3Close_kK (BAS3Close_hq11 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_K)
-
 private theorem BAS3Close_hq12 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 2 s) s false 0 BAS3Close_kKK BAS3Close_kD := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1195,10 +1144,6 @@ private theorem BAS3Close_hq12 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK11_blk hm hr ht0 ht1 ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold12 (s : Bool) : BAFoldLeaf (baS3Stuck true 2 s) :=
-  BAS3Close_fold_gen _ s false 0 BAS3Close_kKK BAS3Close_kD (BAS3Close_hq12 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_KK BAS3Close_hN_D)
 
 private theorem BAS3Close_hq13 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 3 s) s true 1 BAS3Close_kK BAS3Close_k1 := by
@@ -1212,10 +1157,6 @@ private theorem BAS3Close_hq13 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold13 (s : Bool) : BAFoldLeaf (baS3Stuck true 3 s) :=
-  BAS3Close_fold_gen _ s true 1 BAS3Close_kK BAS3Close_k1 (BAS3Close_hq13 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_1)
-
 private theorem BAS3Close_hq14 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 4 s) s false 1 BAS3Close_kK BAS3Close_kB := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1227,10 +1168,6 @@ private theorem BAS3Close_hq14 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK1T_blk hm hr ht0 ht1 ω, BAS3Close_cK2_blk hm ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold14 (s : Bool) : BAFoldLeaf (baS3Stuck true 4 s) :=
-  BAS3Close_fold_gen _ s false 1 BAS3Close_kK BAS3Close_kB (BAS3Close_hq14 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_K BAS3Close_hN_B)
 
 private theorem BAS3Close_hq15 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 5 s) s true 1 BAS3Close_kKK BAS3Close_k1 := by
@@ -1244,10 +1181,6 @@ private theorem BAS3Close_hq15 (s : Bool) :
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
 
-private theorem BAS3Close_fold15 (s : Bool) : BAFoldLeaf (baS3Stuck true 5 s) :=
-  BAS3Close_fold_gen _ s true 1 BAS3Close_kKK BAS3Close_k1 (BAS3Close_hq15 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_KK BAS3Close_hN_1)
-
 private theorem BAS3Close_hq16 (s : Bool) :
     BAS3Close_Hq (baS3Stuck true 6 s) s false 1 BAS3Close_kKK BAS3Close_kB := by
   intro d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω x y
@@ -1259,10 +1192,6 @@ private theorem BAS3Close_hq16 (s : Bool) :
   simp only [BAS3Close_D_S, BAS3Close_D_M, BAS3Close_cK11_blk hm hr ht0 ht1 ω, BAS3Close_cK2_blk hm ω, BAS3Close_kD, BAS3Close_kK, BAS3Close_kKK, BAS3Close_kB, BAS3Close_k1,
     pow_zero, pow_one, Bool.false_eq_true, ↓reduceIte, mul_one]
   ring
-
-private theorem BAS3Close_fold16 (s : Bool) : BAFoldLeaf (baS3Stuck true 6 s) :=
-  BAS3Close_fold_gen _ s false 1 BAS3Close_kKK BAS3Close_kB (BAS3Close_hq16 s)
-    (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_KK BAS3Close_hN_B)
 
 /-! ## The factor of #17, #47 -/
 
@@ -1421,240 +1350,7 @@ end Data
 
 /-! ## 6. Targets 3, 4, 5 -/
 
-/-- **Target 3** (S3A-C5 (a), (b)): the 14 catalogue graphs, both roots, both tail charges, are fold leaves; the weights are
-`ρ = t^p Z_{c₁c₃} M^{(B)}_{c₁c₂} M^{(B)}_{c₃c₄} N_{c₂c₄}` with `Z ∈ {1, κ, κ²}`, `N ∈ {1, κ, M^{(B)}M^{(B)T}, 1}` and the flag `e` for the
-nodes #17, #47 (`X(c₂, c₄) = W^d Tr(E_{c₂} Ǧ E_{c₄} Ǧ)`). -/
-theorem baS3Fold_holds : ∀ (k : Bool) (j : Fin 7) (s : Bool), BAFoldLeaf (baS3Stuck k j s) := by
-  intro k j s
-  obtain ⟨j, hj⟩ := j
-  interval_cases j <;> cases k
-  · exact BAS3Close_fold00 s
-  · exact BAS3Close_fold10 s
-  · exact BAS3Close_fold01 s
-  · exact BAS3Close_fold11 s
-  · exact BAS3Close_fold02 s
-  · exact BAS3Close_fold12 s
-  · exact BAS3Close_fold03 s
-  · exact BAS3Close_fold13 s
-  · exact BAS3Close_fold04 s
-  · exact BAS3Close_fold14 s
-  · exact BAS3Close_fold05 s
-  · exact BAS3Close_fold15 s
-  · exact BAS3Close_fold06 s
-  · exact BAS3Close_fold16 s
-
-/-- **Target 3, the anchor** (`T2450_stuck0_val`): root term `#2` of `T3C-tr_0` as a value (the engine's labelling is renamed by
-`BAS3Close_eI0_0` to the core-first labelling of `baS3Stuck`). -/
-theorem baS3Stuck0_val : ∀ (s : Bool) {ι : Type} [Fintype ι] [DecidableEq ι] (D : BALData ι) (ℓ : Fin 2 → ι),
-    (baS3Stuck false 0 s).val D ℓ =
-      ({ solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
-            SEdge.mk true true (Sum.inr 1) (Sum.inr 3),
-            if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)],
-          waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 2), WEdge.mk false false (Sum.inr 0) (Sum.inr 3)],
-          dotted := [], coeff := 1, psi := [],
-          mdot := [BAMEdge.mk true (Sum.inr 3) (Sum.inr 2), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)] } :
-        BAGraph (Fin 2) (Fin 4)).val D ℓ := by
-  intro s ι _ _ D ℓ
-  have h := BAS3Close_val_rel (Equiv.refl (Fin 2)) BAS3Close_eI0_0
-    ({ solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
-            SEdge.mk true true (Sum.inr 1) (Sum.inr 3),
-            if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)],
-          waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 2), WEdge.mk false false (Sum.inr 0) (Sum.inr 3)],
-          dotted := [], coeff := 1, psi := [],
-          mdot := [BAMEdge.mk true (Sum.inr 3) (Sum.inr 2), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)] } :
-        BAGraph (Fin 2) (Fin 4)) D ℓ
-  have e : BAS3Close_rel (Equiv.sumCongr (Equiv.refl (Fin 2)) BAS3Close_eI0_0)
-      ({ solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
-            SEdge.mk true true (Sum.inr 1) (Sum.inr 3),
-            if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)],
-          waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 2), WEdge.mk false false (Sum.inr 0) (Sum.inr 3)],
-          dotted := [], coeff := 1, psi := [],
-          mdot := [BAMEdge.mk true (Sum.inr 3) (Sum.inr 2), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)] } :
-        BAGraph (Fin 2) (Fin 4)) = BAS3Close_cf0_0 s := by
-    cases s <;> rfl
-  rw [e] at h
-  change (BAS3Close_pk (BAS3Close_cf0_0 s)).val D ℓ = _
-  rw [BAS3Close_pk_val, h]
-  rfl
-
-
-/-- **Target 4** (`BAS3Close`; 0851 S3A-C5 (c), Q3): every output of the three trees, both charges, under `BAselStar` at fuel 2, is a
-leaf with the five properties of `BAG5LeafProps` or a fold leaf. -/
-def BAS3Close : Prop :=
-  ∀ (r : Fin 3) (s : Bool), ∀ q ∈ BAS3expandRoot BAselStar 2 r s, BAG5LeafProps (fun _ _ => [q]) ∨ BAFoldLeaf q
-
-theorem baS3Close_holds : BAS3Close := by
-  intro r s q hq
-  rcases baS3Close_mod r s q hq with h | ⟨k, j, hj⟩
-  · exact Or.inl h
-  · exact Or.inr (baFoldLeaf_congr (baS3Stuck k j s) q (fun D ℓ => (hj D ℓ).symm) (baS3Fold_holds k j s))
-
-/-- **Target 5** (`BAS3Expand'`): the form L4c1, L4g and the producer of `BAExp14bS3` consume. -/
-def BAS3Expand' (d : ℕ) : Prop :=
-  ∃ Ls : Fin 3 → Bool → List (BAPGraph (Fin 2)),
-    (∀ (r : Fin 3) (s : Bool), ∀ q ∈ Ls r s, BAG5LeafProps (fun _ _ => [q]) ∨ BAFoldLeaf q) ∧ BAS3Identity d Ls
-
-theorem baS3Expand'_holds : ∀ d : ℕ, BAS3Expand' d := fun d =>
-  ⟨BAS3expandRoot BAselStar 2, baS3Close_holds, baS3Identity_holds d BAselStar 2⟩
-
 /-! ## 7. Compiled nonempty instances (target 6) -/
-
-namespace BAS3CloseInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- Target 1 at the data of `baExpandId_inst_identity` (`d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `t = 1/2`, `m = i`): no hypothesis
-(`BASelf` is `BAExpandInst.baSelf_zero`), all external labels `x, y`, both tail charges. -/
-theorem baS3_inst_identity (s : Bool) (x y : Idx 3 3 1) :
-    (∫ ω, (baS3RootM s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-        ((BAS3expandRoot BAselStar 2 0 s).map fun q =>
-          ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum) ∧
-      (∫ ω, (baS3Root1 s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-        ((BAS3expandRoot BAselStar 2 1 s).map fun q =>
-          ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum) ∧
-      (∫ ω, (baS3RootD s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
-        ((BAS3expandRoot BAselStar 2 2 s).map fun q =>
-          ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum) :=
-  baS3Identity_holds 3 BAselStar 2 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero
-    (by norm_num) (by norm_num) s x y
-
-
-/-- Targets 2, 3: the class holds for the anchor of the catalogue, and the transfer is applicable. -/
-theorem baS3_inst_fold : BAFoldLeaf (baS3Stuck false 0 false) := baS3Fold_holds false 0 false
-
-theorem baS3_inst_congr : BAFoldLeaf (baS3Stuck false 0 false) :=
-  baFoldLeaf_congr (baS3Stuck false 0 false) (baS3Stuck false 0 false) (fun _ _ => rfl) (baS3Fold_holds false 0 false)
-
-/-- Target 3, the class consumed once: the `[a]×[b]` average of the anchor `baS3Stuck false 0 s` at `sz0`, `zSeq`, `t ≡ 1/2` is
-`≺ (1 - t)⁻¹ Bctl^{5/2}` (`twFold2PrecDet`; the two stochastic premises stay hypotheses). -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hL : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p ω => ‖((((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹) ^ 2 * ∑ x ∈ twBlk n p.2.1, ∑ y ∈ twBlk n p.2.2,
-        (baS3Stuck false 0 p.1).val (BAlwData 3 (sz0.L n) (sz0.W n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n) (1 / 2)
-          ((baFMz sz0 zSeq).m n) (BAExp14a_slc sz0 n ω)) ![x, y]‖)
-      (fun n _ _ => (1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) := by
-  have hBd : BAS3Close_Bd (2 + 0) BAS3Close_kD BAS3Close_kD := BAS3Close_Bd_of _ _ _ BAS3Close_hZ_D BAS3Close_hN_D
-  obtain ⟨Cρ, hC⟩ := hBd 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-  have h := twFold2PrecDet_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hL Cρ
-    (fun n p => BAS3Close_rho (2 + 0) BAS3Close_kD BAS3Close_kD 3 sz0 zSeq n (1 / 2) p.2.1 p.2.2)
-    (hC.mono fun n hn p => hn (1 / 2) (by norm_num) (half_lt_t0 n).le p.2.1 p.2.2)
-  refine BAExp14a_prec_congr (fun n p ω => ?_) (fun _ _ _ => rfl) h
-  have := BAS3Close_fold_gen_i _ p.1 false 0 BAS3Close_kD BAS3Close_kD (BAS3Close_hq00 p.1) 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10)
-    sz0 zSeq flow_sz0 n (1 / 2) (by norm_num) (half_lt_t0 n).le ω p.2.1 p.2.2
-  simp only [Bool.false_eq_true, ↓reduceIte, mul_one] at this
-  rw [this]
-
-/-- The weight of the anchor at the instance is the `ρ₀` of `TwistFold2_rho2` (`t² 1[c₃ = c₁ ∧ c₄ = c₂] (M^{(B)}_{c₁c₂})²`, `t = 1/2`). -/
-theorem baS3_inst_rho0 (n : ℕ) (a b c₁ c₂ c₃ c₄ : Zd 3 (sz0.L n)) (p : Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) :
-    BAS3Close_rho (2 + 0) BAS3Close_kD BAS3Close_kD 3 sz0 zSeq n (1 / 2) a b c₁ c₂ c₃ c₄ =
-      TwistFold2_rho2 n p c₁ c₂ c₃ c₄ := by
-  have hr := BAflow_real _ _ _ _ sz0 zSeq flow_sz0 n
-  have hmB := twMB_ba (sz := sz0) zSeq n hr.1.1
-  unfold BAS3Close_rho TwistFold2_rho2
-  simp only [BAS3Close_kD, hmB]
-  by_cases h1 : c₁ = c₃
-  · by_cases h2 : c₂ = c₄
-    · subst h1; subst h2
-      simp only [and_self, ↓reduceIte, mul_one]
-      push_cast
-      have hM : BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (↑(BAflowEs sz0 zSeq n))
-          (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) c₁ c₂ = BAExp14b_MB sz0 zSeq n c₁ c₂ := rfl
-      rw [hM]
-      ring
-    · have h2' : ¬ c₄ = c₂ := fun h => h2 h.symm
-      simp [h2, h2', h1.symm]
-  · have h1' : ¬ c₃ = c₁ := fun h => h1 h.symm
-    simp [h1, h1']
-
-
-/-- Target 3′: the factor of #17, #47 at `d = 3`, `sz0`, `zSeq`, `t ≡ 1/2` (the two stochastic premises stay hypotheses). -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hL : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0))
-      (U := fun n => (Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n q ω => ‖(((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹ * ∑ u ∈ twBlk n q.2.2.1, ∑ v ∈ twBlk n q.2.2.2.2,
-        (baFMz sz0 zSeq).GM n (1 / 2) ω u v * (baFMz sz0 zSeq).GM n (1 / 2) ω v u‖)
-      (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ 3 * sz0.Bctl n (1 / 2)) :=
-  baS3Xprec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hL
-
-/-- Target 5 at `d = 3`. -/
-theorem baS3_inst_expand' : BAS3Expand' 3 := baS3Expand'_holds 3
-
-
-/-- A split term of a root that is already a leaf is an output of its list, with the five properties. -/
-private theorem BAS3Close_inst_leaf {I : Type} [Fintype I] [DecidableEq I] (R : BAGraph (Fin 2) I)
-    (hF : BAS3Close_RootFacts R) (vs : List (Fin 2 ⊕ I)) (hvs : ∀ u, u ∈ vs)
-    (hlen : vs.length = Fintype.card (Fin 2 ⊕ I))
-    (h : ∃ Γ ∈ R.splitG, 5 ≤ BAS3Close_MCM Γ vs ∧ 2 ≤ Γ.nW) :
-    ∃ q ∈ R.partition.flatMap (fun P => (BAexpand BAselStar 2 P).map Prod.snd), BAG5LeafProps (fun _ _ => [q]) := by
-  obtain ⟨Γ, hΓ, hm, hW⟩ := h
-  obtain ⟨hI, hc⟩ := BAS3Close_invC_of_facts hF Γ hΓ
-  have hd := hI.1.1
-  have hiso : BAS3Close_Iso (BAS3Close_pk Γ) Γ.packMerge := BAS3Close_iso_root Γ hd
-  have hleafC : BAS3Close_LeafC Γ := ⟨BAS3Close_leafM_sound Γ vs hvs hlen hm, hI.2.1, hW⟩
-  have hleaf : BAG5Leaf Γ.packMerge := (BAS3Close_iso_leaf hiso).2 ((BAS3Close_leaf_pk Γ).2 hleafC)
-  have hI' : BAS3Close_Inv Γ.packMerge := BAS3Close_inv_iso (BAS3Close_iso_symm hiso) (BAS3Close_inv_pk hI)
-  refine ⟨Γ.packMerge, ?_, BAS3Close_lp_of_leaf hI' hleaf⟩
-  refine List.mem_flatMap.2 ⟨Γ.packMerge, List.mem_map_of_mem hΓ, ?_⟩
-  rw [BAS3Close_expand_none _ ((baselStar_eq_none_iff _).2 (Or.inl hleaf))]
-  simp
-
-
-private theorem BAS3Close_inst_fold : ∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAFoldLeaf q := by
-  obtain ⟨Γ, hΓ, hcat⟩ : ∃ Γ ∈ (baS3RootM false).splitG, BAS3Close_CatR0 false Γ := by decide +kernel
-  obtain ⟨hF, -⟩ := BAS3Close_tests_M false
-  obtain ⟨hI, hc⟩ := BAS3Close_invC_of_facts hF Γ hΓ
-  have hd := hI.1.1
-  have hiso : BAS3Close_Iso (BAS3Close_pk Γ) Γ.packMerge := BAS3Close_iso_root Γ hd
-  have hiso0 : BAS3Close_Iso (BAS3Close_pk Γ) (BAS3Close_pk (BAS3Close_cf0_0 false)) :=
-    BAS3Close_iso_pk_perm BAS3Close_eI0_0 (BAS3Close_keys_eq hcat hc)
-  have hPc : BAS3Close_Iso Γ.packMerge (BAS3Close_pk (BAS3Close_cf0_0 false)) :=
-    BAS3Close_iso_trans (BAS3Close_iso_symm hiso) hiso0
-  have hdP : ∀ e ∈ Γ.packMerge.g.dotted, e.eq = false := by
-    intro e he
-    obtain ⟨eE, eI, -, hg⟩ := hiso
-    rw [hg] at he
-    obtain ⟨e', he', rfl⟩ := List.mem_map.1 he
-    exact hd e' he'
-  have hnl : ¬ BAG5Leaf Γ.packMerge := fun hl =>
-    (by decide +kernel : ¬ BAS3Close_LeafC (BAS3Close_cf0_0 false))
-      ((BAS3Close_leaf_pk _).1 ((BAS3Close_iso_leaf hPc).2 hl))
-  have hno : ¬ ∃ c : BARCand Γ.packMerge, c.σ = true ∧ BACtx c := by
-    rintro ⟨c, hσ, hctx⟩
-    obtain ⟨c', hσ', hctx', -⟩ := BAS3Close_iso_cand hPc hdP c hσ
-    exact (by decide +kernel : ¬ BAS3Close_CtxExD (BAS3Close_cf0_0 false))
-      ((BAS3Close_ctxEx_pk _).2 ⟨c', hσ', hctx'.2 hctx⟩)
-  refine ⟨Γ.packMerge, ?_, ?_⟩
-  · refine List.mem_flatMap.2 ⟨Γ.packMerge, List.mem_map_of_mem hΓ, ?_⟩
-    rw [BAS3Close_out_stuck hnl hno 2]
-    simp
-  · exact baFoldLeaf_congr (baS3Stuck false 0 false) _ (fun D ℓ => BAS3Close_iso_val hPc D ℓ) (baS3Fold_holds false 0 false)
-
-/-- Target 4: every list is nonempty, and both disjuncts occur in the list of `MERGED` at `s = false`. -/
-theorem baS3_inst_close :
-    (∀ (r : Fin 3) (s : Bool), BAS3expandRoot BAselStar 2 r s ≠ []) ∧
-      (∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAG5LeafProps (fun _ _ => [q])) ∧
-      (∃ q ∈ BAS3expandRoot BAselStar 2 0 false, BAFoldLeaf q) := by
-  have hM : ∀ s, ∃ q ∈ BAS3expandRoot BAselStar 2 0 s, BAG5LeafProps (fun _ _ => [q]) := fun s =>
-    BAS3Close_inst_leaf (baS3RootM s) (BAS3Close_tests_M s).1 (BAS3Close_vs1 4) (BAS3Close_vs1_mem 4) (BAS3Close_vs1_len 4)
-      (by cases s <;> decide +kernel)
-  have h1 : ∀ s, ∃ q ∈ BAS3expandRoot BAselStar 2 1 s, BAG5LeafProps (fun _ _ => [q]) := fun s =>
-    BAS3Close_inst_leaf (baS3Root1 s) (BAS3Close_tests_1 s).1 (BAS3Close_vs1 6) (BAS3Close_vs1_mem 6) (BAS3Close_vs1_len 6)
-      (by cases s <;> decide +kernel)
-  have hD : ∀ s, ∃ q ∈ BAS3expandRoot BAselStar 2 2 s, BAG5LeafProps (fun _ _ => [q]) := fun s =>
-    BAS3Close_inst_leaf (baS3RootD s) (BAS3Close_tests_D s).1 (BAS3Close_vs1 4) (BAS3Close_vs1_mem 4) (BAS3Close_vs1_len 4)
-      (by cases s <;> decide +kernel)
-  refine ⟨fun r s => ?_, hM false, BAS3Close_inst_fold⟩
-  fin_cases r
-  · obtain ⟨q, hq, -⟩ := hM s; exact List.ne_nil_of_mem hq
-  · obtain ⟨q, hq, -⟩ := h1 s; exact List.ne_nil_of_mem hq
-  · obtain ⟨q, hq, -⟩ := hD s; exact List.ne_nil_of_mem hq
-
-
-end BAS3CloseInst
 
 end RBM.Graph
 

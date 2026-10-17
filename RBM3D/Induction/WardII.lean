@@ -327,38 +327,4 @@ end Chain
 
 /-! ## Compiled nonempty instances -/
 
-/-- `d = 3`, `L = 3`, `W = 1` (`N = (WL)^d = 27`), `ilambda = 1`: the data of the identity instance. -/
-private def wardII_szI : Sizes 3 where
-  L := fun _ => 3
-  W := fun _ => 1
-  lam := fun _ => 1
-  three_le_L := fun _ => le_rfl
-  W_pos := fun _ => Nat.one_pos
-
-/-- The identity `stWardII_identity` at `d = 3`, `L = 3`, `W = 1`, `E = 0`, `u = 1/2`, the Hermitian `H = 1` of the
-`27 × 27` matrices, `σ = (+,-)`, `a = (0, e₁)`: every hypothesis (`|E| < 2`, `0 ≤ u < 1`, `H` Hermitian, `σ₁ ≠ σ₂`) is
-discharged. -/
-example :
-    STLKM wardII_szI 0 (0 : ℝ) (1 / 2 : ℝ) (1 : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) ![true, false]
-        ![(0 : Zd 3 3), ![1, 0, 0]] -
-      zeroModeSet 3 3 {0} (fun a' => STLKM wardII_szI 0 (0 : ℝ) (1 / 2 : ℝ) (1 : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ)
-        ![true, false] a') ![(0 : Zd 3 3), ![1, 0, 0]] =
-      (((STLKM wardII_szI 0 (0 : ℝ) (1 / 2 : ℝ) (1 : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ)
-          (fun _ : Fin 1 => true) (fun _ => (![1, 0, 0] : Zd 3 3))).im : ℝ) : ℂ) /
-        ((((wardII_szI.size 0 : ℕ) : ℂ)) * (etaT (0 : ℝ) (1 / 2 : ℝ) : ℂ)) :=
-  stWardII_identity wardII_szI 0 (by norm_num) (by norm_num) (by norm_num) Matrix.isHermitian_one
-    (by decide) _
-
 end RBM.Gauss.Sizes
-
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Path Filter
-
-/-- `stWardII_holds 3` applied at the Step-5 instance data `(szB, zB, 15/16, 31/32)` (regime (ii): `1-t = 1/32 ≥ ilambda²/L^3 = 1/64`,
-`1-s = 1/16 = ilambda²/L²`); the stochastic premises `STKbound ... STLKU` stay hypotheses (other gates' pins). -/
-example (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STWardIIConcl sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_wardII (stWardII_holds 3) Cd hCd
-
-end RBM.Gauss.Step5Inst

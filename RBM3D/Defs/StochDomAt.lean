@@ -62,11 +62,6 @@ def StochDomAt (size : ℕ → ℕ) (ξ ζ : ∀ l, U l → Ω → ℝ) : Prop :
   ∀ τ > (0 : ℝ), ∀ D > (0 : ℝ), ∀ᶠ l : ℕ in atTop,
     P (badSetAt size ξ ζ τ l) ≤ ENNReal.ofReal ((size l : ℝ) ^ (-D))
 
-/-- The merged `RBM.StochDom` (family index `N` as the scale) is `StochDomAt` at `size = id`: there
-is one `≺`, and the scale `N` is the matrix size. -/
-theorem stochDom_iff_at_id (ξ ζ : ∀ N, U N → Ω → ℝ) : StochDom P ξ ζ ↔ StochDomAt P id ξ ζ :=
-  Iff.rfl
-
 end Prec
 
 end RBM
@@ -81,10 +76,6 @@ variable {Ω : Type*} [MeasurableSpace Ω]
 every `D > 0`.  `RBM2D/Gauss/Domination.lean:463`. -/
 def HighProbAt (P : Measure Ω) (size : ℕ → ℕ) (Ξ : ℕ → Set Ω) : Prop :=
   ∀ D > (0 : ℝ), ∀ᶠ l : ℕ in atTop, P (Ξ l)ᶜ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-D))
-
-/-- The merged `RBM.HighProb` is `HighProbAt` at `size = id`. -/
-theorem highProb_iff_at_id (P : Measure Ω) (Ξ : ℕ → Set Ω) :
-    HighProb P Ξ ↔ HighProbAt P id Ξ := Iff.rfl
 
 end Whp
 
@@ -143,20 +134,6 @@ theorem prec_of_le {ξ ζ : ∀ n, U n → SeqΩ sz → ℝ} (hζ : ∀ n u ω, 
     ext ω
     simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_lt]
     intro u
-    nlinarith [hle n u ω, hζ n u ω]
-  rw [hempty, measure_empty]
-  exact zero_le
-
-/-- Deterministic domination implies the per-time `≺`. -/
-theorem precPT_of_le {ξ ζ : ∀ n, U n → SeqΩ sz → ℝ} (hζ : ∀ n u ω, 0 ≤ ζ n u ω)
-    (hle : ∀ n u ω, ξ n u ω ≤ ζ n u ω) : sz.PrecPT ξ ζ := by
-  intro τ hτ D _
-  refine Eventually.of_forall fun n u => ?_
-  have h1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ τ :=
-    Real.one_le_rpow (by exact_mod_cast sz.one_le_size n) hτ.le
-  have hempty : {ω | ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω < ξ n u ω} = ∅ := by
-    ext ω
-    simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_lt]
     nlinarith [hle n u ω, hζ n u ω]
   rw [hempty, measure_empty]
   exact zero_le
@@ -380,22 +357,6 @@ theorem of_eventually_empty
   filter_upwards [h τ hτ] with l hl
   rw [hl, measure_empty]; exact zero_le
 
-/-- **Deterministic domination implies stochastic domination** (Definition 2.1 (ii) ⇒ (i)), at
-the scale `size`: a family dominated deterministically at the index scale `l` is dominated at the
-scale `size l` as soon as `l ≤ size l`.  `RBM2D/Defs/StochDom.lean:334`
-(`of_unifDetDom_L_scale`, scale `W² l²`) and `:183` (`StochDom.of_unifDetDom`, `size = id`). -/
-theorem of_unifDetDom {f g : ∀ l, U l → ℝ} (hl : ∀ᶠ l : ℕ in atTop, l ≤ size l)
-    (hg : ∀ l u, 0 ≤ g l u) (h : UnifDetDom f g) :
-    StochDomAt P size (fun l u _ => f l u) (fun l u _ => g l u) := by
-  refine of_eventually_empty fun τ hτ => ?_
-  filter_upwards [h τ hτ, hl] with l hdom hlN
-  have hpow : (l : ℝ) ^ τ ≤ (size l : ℝ) ^ τ :=
-    Real.rpow_le_rpow (Nat.cast_nonneg _) (by exact_mod_cast hlN) hτ.le
-  ext ω
-  simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_lt]
-  intro u
-  exact (hdom u).trans (mul_le_mul_of_nonneg_right hpow (hg l u))
-
 /-- `ζ ≺ ζ` for a non-negative family.  `RBM2D/Defs/StochDom.lean:192` (index scale). -/
 theorem refl (hsize : Tendsto size atTop atTop) (hζ : ∀ l u ω, 0 ≤ ζ l u ω) :
     StochDomAt P size ζ ζ :=
@@ -542,18 +503,6 @@ theorem highProb (h : StochDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
 
 end StochDomAt
 
-/-- **`A = O≺(ζ)`** at the scale `size` (`‖A‖ ≺ ζ`): the scale version of the merged
-`RBM.NormStochDom`; there is no `size`-indexed copy in RBM2D.  The merged predicate is the case
-`size = id` (`normStochDom_iff_at_id`). -/
-def NormStochDomAt {U : ℕ → Type*} {E : Type*} [Norm E] (P : Measure Ω) (size : ℕ → ℕ)
-    (A : ∀ l, U l → Ω → E) (ζ : ∀ l, U l → Ω → ℝ) : Prop :=
-  StochDomAt P size (fun l u ω => ‖A l u ω‖) ζ
-
-/-- The merged `RBM.NormStochDom` is `NormStochDomAt` at `size = id`. -/
-theorem normStochDom_iff_at_id {U : ℕ → Type*} {E : Type*} [Norm E] (P : Measure Ω)
-    (A : ∀ N, U N → Ω → E) (ζ : ∀ N, U N → Ω → ℝ) :
-    NormStochDom P A ζ ↔ NormStochDomAt P id A ζ := Iff.rfl
-
 end RBM
 
 namespace RBM.Gauss.HighProbAt
@@ -662,30 +611,6 @@ theorem le_rpow_mul_of_le_add_rpow_neg {N : ℕ} {τ b x y ε : ℝ} (hτ : 0 < 
 
 variable {P : Measure Ω} {U : ℕ → Type*} {size : ℕ → ℕ} {ξ ζ : ∀ l, U l → Ω → ℝ}
 
-/-- **Absorbing a super-polynomially small additive error in the control**: if
-`ξ ≺ ζ + ε`, the control `ζ` is eventually bounded below by `size(l)^{-b}` (uniformly in `u` and
-`ω`) and the error `ε` is eventually bounded above by the same `size(l)^{-b}`, then `ξ ≺ ζ`.
-`RBM2D/Defs/StochDom.lean:504` (index scale). -/
-theorem StochDomAt.of_add_le (hsize : Tendsto size atTop atTop) {b : ℝ} {ε : ℕ → ℝ}
-    (hlow : ∀ᶠ l : ℕ in atTop, ∀ u ω, (size l : ℝ) ^ (-b) ≤ ζ l u ω)
-    (hε : ∀ᶠ l : ℕ in atTop, ε l ≤ (size l : ℝ) ^ (-b))
-    (h : StochDomAt P size ξ (fun l u ω => ζ l u ω + ε l)) :
-    StochDomAt P size ξ ζ := by
-  refine StochDomAt.of_subset h fun τ hτ => ⟨τ / 2, half_pos hτ, ?_⟩
-  filter_upwards [hlow, hε, hsize.eventually (eventually_le_rpow 2 (half_pos hτ))]
-    with l hl he h2
-  rintro ω ⟨u, hu⟩
-  refine ⟨u, lt_of_le_of_lt ?_ hu⟩
-  have hy0 : (0 : ℝ) ≤ ζ l u ω := le_trans (Real.rpow_nonneg (Nat.cast_nonneg _) _) (hl u ω)
-  have hhalf : (size l : ℝ) ^ (τ / 2) * (size l : ℝ) ^ (τ / 2) = (size l : ℝ) ^ τ :=
-    UnifDetDom.rpow_half_mul_rpow_half (size l) hτ
-  have he' : ε l ≤ ζ l u ω := he.trans (hl u ω)
-  have ha0 : (0 : ℝ) ≤ (size l : ℝ) ^ (τ / 2) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hkey := two_mul_le_mul_self h2 hy0
-  have hya : ζ l u ω ≤ (size l : ℝ) ^ (τ / 2) * ζ l u ω := by nlinarith
-  rw [← hhalf]
-  nlinarith
-
 /-- **Absorbing a super-polynomially small additive error, the high-probability route.**  If
 
 * the control `ζ` is bounded below by `size(l)^{-b}` for all `u`, with high probability, and
@@ -737,261 +662,7 @@ theorem tendsto_size (h : sz.SizeTendsto) : Tendsto sz.size atTop atTop :=
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Gauss.StochDomAtInst
-
-open RBM.Gauss.SizesInst RBM.Gauss.Sizes
-
-/-- A random bounded observable at size `n`: `|sin|` of the `(0,0)` real coordinate. -/
-def obs (n : ℕ) (ω : SeqΩ sz0) : ℝ :=
-  |Real.sin (ω ⟨n, ((0 : Idx 3 (sz0.L n) (sz0.W n)), (0 : Idx 3 (sz0.L n) (sz0.W n)), true)⟩)|
-
-theorem obs_nonneg (n : ℕ) (ω : SeqΩ sz0) : 0 ≤ obs n ω := abs_nonneg _
-
-theorem obs_le_one (n : ℕ) (ω : SeqΩ sz0) : obs n ω ≤ 1 := by
-  unfold obs; exact Real.abs_sin_le_one _
-
-/-- `obs n` is not constant: it is `0` at `ω = 0` and `1` at `ω = π/2` (nondegenerate data). -/
-theorem obs_nonconst (n : ℕ) : ∃ ω ω' : SeqΩ sz0, obs n ω ≠ obs n ω' := by
-  refine ⟨fun _ => 0, fun _ => Real.pi / 2, ?_⟩
-  simp [obs]
-
-theorem tendsto_sz0_size : Tendsto sz0.size atTop atTop := tendsto_size sz0 sz0_tendsto
-
-/-- The three-step chain of controls `obs ≤ 1 + obs ≤ 2 + obs` (all random, strictly positive
-from the second on). -/
-def Xi (n : ℕ) (_ : Unit) (ω : SeqΩ sz0) : ℝ := obs n ω
-def Ze (n : ℕ) (_ : Unit) (ω : SeqΩ sz0) : ℝ := 1 + obs n ω
-def Ch (n : ℕ) (_ : Unit) (ω : SeqΩ sz0) : ℝ := 2 + obs n ω
-
-theorem Ze_nonneg (n : ℕ) (u : Unit) (ω : SeqΩ sz0) : 0 ≤ Ze n u ω := by
-  unfold Ze; linarith [obs_nonneg n ω]
-
-theorem Ch_nonneg (n : ℕ) (u : Unit) (ω : SeqΩ sz0) : 0 ≤ Ch n u ω := by
-  unfold Ch; linarith [obs_nonneg n ω]
-
-theorem Xi_nonneg (n : ℕ) (u : Unit) (ω : SeqΩ sz0) : 0 ≤ Xi n u ω := obs_nonneg n ω
-
-/-- **Instance of `prec_of_le`** at `sz0`: `obs ≺ 1 + obs` on the model measure at the scale
-`N_n = (W_n L_n)^3`, from the pointwise bound `obs ≤ 1 + obs`. -/
-theorem prec_Xi_Ze : sz0.Prec Xi Ze :=
-  Sizes.prec_of_le sz0 Ze_nonneg fun n u ω => by unfold Xi Ze; linarith [obs_nonneg n ω]
-
-theorem prec_Ze_Ch : sz0.Prec Ze Ch :=
-  Sizes.prec_of_le sz0 Ch_nonneg fun n u ω => by unfold Ze Ch; linarith [obs_nonneg n ω]
-
-/-- **Instance of `StochDomAt.trans`** (ported calculus) at the family `Xi ≺ Ze ≺ Ch` on `seqP sz0`,
-scale `sz0.size`, with `hsize := tendsto_sz0_size`. -/
-theorem stochDomAt_Xi_Ch : StochDomAt (seqP sz0) sz0.size Xi Ch :=
-  StochDomAt.trans tendsto_sz0_size prec_Xi_Ze prec_Ze_Ch
-
-/-- **Instance of `stochDom_iff_at_id`**: on the model measure `seqP sz0`, the merged `StochDom`
-(family index `N` as scale) for the random positive family `Ze` is `StochDomAt` at `size = id`;
-`StochDom.refl` proves the left side, so the right side holds. -/
-theorem stochDomAt_id_Ze : StochDomAt (seqP sz0) id Ze Ze :=
-  (stochDom_iff_at_id (seqP sz0) Ze Ze).mp (StochDom.refl Ze_nonneg)
-
-/-- The converse direction of `stochDom_iff_at_id` at the same data. -/
-theorem stochDom_Ze : StochDom (seqP sz0) Ze Ze :=
-  (stochDom_iff_at_id (seqP sz0) Ze Ze).mpr (StochDomAt.refl tendsto_id Ze_nonneg)
-
-/-- **Instance of `highProb_iff_at_id`**: the event `{∀ u, Ze ≤ N^τ Ze}` holds w.h.p. in the merged
-sense (`StochDom.highProb`) and therefore at `size = id`. -/
-theorem highProbAt_id_Ze : HighProbAt (seqP sz0) id
-    (fun N => {ω | ∀ u, Ze N u ω ≤ (N : ℝ) ^ (1 : ℝ) * Ze N u ω}) :=
-  (highProb_iff_at_id (seqP sz0) _).mp (StochDom.highProb (StochDom.refl Ze_nonneg) one_pos)
-
-/-- `Prec.whp` at `sz0`: the good event `{∀ u, obs ≤ N^{1/10} (1 + obs)}` holds w.h.p. at the scale
-`N_n`. -/
-theorem whp_Xi : sz0.Whp
-    (fun n => {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω}) :=
-  Sizes.Prec.whp sz0 prec_Xi_Ze (τ := 1 / 10) (by norm_num)
-
-/-- `precPT_of_le` at `sz0`, on a two-point parameter set `Fin 2` (the per-time form). -/
-theorem precPT_Xi_Ze : sz0.PrecPT (U := fun _ => Fin 2) (fun n _ ω => Xi n () ω)
-    (fun n _ ω => Ze n () ω) :=
-  Sizes.precPT_of_le sz0 (fun n _ ω => Ze_nonneg n () ω) fun n _ ω => by
-    unfold Xi Ze; linarith [obs_nonneg n ω]
-
-/-- The grid union bound (`stochDomAt_of_perTimeDomAt`, `StochDomAt.of_forall_le`) at `sz0` with
-`#U = 2 ≤ N^1`: per time over `Fin 2` gives the uniform statement. -/
-theorem stochDomAt_Fin2 : StochDomAt (seqP sz0) sz0.size (U := fun _ => Fin 2)
-    (fun n _ ω => Xi n () ω) (fun n _ ω => Ze n () ω) :=
-  StochDomAt.of_forall_le tendsto_sz0_size (C := 1)
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    precPT_Xi_Ze
-
-/-- `Path.stochDomAt_of_perTimeDomAt` directly (the `C ≥ 0` case behind `of_forall_le`). -/
-example : StochDomAt (seqP sz0) sz0.size (U := fun _ => Fin 2)
-    (fun n _ ω => Xi n () ω) (fun n _ ω => Ze n () ω) :=
-  Path.stochDomAt_of_perTimeDomAt (seqP sz0) sz0.size (C := 1) zero_le_one
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    precPT_Xi_Ze
-
-/-- `perTimeOfStochDomAt` applied to the uniform statement of `stochDomAt_Fin2`.  (An `example`,
-not a theorem: a theorem concluding `PerTimeDomAt` for one family would make the premise scan of
-`RBM3D/Test/Axioms.lean` count it as proved.) -/
-example : Path.PerTimeDomAt (seqP sz0) sz0.size (U := fun _ => Fin 2)
-    (fun n _ ω => Xi n () ω) (fun n _ ω => Ze n () ω) :=
-  Path.perTimeOfStochDomAt (seqP sz0) sz0.size _ _ stochDomAt_Fin2
-
 /-! ### The remaining calculus at the same data
 
 One instance for each remaining public theorem of this file, all at `sz0`, `seqP sz0` and the
 chain `Xi ≺ Ze ≺ Ch` (`Xi = obs`, `Ze = 1 + obs`, `Ch = 2 + obs`). -/
-
-theorem sz0_self_le_size (n : ℕ) : n ≤ sz0.size n := by
-  have h1 : 4 * (n + 1) ≤ (2 * (n + 1)) ^ 5 * (4 * (n + 1)) :=
-    Nat.le_mul_of_pos_left _ (by positivity)
-  have h2 : (2 * (n + 1)) ^ 5 * (4 * (n + 1)) ≤ ((2 * (n + 1)) ^ 5 * (4 * (n + 1))) ^ 3 :=
-    Nat.le_self_pow (by norm_num) _
-  change n ≤ ((2 * (n + 1)) ^ 5 * (4 * (n + 1))) ^ 3
-  omega
-
-/-- `one_le_size` at `sz0`, `n = 0`: `1 ≤ 2097152`. -/
-example : 1 ≤ sz0.size 0 := Sizes.one_le_size sz0 0
-
-theorem stochDomAt_add : StochDomAt (seqP sz0) sz0.size (Xi + Ze) (Ze + Ch) :=
-  StochDomAt.add tendsto_sz0_size prec_Xi_Ze prec_Ze_Ch
-
-theorem stochDomAt_mul : StochDomAt (seqP sz0) sz0.size (Xi * Ze) (Ze * Ch) :=
-  StochDomAt.mul tendsto_sz0_size Ze_nonneg Ze_nonneg prec_Xi_Ze prec_Ze_Ch
-
-theorem stochDomAt_const_mul_left : StochDomAt (seqP sz0) sz0.size
-    (fun n u ω => 2 * Xi n u ω) Ze :=
-  StochDomAt.const_mul_left tendsto_sz0_size (by norm_num) Ze_nonneg prec_Xi_Ze
-
-theorem stochDomAt_const_mul_right : StochDomAt (seqP sz0) sz0.size
-    Xi (fun n u ω => 3 * Ze n u ω) :=
-  StochDomAt.const_mul_right tendsto_sz0_size (by norm_num) Ze_nonneg prec_Xi_Ze
-
-theorem stochDomAt_of_subset : StochDomAt (seqP sz0) sz0.size Xi Ze :=
-  StochDomAt.of_subset prec_Xi_Ze fun τ hτ => ⟨τ, hτ, Eventually.of_forall fun _ => subset_rfl⟩
-
-theorem stochDomAt_precomp : StochDomAt (seqP sz0) sz0.size (U := fun _ => Fin 2)
-    (fun n _ ω => Xi n (() : Unit) ω) (fun n _ ω => Ze n (() : Unit) ω) :=
-  StochDomAt.precomp_param (V := fun _ => Fin 2) prec_Xi_Ze (fun _ _ => ())
-
-theorem stochDomAt_of_le_left : StochDomAt (seqP sz0) sz0.size
-    (fun n u ω => Xi n u ω / 2) Ze :=
-  StochDomAt.of_le_left (ξ₁ := Xi) (fun n u ω => by
-    have := obs_nonneg n ω; unfold Xi; linarith) prec_Xi_Ze
-
-theorem stochDomAt_zero_empty : StochDomAt (seqP sz0) sz0.size
-    (fun _ (_ : Unit) _ => (0 : ℝ)) Ze :=
-  StochDomAt.of_eventually_empty fun τ _ => Eventually.of_forall fun n => by
-    ext ω
-    simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_lt]
-    intro u
-    exact mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (Ze_nonneg n u ω)
-
-/-- `StochDomAt.of_unifDetDom` at `sz0`: the deterministic family `f = 1 ≤ g = 1` at the index
-scale gives `1 ≺ 1` at the scale `N_n`, using `n ≤ N_n`. -/
-theorem stochDomAt_of_unifDetDom : StochDomAt (seqP sz0) sz0.size (U := fun _ => Unit)
-    (fun _ _ _ => (1 : ℝ)) (fun _ _ _ => (1 : ℝ)) :=
-  StochDomAt.of_unifDetDom (f := fun _ _ => (1 : ℝ)) (g := fun _ _ => (1 : ℝ))
-    (Eventually.of_forall sz0_self_le_size) (fun _ _ => zero_le_one)
-    (UnifDetDom.of_le (fun _ _ => zero_le_one) fun _ _ => le_rfl)
-
-theorem highProbAt_good : HighProbAt (seqP sz0) sz0.size
-    (fun n => {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω}) :=
-  StochDomAt.highProb prec_Xi_Ze (τ := 1 / 10) (by norm_num)
-
-theorem highProbAt_inter : HighProbAt (seqP sz0) sz0.size (fun n =>
-    {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω} ∩
-    {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω}) :=
-  HighProbAt.inter tendsto_sz0_size highProbAt_good highProbAt_good
-
-theorem highProbAt_mono : HighProbAt (seqP sz0) sz0.size (fun _ => (Set.univ : Set (SeqΩ sz0))) :=
-  HighProbAt.mono highProbAt_good (Eventually.of_forall fun _ => Set.subset_univ _)
-
-theorem highProbAt_univ_ev :
-    HighProbAt (seqP sz0) sz0.size (fun _ => (Set.univ : Set (SeqΩ sz0))) :=
-  HighProbAt.of_eventually_univ (Eventually.of_forall fun _ ω => Set.mem_univ ω)
-
-theorem highProbAt_biInter : HighProbAt (seqP sz0) sz0.size (fun n => ⋂ _k : Fin 2,
-    {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω}) :=
-  HighProbAt.biInter (K := fun _ => Fin 2) (C := 1) zero_le_one
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    (fun D hD => by
-      filter_upwards [highProbAt_good D hD] with n hn k using hn)
-
-/-- `StochDomAt.of_subset_union` at `sz0` (the union of the bad events of `Xi ≺ Ze` and `Ze ≺ Ch`
-contains that of `Xi ≺ Ze`; `trans`, `add`, `mul` use it with `τ/2`). -/
-example : StochDomAt (seqP sz0) sz0.size Xi Ze :=
-  StochDomAt.of_subset_union tendsto_sz0_size prec_Xi_Ze prec_Ze_Ch fun τ hτ =>
-    ⟨τ, hτ, Eventually.of_forall fun _ => Set.subset_union_left⟩
-
-/-- `Path.highProbAt_iInter` (the grid union bound, event form) at `sz0` on `Fin 2`. -/
-example : HighProbAt (seqP sz0) sz0.size (fun n => ⋂ _k : Fin 2,
-    {ω | ∀ u, Xi n u ω ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω}) :=
-  Path.highProbAt_iInter (seqP sz0) sz0.size (K := fun _ => Fin 2) (C := 1) zero_le_one
-    (by
-      filter_upwards [tendsto_sz0_size.eventually (eventually_ge_atTop 2)] with n hn
-      simpa using (show (2 : ℝ) ≤ (sz0.size n : ℝ) by exact_mod_cast hn))
-    (fun D hD => by
-      filter_upwards [highProbAt_good D hD] with n hn k using hn)
-
-theorem highProbAt_nonempty : ∀ᶠ n in atTop, ({ω | ∀ u, Xi n u ω ≤
-    ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * Ze n u ω} : Set (SeqΩ sz0)).Nonempty :=
-  HighProbAt.nonempty tendsto_sz0_size measure_univ highProbAt_good
-
-/-- `StochDomAt.of_add_le`: `obs ≺ (1 + obs) + 1` with `1 ≤ 1 + obs` and `1 ≤ N^0` gives
-`obs ≺ 1 + obs`. -/
-theorem stochDomAt_of_add_le : StochDomAt (seqP sz0) sz0.size Xi Ze :=
-  StochDomAt.of_add_le tendsto_sz0_size (ε := fun _ => 1) (b := 0)
-    (Eventually.of_forall fun n u ω => by
-      have := obs_nonneg n ω; simp [Ze]; linarith)
-    (Eventually.of_forall fun n => by simp)
-    (Sizes.prec_of_le sz0 (fun n u ω => by have := Ze_nonneg n u ω; linarith)
-      fun n u ω => by have := obs_nonneg n ω; unfold Xi Ze; linarith)
-
-/-- `StochDomAt.of_highProbAt_add_rpow_neg`: both w.h.p. hypotheses hold surely here. -/
-theorem stochDomAt_of_highProb_add : StochDomAt (seqP sz0) sz0.size Xi Ze :=
-  StochDomAt.of_highProbAt_add_rpow_neg tendsto_sz0_size (b := 0)
-    (HighProbAt.of_eventually_univ (Eventually.of_forall fun n ω u => by
-      have := obs_nonneg n ω; simp [Ze]; linarith))
-    (fun τ hτ D hD => HighProbAt.of_eventually_univ (Eventually.of_forall fun n ω u => by
-      have h0 := obs_nonneg n ω
-      have h1 : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) ^ τ :=
-        Real.one_le_rpow (by exact_mod_cast Sizes.one_le_size sz0 n) hτ.le
-      have h2 : 0 ≤ ((sz0.size n : ℕ) : ℝ) ^ (-D) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-      unfold Xi Ze
-      nlinarith))
-
-/-- `le_rpow_mul_of_le_add_rpow_neg` and `two_mul_le_mul_self` at numbers: `N = 4`, `τ = 2`,
-`b = 0`, `x = y = 1`, `ε = 0`. -/
-example : (1 : ℝ) ≤ ((4 : ℕ) : ℝ) ^ (2 : ℝ) * 1 :=
-  le_rpow_mul_of_le_add_rpow_neg (N := 4) (τ := 2) (b := 0) (x := 1) (y := 1) (ε := 0) two_pos
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-example : 2 * ((4 : ℝ) * 1) ≤ 4 * 4 * 1 :=
-  two_mul_le_mul_self (a := 4) (y := 1) (by norm_num) zero_le_one
-
-/-- `NormStochDomAt` at `sz0` (norm of the real family `obs`), and `normStochDom_iff_at_id` on the
-positive family `Ze`.  (`example`s, not theorems: see the `PerTimeDomAt` example above.) -/
-example : NormStochDomAt (seqP sz0) sz0.size (fun n (_ : Unit) ω => obs n ω) Ze :=
-  Sizes.prec_of_le sz0 Ze_nonneg fun n u ω => by
-    have := obs_nonneg n ω
-    simp only [Real.norm_eq_abs, abs_of_nonneg this, Ze]; linarith
-
-example : NormStochDom (seqP sz0) Ze Ze :=
-  (normStochDom_iff_at_id (seqP sz0) Ze Ze).mpr
-    (StochDomAt.of_le_left (ξ₁ := Ze) (fun l u ω => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (Ze_nonneg l u ω)])
-      (StochDomAt.refl tendsto_id Ze_nonneg))
-
-/-- `perTimeDomAt_iff_forall_section` at `sz0` on `Fin 2`: the per-time bound (`perTimeOfStochDomAt`
-at `stochDomAt_Fin2`) gives `StochDomAt` along every section. -/
-theorem stochDomAt_section (u : ℕ → Fin 2) : StochDomAt (seqP sz0) sz0.size
-    (fun n (_ : Unit) ω => Xi n () ω) (fun n (_ : Unit) ω => Ze n () ω) :=
-  (Path.perTimeDomAt_iff_forall_section (seqP sz0) sz0.size (fun _ => ⟨0⟩)
-    (U := fun _ => Fin 2) (fun n _ ω => Xi n () ω) (fun n _ ω => Ze n () ω)).mp
-    (Path.perTimeOfStochDomAt (seqP sz0) sz0.size _ _ stochDomAt_Fin2) u
-
-end RBM.Gauss.StochDomAtInst

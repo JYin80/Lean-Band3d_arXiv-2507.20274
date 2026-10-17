@@ -252,14 +252,6 @@ theorem mE_lemE : mE (lemE z) = msc z / (‖msc z‖ : ℂ) := by
       Complex.ofReal_im, Complex.neg_im, Complex.one_im]
     ring
 
-/-- Lemma 2.8: `t = m_sc(z)² / (m^{(E)})²`. -/
-theorem lemT_eq : (lemT z : ℂ) = msc z ^ 2 / mE (lemE z) ^ 2 := by
-  have hr : (‖msc z‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (norm_msc_pos hz).ne'
-  have hm : msc z ≠ 0 := norm_pos_iff.mp (norm_msc_pos hz)
-  rw [mE_lemE hz, lemT]
-  push_cast
-  field_simp
-
 /-- (2.38): `m_sc(z) = t^{1/2} m^{(E)}`. -/
 theorem msc_eq_sqrt_mul_mE : msc z = (Real.sqrt (lemT z) : ℂ) * mE (lemE z) := by
   have hr : (‖msc z‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (norm_msc_pos hz).ne'

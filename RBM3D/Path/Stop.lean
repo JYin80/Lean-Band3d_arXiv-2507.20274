@@ -81,54 +81,6 @@ theorem lt_firstHit_imp (J : ℕ → Ω' → ℝ) (θ : ℝ) (K : ℕ) {j : ℕ}
 
 end OneProcess
 
-section TwoProcesses
-
-variable {ℱ : Filtration ℕ m}
-
-/-- (T4, part 1) The minimum of two grid stopping times `firstHit J θ K` and
-`firstHit J' θ' K` (over the same grid horizon `K`) is again a stopping time.
-Cites Mathlib's `IsStoppingTime.min`. -/
-theorem isStoppingTime_min_firstHit (J J' : ℕ → Ω' → ℝ) (θ θ' : ℝ) (K : ℕ)
-    (hJ : Adapted ℱ J) (hJ' : Adapted ℱ J') :
-    IsStoppingTime ℱ
-      (fun ω => (min (firstHit J θ K ω) (firstHit J' θ' K ω) : ℕ)) := by
-  have h1 := isStoppingTime_firstHit (ℱ := ℱ) J θ K hJ
-  have h2 := isStoppingTime_firstHit (ℱ := ℱ) J' θ' K hJ'
-  intro i
-  have hunion := (h1.measurableSet_le i).union (h2.measurableSet_le i)
-  convert hunion using 2
-  ext ω
-  simp [min_le_iff]
-
-/-- (T4, part 2) The event that neither grid time has stopped by `j` is
-`ℱ j`-measurable. -/
-theorem lt_min_firstHit_measurableSet (J J' : ℕ → Ω' → ℝ) (θ θ' : ℝ) (K : ℕ)
-    (hJ : Adapted ℱ J) (hJ' : Adapted ℱ J') (j : ℕ) :
-    MeasurableSet[ℱ j]
-      {ω | j < min (firstHit J θ K ω) (firstHit J' θ' K ω)} := by
-  have hτ := isStoppingTime_min_firstHit (ℱ := ℱ) J J' θ θ' K hJ hJ'
-  have hmeas :
-      MeasurableSet[ℱ j]
-        {ω : Ω' | min (firstHit J θ K ω) (firstHit J' θ' K ω) ≤ j} := by
-    have h' := hτ.measurableSet_le j
-    simpa using h'
-  have hset :
-      {ω : Ω' | j < min (firstHit J θ K ω) (firstHit J' θ' K ω)}
-        = {ω : Ω' | min (firstHit J θ K ω) (firstHit J' θ' K ω) ≤ j}ᶜ := by
-    ext ω; simp [not_le]
-  rw [hset]
-  exact hmeas.compl
-
-/-- (T4, part 3) Strictly before both grid times stop, both processes are
-strictly below their respective thresholds. -/
-theorem lt_min_firstHit_imp (J J' : ℕ → Ω' → ℝ) (θ θ' : ℝ) (K : ℕ) {j : ℕ} {ω : Ω'}
-    (h : j < min (firstHit J θ K ω) (firstHit J' θ' K ω)) :
-    J j ω < θ ∧ J' j ω < θ' := by
-  rw [lt_min_iff] at h
-  exact ⟨lt_firstHit_imp J θ K h.1, lt_firstHit_imp J' θ' K h.2⟩
-
-end TwoProcesses
-
 /-- (T5) Per-`ω` identity turning a sum stopped at `τ` into a sum over the full
 grid range with the stopped-indicator inserted, used to put stopped sums in Azuma
 form. Purely combinatorial: no measurability or stopping-time hypothesis needed. -/
@@ -170,16 +122,6 @@ theorem adapted_of_measurable_pathH
     Adapted (filt sz) (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) :=
   fun j => (hF j).comp (pathH_measurable_filt sz s t K n j)
 
-/-- (T1) The first grid index at which a grid-observable process reaches a threshold is a
-stopping time for the coordinate filtration. -/
-theorem isStoppingTime_firstHit_grid
-    {F : ℕ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ}
-    (hF : ∀ j, Measurable (F j)) (θ : ℝ) (K' : ℕ) :
-    IsStoppingTime (filt sz)
-      (fun ω => (firstHit (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) θ K' ω : ℕ)) :=
-  isStoppingTime_firstHit (ℱ := filt sz) (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) θ K'
-    (adapted_of_measurable_pathH sz s t K n hF)
-
 /-- (T2) The event that a grid-observable process has not yet stopped by time `j` is
 `filt sz j`-measurable. -/
 theorem lt_firstHit_grid_measurableSet
@@ -190,46 +132,10 @@ theorem lt_firstHit_grid_measurableSet
   lt_firstHit_measurableSet (ℱ := filt sz) (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) θ K'
     (adapted_of_measurable_pathH sz s t K n hF) j
 
-/-- (T3, part 1) The minimum of two grid-observable stopping times (over the same grid horizon
-`K'`) is again a stopping time for the coordinate filtration. -/
-theorem isStoppingTime_min_firstHit_grid
-    {F F' : ℕ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ}
-    (hF : ∀ j, Measurable (F j)) (hF' : ∀ j, Measurable (F' j)) (θ θ' : ℝ) (K' : ℕ) :
-    IsStoppingTime (filt sz)
-      (fun ω => (min (firstHit (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) θ K' ω)
-        (firstHit (fun j (ω : PathΩ sz) => F' j (pathH sz s t K n j ω)) θ' K' ω) : ℕ)) :=
-  isStoppingTime_min_firstHit (ℱ := filt sz) (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω))
-    (fun j (ω : PathΩ sz) => F' j (pathH sz s t K n j ω)) θ θ' K'
-    (adapted_of_measurable_pathH sz s t K n hF) (adapted_of_measurable_pathH sz s t K n hF')
-
-/-- (T3, part 2) The event that neither of two grid-observable stopping times has fired by `j`
-is `filt sz j`-measurable. -/
-theorem lt_min_firstHit_grid_measurableSet
-    {F F' : ℕ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ}
-    (hF : ∀ j, Measurable (F j)) (hF' : ∀ j, Measurable (F' j)) (θ θ' : ℝ) (K' : ℕ) (j : ℕ) :
-    MeasurableSet[filt sz j]
-      {ω | j < min (firstHit (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω)) θ K' ω)
-        (firstHit (fun j (ω : PathΩ sz) => F' j (pathH sz s t K n j ω)) θ' K' ω)} :=
-  lt_min_firstHit_measurableSet (ℱ := filt sz) (fun j (ω : PathΩ sz) => F j (pathH sz s t K n j ω))
-    (fun j (ω : PathΩ sz) => F' j (pathH sz s t K n j ω)) θ θ' K'
-    (adapted_of_measurable_pathH sz s t K n hF) (adapted_of_measurable_pathH sz s t K n hF') j
-
 /-! ### Compiled nonempty instance at the preflight sequence `sz0`
 
 `d = 3`, `L_0 = 4`, `W_0 = 32`; grid `s = 1/10`, `t = 1`, `K = 4`, `n = 0`.  The process is
 `F j M = ‖M 0 0‖` (Borel in the matrix), the threshold is `θ = 1/2`, the horizon `K' = 4`. -/
-
-example :
-    IsStoppingTime (filt SizesInst.sz0)
-      (fun ω => (firstHit (fun j (ω : PathΩ SizesInst.sz0) =>
-        (fun (_k : ℕ) (M : Matrix (Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0))
-          (Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0)) ℂ) => ‖M 0 0‖) j
-          (pathH SizesInst.sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 j ω))
-        (1 / 2) 4 ω : ℕ)) :=
-  isStoppingTime_firstHit_grid SizesInst.sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0
-    (F := fun (_k : ℕ) (M : Matrix (Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0))
-      (Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0)) ℂ) => ‖M 0 0‖)
-    (fun _ => (measurable_norm).comp (Matrix.measurable_apply (i := 0) (j := 0))) (1 / 2) 4
 
 end Grid
 

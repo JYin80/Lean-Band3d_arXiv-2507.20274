@@ -566,69 +566,6 @@ theorem stExpInvgL_of_rep {d : ℕ} {sz : Sizes d} {C : FlowFM sz} {μ : Measure
   exact ⟨key (Equiv.addRight c) (Or.inr ⟨c, rfl⟩) (expInv_Aut_addRight _ c),
     key (Equiv.neg _) (Or.inl rfl) (expInv_Aut_neg _)⟩
 
-/-- The band instance of target 7, for every energy sequence (no `|E| < 2`): `H₀ = 0` is invariant, `g' = sz.lam`. -/
-theorem stExpInvgL_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : STExpInvgL (bandFM sz E) (Sizes.seqP sz) :=
-  stExpInvgL_of_rep (cltRepg_band sz E) (fun n T _ x y => by simp)
-
 end RBM.BA
 
 /-! ## 6. Compiled nonempty instances (CLAUDE.md §4 step 2) -/
-
-namespace RBM.Gauss.SizesInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes
-
-/-- The pin at `d = 3`. -/
-example : STExpInv 3 := stExpInv_holds 3
-
-/-- Both identities at the merged `sz0` (`L_0 = 4`, `W_0 = 32`, `λ_0 = 1/64`), `n = 0`, `E = 0`,
-`u = 1/2`, `σ = (+,-)`, labels `a = (0, (0,1,2))` and shift `c = (1,1,1)` on `Z_4^3`. -/
-example :
-    let a : Fin 2 → Zd 3 (sz0.L 0) := ![fun _ => 0, fun k => ((k : ℕ) : ZMod (sz0.L 0))]
-    let c : Zd 3 (sz0.L 0) := fun _ => 1
-    (∫ ω, Lloop sz0 0 0 (1 / 2) ![true, false] (fun i => a i + c) ω ∂(sz0.seqP) =
-        ∫ ω, Lloop sz0 0 0 (1 / 2) ![true, false] a ω ∂(sz0.seqP)) ∧
-      (∫ ω, Lloop sz0 0 0 (1 / 2) ![true, false] (fun i => -a i) ω ∂(sz0.seqP) =
-        ∫ ω, Lloop sz0 0 0 (1 / 2) ![true, false] a ω ∂(sz0.seqP)) :=
-  stExpInv_holds 3 sz0 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num) ![true, false]
-    ![fun _ => 0, fun k => ((k : ℕ) : ZMod (sz0.L 0))] (fun _ => 1)
-
-
-/-- The carrier of `H₀ + H_u`, `H₀ = r 1`, of the law `seqP (sz.withLam 0)` at the spectral value `m`: the resolvent and the loops. -/
-private noncomputable def expInv_chkC {d : ℕ} (sz : Sizes d) (r : ℝ) (m : ℂ) : RBM.BA.FlowFM sz where
-  L := fun n u {_} σ a ω => loopFine d (sz.L n) (sz.W n)
-    ((r : ℂ) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) +
-      Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => Sizes.seqHflow (sz.withLam 0) n u ω i j) (ztOf m 0 u) σ a
-  K := fun _ _ _ _ _ => 0
-  G := fun n u ω x y => Gres ((r : ℂ) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) +
-    Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => Sizes.seqHflow (sz.withLam 0) n u ω i j) (ztOf m 0 u) true x y
-  M := fun _ _ _ => 0
-  S := fun _ => 0
-  eta := fun _ _ => 0
-  m := fun _ => m
-
-/-- `STExpInvgL` for `expInv_chkC`: `CltRepg` holds by `rfl`, `CltInvg` is the injectivity of the lift (`r 1` is invariant). -/
-private theorem expInv_chkC_inv {d : ℕ} (sz : Sizes d) (r : ℝ) (m : ℂ) :
-    RBM.BA.STExpInvgL (expInv_chkC sz r m) (Sizes.seqP (sz.withLam 0)) := by
-  have hherm : ∀ n, ((r : ℂ) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)).IsHermitian :=
-    fun n => by
-      unfold Matrix.IsHermitian
-      rw [Matrix.conjTranspose_smul, Matrix.conjTranspose_one, Complex.star_def, Complex.conj_ofReal]
-  exact RBM.BA.stExpInvgL_of_rep (g' := 0) (E := 0)
-    (H₀ := fun n => (r : ℂ) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ))
-    ⟨rfl, hherm, fun n u ω => ⟨fun x y => rfl, fun k σ a => rfl⟩⟩
-    (fun n T _ x y => by simp only [Matrix.smul_apply, Matrix.one_apply, Equiv.apply_eq_iff_eq])
-
-/-- **Instance of `stExpInvgL_of_rep`** at `szCL` (`d = 3`), the law `seqP (szCL.withLam 0)` (the block Anderson shape), the
-non-semicircle value `m = 1/2 + i` and the nonzero invariant `H₀ = (1/3) 1`. -/
-example : RBM.BA.STExpInvgL (expInv_chkC Step5Inst.szCL (1 / 3) ⟨1 / 2, 1⟩) (Sizes.seqP (Step5Inst.szCL.withLam 0)) :=
-  expInv_chkC_inv Step5Inst.szCL (1 / 3) ⟨1 / 2, 1⟩
-
-/-- The band instance of target 7 at `szCL`, `E = STflowE zCL` (no `|E| < 2`). -/
-example : RBM.BA.STExpInvgL (RBM.BA.bandFM Step5Inst.szCL (STflowE Step5Inst.zCL)) (Sizes.seqP Step5Inst.szCL) :=
-  RBM.BA.stExpInvgL_band Step5Inst.szCL _
-
-end RBM.Gauss.SizesInst
-
-#print axioms RBM.BA.stExpInvgL_of_rep
-#print axioms RBM.BA.stExpInvgL_band

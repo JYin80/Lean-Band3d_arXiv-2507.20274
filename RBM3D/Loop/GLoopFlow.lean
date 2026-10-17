@@ -57,10 +57,6 @@ def ztOf (m : ℂ) (E t : ℝ) : ℂ := E + (1 - t) * m
 /-- `η_t = (1-t) Im m` (`(eta)`, `1_2:721`). -/
 def etaOf (m : ℂ) (t : ℝ) : ℝ := (1 - t) * m.im
 
-theorem zt_eq_ztOf (E t : ℝ) : zt E t = ztOf (mE E) E t := rfl
-
-theorem etaT_eq_etaOf (E t : ℝ) : etaT E t = etaOf (mE E) t := rfl
-
 theorem ztOf_im (m : ℂ) (E t : ℝ) : (ztOf m E t).im = etaOf m t := by
   simp [ztOf, etaOf]
 
@@ -83,19 +79,12 @@ def Mres (H0 : Matrix ι ι ℂ) (z m : ℂ) : Matrix ι ι ℂ :=
 
 variable (d L W : ℕ) [NeZero L]
 
-theorem Gsig_eq_Gres (ω : Omega d L W) (E t : ℝ) (σ : Bool) :
-    Gsig d L W ω E t σ = Gres (Hmat d L W ω) (zt E t) σ := rfl
-
 /-- **`𝓛^{(n)}_{t,σ,a}`** of `(Eq:defGLoop)` (`1_2:824`) for a matrix `H` on the block-product
 index and a flow value `z`: `tr (∏_i G(σ_i) E_{a_i})`, with the merged `Eblk`.  The merged
 `Gauss.gloop` is the case `H = Hmat ω`, `z = zt E t` (`gloop_eq_loopM`). -/
 def loopM (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ) {n : ℕ} (σ : Fin n → Bool)
     (a : Fin n → Zd d L) : ℂ :=
   Matrix.trace (List.ofFn fun i : Fin n => Gres H z (σ i) * Eblk d L W (a i)).prod
-
-theorem gloop_eq_loopM (ω : Omega d L W) (E t : ℝ) {n : ℕ} (σ : Fin n → Bool)
-    (a : Fin n → Zd d L) :
-    gloop d L W ω E t σ a = loopM d L W (Hmat d L W ω) (zt E t) σ a := rfl
 
 variable [NeZero W]
 
@@ -214,19 +203,6 @@ theorem ring_inverse_smul_one {c : ℂ} (hc : c ≠ 0) :
   rw [← Matrix.nonsing_inv_eq_ringInverse]
   refine Matrix.inv_eq_right_inv ?_
   rw [smul_mul_smul_comm, mul_inv_cancel₀ hc, mul_one, one_smul]
-
-/-- Band model: `M(z) = m(z) I` (`(eq:defMzsc)`, `1_2:344`) from `m² + z m + 1 = 0`. -/
-theorem Mres_zero_msc {z : ℂ} : Mres (0 : Matrix ι ι ℂ) z (msc z) = msc z • (1 : Matrix ι ι ℂ) := by
-  have hm := msc_mul z
-  have hne : -(z + msc z) ≠ 0 := by
-    intro h0
-    have : msc z * (msc z + z) = 0 := by
-      rw [add_comm, neg_eq_zero.mp h0, mul_zero]
-    rw [this] at hm; norm_num at hm
-  have hinv : (-(z + msc z))⁻¹ = msc z := by
-    refine inv_eq_of_mul_eq_one_right ?_
-    linear_combination (-1 : ℂ) * hm
-  rw [Mres, zero_sub, ← neg_smul, ring_inverse_smul_one hne, hinv]
 
 theorem trace_Eblk (d L W : ℕ) [NeZero L] [NeZero W] (a : Zd d L) :
     Matrix.trace (Eblk d L W a) = 1 := by
@@ -921,177 +897,3 @@ end RBM.Gauss
 `5d2a4a8`, lines 1157-1191 and 1341-1359; `z0_mem` is the merged `sz0_locDomain`), namespace
 renamed from `T2002Inst`; the vocabulary checks, the envelope and the cut-and-glue instances are
 new. -/
-
-namespace RBM.Gauss.GLoopFlowInst
-
-open SizesInst
-
-/-- A target spectral parameter at size index `0`: `z = 1/2 + i N^{-4/5}`, `N = 2097152`. -/
-def z0 : ℂ := ⟨1 / 2, ((sz0.size 0 : ℕ) : ℝ) ^ (-(4 / 5) : ℝ)⟩
-
-theorem sz0_size_pos : (1 : ℝ) < ((sz0.size 0 : ℕ) : ℝ) := by
-  rw [sz0_values.2.2.1]; norm_num
-
-theorem z0_im_pos : 0 < z0.im :=
-  Real.rpow_pos_of_pos (lt_trans zero_lt_one sz0_size_pos) _
-
-/-- `z0 ∈ 𝐃_{1/10, 1/10}` of `(eq:spectral_domain)`: `|Ê| ≤ 2 - κ`, `N^{-1+ε} ≤ η ≤ 1`. -/
-theorem z0_mem : sz0.locDomain (1 / 10) (1 / 10) 0 z0 := sz0_locDomain
-
-/-- **`zztE` at the instance**: Lemma 2.8's data `(E, t₀) = (lemE z, lemT z)` satisfy
-`|E| ≤ 2 - κ`, `t₀ ≥ 1/16` and `η_{t₀} ≍ η` (`(eq:t0E0)`, `1_2:789`), and the two deterministic
-clauses of `(eq:zztE)` hold, with every hypothesis discharged. -/
-theorem z0_zztE :
-    (|lemE z0| ≤ 2 - 1 / 10 ∧ (1 / 16 : ℝ) ≤ lemT z0 ∧
-      (1 / 16 : ℝ) * z0.im ≤ (zt (lemE z0) (lemT z0)).im ∧
-      (zt (lemE z0) (lemT z0)).im ≤ (1 / 16 : ℝ)⁻¹ * z0.im) ∧
-    msc z0 = (Real.sqrt (lemT z0) : ℂ) * mE (lemE z0) ∧
-    z0 = (Real.sqrt (lemT z0) : ℂ)⁻¹ * zt (lemE z0) (lemT z0) :=
-  ⟨lemma28_quant (by norm_num) z0_im_pos z0_mem.2.2 z0_mem.1, msc_eq_sqrt_mul_mE z0_im_pos,
-    eq_inv_sqrt_mul_zt z0_im_pos⟩
-
-/-- The third clause of `(eq:zztE)` at the instance, pointwise in `ω`: `Gt_lemT` at `sz0`,
-`n = 0`, `z0`, every hypothesis discharged (`0 < Im z0`). -/
-theorem z0_Gt (ω : Sizes.SeqΩ sz0) :
-    (Real.sqrt (lemT z0) : ℂ) • sz0.Gt 0 (lemE z0) (lemT z0) true ω = sz0.Gn 0 z0 ω :=
-  Sizes.Gt_lemT sz0 0 z0_im_pos ω
-
-/-- The list form of the loop (the index of the merged `RBM.Loop.LoopIdx`, `(Eq:defGLoop)`,
-`1_2:824`) is the `Fin`-indexed loop, at a concrete `2`-loop of the merged model with
-`d = 3`, `L = 4`, `W = 32`. -/
-theorem loopL_sz0 (ω : Omega 3 4 32) :
-    loopL 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) (loopOf ![true, false] ![0, 0]) =
-      loopM 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) ![true, false] ![0, 0] :=
-  (loopM_eq_loopL 3 4 32 _ _ _ _).symm
-
-/-- Band model at the instance: `M(z_0) = m(z_0) I` on the fine lattice of `n = 0`
-(`(eq:defMzsc)`, `1_2:344`). -/
-theorem Mres_sz0 :
-    Mres (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) z0 (msc z0) =
-      msc z0 • (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :=
-  Mres_zero_msc
-
-/-- The loop pin along the single-time flow, instantiated: `𝓛^{(1)}_{0,+,a} = m^{(E)}` at the
-instance's sizes (`Lloop_zero_one`). -/
-theorem Lloop_sz0 (ω : Sizes.SeqΩ sz0) (a : Zd 3 (sz0.L 0)) :
-    sz0.Lloop 0 (1 / 2) 0 (fun _ : Fin 1 => true) (fun _ => a) ω = mE (1 / 2) := by
-  have := Sizes.Lloop_zero_one sz0 0 (E := 1 / 2) (by norm_num) true a ω
-  simpa [mSigma] using this
-
-/-- The vocabulary identities of section 6 at the instance (`d = 3`, `L = 4`, `W = 32`): `E_a` has
-trace `1` and is not zero, `blockMat` of `0` is `0`, `Gsig` and `gloop` are the generic `Gres` and
-`loopM` of the merged model at the flow value `z_t`, and `Im z_t = η_t`. -/
-example (ω : Omega 3 4 32) (σ : Bool) :
-    Matrix.trace (Eblk 3 4 32 0) = 1 ∧ Eblk 3 4 32 0 ≠ 0 ∧
-      blockMat 3 4 32 (0 : Matrix (Idx 3 4 32) (Idx 3 4 32) ℂ) = 0 ∧
-      Gsig 3 4 32 ω (1 / 2) (1 / 2) σ = Gres (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) σ ∧
-      gloop 3 4 32 ω (1 / 2) (1 / 2) ![true, false] ![0, 0] =
-        loopM 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) ![true, false] ![0, 0] ∧
-      (ztOf (mE (1 / 2)) (1 / 2) (1 / 2)).im = etaOf (mE (1 / 2)) (1 / 2) ∧
-      zt (1 / 2) (1 / 2) = ztOf (mE (1 / 2)) (1 / 2) (1 / 2) ∧
-      etaT (1 / 2) (1 / 2) = etaOf (mE (1 / 2)) (1 / 2) := by
-  refine ⟨trace_Eblk 3 4 32 0, ?_, blockMat_zero 3 4 32, Gsig_eq_Gres 3 4 32 ω _ _ σ,
-    gloop_eq_loopM 3 4 32 ω _ _ _ _, ztOf_im _ _ _, zt_eq_ztOf _ _, etaT_eq_etaOf _ _⟩
-  intro h
-  have := congrArg Matrix.trace h
-  rw [trace_Eblk] at this
-  simp at this
-
-/-- `ring_inverse_smul_one` at `c = 2` on the `N × N` identity of the instance. -/
-example : Ring.inverse ((2 : ℂ) • (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0))
-    (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)) = (2 : ℂ)⁻¹ • 1 :=
-  ring_inverse_smul_one (by norm_num)
-
-/-- `H_u` is Hermitian at the instance (renamed copy of the probe's `seqHflow_isHermitian`). -/
-example (u : ℝ) (ω : Sizes.SeqΩ sz0) : (sz0.seqHflow 0 u ω).IsHermitian :=
-  Sizes.gLoopFlow_seqHflow_isHermitian sz0 0 u ω
-
-/-- `cutGlue` at a concrete loop index (`σ = (+,-)`, `a = (0, 1)`, one-based `k = 2`, inserted
-label `7`): the sign `σ_2` is duplicated and `b` stands before the old label `a_2`, i.e. the word
-`G_+ E_0 G_- E_1` becomes `G_+ E_0 G_- E_7 G_- E_1`. -/
-example : (⟨[true, false], [0, 1]⟩ : Loop.LoopIdx ℕ).cutGlue 2 7 =
-    ⟨[true, false, false], [0, 7, 1]⟩ := by
-  decide
-
-/-- The matrix word of the single-edge cut at the first edge: `G_s E_a ↦ G_s E_b G_s E_a`
-(`RBM2D/Hierarchy/Operations.lean:71`), at `d = 3`, `L = 4`, `W = 32`. -/
-example (H : Matrix (Vtx 3 4 32) (Vtx 3 4 32) ℂ) (z : ℂ) (s : Bool) (a b : Zd 3 4)
-    (σ : List Bool) (as : List (Zd 3 4)) :
-    gloopProd 3 4 32 H z ((⟨s :: σ, a :: as⟩ : Loop.LoopIdx (Zd 3 4)).cutGlue 1 b) =
-      Gres H z s * Eblk 3 4 32 b * (Gres H z s * Eblk 3 4 32 a * gloopProd 3 4 32 H z ⟨σ, as⟩) := by
-  simp [Loop.LoopIdx.cutGlue, gloopProd]
-
-/-- `gloop_cutGlueL_split` at a concrete loop of `d = 3`, `L = 4`, `W = 32`: the `6`-loop
-`σ = (+,+,-,-,+,-)`, `a = (0, e₁, e₂, 0, e₃, e₁)` cut at the edges `k = 2 < l = 4` with inserted
-label `0`, for the merged random matrix `H = Hmat ω` at the flow value `z_{1/2}(1/2)`. -/
-example (ω : Omega 3 4 32) :
-    loopL 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2))
-      ((⟨[true] ++ true :: [false] ++ false :: [true, false],
-          [0] ++ ![1, 0, 0] :: [![0, 1, 0]] ++ 0 :: [![0, 0, 1], ![1, 0, 0]]⟩ :
-          Loop.LoopIdx (Zd 3 4)).cutGlueL ([true].length + 1) ([true].length + [false].length + 2)
-        0) =
-      Matrix.trace (gloopProd 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) ⟨[true], [0]⟩ *
-        (Gres (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) true * Eblk 3 4 32 0 *
-          (Gres (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) false * Eblk 3 4 32 0 *
-            gloopProd 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2))
-              ⟨[true, false], [![0, 0, 1], ![1, 0, 0]]⟩))) :=
-  gloop_cutGlueL_split 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) [true] [false] [true, false]
-    [0] [![0, 1, 0]] [![0, 0, 1], ![1, 0, 0]] true false ![1, 0, 0] 0 0 rfl rfl
-
-/-- **The envelope for an arbitrary Hermitian matrix, at the instance**: the random matrix `X` of
-size `0` (`d = 3`, `L = 4`, `W = 32`) read on the block-product index, at the target `z0`: the
-`2`-loop `tr (G(+) E_0 G(-) E_0)` is bounded by `(Im z0)⁻²`, with `Hermitian` the only hypothesis
-on the matrix (`norm_loopM_le`). -/
-theorem norm_loop_sz0 (ω : Sizes.SeqΩ sz0) :
-    ‖loopM 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqXmat 0 ω)) z0
-        ![true, false] ![0, 0]‖ ≤ (z0.im)⁻¹ ^ 2 :=
-  norm_loopM_le 3 (sz0.L 0) (sz0.W 0) ((Sizes.seqXmat_isHermitian sz0 0 ω).submatrix _)
-    z0_im_pos (le_abs_self _) _ _
-
-/-- **The envelope along the flow, at the instance**: at the data `(E, t₀) = (lemE z0, lemT z0)` of
-Lemma 2.8 (`|E| < 2`, `t₀ < 1` discharged by `abs_lemE_lt_two`, `lemT_lt_one`), the `2`-loop of the
-flow `H_{t₀}` is bounded by `η_{t₀}⁻²` (`Sizes.norm_Lloop_le`). -/
-theorem norm_Lloop_sz0 (ω : Sizes.SeqΩ sz0) :
-    ‖sz0.Lloop 0 (lemE z0) (lemT z0) ![true, false] ![0, 0] ω‖ ≤
-      (etaT (lemE z0) (lemT z0))⁻¹ ^ 2 :=
-  Sizes.norm_Lloop_le sz0 0 (abs_lemE_lt_two z0_im_pos) (lemT_lt_one z0_im_pos) _ _ ω
-
-/-- **The sharp envelope at the instance** (`norm_gloop_le_sharp`): the `2`-loop
-`tr (G(+) E_0 G(-) E_0)` of the random matrix `X` of size `0` (`d = 3`, `L = 4`, `W = 32`) at
-`z0` is bounded by `(Im z0)⁻² W^{-3}`, with the volume factor `W^{-d(n-1)}`, `W^{-3} = 1/32768`. -/
-theorem norm_gloop_sharp_sz0 (ω : Sizes.SeqΩ sz0) :
-    ‖loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqXmat 0 ω)) z0
-        (loopOf ![true, false] ![0, 0])‖ ≤
-      (z0.im)⁻¹ ^ 2 * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ := by
-  have h := norm_gloop_le_sharp 3 (sz0.L 0) (sz0.W 0)
-    (H := blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqXmat 0 ω))
-    ((Sizes.seqXmat_isHermitian sz0 0 ω).submatrix _) z0_im_pos (le_abs_self _)
-    (loopOf ![true, false] ![0, 0]) (by simp [Loop.LoopIdx.WF, loopOf]) (by simp [loopOf])
-  simpa [loopOf] using h
-
-/-- `gloop_cutGlueR_split` at the same loop and cut (`k = 2 < l = 4`, label `0`, `H = Hmat ω`,
-`z = z_{1/2}(1/2)`): the right chain of the cut has `σ = (+,-,-)`, `a = (e₁, e₂, 0)`, and its loop
-is the trace of the explicit word `G_+ E_{e₁} · G_- E_{e₂} · G_- E_0`. -/
-example (ω : Omega 3 4 32) :
-    loopL 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2))
-      ((⟨[true] ++ true :: [false] ++ false :: [true, false],
-          [0] ++ ![1, 0, 0] :: [![0, 1, 0]] ++ 0 :: [![0, 0, 1], ![1, 0, 0]]⟩ :
-          Loop.LoopIdx (Zd 3 4)).cutGlueR ([true].length + 1) ([true].length + [false].length + 2)
-        0) =
-      Matrix.trace (Gres (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) true * Eblk 3 4 32 ![1, 0, 0] *
-        (gloopProd 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) ⟨[false], [![0, 1, 0]]⟩ *
-          (Gres (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) false * Eblk 3 4 32 0))) :=
-  gloop_cutGlueR_split 3 4 32 (Hmat 3 4 32 ω) (zt (1 / 2) (1 / 2)) [true] [false] [true, false]
-    [0] [![0, 1, 0]] [![0, 0, 1], ![1, 0, 0]] true false ![1, 0, 0] 0 0 rfl rfl
-
-/-- The merged envelope `norm_gloop_le` (`RBM3D/Loop/GLoop.lean:245`, for `Hmat ω` at the flow
-value `z_t`) is the case `H = Hmat ω`, `z = zt E t`, `η = etaT E t` of `norm_loopM_le`
-(`gloop_eq_loopM`, `etaT_pos`, `etaT_eq_zt_im`). -/
-example (d L W : ℕ) [NeZero L] (ω : Omega d L W) {E t : ℝ} (hE : |E| < 2) (ht : t < 1) {n : ℕ}
-    (σ : Fin (n + 1) → Bool) (a : Fin (n + 1) → Zd d L) :
-    ‖gloop d L W ω E t σ a‖ ≤ (etaT E t)⁻¹ ^ (n + 1) := by
-  rw [gloop_eq_loopM]
-  exact norm_loopM_le d L W (Hmat_isHermitian d L W ω) (etaT_pos hE ht)
-    (by rw [← etaT_eq_zt_im, abs_of_pos (etaT_pos hE ht)]) σ a
-
-end RBM.Gauss.GLoopFlowInst

@@ -34,7 +34,7 @@ set_option linter.style.longLine false
 open private npq_main NPQTerm NPQTerm.val NPQTerm.k NPQTerm.ξ NPQTerm.σ NPQTerm.ι NPQTerm.A NPQFam NPQFam.mk
   npq_ward_of_fam npq_loopL_rotate npq_loopL_ward from RBM3D.Induction.NewPQ
 open private zmcSlot zmcSlot_comm from RBM3D.Induction.ZeroModeCalc
-open private qa_slot_zero qa_slot_succ qa_sum_filter_prod qa_sum_fiber0 from RBM3D.Induction.QopAlgebra
+open private qa_slot_zero qa_slot_succ qa_sum_filter_prod from RBM3D.Induction.QopAlgebra
 
 noncomputable section
 
@@ -55,46 +55,6 @@ def ZeroModeGen_KerSums {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) : Pro
   ∀ σ σ' : Bool, ∃ c : ℂ,
     (∀ a : Zd d (sz.L n), ∑ b : Zd d (sz.L n), (Step2Kern_Mss C n σ σ' * C.S n) a b = c) ∧
       ∀ b : Zd d (sz.L n), ∑ a : Zd d (sz.L n), (Step2Kern_Mss C n σ σ' * C.S n) a b = c
-
-/-- At `bandFM`, `X = M^{(σσ')} S = m(σ) m(σ') S^{(B)}` (`Step2Kern_Mss_band`). -/
-theorem zeroModeGen_X_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) :
-    Step2Kern_Mss (bandFM sz E) n σ σ' * (bandFM sz E).S n =
-      (mSigma (E n) σ * mSigma (E n) σ') • SB d (sz.L n) (sz.lam n) := by
-  rw [Step2Kern_Mss_band, smul_mul_assoc, one_mul]; rfl
-
-/-- The row sums of `X` at `bandFM` are `μ = m(σ) m(σ')` (`sum_SB_row`, `3 ≤ L`). -/
-theorem zeroModeGen_rowSum_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool)
-    (a : Zd d (sz.L n)) :
-    ∑ b : Zd d (sz.L n), (Step2Kern_Mss (bandFM sz E) n σ σ' * (bandFM sz E).S n) a b =
-      mSigma (E n) σ * mSigma (E n) σ' := by
-  rw [zeroModeGen_X_band]
-  simp only [Matrix.smul_apply, smul_eq_mul]
-  rw [← Finset.mul_sum, sum_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a, mul_one]
-
-/-- The column sums of `X` at `bandFM` are `μ = m(σ) m(σ')` (`sum_SB_col`, `3 ≤ L`). -/
-theorem zeroModeGen_colSum_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool)
-    (b : Zd d (sz.L n)) :
-    ∑ a : Zd d (sz.L n), (Step2Kern_Mss (bandFM sz E) n σ σ' * (bandFM sz E).S n) a b =
-      mSigma (E n) σ * mSigma (E n) σ' := by
-  rw [zeroModeGen_X_band]
-  simp only [Matrix.smul_apply, smul_eq_mul]
-  rw [← Finset.mul_sum, sum_SB_col (sz.three_le_L n) b, mul_one]
-
-/-- **`KerSums` at `bandFM`, unconditional** (`T2463_KerSumsBand`): `X = m(σ) m(σ') S^{(B)}`
-(`Step2Kern_Mss_band`), with the row and column sums `1` of `S^{(B)}` (`sum_SB_row`, `sum_SB_col`, `3 ≤ L`). -/
-theorem zeroModeGen_kerSums_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) :
-    ZeroModeGen_KerSums (bandFM sz E) n := by
-  intro σ σ'
-  exact ⟨mSigma (E n) σ * mSigma (E n) σ', zeroModeGen_rowSum_band sz E n σ σ',
-    zeroModeGen_colSum_band sz E n σ σ'⟩
-
-/-- At `bandFM`, `1 - t X` is invertible for `|E n| ≤ 2`, `0 ≤ t < 1` (`‖t μ‖ < 1`, `isUnit_one_sub_smul_SB`). -/
-theorem zeroModeGen_isUnit_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) {t : ℝ}
-    (hE : |E n| ≤ 2) (ht0 : 0 ≤ t) (ht1 : t < 1) :
-    IsUnit (1 - (t : ℂ) • (Step2Kern_Mss (bandFM sz E) n σ σ' * (bandFM sz E).S n)) := by
-  rw [zeroModeGen_X_band, smul_smul]
-  exact isUnit_one_sub_smul_SB d (sz.L n) (sz.lam n) (norm_SB d (sz.L n) (sz.lam n) (sz.three_le_L n))
-    (norm_mul_mSigma_lt_one hE ht0 ht1 σ σ')
 
 section KerRoute
 
@@ -130,16 +90,6 @@ theorem zeroModeGen_projMat_comm_uKer (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGe
     ZeroModeGen_commute_ringInverse ((Commute.one_right _).sub_right (hX.smul_right _))
   exact (h1.mul_right h2).eq
 
-/-- `Proj_{e^⊥}` commutes with `Step2Gen_thetaKer`, for every `t`. -/
-theorem zeroModeGen_projMat_comm_thetaKer (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
-    (σ σ' : Bool) (t : ℝ) :
-    projMat d (sz.L n) * Step2Gen_thetaKer C n σ σ' t = Step2Gen_thetaKer C n σ σ' t * projMat d (sz.L n) := by
-  have hX : Commute (projMat d (sz.L n)) (Step2Kern_Mss C n σ σ' * C.S n) :=
-    zeroModeGen_projMat_comm_X C n hK σ σ'
-  have h2 : Commute (projMat d (sz.L n)) (Step2Gen_Theta (Step2Kern_Mss C n σ σ' * C.S n) (t : ℂ)) :=
-    ZeroModeGen_commute_ringInverse ((Commute.one_right _).sub_right (hX.smul_right _))
-  exact (hX.mul_right h2).eq
-
 end KerRoute
 
 /-! ### 2. Commutation of `Q^{(A)}` with the one kernel -/
@@ -147,14 +97,6 @@ end KerRoute
 section Commute
 
 variable {d : ℕ} {sz : Sizes d}
-
-/-- `Step2Gen_ThetaN` is the sum of its slot kernels (`zmc_ThetaN_eq`). -/
-private theorem ZeroModeGen_ThetaN_eq (C : FlowFM sz) (n : ℕ) {k : ℕ} (σ : Fin k → Bool) (t : ℝ)
-    (T : (Fin k → Zd d (sz.L n)) → ℂ) :
-    Step2Gen_ThetaN C n σ t T =
-      ∑ i, zmcSlot i (Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) t) T := by
-  funext a
-  simp only [Step2Gen_ThetaN, zmcSlot, Finset.sum_apply]
 
 /-- **`Q^{(A)}` commutes with `Step2Gen_UN`** (`T2463_ZeroModeSetUNg`; band `zeroModeSet_UN`, ZMC:332), every
 `s, t`, no window. -/
@@ -165,23 +107,6 @@ theorem zeroModeSet_UNg (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
   ZeroModeCalc_zeroModeSet_tensorKer_comm (d := d) (L := sz.L n) A
     (fun i => Step2Gen_uKer C n (σ i) (σ (finRotate k i)) s t)
     (fun _ _ => zeroModeGen_projMat_comm_uKer C n hK _ _ s t) T
-
-/-- The single-index form: `Q^{(j)}` commutes with `Step2Gen_ThetaN`. -/
-theorem zeroModeOp_ThetaNg (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
-    {k : ℕ} (σ : Fin k → Bool) (t : ℝ) (j : Fin k) (T : (Fin k → Zd d (sz.L n)) → ℂ) :
-    zeroModeOp d (sz.L n) j (Step2Gen_ThetaN C n σ t T) =
-      Step2Gen_ThetaN C n σ t (zeroModeOp d (sz.L n) j T) := by
-  rw [ZeroModeGen_ThetaN_eq, ZeroModeGen_ThetaN_eq, ZeroModeCalc_zeroModeOp_sum]
-  exact Finset.sum_congr rfl fun i _ =>
-    zmcSlot_comm i j _ (fun _ => zeroModeGen_projMat_comm_thetaKer C n hK _ _ t) T
-
-/-- **`Q^{(A)}` commutes with `Step2Gen_ThetaN`** (`T2463_ZeroModeSetThetaNg`; band `zeroModeSet_ThetaN`, ZMC:395). -/
-theorem zeroModeSet_ThetaNg (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
-    {k : ℕ} (σ : Fin k → Bool) (t : ℝ) (A : Finset (Fin k)) (T : (Fin k → Zd d (sz.L n)) → ℂ) :
-    zeroModeSet d (sz.L n) A (Step2Gen_ThetaN C n σ t T) =
-      Step2Gen_ThetaN C n σ t (zeroModeSet d (sz.L n) A T) :=
-  ZeroModeCalc_zeroModeSet_comm_of_comm (Step2Gen_ThetaN C n σ t) A
-    (fun j _ T' => zeroModeOp_ThetaNg C n hK σ t j T') T
 
 end Commute
 
@@ -294,26 +219,6 @@ def ZeroModeGen_WardCls {d : ℕ} (sz : Sizes d) (C : FlowFM sz) : Prop :=
       ZeroModeGen_WardFam d (sz.L n) ((2 * Complex.I * ((sz.W n : ℕ) : ℂ) ^ d * (C.eta n τ : ℂ))⁻¹) TL ∧
       ZeroModeGen_WardFam d (sz.L n) ((2 * Complex.I * ((sz.W n : ℕ) : ℂ) ^ d * (C.eta n τ : ℂ))⁻¹) TK
 
-/-- **`bandFM` is in the class for `|E n| < 2`** (`T2463_WardClsBand`): `TL` is the G-loop of `H_τ` at
-`z_τ` (`zeroModeGen_loopL_wardFam`, `etaT_eq_zt_im`), `TK = KLK` (`KLK_rotate`, `KLK_ward`). -/
-theorem zeroModeGen_wardCls_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) :
-    ZeroModeGen_WardCls sz (bandFM sz E) := by
-  intro n τ hτ0 hτ1 ω
-  have hL : 3 ≤ sz.L n := sz.three_le_L n
-  have hW : 1 ≤ sz.W n := sz.W_pos n
-  have hη : 0 < etaT (E n) τ := etaT_pos (hE n) hτ1
-  have hz : (zt (E n) τ).im ≠ 0 := by rw [← etaT_eq_zt_im]; exact hη.ne'
-  have hHerm : (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n τ ω)).IsHermitian :=
-    (Sizes.gLoopFlow_seqHflow_isHermitian sz n τ ω).submatrix _
-  refine ⟨loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n τ ω)) (zt (E n) τ),
-    KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) τ, fun k σ a => ?_, fun k σ a => rfl, ?_, ?_⟩
-  · exact loopM_eq_loopL d (sz.L n) (sz.W n) _ _ σ a
-  · have := zeroModeGen_loopL_wardFam (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n τ ω)) (zt (E n) τ)
-      hHerm hz
-    rwa [← etaT_eq_zt_im] at this
-  · exact ⟨fun s b σ a h => KLK_rotate d (sz.L n) (sz.W n) (sz.lam n) (E n) hL hW (hE n) τ ⟨hτ0, hτ1⟩ s b σ a h,
-      fun s μ a ha => KLK_ward d (sz.L n) (sz.W n) (sz.lam n) (E n) hL hW (hE n) τ hτ0 hτ1 s μ a ha⟩
-
 /-- The coefficient of the Ward step: `L^{-d} (2 i W^d η)⁻¹ = (2 i N η)⁻¹`, `N = (W L)^d`. -/
 private theorem ZeroModeGen_coef {d : ℕ} (sz : Sizes d) (n : ℕ) (η : ℂ) :
     (((sz.L n : ℕ) : ℂ) ^ d)⁻¹ * (2 * Complex.I * ((sz.W n : ℕ) : ℂ) ^ d * η)⁻¹ =
@@ -423,14 +328,6 @@ theorem QopAlgebra_col_sum_thetaKerg (C : FlowFM sz) (n : ℕ) (σ σ' : Bool) (
   unfold Step2Gen_thetaKer
   rw [ZeroModeGen_colSum_XTheta _ _ c hcol y, ZeroModeGen_colSum_Theta _ c _ hcol hu y]
 
-/-- **Column sums of `Step2Gen_uKer`** (`T2463_ColSumUKerg`; band `QopAlgebra_col_sum_uKer`, QA:704). -/
-theorem QopAlgebra_col_sum_uKerg (C : FlowFM sz) (n : ℕ) (σ σ' : Bool) (s t : ℝ) (c : ℂ)
-    (hcol : ∀ b : Zd d (sz.L n), ∑ a : Zd d (sz.L n), (Step2Kern_Mss C n σ σ' * C.S n) a b = c)
-    (hu : IsUnit (1 - (t : ℂ) • (Step2Kern_Mss C n σ σ' * C.S n))) (y : Zd d (sz.L n)) :
-    ∑ x : Zd d (sz.L n), Step2Gen_uKer C n σ σ' s t x y = (1 - (s : ℂ) * c) * (1 - (t : ℂ) * c)⁻¹ := by
-  unfold Step2Gen_uKer
-  rw [ZeroModeGen_colSum_oneSub _ _ c _ hcol y, ZeroModeGen_colSum_Theta _ c _ hcol hu y]
-
 /-- The column sums of `Step2Gen_thetaKer` are constant in `y`, for every `t` (a non-unit `1 - t X` gives
 `Θ = 0`, `Ring.inverse_non_unit`). -/
 private theorem ZeroModeGen_thetaKer_colConst (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
@@ -441,18 +338,6 @@ private theorem ZeroModeGen_thetaKer_colConst (C : FlowFM sz) (n : ℕ) (hK : Ze
   · exact ⟨c * (1 - (t : ℂ) * c)⁻¹, fun y => QopAlgebra_col_sum_thetaKerg C n σ σ' t c hc hu y⟩
   · refine ⟨0, fun y => ?_⟩
     unfold Step2Gen_thetaKer Step2Gen_Theta
-    rw [Ring.inverse_non_unit _ hu]
-    simp
-
-/-- The same for `Step2Gen_uKer`. -/
-private theorem ZeroModeGen_uKer_colConst (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
-    (σ σ' : Bool) (s t : ℝ) : ∃ κ : ℂ, ∀ y : Zd d (sz.L n),
-      ∑ x : Zd d (sz.L n), Step2Gen_uKer C n σ σ' s t x y = κ := by
-  obtain ⟨c, _, hc⟩ := hK σ σ'
-  by_cases hu : IsUnit (1 - (t : ℂ) • (Step2Kern_Mss C n σ σ' * C.S n))
-  · exact ⟨(1 - (s : ℂ) * c) * (1 - (t : ℂ) * c)⁻¹, fun y => QopAlgebra_col_sum_uKerg C n σ σ' s t c hc hu y⟩
-  · refine ⟨0, fun y => ?_⟩
-    unfold Step2Gen_uKer Step2Gen_Theta
     rw [Ring.inverse_non_unit _ hu]
     simp
 
@@ -480,43 +365,6 @@ theorem QopAlgebra_ThetaN_sumZerog (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_K
     rw [← Finset.mul_sum]
     have h : ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d (sz.L n) => a 0 = a₁), A a = 0 := hA a₁
     rw [h, mul_zero]
-
-/-- **`Step2Gen_UN` preserves sum-zero tensors** (`T2463_UNSumZerog`; band `QopAlgebra_UN_sumZero`, QA:821). -/
-theorem QopAlgebra_UN_sumZerog (C : FlowFM sz) (n : ℕ) (hK : ZeroModeGen_KerSums C n)
-    {m : ℕ} (σ : Fin (m + 1) → Bool) (s t : ℝ) (A : (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
-    (hA : ∀ a₁ : Zd d (sz.L n), STPsum (d := d) A a₁ = 0) (a₁ : Zd d (sz.L n)) :
-    STPsum (d := d) (Step2Gen_UN C n σ s t A) a₁ = 0 := by
-  choose κ hcol using fun i : Fin (m + 1) =>
-    ZeroModeGen_uKer_colConst C n hK (σ i) (σ (finRotate (m + 1) i)) s t
-  set K : Fin (m + 1) → Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
-    fun i => Step2Gen_uKer C n (σ i) (σ (finRotate (m + 1) i)) s t with hKdef
-  unfold STPsum
-  simp only [Step2Gen_UN]
-  rw [Finset.sum_comm]
-  have h1 : ∀ b : Fin (m + 1) → Zd d (sz.L n),
-      ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d (sz.L n) => a 0 = a₁), (∏ i, K i (a i) (b i)) * A b
-        = (K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * A b := by
-    intro b
-    rw [← Finset.sum_mul]
-    congr 1
-    have h2 : ∀ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d (sz.L n) => a 0 = a₁),
-        ∏ i, K i (a i) (b i) = K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), K i (a i) (b i) := by
-      intro a ha
-      have ha0 : a 0 = a₁ := (Finset.mem_filter.1 ha).2
-      rw [← Finset.mul_prod_erase Finset.univ (fun i => K i (a i) (b i)) (Finset.mem_univ (0 : Fin (m + 1))), ha0]
-    rw [Finset.sum_congr rfl h2, ← Finset.mul_sum,
-      qa_sum_filter_prod (d := d) (L := sz.L n) (m := m) a₁ (fun i c => K i c (b i))]
-    congr 1
-    exact Finset.prod_congr rfl fun i _ => hcol i (b i)
-  rw [Finset.sum_congr rfl fun b _ => h1 b]
-  have h3 : ∀ b : Fin (m + 1) → Zd d (sz.L n),
-      (K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * A b
-        = (∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * (K 0 a₁ (b 0) * A b) := fun b => by ring
-  rw [Finset.sum_congr rfl fun b _ => h3 b, ← Finset.mul_sum,
-    qa_sum_fiber0 (d := d) (L := sz.L n) (fun b₀ => K 0 a₁ b₀) A]
-  have : ∑ b₀ : Zd d (sz.L n), K 0 a₁ b₀ * STPsum (d := d) A b₀ = 0 :=
-    Finset.sum_eq_zero fun b₀ _ => by rw [hA b₀, mul_zero]
-  rw [this, mul_zero]
 
 /-- Linearity of `Step2Gen_ThetaN` (`T2463_ThetaNSubg`; band `QopAlgebra_ThetaN_sub`, QA:860). -/
 theorem QopAlgebra_ThetaN_subg (C : FlowFM sz) (n : ℕ) {k : ℕ} (σ : Fin k → Bool) (u : ℝ)
@@ -546,116 +394,9 @@ theorem QopAlgebra_commutator_ThetaNg (C : FlowFM sz) (n : ℕ) {m : ℕ} (σ : 
   simp only [STQop]
   ring
 
-/-- The commutator `[𝒬_t, U^{(m+1)}_{s,t,σ}]` (`T2463_CommutatorUNg`; band `QopAlgebra_commutator_UN`, QA:884). -/
-theorem QopAlgebra_commutator_UNg (C : FlowFM sz) (n : ℕ) {m : ℕ} (σ : Fin (m + 1) → Bool)
-    (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (s t : ℝ) (A : (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
-    (a : Fin (m + 1) → Zd d (sz.L n)) :
-    STQop (d := d) ϑ t (Step2Gen_UN C n σ s t A) a - Step2Gen_UN C n σ s t (STQop (d := d) ϑ t A) a =
-      Step2Gen_UN C n σ s t (fun b => STPsum (d := d) A (b 0) * ϑ t b) a -
-        STPsum (d := d) (Step2Gen_UN C n σ s t A) (a 0) * ϑ t a := by
-  have h : Step2Gen_UN C n σ s t (STQop (d := d) ϑ t A) a
-      = Step2Gen_UN C n σ s t A a - Step2Gen_UN C n σ s t (fun b => STPsum (d := d) A (b 0) * ϑ t b) a :=
-    QopAlgebra_UN_subg C n σ s t A (fun b => STPsum (d := d) A (b 0) * ϑ t b) a
-  rw [h]
-  simp only [STQop]
-  ring
-
 end QopKernels
 
 /-! ### 7. Band corollaries (target 7 (a)): the band statements re-derived at `bandFM`, `bandStep2Mat` -/
-
-section BandCorollaries
-
-variable {d : ℕ}
-
-/-- `Ind.zeroModeSet_Ugen` (ZMC:450) re-derived through `bandStep2_Ugen` and `zeroModeSet_UNg` at
-`zeroModeGen_kerSums_band`: no `3 ≤ L`, `|E| ≤ 2`, `0 ≤ w < 1`. -/
-example (sz : Sizes d) (E : ℕ → ℝ) (n k : ℕ) (σ : Fin k → Bool) (v w : ℝ) (A : Finset (Fin k))
-    (T : (Fin k → Zd d (sz.L n)) → ℂ) :
-    zeroModeSet d (sz.L n) A (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ v w T) =
-      RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ v w (zeroModeSet d (sz.L n) A T) := by
-  rw [bandStep2_Ugen, bandStep2_Ugen]
-  exact zeroModeSet_UNg (bandFM sz E) n (zeroModeGen_kerSums_band sz E n) σ v w A T
-
-/-- `Ind.zeroModeCalc_duhamel_inside_at` (ZMC:522) re-derived from `zeroModeCalc_duhamel_inside_atg` at
-`bandStep2Mat` (`step2Gen_USemigroup_band`, `zeroModeGen_kerSums_band`, the bridges `bandStep2_*`). -/
-example (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (hE : |E n| < 2) (hs0 : 0 ≤ s n)
-    (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) {k : ℕ} (σ : Fin k → Bool) (A : Finset (Fin k))
-    (τ : PathΩ sz → ℕ) (j : ℕ) (ω : PathΩ sz) (hjτ : min j (τ ω) ≤ K n) :
-    zeroModeSet d (sz.L n) A (RBM.Ind.AvecN sz E s t K n (min j (τ ω)) σ ω) =
-      RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n 0) (gridTime s t K n (min j (τ ω)))
-          (zeroModeSet d (sz.L n) A (RBM.Ind.AvecN sz E s t K n 0 σ ω)) +
-        ∑ i ∈ Finset.range (min j (τ ω)),
-          RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n (i + 1))
-            (gridTime s t K n (min j (τ ω)))
-            (zeroModeSet d (sz.L n) A (RBM.Ind.predIncN sz E s t K n i σ ω)) +
-        ∑ i ∈ Finset.range (min j (τ ω)),
-          RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n (i + 1))
-            (gridTime s t K n (min j (τ ω)))
-            (zeroModeSet d (sz.L n) A (RBM.Ind.martIncN sz E s t K n i σ ω)) := by
-  have h := zeroModeCalc_duhamel_inside_atg (bandStep2Mat sz E) s t K n
-    (step2Gen_USemigroup_band sz E n hE.le) (zeroModeGen_kerSums_band sz E n) hs0 hst ht1 hK σ A τ j ω hjτ
-  simp only [bandStep2_Ugen, bandStep2_AvecN, bandStep2_predIncN, bandStep2_martIncN]
-  exact h
-
-/-- `Gauss.Sizes.zeroModeCalc_LK_expansion` (ZMC:563) re-derived from `zeroModeCalc_LK_expansiong` and
-`zeroModeGen_wardCls_band` at the constant energy sequence `E` (`C.eta = etaT E`). -/
-example (m : ℕ) (σ : Fin m → Bool) (A : Finset (Fin m)) :
-    ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-      (ι : ∀ α, Fin (k α) → Fin m) (A' : ∀ α, Finset (Fin (k α))),
-      (∀ α, 1 ≤ k α ∧ k α + 1 ≤ m) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-      ∀ (sz : Sizes d) (n : ℕ) (E τ : ℝ), |E| < 2 → 0 ≤ τ → τ < 1 → ∀ (ω : sz.SeqΩ)
-        (a : Fin m → Zd d (sz.L n)),
-        zeroModeSet d (sz.L n) A (fun a' => STLKM sz n E τ (sz.seqHflow n τ ω) σ a') a =
-          zeroModeSet d (sz.L n) (A ∪ STIdiff σ)
-              (fun a' => STLKM sz n E τ (sz.seqHflow n τ ω) σ a') a +
-            ∑ α : Fin ℓ, ((ξ α : ℂ) /
-                (2 * Complex.I * ((sz.size n : ℕ) : ℂ) * (etaT E τ : ℂ)) ^ (m - k α)) *
-              zeroModeSet d (sz.L n) (A' α)
-                (fun a' => STLKM sz n E τ (sz.seqHflow n τ ω) (σ' α) a') (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansiong d m σ A
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun sz n E τ hE hτ0 hτ1 ω a =>
-    h sz (bandFM sz fun _ => E) (zeroModeGen_wardCls_band sz _ fun _ => hE) n τ hτ0 hτ1 ω a⟩
-
-/-- `Gauss.Sizes.zeroModeCalc_LK_expansion_empty` (ZMC:595) re-derived from `zeroModeCalc_LK_expansion_emptyg`. -/
-example (m : ℕ) (σ : Fin m → Bool) :
-    ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-      (ι : ∀ α, Fin (k α) → Fin m) (A' : ∀ α, Finset (Fin (k α))),
-      (∀ α, 1 ≤ k α ∧ k α + 1 ≤ m) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-      ∀ (sz : Sizes d) (n : ℕ) (E τ : ℝ), |E| < 2 → 0 ≤ τ → τ < 1 → ∀ (ω : sz.SeqΩ)
-        (a : Fin m → Zd d (sz.L n)),
-        STLKM sz n E τ (sz.seqHflow n τ ω) σ a =
-          zeroModeSet d (sz.L n) (STIdiff σ)
-              (fun a' => STLKM sz n E τ (sz.seqHflow n τ ω) σ a') a +
-            ∑ α : Fin ℓ, ((ξ α : ℂ) /
-                (2 * Complex.I * ((sz.size n : ℕ) : ℂ) * (etaT E τ : ℂ)) ^ (m - k α)) *
-              zeroModeSet d (sz.L n) (A' α)
-                (fun a' => STLKM sz n E τ (sz.seqHflow n τ ω) (σ' α) a') (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansion_emptyg d m σ
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun sz n E τ hE hτ0 hτ1 ω a =>
-    h sz (bandFM sz fun _ => E) (zeroModeGen_wardCls_band sz _ fun _ => hE) n τ hτ0 hτ1 ω a⟩
-
-/-- `QopAlgebra_ThetaN_sumZero` (QA:786) re-derived at the sign data `mSigma (E n) ∘ σ` through
-`Step2Kern_ThetaN_band` and `QopAlgebra_ThetaN_sumZerog`: no `3 ≤ L`, `‖μ_i‖ = 1`, `0 ≤ t < 1`. -/
-example (sz : Sizes d) (E : ℕ → ℝ) (n m : ℕ) (σ : Fin (m + 1) → Bool) (t : ℝ)
-    (A : (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (hA : ∀ a₁, STPsum (d := d) A a₁ = 0) (a₁ : Zd d (sz.L n)) :
-    STPsum (d := d) (ThetaN d (sz.L n) (sz.lam n) (fun i => mSigma (E n) (σ i)) t A) a₁ = 0 := by
-  rw [← Step2Kern_ThetaN_band]
-  exact QopAlgebra_ThetaN_sumZerog (bandFM sz E) n (zeroModeGen_kerSums_band sz E n) σ t A hA a₁
-
-/-- `QopAlgebra_col_sum_thetaKer` (QA:697) re-derived at `μ = m(σ) m(σ')` through `Step2Kern_thetaKer_band`,
-`QopAlgebra_col_sum_thetaKerg` and `zeroModeGen_isUnit_band` (the band premise `‖t μ‖ < 1` is `0 ≤ t < 1`,
-`|E n| ≤ 2`). -/
-example (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) (t : ℝ) (hE : |E n| ≤ 2) (ht0 : 0 ≤ t)
-    (ht1 : t < 1) (y : Zd d (sz.L n)) :
-    ∑ x : Zd d (sz.L n), RBM.thetaKer d (sz.L n) (sz.lam n) (mSigma (E n) σ * mSigma (E n) σ') t x y =
-      (mSigma (E n) σ * mSigma (E n) σ') * (1 - (t : ℂ) * (mSigma (E n) σ * mSigma (E n) σ'))⁻¹ := by
-  rw [← Step2Kern_thetaKer_band]
-  refine QopAlgebra_col_sum_thetaKerg (bandFM sz E) n σ σ' t _ (fun b => ?_)
-    (zeroModeGen_isUnit_band sz E n σ σ' hE ht0 ht1) y
-  exact zeroModeGen_colSum_band sz E n σ σ' b
-
-end BandCorollaries
 
 /-! ### 8. Compiled nonempty instances (target 7 (b)): `d = 3`, `sz0`, `n = 0`, `bandFM sz0 (fun _ => 0)`
 
@@ -664,214 +405,6 @@ end BandCorollaries
 `τ = 1/2`.  Every deterministic hypothesis is discharged at these data: `ZeroModeGen_KerSums` by
 `zeroModeGen_kerSums_band`, `Step2Gen_USemigroup` by `step2Gen_USemigroup_band`, `ZeroModeGen_WardCls` by
 `zeroModeGen_wardCls_band`, `IsUnit (1 - t X)` by `zeroModeGen_isUnit_band`. -/
-
-namespace ZeroModeGenInst
-
-open RBM.Gauss.SizesInst
-
-/-- `σ = (+,-,+)`: `I_diff(σ) = {0, 1}`. -/
-private def zmgSigma : Fin 3 → Bool := ![true, false, true]
-
-private noncomputable def zmgE : ℕ → ℝ := fun _ => 0
-private noncomputable def zmgS : ℕ → ℝ := fun _ => 1 / 10
-private noncomputable def zmgT : ℕ → ℝ := fun _ => 1 / 2
-private def zmgK : ℕ → ℕ := fun _ => 4
-
-/-- The point mass `δ₀` on `(Z_4^3)^3`. -/
-private noncomputable def zmgDelta : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ := fun a => if a = 0 then 1 else 0
-
-private theorem zmgDelta_ne : zmgDelta ≠ 0 := fun h => by
-  have := congrFun h 0
-  simp [zmgDelta] at this
-
-private theorem zmgIdiff_card : (STIdiff zmgSigma).card = 2 := by decide
-
-/-- Target 1 at `bandFM sz0`, `n = 0`. -/
-example : ZeroModeGen_KerSums (bandFM sz0 zmgE) 0 := zeroModeGen_kerSums_band sz0 zmgE 0
-
-/-- Target 2 (`Step2Gen_UN`): `Q^{(A)}`, `A = I_diff(σ)` (two indices), commutes with `U_{9/10, 99/100}` on the
-nonzero tensor `δ₀`. -/
-example : zmgDelta ≠ 0 ∧ (STIdiff zmgSigma).card = 2 ∧
-    zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-        (Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (9 / 10) (99 / 100) zmgDelta)
-      = Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (9 / 10) (99 / 100)
-          (zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma) zmgDelta) :=
-  ⟨zmgDelta_ne, zmgIdiff_card,
-    zeroModeSet_UNg (bandFM sz0 zmgE) 0 (zeroModeGen_kerSums_band sz0 zmgE 0) zmgSigma _ _ _ _⟩
-
-/-- Target 2 (`Step2Gen_ThetaN`), same data. -/
-example : zmgDelta ≠ 0 ∧ (STIdiff zmgSigma).card = 2 ∧
-    zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-        (Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (99 / 100) zmgDelta)
-      = Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (99 / 100)
-          (zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma) zmgDelta) :=
-  ⟨zmgDelta_ne, zmgIdiff_card,
-    zeroModeSet_ThetaNg (bandFM sz0 zmgE) 0 (zeroModeGen_kerSums_band sz0 zmgE 0) zmgSigma _ _ _⟩
-
-/-- Target 3 at `bandStep2Mat sz0`: `s ≡ 1/10`, `t ≡ 1/2`, `K ≡ 4`, `τ ≡ 3`, `j = 4` (`j ∧ τ = 3 ≤ K = 4`),
-`σ = (+,-,+)`, `A = I_diff(σ)`, every sample `ω`; the sums have three terms. -/
-example (ω : PathΩ sz0) :
-    zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-        (AvecNg (bandStep2Mat sz0 zmgE) zmgS zmgT zmgK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)) zmgSigma ω) =
-      Step2Gen_UN (bandStep2Mat sz0 zmgE).toFlowFM 0 zmgSigma (gridTime zmgS zmgT zmgK 0 0)
-          (gridTime zmgS zmgT zmgK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-          (zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-            (AvecNg (bandStep2Mat sz0 zmgE) zmgS zmgT zmgK 0 0 zmgSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          Step2Gen_UN (bandStep2Mat sz0 zmgE).toFlowFM 0 zmgSigma (gridTime zmgS zmgT zmgK 0 (i + 1))
-            (gridTime zmgS zmgT zmgK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-            (zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-              (predIncNg (bandStep2Mat sz0 zmgE) zmgS zmgT zmgK 0 i zmgSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          Step2Gen_UN (bandStep2Mat sz0 zmgE).toFlowFM 0 zmgSigma (gridTime zmgS zmgT zmgK 0 (i + 1))
-            (gridTime zmgS zmgT zmgK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-            (zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-              (martIncNg (bandStep2Mat sz0 zmgE) zmgS zmgT zmgK 0 i zmgSigma ω)) :=
-  zeroModeCalc_duhamel_inside_atg (bandStep2Mat sz0 zmgE) zmgS zmgT zmgK 0
-    (step2Gen_USemigroup_band sz0 zmgE 0 (by norm_num [zmgE])) (zeroModeGen_kerSums_band sz0 zmgE 0)
-    (by norm_num [zmgS]) (by norm_num [zmgS, zmgT]) (by norm_num [zmgT]) (by norm_num [zmgK]) zmgSigma
-    (STIdiff zmgSigma) (fun _ => 3) 4 ω (by norm_num [zmgK])
-
-/-- Target 4 (`zeroModeGen_loopL_wardFam`) at the Hermitian matrix `H_{1/2}(ω)` of the model on the block-product
-index and `z = z_{1/2}`, `Im z = 1/2`. -/
-example (ω : sz0.SeqΩ) :
-    ZeroModeGen_WardFam 3 (sz0.L 0)
-      ((2 * Complex.I * ((sz0.W 0 : ℕ) : ℂ) ^ 3 * ((zt 0 (1 / 2)).im : ℂ))⁻¹)
-      (loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqHflow 0 (1 / 2) ω)) (zt 0 (1 / 2))) :=
-  zeroModeGen_loopL_wardFam _ _ ((Sizes.gLoopFlow_seqHflow_isHermitian sz0 0 (1 / 2) ω).submatrix _)
-    (by rw [← etaT_eq_zt_im]; exact (etaT_pos (by norm_num) (by norm_num)).ne')
-
-/-- Target 4 (`zeroModeGen_newPQ`): `d = 3`, `m = 3`, `σ = (+,-,+)`, `A = ∅`, applied to the G-loops of the model at
-`H_{1/2}(ω)`, `z_{1/2}`, every sample and every label vector; the Ward-family hypothesis is discharged. -/
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      zeroModeSet 3 (sz0.L 0) ∅
-          (fun a' => loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqHflow 0 (1 / 2) ω))
-            (zt 0 (1 / 2)) (loopOf zmgSigma a')) a =
-        zeroModeSet 3 (sz0.L 0) (∅ ∪ STIdiff zmgSigma)
-            (fun a' => loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqHflow 0 (1 / 2) ω))
-              (zt 0 (1 / 2)) (loopOf zmgSigma a')) a +
-          ∑ α : Fin ℓ, (ξ α : ℂ) *
-              ((((sz0.L 0 : ℕ) : ℂ) ^ 3)⁻¹ * (2 * Complex.I * ((sz0.W 0 : ℕ) : ℂ) ^ 3 * ((zt 0 (1 / 2)).im : ℂ))⁻¹) ^
-                (3 - k α) *
-            zeroModeSet 3 (sz0.L 0) (A' α)
-              (fun a' => loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) (sz0.seqHflow 0 (1 / 2) ω))
-                (zt 0 (1 / 2)) (loopOf (σ' α) a')) (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeGen_newPQ 3 3 zmgSigma ∅
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h (sz0.L 0) _ _ (zeroModeGen_loopL_wardFam _ _
-      ((Sizes.gLoopFlow_seqHflow_isHermitian sz0 0 (1 / 2) ω).submatrix _)
-      (by rw [← etaT_eq_zt_im]; exact (etaT_pos (by norm_num) (by norm_num)).ne')) a⟩
-
-/-- Target 5, the class at `bandFM sz0` (`|E n| < 2`). -/
-example : ZeroModeGen_WardCls sz0 (bandFM sz0 zmgE) :=
-  zeroModeGen_wardCls_band sz0 zmgE fun _ => by norm_num [zmgE]
-
-/-- Target 5, `zeroModeCalc_LK_expansion_emptyg` (`A = ∅`) at `bandFM sz0`, `n = 0`, `τ = 1/2`, `m = 3`,
-`σ = (+,-,+)`, every sample and every label vector. -/
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      (bandFM sz0 zmgE).L 0 (1 / 2) zmgSigma a ω - (bandFM sz0 zmgE).K 0 (1 / 2) zmgSigma a =
-        zeroModeSet 3 (sz0.L 0) (STIdiff zmgSigma)
-            (fun a' => (bandFM sz0 zmgE).L 0 (1 / 2) zmgSigma a' ω - (bandFM sz0 zmgE).K 0 (1 / 2) zmgSigma a') a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                ((bandFM sz0 zmgE).eta 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α)
-              (fun a' => (bandFM sz0 zmgE).L 0 (1 / 2) (σ' α) a' ω - (bandFM sz0 zmgE).K 0 (1 / 2) (σ' α) a')
-              (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansion_emptyg 3 3 zmgSigma
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h sz0 (bandFM sz0 zmgE) (zeroModeGen_wardCls_band sz0 zmgE fun _ => by norm_num [zmgE]) 0 (1 / 2)
-      (by norm_num) (by norm_num) ω a⟩
-
-/-- Target 5, `zeroModeCalc_LK_expansiong` for the nonempty `A = {2}` (`A ∪ I_diff(σ) = {0, 1, 2}`), same data. -/
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      zeroModeSet 3 (sz0.L 0) ({2} : Finset (Fin 3))
-          (fun a' => (bandFM sz0 zmgE).L 0 (1 / 2) zmgSigma a' ω - (bandFM sz0 zmgE).K 0 (1 / 2) zmgSigma a') a =
-        zeroModeSet 3 (sz0.L 0) (({2} : Finset (Fin 3)) ∪ STIdiff zmgSigma)
-            (fun a' => (bandFM sz0 zmgE).L 0 (1 / 2) zmgSigma a' ω - (bandFM sz0 zmgE).K 0 (1 / 2) zmgSigma a') a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                ((bandFM sz0 zmgE).eta 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α)
-              (fun a' => (bandFM sz0 zmgE).L 0 (1 / 2) (σ' α) a' ω - (bandFM sz0 zmgE).K 0 (1 / 2) (σ' α) a')
-              (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansiong 3 3 zmgSigma {2}
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h sz0 (bandFM sz0 zmgE) (zeroModeGen_wardCls_band sz0 zmgE fun _ => by norm_num [zmgE]) 0 (1 / 2)
-      (by norm_num) (by norm_num) ω a⟩
-
-/-- Target 6, column sums of `Step2Gen_thetaKer` and `Step2Gen_uKer` at `bandFM sz0`, `n = 0`, charges
-`(+,-)`, `s = 1/10`, `t = 1/2`: `c = m(+) m(-)`, `IsUnit (1 - t X)` from `zeroModeGen_isUnit_band`. -/
-example (y : Zd 3 (sz0.L 0)) :
-    ∑ x, Step2Gen_thetaKer (bandFM sz0 zmgE) 0 true false (1 / 2) x y =
-        (mSigma 0 true * mSigma 0 false) * (1 - ((1 / 2 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 false))⁻¹ ∧
-      ∑ x, Step2Gen_uKer (bandFM sz0 zmgE) 0 true false (1 / 10) (1 / 2) x y =
-        (1 - ((1 / 10 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 false)) *
-          (1 - ((1 / 2 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 false))⁻¹ :=
-  ⟨QopAlgebra_col_sum_thetaKerg (bandFM sz0 zmgE) 0 true false (1 / 2) _
-      (zeroModeGen_colSum_band sz0 zmgE 0 true false)
-      (zeroModeGen_isUnit_band sz0 zmgE 0 true false (by norm_num [zmgE]) (by norm_num) (by norm_num)) y,
-    QopAlgebra_col_sum_uKerg (bandFM sz0 zmgE) 0 true false (1 / 10) (1 / 2) _
-      (zeroModeGen_colSum_band sz0 zmgE 0 true false)
-      (zeroModeGen_isUnit_band sz0 zmgE 0 true false (by norm_num [zmgE]) (by norm_num) (by norm_num)) y⟩
-
-/-- The mollifier of `QopAlgebra` at `d = 3`, `L = 4`, three indices (`m = 2`), `g = lam_0`. -/
-private noncomputable abbrev zmgVartheta : ℝ → (Fin (2 + 1) → Zd 3 (sz0.L 0)) → ℂ :=
-  QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)
-
-/-- The sum-zero tensor `𝒬_{1/2} 1`. -/
-private noncomputable abbrev zmgA0 : (Fin (2 + 1) → Zd 3 (sz0.L 0)) → ℂ :=
-  STQop (d := 3) zmgVartheta (1 / 2) (fun _ => (1 : ℂ))
-
-private theorem zmgA0_sum (a₁ : Zd 3 (sz0.L 0)) : STPsum (d := 3) zmgA0 a₁ = 0 :=
-  QopAlgebra_Psum_Qop zmgVartheta (fun a₁ => QopAlgebra_mollifier_sum 3 (sz0.L 0) 2 (sz0.lam 0) (1 / 2) a₁) _ a₁
-
-/-- Target 6, `Θ^{(3)}` and `U^{(3)}` preserve the sum-zero tensor `𝒬_{1/2} 1` at `bandFM sz0`. -/
-example (a₁ : Zd 3 (sz0.L 0)) :
-    STPsum (d := 3) (Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgA0) a₁ = 0 ∧
-      STPsum (d := 3) (Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgA0) a₁ = 0 :=
-  ⟨QopAlgebra_ThetaN_sumZerog (bandFM sz0 zmgE) 0 (zeroModeGen_kerSums_band sz0 zmgE 0) zmgSigma _ _
-      zmgA0_sum a₁,
-    QopAlgebra_UN_sumZerog (bandFM sz0 zmgE) 0 (zeroModeGen_kerSums_band sz0 zmgE 0) zmgSigma _ _ _
-      zmgA0_sum a₁⟩
-
-/-- Target 6, linearity and the commutators at the same data (the tensor `δ₀`, the label `a = 0`). -/
-example :
-    Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) (fun b => zmgDelta b - zmgA0 b) 0 =
-        Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgDelta 0 -
-          Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgA0 0 ∧
-      Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) (fun b => zmgDelta b - zmgA0 b) 0 =
-        Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgDelta 0 -
-          Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgA0 0 :=
-  ⟨QopAlgebra_ThetaN_subg (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgDelta zmgA0 0,
-    QopAlgebra_UN_subg (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgDelta zmgA0 0⟩
-
-example :
-    STQop (d := 3) zmgVartheta (1 / 2) (Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgDelta) 0 -
-        Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) (STQop (d := 3) zmgVartheta (1 / 2) zmgDelta) 0 =
-      Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2)
-          (fun b => STPsum (d := 3) zmgDelta (b 0) * zmgVartheta (1 / 2) b) 0 -
-        STPsum (d := 3) (Step2Gen_ThetaN (bandFM sz0 zmgE) 0 zmgSigma (1 / 2) zmgDelta) ((0 : Fin 3 → Zd 3 (sz0.L 0)) 0) *
-          zmgVartheta (1 / 2) 0 :=
-  QopAlgebra_commutator_ThetaNg (bandFM sz0 zmgE) 0 zmgSigma zmgVartheta (1 / 2) zmgDelta 0
-
-example :
-    STQop (d := 3) zmgVartheta (1 / 2) (Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgDelta) 0 -
-        Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) (STQop (d := 3) zmgVartheta (1 / 2) zmgDelta) 0 =
-      Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2)
-          (fun b => STPsum (d := 3) zmgDelta (b 0) * zmgVartheta (1 / 2) b) 0 -
-        STPsum (d := 3) (Step2Gen_UN (bandFM sz0 zmgE) 0 zmgSigma (1 / 10) (1 / 2) zmgDelta)
-            ((0 : Fin 3 → Zd 3 (sz0.L 0)) 0) * zmgVartheta (1 / 2) 0 :=
-  QopAlgebra_commutator_UNg (bandFM sz0 zmgE) 0 zmgSigma zmgVartheta (1 / 10) (1 / 2) zmgDelta 0
-
-end ZeroModeGenInst
 
 end RBM.BA
 

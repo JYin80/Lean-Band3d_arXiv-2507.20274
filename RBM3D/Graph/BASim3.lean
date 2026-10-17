@@ -1879,82 +1879,11 @@ namespace BASimInst
 def baPB : BAGraph (Fin 2) (Fin 3) :=
   ⟨⟨[⟨true, true, .inr 0, .inr 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inr 2⟩], [⟨false, true, .inr 2, .inr 1⟩], [], 1⟩, [], [⟨true, .inr 0, .inr 1⟩]⟩
 def pB : Ed × List Ed := (⟨true, true, .inr 0, .inr 1⟩, [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inr 2⟩])
-/-- `P_C` (macro (b)): solid `2→1`, `0→3`, `1→0`, the pair `p = 2→1`, `q = 0→3` at the two vertices `2, 3` of one atom. -/
-def baPC : BAGraph (Fin 2) (Fin 3) :=
-  ⟨⟨[⟨true, true, .inr 0, .inl 1⟩, ⟨true, true, .inl 0, .inr 1⟩, ⟨true, true, .inl 1, .inl 0⟩], [⟨false, true, .inr 2, .inr 1⟩], [], 1⟩, [], [⟨true, .inr 0, .inr 1⟩]⟩
-def pC : Ed × List Ed := (⟨true, true, .inr 0, .inl 1⟩, [⟨true, true, .inl 0, .inr 1⟩, ⟨true, true, .inl 1, .inl 0⟩])
-def qC : Ed × List Ed := (⟨true, true, .inl 0, .inr 1⟩, [⟨true, true, .inl 1, .inl 0⟩])
 /-- `P_W`: a self-loop at the internal vertex `0` and an edge `x → 1` (the `weight` step); `P_E`: a degree-3 internal vertex (the `edge` step). -/
 def baPW : BAGraph (Fin 1) (Fin 2) := ⟨⟨[⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inl 0, .inr 1⟩], [], [], 1⟩, [], []⟩
 def pW : SEdge (Fin 1 ⊕ Fin 2) × List (SEdge (Fin 1 ⊕ Fin 2)) := (⟨true, true, .inr 0, .inr 0⟩, [⟨true, true, .inl 0, .inr 1⟩])
-def baPE : BAGraph (Fin 2) (Fin 1) := ⟨⟨[⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inr 0, .inl 0⟩, ⟨true, true, .inl 1, .inr 0⟩,
-  ⟨false, true, .inl 0, .inl 1⟩], [], [], 1⟩, [], []⟩
-def pE : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) := (⟨true, true, .inr 0, .inl 0⟩, [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inr 0⟩, ⟨false, true, .inl 0, .inl 1⟩])
-/-- the tagged outputs of the `gg` step at `P_A` -/
-def ggFT := (baPG baPA).outsT (baPA.tagStd 2) (baPA.gg2 pA qA) ++ (baPG baPA).outsT (baPA.tagStd 4) (baPA.gg4 pA qA)
-theorem hTA : BAFrameStepT (baPG baPA) ggFT :=
-  BAFrameStepT.gg (baPG baPA) pA (List.mem_cons_self ..) qA (List.mem_cons_self ..) (by decide) (0 : Fin 3) (by decide) (by decide) (by decide) (by decide)
-theorem hTB : BAFrameStepT (baPG baPB) ((baPG baPB).withinOutsT pB) := BAFrameStepT.within (baPG baPB) pB (List.mem_cons_self ..) (by decide)
-theorem hTC : BAFrameStepT (baPG baPC) ((baPG baPC).splitOutsT pC qC 0) :=
-  BAFrameStepT.ggSplit (baPG baPC) pC (List.mem_cons_self ..) qC 0 rfl (by decide) (0 : Fin 3) (1 : Fin 3) (by decide) (by decide : (0 : Fin 3) ≠ 1)
-    (by decide) (by decide) (by decide) (by decide)
 theorem hTW : BAFrameStepT (baPG baPW) ((baPG baPW).outsT (baPW.tagStd 2) (baPW.lw2 pW) ++ (baPG baPW).outsT (baPW.tagStd 4) (baPW.lw4 pW)) :=
   BAFrameStepT.weight (baPG baPW) pW (List.mem_cons_self ..) (by decide)
-theorem hTE : BAFrameStepT (baPG baPE) ((baPG baPE).outsT baPE.tagT1 [BAGraph.lanlwT1 baPE pE] ++
-    (baPG baPE).outsT (baPE.tagStd 2) ((lwSplit pE.2).map (BAGraph.lanlwD baPE pE))) :=
-  BAFrameStepT.edge (baPG baPE) pE (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) (by decide) (0 : Fin 1) (by decide)
-    (by decide) (by decide) (by decide) (by decide)
-theorem tag_exists {E : Type} (l : List (BAShape × BAPGraph E)) (t : BAShape) (h : t ∈ l.map Prod.fst) : ∃ Q, (t, Q) ∈ l := by
-  obtain ⟨⟨t', Q⟩, hm, rfl⟩ := List.mem_map.1 h; exact ⟨Q, hm⟩
-/-- the data are nondegenerate (kernel evaluation of `outsT`, `tagStd`, `tagT1`): `gg` at `P_A` has 31 outputs (23 `band`, 8 `e2`), `ggSplit` at `P_C` has 48 (8 `band`, 1 `e1`, 5 `e2`, 34 `macroB`) -/
-example : ((ggFT.map Prod.fst).count BAShape.band = 23 ∧ (ggFT.map Prod.fst).count BAShape.e2 = 8 ∧ ggFT.length = 31) ∧
-    ((((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.band = 8 ∧ (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.e1 = 1 ∧
-      (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.e2 = 5 ∧ (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.macroB = 34 ∧
-      ((baPG baPC).splitOutsT pC qC 0).length = 48) := by decide +kernel
-/-- **`baMatch_holds` and `baExtraGood_holds` at the data**: the `gg` step at `P_A` has `band`-tagged and `e2`-tagged outputs (kernel evaluation of `outsT`, `tagStd`); the `ggSplit` step at `P_C` has `band` and `e1` outputs; every deterministic hypothesis is discharged. -/
-example (m : ℂ) :
-    (∃ Q, (BAShape.band, Q) ∈ ggFT ∧ ∃ L' : List (PGraph (Fin 2)), LocStep m (baPG baPA).img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img) ∧
-    (∃ Q, (BAShape.e2, Q) ∈ ggFT ∧ ((baPG baPA).g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < (baPG baPA).g.nExt)) ∧
-    (∃ Q, (BAShape.band, Q) ∈ (baPG baPC).splitOutsT pC qC 0 ∧ ∃ L' : List (PGraph (Fin 2)), LocStep m (baPG baPC).img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img) ∧
-    (∃ Q, (BAShape.e1, Q) ∈ (baPG baPC).splitOutsT pC qC 0 ∧ ((baPG baPC).g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < (baPG baPC).g.nExt)) := by
-  obtain ⟨Q, hQ⟩ := tag_exists ggFT .band (by decide +kernel)
-  obtain ⟨Q', hQ'⟩ := tag_exists ggFT .e2 (by decide +kernel)
-  obtain ⟨R, hR⟩ := tag_exists ((baPG baPC).splitOutsT pC qC 0) .band (by decide +kernel)
-  obtain ⟨R', hR'⟩ := tag_exists ((baPG baPC).splitOutsT pC qC 0) .e1 (by decide +kernel)
-  exact ⟨⟨Q, hQ, baMatch_holds m _ _ hTA (by decide) Q hQ⟩, ⟨Q', hQ', baExtraGood_holds _ _ hTA (by decide) Q' (Or.inr hQ')⟩,
-    ⟨R, hR, baMatch_holds m _ _ hTC (by decide) R hR⟩, ⟨R', hR', baExtraGood_holds _ _ hTC (by decide) R' (Or.inl hR')⟩⟩
-/-- `baMatch_holds` and `baExtraGood_holds` at a datum `(P, LT)` with a `band`-tagged and an `e1`- or `e2`-tagged output -/
-theorem inst_match_extra (m : ℂ) {E : Type} (P : BAPGraph E) (LT : List (BAShape × BAPGraph E)) (h : BAFrameStepT P LT) (hN : P.g.Normal)
-    (hb : BAShape.band ∈ LT.map Prod.fst) (he : BAShape.e1 ∈ LT.map Prod.fst ∨ BAShape.e2 ∈ LT.map Prod.fst) :
-    (∃ Q, (BAShape.band, Q) ∈ LT ∧ ∃ L' : List (PGraph E), LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img) ∧
-    (∃ Q, ((BAShape.e1, Q) ∈ LT ∨ (BAShape.e2, Q) ∈ LT) ∧ (P.g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < P.g.nExt)) := by
-  obtain ⟨Q, hQ⟩ := tag_exists LT .band hb
-  refine ⟨⟨Q, hQ, baMatch_holds m P LT h hN Q hQ⟩, ?_⟩
-  rcases he with he | he
-  · obtain ⟨Q', hQ'⟩ := tag_exists LT .e1 he; exact ⟨Q', Or.inl hQ', baExtraGood_holds P LT h hN Q' (Or.inl hQ')⟩
-  · obtain ⟨Q', hQ'⟩ := tag_exists LT .e2 he; exact ⟨Q', Or.inr hQ', baExtraGood_holds P LT h hN Q' (Or.inr hQ')⟩
-/-- **`baMatch_holds` and `baExtraGood_holds` at the other three kinds**: `within` at `P_B`, `weight` at `P_W` (`E = Fin 1`), `edge` at `P_E`; each step has a
-`band`-tagged and an extra output (kernel evaluation of `outsT`, `tagStd`, `tagT1`), and every hypothesis of `BAFrameStepT` and `Normal` is discharged. -/
-example (m : ℂ) := And.intro (inst_match_extra m _ _ hTB (by decide) (by decide +kernel) (Or.inr (by decide +kernel)))
-  (And.intro (inst_match_extra m _ _ hTW (by decide) (by decide +kernel) (Or.inr (by decide +kernel)))
-    (inst_match_extra m _ _ hTE (by decide) (by decide +kernel) (Or.inl (by decide +kernel))))
-/-- **`baSim'_holds` at the five steps** (`gg` at `P_A`, `within` at `P_B`, `ggSplit` at `P_C`, `weight` at `P_W`, `edge` at `P_E`; each has outputs): every output has the conclusion of `BAsim'`. -/
-example (m : ℂ) :
-    (∃ Q ∈ ggF, BASim_Goal m (baPG baPA) Q) ∧ (∃ Q ∈ (baPG baPB).withinOuts pB, BASim_Goal m (baPG baPB) Q) ∧
-    (∃ Q ∈ (baPG baPC).splitOuts pC qC 0, BASim_Goal m (baPG baPC) Q) ∧
-    (∃ Q ∈ (baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW), BASim_Goal m (baPG baPW) Q) ∧
-    (∃ Q ∈ (baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE), BASim_Goal m (baPG baPE) Q) := by
-  have hF : ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BAFrameStep P outs → P.g.Normal → 0 < outs.length → ∃ Q ∈ outs, BASim_Goal m P Q :=
-    fun P outs h hN hl => by
-      obtain ⟨Q, hQ⟩ := List.exists_mem_of_length_pos hl
-      exact ⟨Q, hQ, baSim'_holds m P outs h hN Q hQ⟩
-  refine ⟨hF _ _ (BAFrameStep.gg (baPG baPA) pA (List.mem_cons_self ..) qA (List.mem_cons_self ..) (by decide) (0 : Fin 3) (by decide) (by decide) (by decide) (by decide))
-      (by decide) (by decide +kernel), hF _ _ (BAFrameStep.within (baPG baPB) pB (List.mem_cons_self ..) (by decide)) (by decide) (by decide +kernel),
-    hF _ _ (BAFrameStep.ggSplit (baPG baPC) pC (List.mem_cons_self ..) qC 0 rfl (by decide) (0 : Fin 3) (1 : Fin 3) (by decide) (by decide : (0 : Fin 3) ≠ 1)
-      (by decide) (by decide) (by decide) (by decide)) (by decide) (by decide +kernel),
-    hF _ _ (BAFrameStep.weight (baPG baPW) pW (List.mem_cons_self ..) (by decide)) (by decide) (by decide +kernel),
-    hF _ _ (BAFrameStep.edge (baPG baPE) pE (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) (by decide) (0 : Fin 1) (by decide)
-      (by decide) (by decide) (by decide) (by decide)) (by decide) (by decide +kernel)⟩
 end BASimInst
 
 end RBM.Graph

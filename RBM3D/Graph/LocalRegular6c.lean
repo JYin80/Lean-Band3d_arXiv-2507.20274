@@ -692,13 +692,6 @@ private theorem localReg6c_row_sc_alone_raw (Z U V : Q) :
       · simp [h1, h1.symm, h3, h3.symm, h4, h4.symm]
 
 open Classical in
-/-- `MoveSC`, `k = 2`, `[u] = [v] = [z]`: every edge dropped, `+2`. -/
-private theorem localReg6c_row_sc_k2_raw (Z U : Q) (h : Z = U) :
-    0 ≤ localReg6c_lb2 [(true, false, Z, U), (true, false, U, Z)] [] 1 ({Z, U} : Finset Q) := by
-  subst h
-  simp
-
-open Classical in
 /-- `MoveOut`, `α` alone: F §4.5 `MoveOut` (a)-(c) on the equality pattern of `[z]`, `[v]`, `[d]`. -/
 private theorem localReg6c_row_mo_alone_raw (Z V D : Q) :
     0 ≤ localReg6c_lb [(true, false, Z, V), (false, false, Z, D)] [] [] [(true, V), (false, D)] 1 ({Z, V, D} : Finset Q) := by
@@ -954,13 +947,6 @@ private theorem localReg6c_row_sc_alone (Z U V : Q) (C : Finset Q) (hC : ∀ x, 
     0 ≤ localReg6c_lb [(true, false, Z, V), (true, false, U, Z)] [] [(true, U)] [(true, V)] 1 C := by
   obtain rfl : C = {Z, U, V} := Finset.ext (fun x => by simpa using hC x)
   exact localReg6c_row_sc_alone_raw Z U V
-
-open Classical in
-/-- the row lemma of `MoveSC`, `k = 2`, `[z] = [u] = [v]`. -/
-private theorem localReg6c_row_sc_k2 (Z U : Q) (h : Z = U) (C : Finset Q) (hC : ∀ x, x ∈ C ↔ x = Z ∨ x = U) :
-    0 ≤ localReg6c_lb2 [(true, false, Z, U), (true, false, U, Z)] [] 1 C := by
-  obtain rfl : C = {Z, U} := Finset.ext (fun x => by simpa using hC x)
-  exact localReg6c_row_sc_k2_raw Z U h
 
 open Classical in
 /-- the row lemma of `MoveOut`, `α` alone. -/
@@ -1440,203 +1426,11 @@ end Dmove
 
 /-! ## 9. The cost at the kernel of a map (decidable values for the instances) -/
 
-section KerCost
-
-variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-
-open Classical in
-/-- the quotient map of `Setoid.ker f` loses no information about `f` -/
-private theorem localReg6c_card_image_ker {V : Type} (f : V → ℕ) (S : Finset V) :
-    (S.image (Quotient.mk (Setoid.ker f))).card = (S.image f).card := by
-  let g : Quotient (Setoid.ker f) → ℕ := Quotient.lift f (fun _ _ h => h)
-  have hg : Function.Injective g := by
-    intro x y h
-    induction x using Quotient.inductionOn with
-    | h a =>
-      induction y using Quotient.inductionOn with
-      | h b => exact Quotient.sound h
-  rw [← Finset.card_image_of_injective _ hg, Finset.image_image]
-  rfl
-
-open Classical in
-/-- **The cost at the kernel of a map** `f : E ⊕ I → ℕ`, as a decidable expression (for `decide` on concrete graphs): kept edges
-(circled, or ends with different values), `2 (n_W - #internal values)`, and the elementary internal values. -/
-private theorem localReg6c_scost_ker (Γ : LGraph E I) (f : E ⊕ I → ℕ) :
-    Γ.scost (Setoid.ker f) =
-      ((Γ.solid.filter (fun e => e.circ || decide (f e.src ≠ f e.dst))).length : ℤ) +
-        2 * ((Γ.waved.length : ℤ) -
-          (((Finset.univ.filter (fun v : E ⊕ I => ∀ a : E, f (Sum.inl a) ≠ f v)).image f).card : ℤ)) +
-        (((Finset.univ.filter (fun v : E ⊕ I => (∀ a : E, f (Sum.inl a) ≠ f v) ∧
-          lwElem (lwHalfPat (Γ.solid.filter (fun e => e.circ || decide (f e.src ≠ f e.dst)))
-            (fun w => f w = f v)) = true)).image f).card : ℤ) := by
-  have hk : Γ.skept (Setoid.ker f) = Γ.solid.filter (fun e => e.circ || decide (f e.src ≠ f e.dst)) := by
-    unfold LGraph.skept
-    refine List.filter_congr (fun e _ => ?_)
-    simp [Setoid.ker_def]
-  have hI : (Γ.sIntCls (Setoid.ker f)).card =
-      ((Finset.univ.filter (fun v : E ⊕ I => ∀ a : E, f (Sum.inl a) ≠ f v)).image f).card := by
-    unfold LGraph.sIntCls
-    rw [localReg6c_card_image_ker]
-    congr 2
-    ext v
-    simp [Setoid.ker_def]
-  have hE : (Γ.sElemCls (Setoid.ker f)).card =
-      ((Finset.univ.filter (fun v : E ⊕ I => (∀ a : E, f (Sum.inl a) ≠ f v) ∧
-        lwElem (lwHalfPat (Γ.solid.filter (fun e => e.circ || decide (f e.src ≠ f e.dst)))
-          (fun w => f w = f v)) = true)).image f).card := by
-    unfold LGraph.sElemCls
-    rw [localReg6c_card_image_ker]
-    congr 2
-    ext v
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Setoid.ker_def]
-    rw [hk]
-  unfold LGraph.scost
-  rw [hk, hI, hE]
-
-end KerCost
-
 /-! ## 10. Compiled instances (CLAUDE.md §4 step 2) -/
 
 section Instances
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-
-/-- the setoid `{x, y, α}`, singletons otherwise, on the vertices of a `Γ_2` primitive with one fresh vertex (the map of the check
-file `chkMapXYA`) -/
-def localReg6c_mapXYA : Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1) → ℕ :=
-  Sum.elim (fun _ => 0) (Sum.elim (fun i => i.1 + 1) (fun _ => 0))
-
-/-- the setoid `{inr 1, α}`, singletons otherwise, on the vertices of an `instCyc` primitive (the map of the check file
-`chkMapCyc`) -/
-def localReg6c_mapCyc : Fin 2 ⊕ (Fin 2 ⊕ Fin 1) → ℕ :=
-  Sum.elim (fun a => a.1 + 2) (Sum.elim (fun i => i.1) (fun _ => 1))
-
-/-- the trivial setoid (all singletons) on the vertices of a `Γ_2` primitive with one fresh vertex -/
-def localReg6c_mapInj : Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1) → ℕ :=
-  Sum.elim (fun a => a.1) (Sum.elim (fun i => i.1 + 2) (fun _ => 6))
-
-/-- Instance (1): `MoveSC(α_0; x, y)` at `Γ_2 = fxyPowGraph 2` (`rest` the other four edges; the `Perm` is
-`localReg6b_inst_contractPerm`). -/
-theorem localReg6c_inst_moveSC : LGraph.ScostLL (fxyPowGraph 2)
-    (lwPrimMoveSC (fxyPowGraph 2)
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)) :=
-  scostLL_moveSC _ _ _ _ _ (by decide) (by decide) localReg6b_inst_contractPerm
-
-/-- Instance (1'): at `s' = {x, y, α}` (`k = 2`) the term costs `5`, the restriction `{x, y}` costs `6` (so it is not a witness), and
-the merge of the restriction at `x`, `α_0` costs `5` (the repair branch is forced). -/
-theorem localReg6c_inst_moveSC_values :
-    (lwPrimMoveSC (fxyPowGraph 2)
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)).scost (Setoid.ker localReg6c_mapXYA) = 5 ∧
-    (fxyPowGraph 2).scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapXYA)) = 6 ∧
-    (fxyPowGraph 2).scost
-      (scostLL_merge (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapXYA)) (Sum.inl 0) (Sum.inr 0)) = 5 := by
-  refine ⟨?_, ?_, ?_⟩
-  · rw [localReg6c_scost_ker]
-    decide
-  · have h : Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapXYA) = Setoid.ker (localReg6c_mapXYA ∘ owxEmb 1) :=
-      Setoid.ext (fun _ _ => Iff.rfl)
-    rw [h, localReg6c_scost_ker]
-    decide
-  · have h : scostLL_merge (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapXYA)) (Sum.inl 0) (Sum.inr 0) =
-        Setoid.ker (fun w : Fin 2 ⊕ Fin (2 * 2) => match w with
-          | Sum.inl _ => 0
-          | Sum.inr i => if i.1 = 0 then 0 else i.1 + 1) := by
-      refine Setoid.ext (fun a b => ?_)
-      show (_ ∨ _ ∨ _) ↔ _
-      simp only [Setoid.comap_rel, Setoid.ker_def]
-      revert a b
-      decide
-    rw [h, localReg6c_scost_ker]
-    decide
-
-/-- Instance (2): `MoveSC(z; u, u)` at the 2-cycle `localReg6b_instCyc` (`z = inr 0`, `u = v = inr 1`): the collapse. -/
-theorem localReg6c_inst_moveSC_cyc :
-    LGraph.ScostLL localReg6b_instCyc (lwPrimMoveSC localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) (Sum.inr 1)) :=
-  scostLL_moveSC _ _ _ _ _ (by decide) (by decide) (List.Perm.refl _)
-
-/-- Instance (2'): at `s' = {inr 1, α}` the term costs `-2` and the restriction (the trivial setoid, cost `0`) is not a witness:
-the repair branch is forced. -/
-theorem localReg6c_inst_moveSC_cyc_values :
-    (lwPrimMoveSC localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) (Sum.inr 1)).scost (Setoid.ker localReg6c_mapCyc) = -2 ∧
-    ¬ localReg6b_instCyc.scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc)) ≤
-      (lwPrimMoveSC localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) (Sum.inr 1)).scost (Setoid.ker localReg6c_mapCyc) := by
-  have hT : (lwPrimMoveSC localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) (Sum.inr 1)).scost (Setoid.ker localReg6c_mapCyc) = -2 := by
-    rw [localReg6c_scost_ker]
-    decide
-  refine ⟨hT, ?_⟩
-  have h : Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc) = Setoid.ker (localReg6c_mapCyc ∘ owxEmb 1) :=
-    Setoid.ext (fun _ _ => Iff.rfl)
-  have h0 : localReg6b_instCyc.scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc)) = 0 := by
-    rw [h, localReg6c_scost_ker]
-    decide
-  rw [hT, h0]
-  decide
-
-/-- the hypothesis of instance (3): the edges `x → α_0` (blue) and `x → α_1` (red) are in front of the solid list of `Γ_2` up to
-permutation (`SEdge` has no `DecidableEq`: by unfolding) -/
-theorem localReg6c_inst_moveOutPerm : (fxyPowGraph 2).solid.Perm
-    ((⟨true, false, Sum.inl 0, Sum.inr 0⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))) :: ⟨false, false, Sum.inl 0, Sum.inr 2⟩ ::
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩]) :=
-  (List.perm_middle (a := (⟨true, false, Sum.inl 0, Sum.inr 0⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))))
-    (l₁ := [⟨true, true, Sum.inr 1, Sum.inr 1⟩])
-    (l₂ := [⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-      ⟨false, false, Sum.inr 2, Sum.inl 1⟩])).trans
-    (List.Perm.cons _ (List.perm_middle (a := (⟨false, false, Sum.inl 0, Sum.inr 2⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))))
-      (l₁ := [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩])
-      (l₂ := [⟨false, false, Sum.inr 2, Sum.inl 1⟩])))
-
-/-- Instance (3): `MoveOut(x; α_0, α_1)` at `Γ_2` (`z = x` external). -/
-theorem localReg6c_inst_moveOut : LGraph.ScostLL (fxyPowGraph 2)
-    (lwPrimMoveOut (fxyPowGraph 2)
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inl 0) (Sum.inr 0) (Sum.inr 2)) :=
-  scostLL_moveOut _ _ _ _ _ (by decide) (by decide) localReg6c_inst_moveOutPerm
-
-/-- the hypothesis of instance (4): the blue light-weight at `β_0` and the red edge `x → α_1` are in front of the solid list of `Γ_2`
-up to permutation -/
-theorem localReg6c_inst_dmovePerm : (fxyPowGraph 2).solid.Perm
-    ((⟨true, true, Sum.inr 1, Sum.inr 1⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))) :: ⟨false, false, Sum.inl 0, Sum.inr 2⟩ ::
-      [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩]) :=
-  List.Perm.cons _ (List.perm_middle (a := (⟨false, false, Sum.inl 0, Sum.inr 2⟩ : SEdge (Fin 2 ⊕ Fin (2 * 2))))
-    (l₁ := [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩])
-    (l₂ := [⟨false, false, Sum.inr 2, Sum.inl 1⟩]))
-
-/-- Instance (4): `Dmove(β_0; lw_{β_0}, x → α_1)` at `Γ_2` (the `T3` shape, red `q`, `z = v = β_0`, `cp = true`). -/
-theorem localReg6c_inst_dmove : LGraph.ScostLL (fxyPowGraph 2)
-    (lwPrimDmove (fxyPowGraph 2)
-      [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 1) (Sum.inr 1) ⟨false, false, Sum.inl 0, Sum.inr 2⟩) :=
-  scostLL_dmove _ _ _ _ true _ (by decide) (by decide) localReg6c_inst_dmovePerm
-
-/-- Instance (5): blue `Dmove(z; z → u, u → z)` at the 2-cycle `localReg6b_instCyc` (`z = inr 0`, `v = a = inr 1`, `b = inr 0`: the
-case `[z] = [b] ≠ [v]` at `k = 2`): the collapse; the added edge `z → b` is the uncircled loop `inr 0 → inr 0`. -/
-theorem localReg6c_inst_dmove_cyc : LGraph.ScostLL localReg6b_instCyc
-    (lwPrimDmove localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) ⟨true, false, Sum.inr 1, Sum.inr 0⟩) :=
-  scostLL_dmove _ _ _ _ false _ (by decide) (by decide) (List.Perm.refl _)
-
-/-- Instance (5'): at `s' = {inr 1, α}` the term costs `-2` and the restriction (cost `0`) is not a witness: the repair is forced. -/
-theorem localReg6c_inst_dmove_cyc_values :
-    (lwPrimDmove localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) ⟨true, false, Sum.inr 1, Sum.inr 0⟩).scost
-        (Setoid.ker localReg6c_mapCyc) = -2 ∧
-    ¬ localReg6b_instCyc.scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc)) ≤
-      (lwPrimDmove localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) ⟨true, false, Sum.inr 1, Sum.inr 0⟩).scost
-        (Setoid.ker localReg6c_mapCyc) := by
-  have hT : (lwPrimDmove localReg6b_instCyc [] (Sum.inr 0) (Sum.inr 1) ⟨true, false, Sum.inr 1, Sum.inr 0⟩).scost
-      (Setoid.ker localReg6c_mapCyc) = -2 := by
-    rw [localReg6c_scost_ker]
-    decide
-  refine ⟨hT, ?_⟩
-  have h : Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc) = Setoid.ker (localReg6c_mapCyc ∘ owxEmb 1) :=
-    Setoid.ext (fun _ _ => Iff.rfl)
-  have h0 : localReg6b_instCyc.scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapCyc)) = 0 := by
-    rw [h, localReg6c_scost_ker]
-    decide
-  rw [hT, h0]
-  decide
 
 /-- Instance (6): the edge term `P3 = MoveOut(x; v, d)` (`oe1xP3`, `LWEdgeExp.lean:1093`): the two added edges are in the other
 order, `List.Perm.swap`. -/
@@ -1664,14 +1458,6 @@ theorem localReg6c_inst_D (m : ℂ) (Γ : LGraph E I) (x : I) (v : E ⊕ I)
     (by simp [lwPrimDmove, oe1xD, LGraph.owxExt])
     (scostLL_dmove Γ q.2 (Sum.inr x) v false q.1 ⟨fun h => absurd h h1, fun h => by cases h⟩ hq hperm)
 
-/-- Instance (9): the weight term `T3 = Dmove(w; lw_w, q)` (`owxT3`, `LWWeightExp.lean:677`) at an internal vertex. -/
-theorem localReg6c_inst_T3 (m : ℂ) (Γ : LGraph E I) (x : I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
-    (hq : q.1.src = q.1.dst ↔ q.1.circ = true) (hperm : Γ.solid.Perm (⟨true, true, Sum.inr x, Sum.inr x⟩ :: q.1 :: q.2)) :
-    LGraph.ScostLL Γ (owxT3 m Γ x q) :=
-  LGraph.ScostLL.of_perm Γ (lwPrimDmove Γ q.2 (Sum.inr x) (Sum.inr x) q.1) (owxT3 m Γ x q) (List.Perm.refl _)
-    (by simp [lwPrimDmove, owxT3, LGraph.owxExt])
-    (scostLL_dmove Γ q.2 (Sum.inr x) (Sum.inr x) true q.1 ⟨fun _ => rfl, fun _ => rfl⟩ hq hperm)
-
 /-- Instance (9'): the weight term `T3` at an arbitrary vertex (`owxET3`, `LWSymm.lean:603`), in particular at an external one. -/
 theorem localReg6c_inst_ET3 (m : ℂ) (Γ : LGraph E I) (x : E ⊕ I) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
     (hq : q.1.src = q.1.dst ↔ q.1.circ = true) (hperm : Γ.solid.Perm (⟨true, true, x, x⟩ :: q.1 :: q.2)) :
@@ -1679,78 +1465,6 @@ theorem localReg6c_inst_ET3 (m : ℂ) (Γ : LGraph E I) (x : E ⊕ I) (q : SEdge
   LGraph.ScostLL.of_perm Γ (lwPrimDmove Γ q.2 x x q.1) (owxET3 m Γ x q) (List.Perm.refl _)
     (by simp [lwPrimDmove, owxET3, LGraph.owxExt])
     (scostLL_dmove Γ q.2 x x true q.1 ⟨fun _ => rfl, fun _ => rfl⟩ hq hperm)
-
-/-- Instance (10): the §55 consequence at instances (1), (3), (4): `4 ≤ scost` for every merge and `6 ≤ scost` for every merge
-separating `x` and `y` (the merged `localReg6b_inst_s55`; no far/all switch in `ScostLL`). -/
-theorem localReg6c_inst_s55 :
-    ((∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)),
-        4 ≤ (lwPrimMoveSC (fxyPowGraph 2)
-          [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)).scost s) ∧
-      (∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)), ¬ s (Sum.inl 0) (Sum.inl 1) →
-        6 ≤ (lwPrimMoveSC (fxyPowGraph 2)
-          [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)).scost s)) ∧
-    ((∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)),
-        4 ≤ (lwPrimMoveOut (fxyPowGraph 2)
-          [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inl 0) (Sum.inr 0) (Sum.inr 2)).scost s) ∧
-      (∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)), ¬ s (Sum.inl 0) (Sum.inl 1) →
-        6 ≤ (lwPrimMoveOut (fxyPowGraph 2)
-          [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inl 0) (Sum.inr 0) (Sum.inr 2)).scost s)) ∧
-    ((∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)),
-        4 ≤ (lwPrimDmove (fxyPowGraph 2)
-          [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 1) (Sum.inr 1) ⟨false, false, Sum.inl 0, Sum.inr 2⟩).scost s) ∧
-      (∀ s : Setoid (Fin 2 ⊕ (Fin (2 * 2) ⊕ Fin 1)), ¬ s (Sum.inl 0) (Sum.inl 1) →
-        6 ≤ (lwPrimDmove (fxyPowGraph 2)
-          [⟨true, false, Sum.inl 0, Sum.inr 0⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩,
-            ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 1) (Sum.inr 1) ⟨false, false, Sum.inl 0, Sum.inr 2⟩).scost s)) :=
-  ⟨localReg6b_inst_s55 _ localReg6c_inst_moveSC, localReg6b_inst_s55 _ localReg6c_inst_moveOut,
-    localReg6b_inst_s55 _ localReg6c_inst_dmove⟩
-
-open Classical in
-/-- Instance of target 1 (`localReg6c_alone_diff`): `MoveSC(α_0; x, y)` at `Γ_2` with the trivial setoid (`α` alone): the removed
-edges `α_0 → y`, `x → α_0`, the added edges `x → α`, `α → y` and one waved edge `α_0 - α`; every hypothesis is discharged. -/
-example := localReg6c_alone_diff (fxyPowGraph 2)
-  [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-    ⟨false, false, Sum.inr 2, Sum.inl 1⟩]
-  [⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨true, false, Sum.inl 0, Sum.inr 0⟩] localReg6b_inst_contractPerm 1
-  [⟨true, false, owxEmb 1 (Sum.inl 0), Sum.inr (Sum.inr 0)⟩, ⟨true, false, Sum.inr (Sum.inr 0), owxEmb 1 (Sum.inl 1)⟩]
-  [⟨false, true, owxEmb 1 (Sum.inr 0), Sum.inr (Sum.inr 0)⟩] (Setoid.ker localReg6c_mapInj)
-  (by
-    intro w hw
-    revert w
-    simp only [Setoid.ker_def]
-    decide)
-  {Quotient.mk _ (Sum.inr 0), Quotient.mk _ (Sum.inl 0), Quotient.mk _ (Sum.inl 1)}
-  (by
-    intro e he
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at he
-    rcases he with rfl | rfl <;> simp)
-  (by
-    intro e he w hw
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at he hw
-    rcases he with rfl | rfl <;> rcases hw with rfl | rfl
-    · exact Or.inr ⟨Sum.inl 0, rfl, by simp⟩
-    · exact Or.inl rfl
-    · exact Or.inl rfl
-    · exact Or.inr ⟨Sum.inl 1, rfl, by simp⟩)
-
-/-- the values of the instance of target 1: at the trivial setoid the term `MoveSC(α_0; x, y)` costs `6` and so does `Γ_2` -/
-theorem localReg6c_inst_alone_values :
-    (lwPrimMoveSC (fxyPowGraph 2)
-      [⟨true, true, Sum.inr 1, Sum.inr 1⟩, ⟨false, true, Sum.inr 3, Sum.inr 3⟩, ⟨false, false, Sum.inl 0, Sum.inr 2⟩,
-        ⟨false, false, Sum.inr 2, Sum.inl 1⟩] (Sum.inr 0) (Sum.inl 0) (Sum.inl 1)).scost (Setoid.ker localReg6c_mapInj) = 6 ∧
-    (fxyPowGraph 2).scost (Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapInj)) = 6 := by
-  refine ⟨?_, ?_⟩
-  · rw [localReg6c_scost_ker]
-    decide
-  · have h : Setoid.comap (owxEmb 1) (Setoid.ker localReg6c_mapInj) = Setoid.ker (localReg6c_mapInj ∘ owxEmb 1) :=
-      Setoid.ext (fun _ _ => Iff.rfl)
-    rw [h, localReg6c_scost_ker]
-    decide
 
 end Instances
 

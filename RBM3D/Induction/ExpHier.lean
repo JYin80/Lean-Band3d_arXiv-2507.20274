@@ -5,7 +5,6 @@ Authors: Jun Yin
 -/
 import RBM3D.Induction.Step6Kit
 import RBM3D.Induction.LoopGenN
-import RBM3D.Path.DriftAlgebra
 import RBM3D.Loop.KLTree
 import RBM3D.Gauss.LoopGenerator
 
@@ -765,13 +764,6 @@ theorem expHier_hasDerivAt {d : ℕ} (sz : Sizes d) (n : ℕ) {E : ℝ} (hE : |E
   unfold STExpDrift
   rw [expHier_expELKLK_eq sz n hE hu.1.le hu.2 σ a, expHier_expEGt_eq sz n hE hu.1.le hu.2 σ a]
 
-/-- **Target 3: the pin `STExpHier`** (`expHierPin`, `MLExpHier:643`), proved for every `d` (the premise
-`3 ≤ d` is not used).  Without RBM2D's first conjunct `f_0 = 0`, which the merged pin does not state. -/
-theorem stExpHier_holds (d : ℕ) : STExpHier d :=
-  fun _ sz n E hE σ a =>
-    ⟨expHier_continuousOn_err sz n hE σ a, expHier_continuousOn_drift sz n hE σ a,
-      expHier_hasDerivAt sz n hE σ a⟩
-
 end Target
 
 end RBM.Gauss.Sizes
@@ -782,110 +774,4 @@ At `d = 3`, the merged admissible sequence `sz0` (`RBM.Gauss.SizesInst.sz0`: `L_
 `lam_0 = 1/64`), `n = 0`, `E = 1/2` (`|E| < 2`), loop label `a = (0, e₁)`.  Every hypothesis is
 discharged (`|1/2| < 2`, `0 < 1/2 < 1`, `M = 1` Hermitian); nothing is left as a hypothesis. -/
 
-namespace RBM.Gauss.Step6Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Path RBM.Loop Filter MeasureTheory
-
-/-- `stExpHier_holds 3` through the merged `inst_expHier`, `σ = (+,-)`. -/
-theorem inst_expHier_holds :
-    ContinuousOn (fun u => sz0.STExpErr 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ContinuousOn (fun u => sz0.STExpDrift 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt (fun v => sz0.STExpErr 0 (1 / 2) v ![true, false] ![0, Pi.single 0 1])
-      (sz0.STthetaOp 0 (1 / 2) u ![true, false] (fun b => sz0.STExpErr 0 (1 / 2) u ![true, false] b)
-          ![0, Pi.single 0 1] + sz0.STExpDrift 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) u :=
-  inst_expHier (stExpHier_holds 3)
-
-/-- The repeated sign `σ = (+,+)`, outside `HierarchyN2`/`KpmODE`. -/
-theorem inst_expHier_pp :
-    ContinuousOn (fun u => sz0.STExpErr 0 (1 / 2) u ![true, true] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ContinuousOn (fun u => sz0.STExpDrift 0 (1 / 2) u ![true, true] ![0, Pi.single 0 1]) (Set.Ico 0 1) ∧
-    ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt (fun v => sz0.STExpErr 0 (1 / 2) v ![true, true] ![0, Pi.single 0 1])
-      (sz0.STthetaOp 0 (1 / 2) u ![true, true] (fun b => sz0.STExpErr 0 (1 / 2) u ![true, true] b)
-          ![0, Pi.single 0 1] + sz0.STExpDrift 0 (1 / 2) u ![true, true] ![0, Pi.single 0 1]) u :=
-  stExpHier_holds 3 (by norm_num) sz0 0 (1 / 2) (by norm_num [abs_of_pos]) ![true, true]
-    ![0, Pi.single 0 1]
-
-/-- The drift identity at the interior time `u = 1/2`, `σ = (-,-)`. -/
-theorem inst_expHier_half :
-    HasDerivAt (fun v => sz0.STExpErr 0 (1 / 2) v ![false, false] ![0, Pi.single 0 1])
-      (sz0.STthetaOp 0 (1 / 2) (1 / 2) ![false, false] (fun b => sz0.STExpErr 0 (1 / 2) (1 / 2) ![false, false] b)
-        ![0, Pi.single 0 1] + sz0.STExpDrift 0 (1 / 2) (1 / 2) ![false, false] ![0, Pi.single 0 1]) (1 / 2) :=
-  (stExpHier_holds 3 (by norm_num) sz0 0 (1 / 2) (by norm_num [abs_of_pos]) ![false, false]
-    ![0, Pi.single 0 1]).2.2 (1 / 2) ⟨by norm_num, by norm_num⟩
-
-/-- Target 1c at `sz0`, `n = 0`, `E = u = 1/2`, `σ = (+,+)`. -/
-theorem inst_expHier_Kloop :
-    HasDerivAt (fun v : ℝ => sz0.STKloop 0 (1 / 2) v ![true, true] ![0, Pi.single 0 1])
-      ((((sz0.W 0 : ℕ) : ℂ) ^ 3) * ∑ c : Zd 3 (sz0.L 0), ∑ e : Zd 3 (sz0.L 0),
-        sz0.STKloop 0 (1 / 2) (1 / 2) ![true, true] ![0, c] * SB 3 (sz0.L 0) (sz0.lam 0) c e *
-          sz0.STKloop 0 (1 / 2) (1 / 2) ![true, true] ![e, Pi.single 0 1]) (1 / 2) :=
-  expHier_Kloop_hasDerivAt sz0 0 (by norm_num [abs_of_pos]) (1 / 2) (by norm_num) (by norm_num)
-    ![true, true] ![0, Pi.single 0 1]
-
-/-- Target 1d at `sz0`, `n = 0`, `E = u = 1/2`, `M = 1`, `σ = (-,-)`, `a = (0, 0)`. -/
-theorem inst_expHier_hierarchy_two :
-    genMat 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (1 / 2) (1 / 2)
-        (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-        (loopOf ![false, false] ![(0 : Zd 3 (sz0.L 0)), 0]) -
-      deriv (fun v : ℝ => sz0.STKloop 0 (1 / 2) v ![false, false] ![(0 : Zd 3 (sz0.L 0)), 0]) (1 / 2) =
-    sz0.STthetaOp 0 (1 / 2) (1 / 2) ![false, false]
-        (sz0.STLKM 0 (1 / 2) (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-          ![false, false]) ![0, 0] +
-      sz0.STELKLKM 0 (1 / 2) (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-        ![false, false] ![0, 0] +
-      sz0.STEGtM 0 (1 / 2) (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-        ![false, false] ![0, 0] :=
-  expHier_hierarchy_two sz0 0 (by norm_num [abs_of_pos]) (1 / 2) (by norm_num) (by norm_num) 1
-    Matrix.isHermitian_one ![false, false] ![0, 0]
-
-/-- Target 1a at `(L, W, g) = (4, 32, 1/64)`, `E = 1/2`, the loop `((+,-), (0, e₁))`. -/
-example :
-    ContinuousOn (fun u : ℝ => ∫ ω : Ω 3 (sz0.L 0) (sz0.W 0),
-      loopL 3 (sz0.L 0) (sz0.W 0) (HflowBlock 3 (sz0.L 0) (sz0.W 0) u ω) (zt (1 / 2) u)
-        (loopOf ![true, false] ![(0 : Zd 3 (sz0.L 0)), Pi.single 0 1])
-      ∂(PF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0))) (Set.Ico 0 1) :=
-  expHier_continuousOn_integral_loopL (sz0.L 0) (sz0.W 0) (sz0.lam 0) (by norm_num [abs_of_pos]) _
-
-/-- Target 1b at the nonzero sample `ω ≡ 1`, `E = u = 1/2`, the loop `((+,-), (0, e₁))`. -/
-example :
-    genMat 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (1 / 2) (1 / 2)
-        (Hflow 3 (sz0.L 0) (sz0.W 0) (1 / 2) (fun _ => 1))
-        (loopOf ![true, false] ![(0 : Zd 3 (sz0.L 0)), Pi.single 0 1]) =
-      samplewiseLoopGeneratorCuts 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (fun _ => 1) (1 / 2) (1 / 2)
-        (loopOf ![true, false] ![(0 : Zd 3 (sz0.L 0)), Pi.single 0 1]) :=
-  expHier_genMat_eq_cuts (sz0.L 0) (sz0.W 0) (sz0.lam 0) (by norm_num [abs_of_pos]) (by norm_num)
-    (by norm_num) (fun _ => 1) _ (by simp [LoopIdx.WF, loopOf])
-
-/-- Target 1e at `sz0`, `n = 0`, `E = u = 1/2`, `σ = (+,-)`. -/
-example :=
-  expHier_hasDerivAt_fixed sz0 0 (E := 1 / 2) (by norm_num [abs_of_pos]) (1 / 2) (by norm_num)
-    (by norm_num) ![true, false] ![0, Pi.single 0 1]
-
-/-- Target 2a at `sz0`, `n = 0`, `E = 1/2`, `σ = (+,-)`. -/
-example :=
-  expHier_continuousOn_err sz0 0 (E := 1 / 2) (by norm_num [abs_of_pos]) ![true, false]
-    ![0, Pi.single 0 1]
-
-/-- Target 2b at `sz0`, `n = 0`, `E = 1/2`, `σ = (+,-)`. -/
-example :=
-  expHier_continuousOn_drift sz0 0 (E := 1 / 2) (by norm_num [abs_of_pos]) ![true, false]
-    ![0, Pi.single 0 1]
-
-end RBM.Gauss.Step6Inst
-
 end
-
-#print axioms RBM.Gauss.Sizes.expHier_continuousOn_integral_loopL
-#print axioms RBM.Gauss.Sizes.expHier_genMat_eq_cuts
-#print axioms RBM.Gauss.Sizes.expHier_Kloop_hasDerivAt
-#print axioms RBM.Gauss.Sizes.expHier_hierarchy_two
-#print axioms RBM.Gauss.Sizes.expHier_hasDerivAt_fixed
-#print axioms RBM.Gauss.Sizes.expHier_continuousOn_err
-#print axioms RBM.Gauss.Sizes.expHier_continuousOn_drift
-#print axioms RBM.Gauss.Sizes.expHier_hasDerivAt
-#print axioms RBM.Gauss.Sizes.stExpHier_holds
-#print axioms RBM.Gauss.Step6Inst.inst_expHier_holds
-#print axioms RBM.Gauss.Step6Inst.inst_expHier_pp
-#print axioms RBM.Gauss.Step6Inst.inst_expHier_half
-#print axioms RBM.Gauss.Step6Inst.inst_expHier_Kloop
-#print axioms RBM.Gauss.Step6Inst.inst_expHier_hierarchy_two

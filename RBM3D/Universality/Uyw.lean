@@ -877,21 +877,6 @@ theorem unUyw_of_ouClaims : ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz
         gcongr
         exact Real.one_le_rpow hX1 hε.le
 
-/-- **The `Uyw` half of the row `UNJakUywRow`** (RBM2D `uywRow` `:898`): the weighted `(uywy7723r3rf)`
-(`1_2:566-581`) at `c' = 𝔠𝔡/30` and `C = 3 nf + 16`, from the `𝐇_t` claims, with `τ₀ = min τ₁ (1/4)`.
-`UNLocAvgBand` is the first hypothesis of the row and is not used.  Same hypotheses and quantifiers as
-`jakRow` (`Jak.lean:931`). -/
-theorem uywRow :
-    UNLocAvgBand → UNOUClaims → ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-      ∀ κ : ℝ, 0 < κ → ∀ E : ℝ, |E| ≤ 2 - κ → ∀ nf : ℕ, ∃ C τ₀ : ℝ, 0 < τ₀ ∧
-        ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ → UNUyw sz E nf τU C (𝔠 * 𝔡 / 30) := by
-  intro _hloc hclaims d hd 𝔠 𝔡 sz hadm κ hκ E hE nf
-  obtain ⟨τ₁, hτ₁, hτ⟩ := hclaims d hd 𝔠 𝔡 sz hadm
-  refine ⟨3 * (nf : ℝ) + 16, min τ₁ (1 / 4), lt_min hτ₁ (by norm_num), ?_⟩
-  intro τU hτU hτle
-  obtain ⟨hQ, hD⟩ := hτ τU hτU (le_min_iff.1 hτle).1
-  exact unUyw_of_ouClaims d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hD
-
 /-- **The row `UNJakUywRow`** (RBM2D `jakUywRow` `:951`): `jakRow` and `uywRow` have the common constant
 `C = 3 nf + 16` and the common range `τ₀ = min τ₁ (1/4)`, so no monotonicity lemma is needed. -/
 theorem jakUywRow : UNJakUywRow := by
@@ -912,73 +897,5 @@ The targets at the preflight size sequence `sz0` (`d = 3`, `L_n = 4(n+1)`, `W_n 
 `inst_window` shows that the premises of `UNUyw` at these data are satisfiable at every size: two distinct
 window points `z 0 = 1 + i N⁻¹`, `z 1 = 1 + N⁻¹ + i N⁻¹` lie in `InWindow sz0 1 1 τ_U n` (`i ≠ j` of the pin is
 `(0 : Fin 2) ≠ 1`) and `t = 0 ≤ t*`. -/
-
-namespace UywInst
-
-theorem inst_row :
-    UNLocAvgBand → UNOUClaims →
-      ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-        UNJak SizesInst.sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) ∧
-          UNUyw SizesInst.sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  fun hloc hOU =>
-    jakUywRow hloc hOU 3 le_rfl (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-      (by norm_num) 2
-
-theorem inst_uywRow :
-    UNLocAvgBand → UNOUClaims →
-      ∃ C τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
-        UNUyw SizesInst.sz0 1 2 τU C ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  fun hloc hOU =>
-    uywRow hloc hOU 3 le_rfl (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-      (by norm_num) 2
-
-/-- `unUyw_of_ouClaims` at `sz0`, `κ = 1/2`, `E = 1`, `nf = 2`, any `τ_U ∈ (0, 1/4]`; the two `𝐇_t` claims
-at `τ_U` are hypotheses (pins of other gates). -/
-theorem inst_unUyw :
-    ∀ τU : ℝ, 0 < τU → τU ≤ 1 / 4 →
-      UNOUQUE SizesInst.sz0 (1 / 10) τU → UNOUDiag SizesInst.sz0 τU →
-        UNUyw SizesInst.sz0 1 2 τU (3 * ((2 : ℕ) : ℝ) + 16) ((1 / 6 : ℝ) * (1 / 10) / 30) :=
-  fun τU hτ hτ4 hQUE hDiag =>
-    unUyw_of_ouClaims 3 le_rfl (1 / 6) (1 / 10) SizesInst.sz0 UNInst.sz0_adm (1 / 2) (by norm_num) 1
-      (by norm_num) 2 τU hτ hτ4 hQUE hDiag
-
-theorem inst_window :
-    ∀ (n : ℕ) (τU : ℝ), 0 < τU →
-      ∃ z : Fin 2 → ℂ, (∀ i, InWindow SizesInst.sz0 1 1 τU n (z i)) ∧ z 0 ≠ z 1 ∧
-        (0 : Fin 2) ≠ 1 ∧ 0 ≤ ouTStar SizesInst.sz0 τU n := by
-  intro n τU hτU
-  have hN : (1 : ℝ) ≤ Nsz SizesInst.sz0 n := by
-    have : 1 ≤ SizesInst.sz0.size n := by
-      simp only [Sizes.size, SizesInst.sz0]
-      exact Nat.one_le_pow _ _ (by positivity)
-    exact_mod_cast this
-  have hN0 : (0 : ℝ) < Nsz SizesInst.sz0 n := by linarith
-  have hlo : Nsz SizesInst.sz0 n ^ (-1 - τU) ≤ (Nsz SizesInst.sz0 n)⁻¹ := by
-    rw [← Real.rpow_neg_one]
-    exact Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-  have hhi : (Nsz SizesInst.sz0 n)⁻¹ ≤ Nsz SizesInst.sz0 n ^ (-1 + τU) := by
-    rw [← Real.rpow_neg_one]
-    exact Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-  refine ⟨![(⟨1, (Nsz SizesInst.sz0 n)⁻¹⟩ : ℂ), (⟨1 + (Nsz SizesInst.sz0 n)⁻¹, (Nsz SizesInst.sz0 n)⁻¹⟩ : ℂ)],
-    ?_, ?_, by decide, by unfold ouTStar; positivity⟩
-  · intro i
-    fin_cases i
-    · exact ⟨by simp, hlo, hhi⟩
-    · refine ⟨?_, hlo, hhi⟩
-      change |1 + (Nsz SizesInst.sz0 n)⁻¹ - 1| ≤ 1 / Nsz SizesInst.sz0 n
-      simp
-  · intro h
-    have h' : (1 : ℝ) = 1 + (Nsz SizesInst.sz0 n)⁻¹ := congrArg Complex.re h
-    exact inv_ne_zero hN0.ne' (by linarith)
-
-end UywInst
-
-#print axioms RBM.Univ.unUyw_of_ouClaims
-#print axioms RBM.Univ.uywRow
-#print axioms RBM.Univ.jakUywRow
-#print axioms RBM.Univ.UywInst.inst_row
-#print axioms RBM.Univ.UywInst.inst_uywRow
-#print axioms RBM.Univ.UywInst.inst_unUyw
-#print axioms RBM.Univ.UywInst.inst_window
 
 end RBM.Univ

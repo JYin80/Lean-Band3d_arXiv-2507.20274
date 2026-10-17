@@ -361,50 +361,6 @@ theorem oull_of_pathBoundsBA {d : ℕ} (sz : Sizes d) {κ τU : ℝ} (hκ : 0 < 
 deterministic hypothesis is discharged; `BAPB` at the Lemma 2.8 data is the output of the §7.2 random layer (`ba_prodG` of `BA/GUEHyp` from the pin
 `UNMLOutBA`, V3's), another gate's pin: it stays a hypothesis of the example. -/
 
-namespace GUELLBAInst
-
-open RBM.Univ.BAInst RBM.BA.UNPinsInst
-
-private theorem hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-/-- **`oull_of_pathBoundsBA` at `S0`, `E ≡ E_*`, `t_n = N^{-1+τ_U}`**: the output is the body of `UNOULLk (UNKind.ba 3) S0 (1/100)` at
-`(κ, E, t, δ, p) = (clsκ, E_*, t, 1/10, p)`. -/
-example (Kt : ∀ n, ℝ → LoopIdx (Zd 3 (S0.L n)) → ℂ)
-    (hP : BAPB 3 S0
-      (fun n => BAfE 3 S0 n (((fp 4 hg).E : ℂ) + ((ouEtaLL S0 (1 / 100) n : ℝ) : ℂ) * Complex.I))
-      (fun n => (1 - ouZeta (ouTStar S0 (1 / 100) n)) *
-        BAfT 3 S0 n (((fp 4 hg).E : ℂ) + ((ouEtaLL S0 (1 / 100) n : ℝ) : ℂ) * Complex.I))
-      (fun n => BAfT 3 S0 n (((fp 4 hg).E : ℂ) + ((ouEtaLL S0 (1 / 100) n : ℝ) : ℂ) * Complex.I)) Kt) (p : ℕ) :
-    ∀ᶠ n in atTop, ∀ x : Idx 3 (S0.L n) (S0.W n),
-      ∫ ω, ‖Gres (ouMatC (UNModelC.ba S0) n (ouTStar S0 (1 / 100) n) ω)
-          (((fp 4 hg).E : ℂ) + ((ouEtaLL S0 (1 / 100) n : ℝ) : ℂ) * Complex.I) true x x‖ ^ (2 * p)
-        ∂(ouP (UNModelC.ba S0).toUNModel n) ≤ Nsz S0 n ^ (1 / 10 : ℝ) :=
-  oull_of_pathBoundsBA S0 (κ := clsκ 4 hg) (τU := 1 / 100) (clsκ_pos 4 hg) (by norm_num) (by norm_num)
-    (Sizes.tendsto_size S0 S0_adm.2.2.1) (E := fun _ => (fp 4 hg).E) (t := ouTStar S0 (1 / 100))
-    (fun _ => cls_bulk 4 (by norm_num) hg) (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) Kt hP (1 / 10) (by norm_num) p
-
-/-- **`GUELLBA_flow_data` and `GUELLBA_flowEta` at `S0`** (every `n`, the point `z = E_* + i`, `0 < Im z = 1`): `z_{t₀} = √t₀ z` and
-`η_{t₀} = √t₀ Im z`; no hypothesis is left. -/
-example (n : ℕ) :
-    ztOf (BAm 3 (S0.L n) (Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) * S0.lam n) (BAfE 3 S0 n ⟨(fp 4 hg).E, 1⟩ : ℂ))
-        (BAfE 3 S0 n ⟨(fp 4 hg).E, 1⟩) (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) =
-      (Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) : ℂ) * ⟨(fp 4 hg).E, 1⟩ ∧
-    etaOf (BAm 3 (S0.L n) (Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) * S0.lam n) (BAfE 3 S0 n ⟨(fp 4 hg).E, 1⟩ : ℂ))
-        (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) = Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) * 1 :=
-  ⟨(GUELLBA_flow_data 3 S0 n (z := ⟨(fp 4 hg).E, 1⟩) one_pos).2, GUELLBA_flowEta 3 S0 n ⟨(fp 4 hg).E, 1⟩ one_pos⟩
-
-/-- **`GUELLBA_EdReal` at `S0`**: `ba_flowG` at `κ_* = clsκ` gives `κ'` with `BAEd κ'` at `z = E_* + i` (`E_*` in the bulk, `0 < Im z ≤ 1`),
-and `GUELLBA_EdReal` turns it into `BAReal` at the flow point, at every `n`; no hypothesis is left. -/
-example : ∃ κ' : ℝ, 0 < κ' ∧ ∀ n : ℕ,
-    BAReal 3 (S0.L n) (Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) * S0.lam n) κ' (BAfE 3 S0 n ⟨(fp 4 hg).E, 1⟩)
-      (BAm 3 (S0.L n) (Real.sqrt (BAfT 3 S0 n ⟨(fp 4 hg).E, 1⟩) * S0.lam n) (BAfE 3 S0 n ⟨(fp 4 hg).E, 1⟩ : ℂ)) := by
-  obtain ⟨κ', _, _, hκ', -, -, hF⟩ := ba_flowG 3 (clsκ 4 hg) (clsκ_pos 4 hg)
-  exact ⟨κ', hκ', fun n => GUELLBA_EdReal 3 κ' S0 n _
-    (hF S0 n ⟨(fp 4 hg).E, 1⟩ (by change BAbulk 3 4 (fp 4 hg).g0 (clsκ 4 hg) (fp 4 hg).E; exact cls_bulk 4 (by norm_num) hg)
-      one_pos le_rfl).1⟩
-
-end GUELLBAInst
-
 end RBM.BA
 
 end

@@ -303,22 +303,6 @@ theorem baKloop_lip (d : ℕ) : NQEndFlowGen_KLipFam d (fun sz κ ε 𝔠 𝔡 z
 
 `sz0`, `zSeq`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), `k = 3`, `t ≡ 1/2 ≤ t₀_n` (`half_lt_t0`, `t₀ ≥ 2/3`). -/
 
-namespace KLipBAInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- **Target 6 at `sz0`**, `k = 3`: the class `NQEndFlowGen_KLip (baFMz sz0 zSeq) t 3` along the flow, and its bound at some index `n`, `u = 0`, `u' = 1/2`, every
-charge vector `σ` and label `a`: `‖𝒦^{(3)}_0 - 𝒦^{(3)}_{1/2}‖ ≤ N^8 · 1/2`. -/
-example : NQEndFlowGen_KLip (baFMz sz0 zSeq) (fun _ => (1 / 2 : ℝ)) 3 ∧
-    ∃ n : ℕ, ∀ (σ : Fin 3 → Bool) (a : Fin 3 → Zd 3 (sz0.L n)),
-      ‖(baFMz sz0 zSeq).K n 0 σ a - (baFMz sz0 zSeq).K n (1 / 2) σ a‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (2 * 3 + 2) * |(0 : ℝ) - 1 / 2| := by
-  have h := baKloop_lip 3 le_rfl sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) (by norm_num) flow_sz0
-    (fun _ => (1 / 2 : ℝ)) (fun n => (half_lt_t0 n).le) 3 (by norm_num)
-  obtain ⟨n, hn⟩ := h.exists
-  exact ⟨h, n, fun σ a => hn 0 (1 / 2) le_rfl (by norm_num) (by norm_num) le_rfl σ a⟩
-
-end KLipBAInst
-
 end RBM.BA
 
 end

@@ -182,8 +182,6 @@ theorem BALocReg2_pathAt_ext (n : ℕ) (Γ : BAGraph E I) (sel rest : List (SEdg
   rw [BALocReg2_edgeMS_eq, hadd]
   exact key2
 
-theorem BALocReg2_cends_bpS {V : Type} (c : Bool) (a b : V) : (bpS c a b).localReg2_cends = (true, s(a, b)) := rfl
-
 theorem BALocReg2_bpS_σ {V : Type} (c : Bool) (a b : V) : (bpS c a b).σ = true := rfl
 
 theorem BALocReg2_bpS_src {V : Type} (c : Bool) (a b : V) : (bpS c a b).src = a := rfl
@@ -259,7 +257,7 @@ end Tools
 
 local macro "BALocReg2_simp0" : tactic => `(tactic| simp only [SEdge.localReg2_cends_mk, SEdge.localReg2_cends_map, SEdge.localReg2_cends, Prod.map_apply, Sym2.map_mk,
   localReg2_mapMS, List.map_cons, List.map_nil, Multiset.map_cons, Multiset.map_zero, Multiset.map_singleton, Multiset.map_add, ← Multiset.cons_coe,
-  Multiset.coe_nil, Multiset.insert_eq_cons, ← Multiset.singleton_add, add_zero, zero_add, id_eq, BALocReg2_cends_bpS, BALocReg2_bpS_σ, BALocReg2_bpS_src, BALocReg2_bpS_dst, SEdge.map])
+  Multiset.coe_nil, Multiset.insert_eq_cons, ← Multiset.singleton_add, add_zero, zero_add, id_eq, BALocReg2_bpS_σ, BALocReg2_bpS_src, BALocReg2_bpS_dst, SEdge.map])
 
 local macro "BALocReg2_msnorm" : tactic => `(tactic| (BALocReg2_simp0; try abel))
 
@@ -735,151 +733,7 @@ end Lists
 
 /-! ## 6. Nonempty instances: the term lemmas at the R1 witnesses (`BASim3:1877-1905`), every hypothesis discharged -/
 
-section Inst
-open BASimInst
-
-/-- `weight` at `P_W` (a blue circled loop at the internal vertex `0`) -/
-example : (∀ X ∈ baPW.lw2 pW, ∀ (k : ℕ) (a b : Fin 1), BALocReg1_PathAt baPW k a b → BALocReg1_PathAt X k a b) ∧
-    (∀ X ∈ baPW.lw4 pW, ∀ (k : ℕ) (a b : Fin 1), BALocReg1_PathAt baPW k a b → BALocReg1_PathAt X k a b) :=
-  ⟨BALocReg2_lw2 baPW (by decide) pW (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩, BALocReg2_lw4 baPW (by decide) pW (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩⟩
-
-/-- `within` at `P_B` (`2 → 3` inside the atom `{2, 3}`): the head and the terms `lanlwD` -/
-example : ∀ X ∈ BAGraph.ext 2 baPB pB.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 pB.1.dst)] [bpW false (bpv 0) (bpv 1)]
-    [bpM (owxEmb 2 pB.1.src) (bpv 0)] :: (lwSplit pB.2).map (BAGraph.lanlwD baPB pB),
-    ∀ (k : ℕ) (a b : Fin 2), BALocReg1_PathAt baPB k a b → BALocReg1_PathAt X k a b :=
-  BALocReg2_within baPB (by decide) pB (List.mem_cons_self ..) ⟨rfl, rfl⟩ (by decide)
-
-/-- `gg` at `P_A` (`p = 2 → 1`, `q = 0 → 2`; the internal atom `{2, 3}`): `gg2` (`A1`-`A5`, `AD`) and `gg4` (`B1`, `B2`, `BD`) -/
-example : (∀ X ∈ baPA.gg2 pA qA, ∀ (k : ℕ) (a b : Fin 2), BALocReg1_PathAt baPA k a b → BALocReg1_PathAt X k a b) ∧
-    (∀ X ∈ baPA.gg4 pA qA, ∀ (k : ℕ) (a b : Fin 2), BALocReg1_PathAt baPA k a b → BALocReg1_PathAt X k a b) :=
-  ⟨BALocReg2_gg2 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide),
-    BALocReg2_gg4 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide)⟩
-
-/-- `ggSplit` at `P_C`, `j = 0` (`a = 2 ≠ a' = 3` in one atom), with the invariant of the parent (`PathInv2 2`, `BALocReg1Inst.pathInv2_C`: two blue walks `x → C → y`, `x → y`): the terms
-`d1`-`d4` and the terms `lanlwD` carry it (the premise `BALocReg1_PathAt baPC 2 0 1` is satisfied, not assumed) -/
-example : BALocReg1_PathAt (BAGraph.ext 2 baPC qC.2 [bpS false (owxEmb 2 qC.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 qC.1.dst), bpS false (bpv 1) (owxEmb 2 pC.1.dst)]
-      [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 pC.1.src) (bpv 0)]) 2 0 1 ∧
-    BALocReg1_PathAt (BAGraph.ext 2 baPC qC.2 [bpS true (owxEmb 2 qC.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (bpv 1) (owxEmb 2 pC.1.dst)]) 2 0 1 ∧
-    BALocReg1_PathAt (BAGraph.ext 2 baPC qC.2 [bpS true (bpv 1) (owxEmb 2 pC.1.dst)] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1)]) 2 0 1 ∧
-    BALocReg1_PathAt (BAGraph.ext 2 baPC qC.2 [] [bpW false (bpv 0) (bpv 1)]
-      [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 pC.1.dst)]) 2 0 1 ∧
-    ∀ q ∈ lwSplit pC.2, BALocReg1_PathAt (BAGraph.lanlwD baPC pC q) 2 0 1 :=
-  ⟨BALocReg2_ggSplitD1 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) (by decide)
-      2 0 1 BALocReg1Inst.pathInv2_C,
-    BALocReg2_ggSplitD2 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) 2 0 1 BALocReg1Inst.pathInv2_C,
-    BALocReg2_ggSplitD3 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) 2 0 1 BALocReg1Inst.pathInv2_C,
-    BALocReg2_ggSplitD4 baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) 2 0 1 BALocReg1Inst.pathInv2_C,
-    fun q hq => BALocReg2_lanlwD baPC (by decide) pC (List.mem_cons_self ..) ⟨rfl, rfl⟩ q hq 2 0 1 BALocReg1Inst.pathInv2_C⟩
-
-/-- `edge` at the replacement witness `baPEr` (`BALocReg1Inst`, `PathInv2 1`): the terms `lanlwD` carry the invariant -/
-example : ∀ q ∈ lwSplit BALocReg1Inst.pEr.2, BALocReg1_PathAt (BAGraph.lanlwD BALocReg1Inst.baPEr BALocReg1Inst.pEr q) 1 0 1 :=
-  fun q hq => BALocReg2_lanlwD BALocReg1Inst.baPEr BALocReg1Inst.normalEr BALocReg1Inst.pEr (List.mem_cons_self ..) ⟨rfl, rfl⟩ q hq 1 0 1 BALocReg1Inst.pathInv2_Er
-
 /-! ### The invariant at the witnesses `P_A`, `P_B` and a weight witness (hand-built families, moved along `BALocReg1_pathAt_map`) -/
-
-namespace BALocReg2Inst
-
-/-- `PathInv2 2` at the image of `P_A` (`gg` witness; the band graph `LCr` of `P_C` has the same solid edges, the atom `{2, 3}` is one molecule): two blue walks `x → C → y`, `x → y` -/
-theorem pathInv2_A : (baPG baPA).img.PathInv2 2 := by
-  have h0 : BALocReg1_PathAt (BAGraph.ofLGraph BALocReg1Inst.LCr) 2 0 1 := by
-    have h := (BAAtomic_pathFam_iff BALocReg1Inst.LCr (by decide) 2 (Sum.inl 0) (Sum.inl 1)).1 BALocReg1Inst.LCr_pathFam
-    rw [BAAtomic_vmap_inl, BAAtomic_vmap_inl] at h
-    exact h
-  refine BALocReg1_pathAt_map (BAGraph.ofLGraph BALocReg1Inst.LCr) baPA (Sum.map id ![0, 2]) id false (fun _ => rfl) ?_ (by decide) (by decide)
-    (baPA.solid.map fun e => (e.σ, s(BALocReg1_mu baPA e.src, BALocReg1_mu baPA e.dst))) [] [] (by simp) (by simp) (by simp) ?_ ?_ h0
-  · intro u v hv
-    rw [BAAtomic_atom_ofL BALocReg1Inst.LCr (by decide), Finset.mem_singleton] at hv
-    subst hv
-    exact (BAGraph.mem_atom_iff _ _ _).2 Relation.ReflTransGen.refl
-  · rw [List.append_nil, BALocReg1_flip_false_list]
-    refine List.Perm.of_eq ?_
-    rw [show baPA.solid = [⟨true, true, .inr 0, .inl 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩] from rfl]
-    simp only [BAGraph.ofLGraph, BALocReg1Inst.LCr, List.map_cons, List.map_nil, Sum.map_inl, Sum.map_inr, id, Matrix.cons_val_zero, Matrix.cons_val_one]
-  · rw [List.append_nil]
-
-/-- `PathInv2 1` at the image of `P_B` (`within` witness): the band graph `LEr` (blue `C → x`, `C → y`, `C` the molecule `{2, 3, 4}`) with the loop `Ǧ_{22}` of the circled edge `2 → 3` added at `C`
-(`BALocReg1_pathAt_map` along `inr 0 ↦ 2`; the colour blue is present at `C`) -/
-theorem pathInv2_B : (baPG baPB).img.PathInv2 1 := by
-  have hm3 : BALocReg1_mu baPB (Sum.inr 1) = BALocReg1_mu baPB (Sum.inr 0) := (BALocReg1_mu_eq_iff _ _ _).2 (by decide)
-  have hm4 : BALocReg1_mu baPB (Sum.inr 2) = BALocReg1_mu baPB (Sum.inr 0) := (BALocReg1_mu_eq_iff _ _ _).2 (by decide)
-  refine BALocReg1_pathAt_map BALocReg1Inst.baPEr baPB (Sum.map id (fun _ => 0)) id false (fun _ => rfl) ?_ (by decide) (by decide)
-    [(true, s(BALocReg1_mu baPB (Sum.inr 0), BALocReg1_mu baPB (Sum.inl 0))), (true, s(BALocReg1_mu baPB (Sum.inr 0), BALocReg1_mu baPB (Sum.inl 1)))] []
-    [(true, s(BALocReg1_mu baPB (Sum.inr 0), BALocReg1_mu baPB (Sum.inr 0)))] (by simp) (by simp [Sym2.mk_isDiag_iff]) ?_ ?_ ?_
-    BALocReg1Inst.pathInv2_Er
-  · intro u v hv
-    rw [BALocReg1Inst.baPEr, BAAtomic_atom_ofL BALocReg1Inst.LEr (by decide), Finset.mem_singleton] at hv
-    subst hv
-    exact (BAGraph.mem_atom_iff _ _ _).2 Relation.ReflTransGen.refl
-  · intro s hs C hC
-    simp only [List.mem_singleton] at hs
-    subst hs
-    simp only [Sym2.mem_iff, or_self] at hC
-    subst hC
-    exact ⟨_, List.mem_cons_self .., rfl, by simp⟩
-  · rw [List.append_nil, BALocReg1_flip_false_list]
-    refine List.Perm.of_eq ?_
-    simp [BALocReg1Inst.baPEr, BAGraph.ofLGraph, BALocReg1Inst.LEr]
-  · rw [show baPB.solid = [⟨true, true, .inr 0, .inr 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inr 2⟩] from rfl]
-    simp only [List.map_cons, List.map_nil, hm3, hm4]
-    rw [Sym2.eq_swap (a := BALocReg1_mu baPB (Sum.inl 0)), Sym2.eq_swap (a := BALocReg1_mu baPB (Sum.inl 1))]
-    exact (List.perm_append_singleton _ _).symm
-
-/-- a weight witness with the invariant: `baPEr` (blue edges `C → x`, `C → y` at the internal vertex `C`) with a blue circled loop `Ǧ_{CC}` -/
-def baPL : BAGraph (Fin 2) (Fin 1) :=
-  ⟨⟨[⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inr 0, .inl 0⟩, ⟨true, true, .inr 0, .inl 1⟩], [], [], 1⟩, [], []⟩
-
-def pL : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) :=
-  (⟨true, true, .inr 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 0⟩, ⟨true, true, .inr 0, .inl 1⟩])
-
-/-- `PathInv2 1` at the image of `baPL`: the walk `x → C → y` of `baPEr`, the loop is added at `C` (the colour blue is present there) -/
-theorem pathInv2_L : (baPG baPL).img.PathInv2 1 := by
-  refine BALocReg1_pathAt_map BALocReg1Inst.baPEr baPL id id false (fun _ => rfl) ?_ (fun w => ⟨w, BALocReg1_mem_mol_self _ w⟩) (by decide)
-    [(true, s(BALocReg1_mu baPL (Sum.inr 0), BALocReg1_mu baPL (Sum.inl 0))), (true, s(BALocReg1_mu baPL (Sum.inr 0), BALocReg1_mu baPL (Sum.inl 1)))] []
-    [(true, s(BALocReg1_mu baPL (Sum.inr 0), BALocReg1_mu baPL (Sum.inr 0)))] (by simp) (by simp [Sym2.mk_isDiag_iff]) ?_ ?_ ?_
-    BALocReg1Inst.pathInv2_Er
-  · intro u v hv
-    rw [BALocReg1Inst.baPEr, BAAtomic_atom_ofL BALocReg1Inst.LEr (by decide), Finset.mem_singleton] at hv
-    subst hv
-    exact (BAGraph.mem_atom_iff _ _ _).2 Relation.ReflTransGen.refl
-  · intro s hs C hC
-    simp only [List.mem_singleton] at hs
-    subst hs
-    simp only [Sym2.mem_iff, or_self] at hC
-    subst hC
-    exact ⟨_, List.mem_cons_self .., rfl, by simp⟩
-  · rw [List.append_nil, BALocReg1_flip_false_list]
-    refine List.Perm.of_eq ?_
-    simp [BALocReg1Inst.baPEr, BAGraph.ofLGraph, BALocReg1Inst.LEr]
-  · rw [show baPL.solid = [⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inr 0, .inl 0⟩, ⟨true, true, .inr 0, .inl 1⟩] from rfl]
-    simp only [List.map_cons, List.map_nil]
-    exact (List.perm_append_singleton _ _).symm
-
-end BALocReg2Inst
-
-/-- `weight` at `baPL` with the invariant `PathInv2 1` of the parent (satisfied, not assumed): every term of `lw2`, `lw4` carries it -/
-example : (∀ X ∈ BALocReg2Inst.baPL.lw2 BALocReg2Inst.pL, BALocReg1_PathAt X 1 0 1) ∧ (∀ X ∈ BALocReg2Inst.baPL.lw4 BALocReg2Inst.pL, BALocReg1_PathAt X 1 0 1) :=
-  ⟨fun X hX => BALocReg2_lw2 _ (by decide) BALocReg2Inst.pL (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩ X hX 1 0 1 BALocReg2Inst.pathInv2_L,
-    fun X hX => BALocReg2_lw4 _ (by decide) BALocReg2Inst.pL (List.mem_cons_self ..) ⟨rfl, rfl, rfl⟩ X hX 1 0 1 BALocReg2Inst.pathInv2_L⟩
-
-/-- `within` at `P_B` with the invariant `PathInv2 1` of the parent: the head and the terms `lanlwD` carry it -/
-example : ∀ X ∈ BAGraph.ext 2 baPB pB.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 pB.1.dst)] [bpW false (bpv 0) (bpv 1)]
-    [bpM (owxEmb 2 pB.1.src) (bpv 0)] :: (lwSplit pB.2).map (BAGraph.lanlwD baPB pB), BALocReg1_PathAt X 1 0 1 :=
-  fun X hX => BALocReg2_within baPB (by decide) pB (List.mem_cons_self ..) ⟨rfl, rfl⟩ (by decide) X hX 1 0 1 BALocReg2Inst.pathInv2_B
-
-/-- `gg` at `P_A` with the invariant `PathInv2 2` of the parent: every term of `gg2` (`A1`-`A5`, `AD`) and `gg4` (`B1`, `B2`, `BD`) carries it -/
-example : (∀ X ∈ baPA.gg2 pA qA, BALocReg1_PathAt X 2 0 1) ∧ (∀ X ∈ baPA.gg4 pA qA, BALocReg1_PathAt X 2 0 1) :=
-  ⟨fun X hX => BALocReg2_gg2 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide)
-      X hX 2 0 1 BALocReg2Inst.pathInv2_A,
-    fun X hX => BALocReg2_gg4 baPA (by decide) pA qA (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl (by decide) (by decide) (by decide)
-      X hX 2 0 1 BALocReg2Inst.pathInv2_A⟩
-
-/-- the instance data are nondegenerate: the term lists are not empty (`gg2` has 6 terms and `gg4` 3 at `P_A`; `lw2`, `lw4` have 3 each at `baPL`; the `within` list has 3 terms at `P_B`) -/
-example : (baPA.gg2 pA qA).length = 6 ∧ (baPA.gg4 pA qA).length = 3 ∧ (BALocReg2Inst.baPL.lw2 BALocReg2Inst.pL).length = 3 ∧
-    (BALocReg2Inst.baPL.lw4 BALocReg2Inst.pL).length = 3 ∧ (lwSplit pB.2).length = 2 := by decide
-
-end Inst
 
 end RBM.Graph
 

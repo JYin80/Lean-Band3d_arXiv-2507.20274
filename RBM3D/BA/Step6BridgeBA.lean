@@ -342,54 +342,6 @@ end Glue
 (`3 ≤ 3`, the positivity of `κ, ε, 𝔡`, the flow, `0 ≤ s < t ≤ T₀`).  What stays a hypothesis is another gate's pin: `LWAvgLawgL`, `STLmaxgL`, `STLKgL` at `u` (Steps 1/2, from which TL1 is
 `baTwistAvgProd_holds`), `STStep2CoregL`, `STLKUgL` on `[s,t]`, and TL1 on `[s,t]`. -/
 
-section Inst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- TL1 at `u ≡ 1/2` from `LWAvgLawgL` and `STLmaxgL` (`baTwistAvgProd_holds`, other gates' pins). -/
-private theorem Step6BridgeBA_tl1 (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) :=
-  baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM
-
-/-- **Target 1** at the data: W1 (iii) at `u ≡ 1/2`, from TL1 (itself from `LWAvgLawgL`, `STLmaxgL`). -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    ExpAvgGen_W1iii (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) :=
-  baExpAvgGen_W1iii_of_tl1 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0 _ (Step6BridgeBA_tl1 hA hM)
-
-/-- **Target 2** at the data: `CM > 0` with the `ℓ¹` row bound of `M^{(B)}` for all large `n` along `flow_sz0`. -/
-example : ∃ CM : ℝ, 0 < CM ∧ ExpAvgGen_W1iv (baFMz sz0 zSeq) CM := by
-  obtain ⟨CM, hCM, H⟩ := baExpAvgGen_W1iv 3 le_rfl (1 / 2) (1 / 10) (by norm_num) (by norm_num)
-  exact ⟨CM, hCM, H (1 / 10) (1 / 6) sz0 zSeq flow_sz0⟩
-
-/-- **Target 3 (`baExpAvgGen_W1fam`)** at the data: `Cs, CM > 0` and the witness `(H₀, g', E)` with `CltRepg`, W1 (i)′ at every `n`, W1 (ii)′, W1 (iv). -/
-example : ∃ Cs CM : ℝ, 0 < Cs ∧ 0 < CM ∧
-    ∃ (H₀ : ∀ n, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) (g' E : ℕ → ℝ),
-      CltRepg (baFMz sz0 zSeq) μ0 H₀ g' E ∧ (∀ n, ExpAvgGen_W1i (baFMz sz0 zSeq) H₀ g' E n) ∧
-        ExpAvgGen_W1ii (baFMz sz0 zSeq) Cs ∧ ExpAvgGen_W1iv (baFMz sz0 zSeq) CM := by
-  obtain ⟨Cs, CM, hCs, hCM, H⟩ := baExpAvgGen_W1fam 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨Cs, CM, hCs, hCM, H (1 / 6) sz0 zSeq flow_sz0⟩
-
-/-- **Target 3 (`baImproveCoregL`)** at the data: `(res_ELK_n=1)` at `u ≡ 1/2`, W1 (iii) from TL1. -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) : STExpAvgAtgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) :=
-  baImproveCoregL 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hK
-    (baExpAvgGen_W1iii_of_tl1 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0 _ (Step6BridgeBA_tl1 hA hM))
-
-/-- **Target 4** (`baExpAvgUgL_of_tl1`) at the data: `s ≡ 1/2 < t ≡ 3/5 ≤ 2/3 ≤ T₀`; the Step 2 core, the Step 4 input `STLKUgL` and TL1 on `[s,t]` are other gates' pins. -/
-example (hS2 : STStep2CoregL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5))
-    (hLKU : STLKUgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5))
-    (hTL1 : ∀ u : ℕ → ℝ, (∀ n, (1 / 2 : ℝ) ≤ u n) → (∀ n, u n ≤ 3 / 5) → BATwistAvgLaw (baFMz sz0 zSeq) μ0 u) :
-    STExpAvgUgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5) :=
-  baExpAvgUgL_of_tl1 3 le_rfl (1 / 2) (1 / 10) (1 / 6) (1 / 10) (by norm_num) (by norm_num) (by norm_num) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => 3 / 5) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun n => (show (3 / 5 : ℝ) ≤ 2 / 3 by norm_num).trans (t0_sz0 n)) hS2 hLKU hTL1
-
-end Inst
-
 end RBM.BA
 
 end

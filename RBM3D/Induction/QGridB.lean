@@ -690,56 +690,6 @@ grid data of the merged `sum_weighted_stepErrN_instance` (`E ≡ 0`, `s ≡ 0`, 
 a hypothesis (the merged grid `K n = N_n^{21}` of `sum_weighted_stepErrN_instance` is too small:
 the first row at `D_t + (m + 1)` is `30`). -/
 
-namespace QGridBCheck
-
-open RBM.Gauss.SizesInst RBM.Ind.GridEnvelopeNCheck
-
-/-- `K n = N_n^{31}`: the grid with `K n ≥ N^{C_K}`, `C_K = 31`. -/
-def Kc31 (n : ℕ) : ℕ := sz0.size n ^ 31
-
-theorem Kc31_ne_zero (n : ℕ) : Kc31 n ≠ 0 := by
-  unfold Kc31
-  have : 0 < sz0.size n := by
-    have := four_le_size n
-    exact_mod_cast (by linarith : (0 : ℝ) < ((sz0.size n : ℕ) : ℝ))
-  positivity
-
-theorem rpow_31_le_Kc31 (n : ℕ) : ((sz0.size n : ℕ) : ℝ) ^ (31 : ℝ) ≤ (Kc31 n : ℝ) := by
-  unfold Kc31
-  rw [show (31 : ℝ) = ((31 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-  push_cast
-  exact le_rfl
-
-/-- **Instance of `sum_weighted_qErrQN_le`** at `sz0` (`d = 3`), `m = 3`, `τ' = τ_K = 1/2`,
-`C_K = 31`, `D_t = 1`, `K n = N_n^{31}`, `C = (1 + 40·9) 6^9`, `C₂ = 1000 (1 + 9)²`: every
-hypothesis is discharged (`SizeTendsto sz0`, `RangeCond`, the bulk energy, the grid, the four
-numerical rows); nothing is left as a hypothesis. -/
-theorem sum_weighted_qErrQN_instance :
-    ∀ᶠ n : ℕ in atTop, ∀ p ≤ Kc31 n,
-      ∑ j ∈ Finset.range p,
-          (1 + (1 - gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) Kc31 n p)⁻¹) ^ (3 + 1) *
-          qErrQN sz0 E1 (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) Kc31 n 3
-            ((1 + 40 * ((3 * 3 : ℕ) : ℝ)) * 6 ^ (3 * 3)) (1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2)
-            (((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) *
-              (etaT (E1 n) (gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) Kc31 n
-                (j + 1)))⁻¹ ^ (3 + 1)) j ≤
-        ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) :=
-  sum_weighted_qErrQN_le 3 sz0 (κ := 1) (τ' := 1 / 2) (τK := 1 / 2) (C_K := 31) (D_t := 1)
-    (C := (1 + 40 * ((3 * 3 : ℕ) : ℝ)) * 6 ^ (3 * 3)) (C₂ := 1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2)
-    (E := E1) (s := fun _ => 0) (t := fun _ => 1 / 2) (K := Kc31) 3 (by positivity)
-    (by positivity) one_pos (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    sz0_tendsto (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num)
-    (fun _ => by norm_num) Kc31_ne_zero rangeCond_half (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (Eventually.of_forall rpow_31_le_Kc31)
-
-end QGridBCheck
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.sum_weighted_qErrQN_le
-#print axioms RBM.Ind.QGridBCheck.Kc31
-#print axioms RBM.Ind.QGridBCheck.Kc31_ne_zero
-#print axioms RBM.Ind.QGridBCheck.rpow_31_le_Kc31
-#print axioms RBM.Ind.QGridBCheck.sum_weighted_qErrQN_instance

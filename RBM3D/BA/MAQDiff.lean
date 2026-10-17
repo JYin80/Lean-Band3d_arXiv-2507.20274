@@ -175,12 +175,6 @@ theorem baTrace2 {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (hz : 0 < 
             (BAGz sz n (z n) ω x y * star (BAGz sz n (z n) ω x y)) := by ring
       _ = (t0 : ℂ)⁻¹ * ((‖BAGz sz n (z n) ω x y‖ ^ 2 : ℝ) : ℂ) := by rw [this, hn]
 
-/-- `M^{(σ₁,σ₂)}` of a symmetric `M^{(B)}` is symmetric (any `z`, `m`; `BATheta_swap`'s argument). -/
-private theorem MAQDiff_Mss_symm {d L : ℕ} [NeZero L] (g : ℝ) (z m : ℂ) (σ₁ σ₂ : Bool) :
-    (BAMss d L (BAMB d L g z m) σ₁ σ₂)ᵀ = BAMss d L (BAMB d L g z m) σ₁ σ₂ := by
-  ext a b
-  cases σ₁ <;> cases σ₂ <;> simp [BAMss, BAMsigma, Matrix.conjTranspose_apply, BAMB_symm d L g z m a b, mul_comm]
-
 /-- A real scalar passes through `M(σ)`. -/
 private theorem MAQDiff_Msigma_smul {d L : ℕ} [NeZero L] (s : ℝ) (M : Matrix (Zd d L) (Zd d L) ℂ) (σ : Bool) :
     BAMsigma d L ((s : ℂ) • M) σ = (s : ℂ) • BAMsigma d L M σ := by
@@ -1012,12 +1006,6 @@ section Main
 theorem baEnd_QDiffL (d : ℕ) (hML : UNMLOutBA d) : BAEnd_QDiffL d :=
   baMANetQD d (baQDiffFixed_of_ML d hML)
 
-/-- **Target 9, `baEnd_QDiffL_three`**: `BAEnd_QDiffL 3`, unconditional (at the merged `unMLOutBA_three`, `BA/MainIndTermBA.lean:47`); closing condition (i). -/
-theorem baEnd_QDiffL_three : BAEnd_QDiffL 3 := baEnd_QDiffL 3 unMLOutBA_three
-
-/-- **`baMAFixed_holds`**: the step-1 pin `BAMAFixed d` (the `locSC` half is `baLocSCFixed_of_ML`, T2514; the `QDiff` half is target 5). -/
-theorem baMAFixed_holds (d : ℕ) : BAMAFixed d := fun hML => ⟨baLocSCFixed_of_ML d hML, baQDiffFixed_of_ML d hML⟩
-
 end Main
 
 
@@ -1025,74 +1013,6 @@ end Main
 
 `z_n = E_* + i/2` for every `n` (`E_*` in the ρ-bulk of `κ_* = clsκ`, `Im z = 1/2 ∈ (0, 1]`), `n = 0`, both `σ`; the targets 5, 8, 9 at `(κ_*, ε, τ, D) = (clsκ, 1/20, 1/10, 2)` (probe `:277`).  Every
 deterministic hypothesis is discharged; `unMLOutBA_three` is the merged `UNMLOutBA 3`. -/
-
-section Inst
-
-open RBM.BA.UNPinsInst RBM.Univ.BAInst
-
-private theorem MAQDiff_hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-/-- **Targets 1, 2** at `S0`, `z_n = E_* + i/2`, `n = 0`: the two-loop transfer and the profile identity, both `σ`, every `ω` and every block pair. -/
-example (ω : S0.SeqΩ) (a b : Zd 3 (S0.L 0)) : True := by
-  have hz : 0 < ((fun _ : ℕ => (⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ : ℂ)) 0).im := by
-    change (0 : ℝ) < 1 / 2
-    norm_num
-  have _ := baTrace2 S0 (fun _ : ℕ => (⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ : ℂ)) 0 hz ω a b
-  have _ := baProfile_eq S0 (fun _ : ℕ => (⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ : ℂ)) 0 hz (fp 4 MAQDiff_hg).g0_pos false a b
-  have _ := baProfile_eq S0 (fun _ : ℕ => (⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ : ℂ)) 0 hz (fp 4 MAQDiff_hg).g0_pos true a b
-  trivial
-
-/-- **Target 6** at `S0`, `κ_* = clsκ`, `n = 0`, `η = 1/4`, `z = E_* + i/2`, `w = E_* + i/4` (`z ≠ w`, both in the bulk), both `σ`. -/
-example (a b : Zd 3 (S0.L 0)) : True := by
-  obtain ⟨C, hC, h⟩ := baProf_lip (clsκ 4 MAQDiff_hg) (clsκ_pos 4 MAQDiff_hg)
-  have h1 := cls_bulk 4 (by norm_num) MAQDiff_hg
-  have _ := h 3 S0 0 (1 / 4) ⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ ⟨(fp 4 MAQDiff_hg).E, 1 / 4⟩ (by norm_num)
-    (by change (1 / 4 : ℝ) ≤ 1 / 2; norm_num) (by change (1 / 4 : ℝ) ≤ 1 / 4; norm_num) (by change (1 / 2 : ℝ) ≤ 1; norm_num)
-    (by change (1 / 4 : ℝ) ≤ 1; norm_num) h1 h1 true a b
-  have _ := h 3 S0 0 (1 / 4) ⟨(fp 4 MAQDiff_hg).E, 1 / 2⟩ ⟨(fp 4 MAQDiff_hg).E, 1 / 4⟩ (by norm_num)
-    (by change (1 / 4 : ℝ) ≤ 1 / 2; norm_num) (by change (1 / 4 : ℝ) ≤ 1 / 4; norm_num) (by change (1 / 2 : ℝ) ≤ 1; norm_num)
-    (by change (1 / 4 : ℝ) ≤ 1; norm_num) h1 h1 false a b
-  trivial
-
-/-- **Target 5** at `S0`, from the merged `unMLOutBA_three`: the fixed-`z` bounds hold for every point of the end domain, and the end domain is nonempty at every `n`. -/
-example : (∀ᶠ n in atTop, ∀ z : ℂ, BAendDom S0 (clsκ 4 MAQDiff_hg) (1 / 20) n z →
-      (Sizes.seqP (S0.withLam 0) {ω | BAqdBadz S0 (1 / 10) n z ω false} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ))) ∧
-        Sizes.seqP (S0.withLam 0) {ω | BAqdBadz S0 (1 / 10) n z ω true} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ)))) ∧
-      ∀ a b : Zd 3 (S0.L n), ‖(∫ ω, avg2 S0 n (fun x y => ((‖BAGz S0 n z ω x y‖ ^ 2 : ℝ) : ℂ)) a b ∂(Sizes.seqP (S0.withLam 0))) -
-            BAprof S0 n z true false a b‖ ≤ qdBoundExp S0 n (1 / 10) z.im ∧
-        ‖(∫ ω, avg2 S0 n (fun x y => BAGz S0 n z ω x y * BAGz S0 n z ω y x) a b ∂(Sizes.seqP (S0.withLam 0))) -
-            BAprof S0 n z true true a b‖ ≤ qdBoundExp S0 n (1 / 10) z.im) ∧
-    ∀ n, ∃ z : ℂ, BAendDom S0 (clsκ 4 MAQDiff_hg) (1 / 20) n z :=
-  ⟨baQDiffFixed_of_ML 3 unMLOutBA_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2
-      (clsκ_pos 4 MAQDiff_hg) (by norm_num) (by norm_num) (by norm_num),
-    fun n => inst_locAvg_domain (by norm_num) n⟩
-
-/-- **Target 8** at `S0`: the net from the fixed-`z` form (the form is target 5's conclusion; the end domain is nonempty by `inst_locAvg_domain`). -/
-example : (∀ᶠ n in atTop, Sizes.seqP (S0.withLam 0) {ω | ∃ z : ℂ, BAendDom S0 (clsκ 4 MAQDiff_hg) (1 / 20) n z ∧
-        BAqdBadz S0 (1 / 10) n z ω false} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP (S0.withLam 0) {ω | ∃ z : ℂ, BAendDom S0 (clsκ 4 MAQDiff_hg) (1 / 20) n z ∧
-        BAqdBadz S0 (1 / 10) n z ω true} ≤ ENNReal.ofReal (Nsz S0 n ^ (-(2 : ℝ)))) ∧
-    ∀ n, ∃ z : ℂ, BAendDom S0 (clsκ 4 MAQDiff_hg) (1 / 20) n z :=
-  ⟨(baMANetQD 3 (baQDiffFixed_of_ML 3 unMLOutBA_three) le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2
-      (clsκ_pos 4 MAQDiff_hg) (by norm_num) (by norm_num) (by norm_num)).mono fun n hn => hn.1,
-    fun n => inst_locAvg_domain (by norm_num) n⟩
-
-/-- **Target 9** at `S0`, `κ_* = clsκ`, `(ε, τ, D) = (1/20, 1/10, 2)` (probe `:277`): `BAEnd_QDiffL 3`, unconditional. -/
-example := baEnd_QDiffL_three le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2
-  (clsκ_pos 4 MAQDiff_hg) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **Target 9** (`baEnd_QDiffL` at `d = 3` from the flow output) and **`baMAFixed_holds`** at `S0`: the `QDiff` half of the step-1 pin is target 5. -/
-example (hML : UNMLOutBA 3) : True := by
-  have _ := baEnd_QDiffL 3 hML le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2 (clsκ_pos 4 MAQDiff_hg)
-    (by norm_num) (by norm_num) (by norm_num)
-  have _ := (baMAFixed_holds 3 hML).2 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2 (clsκ_pos 4 MAQDiff_hg)
-    (by norm_num) (by norm_num) (by norm_num)
-  have _ := (baMAFixed_holds 3 hML).1 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MAQDiff_hg) (1 / 20) (1 / 10) 2 (clsκ_pos 4 MAQDiff_hg)
-    (by norm_num) (by norm_num) (by norm_num)
-  trivial
-
-end Inst
-
 
 end RBM.BA
 

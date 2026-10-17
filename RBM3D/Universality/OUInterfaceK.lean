@@ -286,17 +286,6 @@ theorem ouDiagk_of_ouLLk :
 
 /-! ## 5. The assembly -/
 
-/-- **The assembly** (copy of `ouRow_of_pins`, `ZeroModeProfile.lean:719`, for every kind): the row
-differences of the profile, `UNG1Rowk` and `UNG2bRowk` give `UNOURowk K ML Loc Que` with
-`τ₀ = ouTauMax 𝔠 𝔡`; the `UNOUDiagk` half is `ouDiagk_of_ouLLk`. -/
-theorem ouRowk_of_pins (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d)) {ML Loc Que : Prop}
-    (hprof : ∀ d : ℕ, 3 ≤ d → UNOUProfRowk (K d) (P d)) :
-    UNG1Rowk K P ML Loc Que → UNG2bRowk K P → UNOURowk K ML Loc Que := by
-  intro r1 r2b hML hLoc hQ d hd 𝔠 𝔡 sz hA
-  refine ⟨ouTauMax 𝔠 𝔡, ouTauMax_pos hA.1 hA.2.1, fun τU hτ hle => ?_⟩
-  have h1 := r1 hML hLoc hQ d hd 𝔠 𝔡 sz hA τU hτ hle
-  exact ⟨r2b d hd (hprof d hd) 𝔠 𝔡 sz hA τU hτ h1.2, ouDiagk_of_ouLLk h1.1⟩
-
 /-! ## 6. Band bridges: T2276's pins are the band instance -/
 
 /-- Padding: the per-sequence form with the bulk condition outside (`∀ n, |E n| ≤ 2 - κ`) is
@@ -407,82 +396,12 @@ theorem unG2bRow_of_k :
   exact (UNOUQUEk_band sz 𝔡 τU).1
     (h d hd (unOUProfRowk_band hd) 𝔠 𝔡 sz hA τU hτ ((UNOUEq747k_band sz 𝔡 τU).2 hE))
 
-theorem ouRow_of_pinsk_band :
-    UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-        (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand →
-      UNG2bRowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d) → UNOURow :=
-  fun r1 r2 =>
-    UNOURowk_band.1
-      (ouRowk_of_pins (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-        (fun _ hd => unOUProfRowk_band hd) r1 r2)
-
 /-- `UNOULL` from `UNOULLk` at the band (`UNOULLk_band.1`, stated with conclusion `UNOULL` so that the
 registry scan (`RBM3D/Test/Axioms.lean`) sees `UNOULL` as proved from the owed `UNOULLk`). -/
 theorem OUInterfaceK_UNOULL_of_k {d : ℕ} (sz : Sizes d) (τU : ℝ) :
     UNOULLk (UNKind.band d) sz τU → UNOULL sz τU :=
   (UNOULLk_band sz τU).1
 
-/-- `UNG1Row` from `UNG1Rowk` at the band (`UNG1Rowk_band.1`, stated with conclusion `UNG1Row`; as
-`OUInterfaceK_UNOULL_of_k`). -/
-theorem OUInterfaceK_UNG1Row_of_k :
-    UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-        (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand → UNG1Row :=
-  UNG1Rowk_band.1
-
 /-! ## 7. Compiled instances (`d = 3`, `sz0`; the owed pins stay hypotheses) -/
-
-namespace OUInterfaceKInst
-
-open RBM.Gauss.SizesInst
-
-/-- `UNOUProfRowk` at the band kind, `d = 3`: no hypothesis. -/
-theorem inst_profRow_band : UNOUProfRowk (UNKind.band 3) (UNOUProfile.band 3) :=
-  unOUProfRowk_band le_rfl
-
-/-- `ouDiagk_of_ouLLk` at `sz0`, `τ_U = 1/1000`: the pin `UNOULLk` (another gate's) stays a hypothesis. -/
-theorem inst_ouDiagk_band :
-    UNOULLk (UNKind.band 3) sz0 (1 / 1000) → UNOUDiagk (UNKind.band 3) sz0 (1 / 1000) :=
-  ouDiagk_of_ouLLk
-
-theorem inst_ouLLk_band : UNOULLk (UNKind.band 3) sz0 (1 / 1000) ↔ UNOULL sz0 (1 / 1000) :=
-  UNOULLk_band sz0 (1 / 1000)
-
-theorem inst_Eq747k_band :
-    UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (1 / 1000) ↔
-      UNOUEq747 sz0 (1 / 10) (1 / 1000) :=
-  UNOUEq747k_band sz0 (1 / 10) (1 / 1000)
-
-/-- `UNG1Rowk` at the band, applied at `sz0` (admissible at `𝔠 = 1/6`, `𝔡 = 1/10`),
-`τ_U = 1/1000 ≤ ouTauMax = 1/720`. -/
-theorem inst_g1k_band
-    (r1 : UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-      (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand)
-    (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULLk (UNKind.band 3) sz0 (1 / 1000) ∧
-      UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (1 / 1000) :=
-  r1 hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 1000) (by norm_num)
-    (by rw [show ouTauMax (1 / 6) (1 / 10) = 1 / 720 by unfold ouTauMax; norm_num [min_def]]
-        norm_num)
-
-theorem inst_g2b_of_k
-    (r2 : UNG2bRowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)) : UNG2bRow :=
-  unG2bRow_of_k r2
-
-/-- `ouRowk_of_pins` at the band kind (the rows are other gates' pins). -/
-theorem inst_ouRowk_band
-    (r1 : UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-      (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand)
-    (r2 : UNG2bRowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)) :
-    UNOURowk (fun d => UNKind.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand :=
-  ouRowk_of_pins _ _ (fun _ hd => unOUProfRowk_band hd) r1 r2
-
-/-- `ouRow_of_pinsk_band`: the merged `UNOURow` from the two generic rows at the band. -/
-theorem inst_ouRow_band
-    (r1 : UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-      (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand)
-    (r2 : UNG2bRowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d)) : UNOURow :=
-  ouRow_of_pinsk_band r1 r2
-
-end OUInterfaceKInst
 
 end RBM.Univ

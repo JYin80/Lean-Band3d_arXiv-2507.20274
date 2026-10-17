@@ -257,15 +257,6 @@ def STStep1WeakPT (E s t : ℕ → ℝ) : Prop :=
     (fun n p ω => ‖STGM sz n (E n) (p.1 : ℝ) ω p.2.1 p.2.2‖)
     (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (1 / 4 : ℝ))
 
-/-- The forbidden-region estimate of the continuity argument at the time sequence `u`
-(`3_5:64–66`, [YY_25 §5.1]; RBM2D `Induction/Step1.lean:1024`, bound `6 M_s^{-7/15}` against
-the threshold `M_s^{-1/4}`): `1(‖G_u - M‖_max ≤ 2α) ‖G_u - M‖_max ≺ α^{3/2}`, `α = (W^{-d}B_{s,0})^{1/4}`. -/
-def STForbidden (E s u : ℕ → ℝ) : Prop :=
-  Prec sz (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
-    (fun n p ω => STindMax sz n (E n) (u n) (2 * (sz.Bctl n (s n)) ^ (1 / 4 : ℝ)) ω *
-      ‖STGM sz n (E n) (u n) ω p.1 p.2‖)
-    (fun n _ _ => (sz.Bctl n (s n)) ^ (3 / 8 : ℝ))
-
 end RBM.Gauss.Sizes
 
 /-! ## 2. The pins (`d` is the dimension; constants before the sequence)
@@ -328,21 +319,6 @@ def STGbEXPav (d : ℕ) : Prop :=
 /-- **`lem_GbEXP`** (`3_5:14–40`), the three parts. -/
 def STGbEXP (d : ℕ) : Prop := STGbEXPii d ∧ STGbEXPij d ∧ STGbEXPav d
 
-/-- **`lem_ConArg`** (`3_5:42–62`): `ε₁ ≤ s ≤ t < 1` (the paper allows `t = 1`, where `η_t = 0`;
-paper-delta T2015b), the loop bound `(eq:loopbound_s)` at `s`; on `Ω_t = {‖G_t‖_max ≤ C₀}`, for
-every `k ≥ 2`, `max |𝓛^{(k)}_t| ≺ ((W^{-d}B_{s,0}) η_s/η_t)^{k-1}` (`(res_lo_bo_eta)`, first form). -/
-def STConArg (d : ℕ) : Prop :=
-  ∀ κ ε 𝔡 ε₁ C₀ : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → 0 < ε₁ → 0 < C₀ →
-    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-      ∀ s t : ℕ → ℝ, (∀ n, ε₁ ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
-        STLmax sz (STflowE z) s →
-        ∀ k : ℕ, 2 ≤ k →
-          Prec sz (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
-            (fun n p ω => STomegaC sz n (STflowE z n) (t n) C₀ ω *
-              ‖Lloop sz n (STflowE z n) (t n) p.1 p.2 ω‖)
-            (fun n _ _ => (sz.Bctl n (s n) *
-              (etaT (STflowE z n) (s n) / etaT (STflowE z n) (t n))) ^ (k - 1))
-
 /-- **Step 1 of `lem:main_ind`** (`1_2:1317–1328`; `3_5:64–66`): from (a), (c), `ML:Kbound`,
 `(con_st_ind)` with `𝔠_d ≤ 10^{-2}`, the conclusions `(lRB1)` and `(Gtmwc)` uniformly in
 `u ∈ [s,t]`. -/
@@ -355,35 +331,6 @@ def STStep1 (d : ℕ) : Prop :=
           STKbound sz (STflowE z) → STLK sz (STflowE z) s → STLocalMax sz (STflowE z) s →
           STConStInd sz 𝔠d s t →
             STStep1Loop sz (STflowE z) s t ∧ STStep1Weak sz (STflowE z) s t
-
-/-- **The continuity bootstrap** of Step 1 (`3_5:64–66`, [YY_25 §5.1]; RBM2D
-`Induction/Continuity.lean:65` `GopboundPin`, `PerTimeCalc.lean:698` `forbidden_region`): if the
-forbidden-region estimate holds at every time sequence in `[s,t]` and `(c)` holds at `s`, then w.h.p.
-`‖G_u - M‖_max ≤ (W^{-d}B_{s,0})^{1/4}` simultaneously for all `u ∈ [s,t]`. -/
-def STBootstrap (d : ℕ) : Prop :=
-  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-      ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
-        STLocalMax sz (STflowE z) s →
-        (∀ u : ℕ → ℝ, (∀ n, s n ≤ u n) → (∀ n, u n ≤ t n) → STForbidden sz (STflowE z) s u) →
-        Whp sz (fun n => {ω | ∀ u ∈ Set.Icc (s n) (t n), ∀ x y : Idx d (sz.L n) (sz.W n),
-          ‖STGM sz n (STflowE z n) u ω x y‖ ≤ (sz.Bctl n (s n)) ^ (1 / 4 : ℝ)})
-
-/-- **The net lift** of Step 1 (`Gopboundu` and the net argument; RBM2D `Induction/Continuity.lean:1261`
-`Step1NetLift`): if the loop bound `(lRB1)` holds at every time sequence in `[s,t]` (a per-time
-statement: for the `≺` of a family indexed by the times of a net, this is the same as the
-statement for every section of the index set, the union bound over the polynomial net being the
-content of the lemma), then it holds uniformly in `u ∈ [s,t]`. -/
-def STNetLift (d : ℕ) : Prop :=
-  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-      ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
-        (∀ u : ℕ → ℝ, (∀ n, s n ≤ u n) → (∀ n, u n ≤ t n) →
-          ∀ k : ℕ, 1 ≤ k →
-            Prec sz (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
-              (fun n p ω => ‖Lloop sz n (STflowE z n) (u n) p.1 p.2 ω‖)
-              (fun n _ _ => ((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1))) →
-          STStep1Loop sz (STflowE z) s t
 
 end RBM.Gauss.Sizes
 
@@ -404,216 +351,12 @@ namespace RBM.Gauss.InductionDefsInst
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Path Filter
 
-theorem one_le_size_sz0 (n : ℕ) : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by
-  have h : 1 ≤ sz0.size n :=
-    Nat.one_le_pow _ _ (Nat.mul_pos (sz0.W_pos n) (by have := sz0.three_le_L n; omega))
-  exact_mod_cast h
-
-/-- The flow points `z_n = 1/2 + i N_n^{-4/5}`. -/
-def z0 (n : ℕ) : ℂ := ⟨1 / 2, ((sz0.size n : ℕ) : ℝ) ^ (-(4 / 5 : ℝ))⟩
-
-theorem z0_locDomain (n : ℕ) : sz0.locDomain (1 / 10) (1 / 10) n (z0 n) := by
-  have hN := one_le_size_sz0 n
-  refine ⟨?_, ?_, ?_⟩
-  · simp only [z0, abs_of_pos (show (0 : ℝ) < 1 / 2 by norm_num)]
-    norm_num
-  · exact Real.rpow_le_rpow_of_exponent_le hN (by norm_num)
-  · exact Real.rpow_le_one_of_one_le_of_nonpos hN (by norm_num)
-
-theorem z0_im_pos (n : ℕ) : 0 < (z0 n).im :=
-  Real.rpow_pos_of_pos (lt_of_lt_of_le one_pos (one_le_size_sz0 n)) _
-
-theorem z0_im_le_one (n : ℕ) : (z0 n).im ≤ 1 := (z0_locDomain n).2.2
-
-/-- `t₀ = lemT z_n ≥ 1/16` (merged `lemma28_quant`). -/
-theorem sixteenth_le_lemT (n : ℕ) : (1 / 16 : ℝ) ≤ lemT (z0 n) :=
-  (lemma28_quant (z := z0 n) (κ := 1 / 10) (by norm_num) (z0_im_pos n) (z0_im_le_one n)
-    (z0_locDomain n).1).2.1
-
-theorem zero_le_lemT (n : ℕ) : (0 : ℝ) ≤ lemT (z0 n) := (lemT_pos (z0_im_pos n)).le
-
-theorem flow_z0 : STFlow sz0 (1 / 10) (1 / 10) (1 / 6) (1 / 10) z0 :=
-  ⟨sz0_admissible, z0_locDomain⟩
-
-/-- The start time `s ≡ 0` and the end time `t ≡ 1/16` of the first induction step. -/
-def sInst : ℕ → ℝ := fun _ => 0
-def tInst : ℕ → ℝ := fun _ => 1 / 16
-
 theorem W_ge_32 (n : ℕ) : (32 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := by
   have h : 32 ≤ sz0.W n := by
     change 32 ≤ (2 * (n + 1)) ^ 5
     calc 32 = 2 ^ 5 := by norm_num
       _ ≤ (2 * (n + 1)) ^ 5 := Nat.pow_le_pow_left (by omega) 5
   exact_mod_cast h
-
-/-- `W^{-3} B_{c,0} ≤ 2 (1-c)⁻¹ W^{-3}` for `c < 1` (`ilambda² ≥ 0`, `L ≥ 1`): any size data at `d = 3`. -/
-theorem Bctl_const_le_gen (sz : Sizes 3) (n : ℕ) {c : ℝ} (hc1 : c < 1) :
-    sz.Bctl n c ≤ 2 * (1 - c)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ := by
-  unfold Sizes.Bctl Bparam
-  have hx : 0 < 1 - c := by linarith
-  rw [abs_of_pos hx]
-  have hL : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
-    exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
-  have hg : (0 : ℝ) ≤ sz.lam n ^ 2 := sq_nonneg _
-  have h1 : (sz.lam n ^ 2 + (1 - c))⁻¹ ≤ (1 - c)⁻¹ := inv_anti₀ hx (by linarith)
-  have h2 : (((sz.L n : ℕ) : ℝ) ^ 3 * (1 - c))⁻¹ ≤ (1 - c)⁻¹ := by
-    have h3 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) ^ 3 := one_le_pow₀ hL
-    exact inv_anti₀ hx (by nlinarith)
-  have hz : (((0 : ℕ) : ℝ) + 1) ^ (3 - 2) = 1 := by norm_num
-  have hW0 : (0 : ℝ) ≤ (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ := by positivity
-  calc (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ *
-        ((sz.lam n ^ 2 + (1 - c))⁻¹ * ((((0 : ℕ) : ℝ) + 1) ^ (3 - 2))⁻¹ +
-          (((sz.L n : ℕ) : ℝ) ^ 3 * (1 - c))⁻¹)
-      ≤ (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((1 - c)⁻¹ * 1 + (1 - c)⁻¹) := by
-        refine mul_le_mul_of_nonneg_left (add_le_add ?_ h2) hW0
-        simp only [hz, inv_one, mul_one]; exact h1
-    _ = 2 * (1 - c)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ := by ring
-
-theorem Bctl_const_le (n : ℕ) {c : ℝ} (hc1 : c < 1) :
-    sz0.Bctl n c ≤ 2 * (1 - c)⁻¹ * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ := Bctl_const_le_gen sz0 n hc1
-
-/-- `W^{-d}B_{1/16,0} → 0` (`≤ 3 W^{-3}`) for any size data at `d = 3` with `W → ∞`. -/
-theorem Bctl_tInst_tendsto_gen (sz : Sizes 3)
-    (hWt : Tendsto (fun n : ℕ => ((sz.W n : ℕ) : ℝ)) atTop atTop) :
-    Tendsto (fun n => sz.Bctl n (tInst n)) atTop (nhds 0) := by
-  have hW : Tendsto (fun n : ℕ => (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) :=
-    tendsto_inv_atTop_zero.comp ((tendsto_pow_atTop (by norm_num : (3 : ℕ) ≠ 0)).comp hWt)
-  have hup : Tendsto (fun n : ℕ => 3 * (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) := by
-    simpa using hW.const_mul 3
-  refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hup (fun n => ?_) (fun n => ?_)
-  · unfold Sizes.Bctl Bparam
-    positivity
-  · have h := Bctl_const_le_gen sz n (c := tInst n) (by simp only [tInst]; norm_num)
-    have hW0 : (0 : ℝ) ≤ (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ := by positivity
-    refine h.trans ?_
-    have : 2 * (1 - tInst n)⁻¹ ≤ 3 := by simp only [tInst]; norm_num
-    nlinarith
-
-/-- `(con_st_ind)` at `(0, 1/16)` holds eventually for **every** `𝔠_d > 0` (any size data at `d = 3`
-with `W → ∞`): the only deterministic hypothesis of `lem:main_ind` that involves the constant `𝔠_d`. -/
-theorem conStInd_gen (sz : Sizes 3) (hWt : Tendsto (fun n : ℕ => ((sz.W n : ℕ) : ℝ)) atTop atTop)
-    {𝔠d : ℝ} (h𝔠 : 0 < 𝔠d) : STConStInd sz 𝔠d sInst tInst := by
-  have h0 : Tendsto (fun n => sz.Bctl n (tInst n) ^ 𝔠d) atTop (nhds ((0 : ℝ) ^ 𝔠d)) :=
-    (Bctl_tInst_tendsto_gen sz hWt).rpow_const (Or.inr h𝔠.le)
-  rw [Real.zero_rpow h𝔠.ne'] at h0
-  filter_upwards [h0.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 15 / 16))] with n hn
-  simp only [sInst, tInst] at hn ⊢
-  refine ⟨?_, ?_⟩
-  · norm_num; linarith
-  · norm_num
-
-theorem W_tendsto_sz0 : Tendsto (fun n : ℕ => ((sz0.W n : ℕ) : ℝ)) atTop atTop := by
-  refine tendsto_atTop_mono (fun n => ?_) (tendsto_natCast_atTop_atTop (R := ℝ))
-  have h : n ≤ sz0.W n := by
-    change n ≤ (2 * (n + 1)) ^ 5
-    calc n ≤ 2 * (n + 1) := by omega
-      _ ≤ (2 * (n + 1)) ^ 5 := Nat.le_self_pow (by norm_num) _
-  exact_mod_cast h
-
-theorem Bctl_tInst_tendsto : Tendsto (fun n => sz0.Bctl n (tInst n)) atTop (nhds 0) :=
-  Bctl_tInst_tendsto_gen sz0 W_tendsto_sz0
-
-theorem conStInd_inst {𝔠d : ℝ} (h𝔠 : 0 < 𝔠d) : STConStInd sz0 𝔠d sInst tInst :=
-  conStInd_gen sz0 W_tendsto_sz0 h𝔠
-
-/-- **`lem:main_ind`, instantiated**: the constant `𝔠_d` of the pin, then the deterministic data
-`(sz0, z0, s ≡ 0, t ≡ 1/16)` with `(con_st_ind)`; the premises `(a)-(d)` at `s` stay hypotheses. -/
-theorem inst_mainInd (h : STMainInd 3) :
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      ((STLK sz0 (STflowE z0) sInst ∧ STDecay sz0 (STflowE z0) sInst ∧
-          STDecayStrong sz0 (STflowE z0) sInst ∧ STLocalMax sz0 (STflowE z0) sInst ∧
-          STExp2 sz0 (STflowE z0) sInst) →
-        (STLK sz0 (STflowE z0) tInst ∧ STLmax sz0 (STflowE z0) tInst ∧
-          STDecay sz0 (STflowE z0) tInst ∧ STExp2 sz0 (STflowE z0) tInst ∧
-          STLocalEntry sz0 (STflowE z0) tInst ∧ STDecayStrong sz0 (STflowE z0) tInst)) := by
-  obtain ⟨𝔠d, h0, h1, hall⟩ :=
-    h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  refine ⟨𝔠d, h0, h1, fun hyp => ?_⟩
-  exact hall (1 / 6) sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl) (fun n => zero_le_lemT n)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) hyp
-    (conStInd_inst h0)
-
-/-- **`lem_GbEXP`, three parts, instantiated** at `t ≡ 1/16 ≤ t₀`, `ε₀ = 1/20`. -/
-theorem inst_gbEXP (h : STGbEXP 3) :
-    STGiiGEX sz0 (STflowE z0) tInst (1 / 20) ∧ STGijGEX sz0 (STflowE z0) tInst (1 / 20) ∧
-      STGavLGEX sz0 (STflowE z0) tInst (1 / 20) := by
-  refine ⟨h.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num),
-    h.2.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num),
-    h.2.2 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num)⟩
-
-/-- **`lem_GbEXP` part 3 `(GavLGEX)`, applied** at the concrete deterministic control
-`Ψ_n = W_n^{-1}`, `ε₀ = 1/20`: both window bounds `W^{-3/2} ≤ Ψ_n ≤ W^{-1/20}` (`3_5:28`) are
-discharged; only the two `Prec` premises of `(initialGT2)` stay hypotheses. -/
-theorem inst_gbEXP_av (h : STGbEXP 3)
-    (hG : Prec sz0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-      (fun n p ω => ‖STGM sz0 n (STflowE z0 n) (tInst n) ω p.1 p.2‖)
-      (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ))))
-    (hL : Prec sz0 (U := fun _ => Unit) (fun n _ ω => STmaxLoop2 sz0 n (STflowE z0 n) (tInst n) ω)
-      (fun n _ _ => (((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ 2)) :
-    Prec sz0 (U := fun n => Zd 3 (sz0.L n))
-      (fun n a ω => ‖Lloop sz0 n (STflowE z0 n) (tInst n) (fun _ : Fin 1 => true) (fun _ => a) ω -
-        mE (STflowE z0 n)‖)
-      (fun n _ _ => (((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) ^ 2) := by
-  refine (inst_gbEXP h).2.2 (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) ?_ ?_ hG hL
-  · exact Eventually.of_forall fun n =>
-      Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast sz0.W_pos n) (by norm_num)
-  · exact Eventually.of_forall fun n =>
-      Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast sz0.W_pos n) (by norm_num)
-
-/-- **`lem_ConArg`, instantiated**: `ε₁ = 1/16`, `C₀ = 2`, `s ≡ 1/16 ≤ t ≡ 1/2 < 1`; the premise
-`(eq:loopbound_s)` stays a hypothesis. -/
-theorem inst_conArg (h : STConArg 3) (hL : STLmax sz0 (STflowE z0) (fun _ => 1 / 16)) :
-    ∀ k : ℕ, 2 ≤ k →
-      Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-        (fun n p ω => STomegaC sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) 2 ω *
-          ‖Lloop sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz0.Bctl n ((fun _ => (1 : ℝ) / 16) n) *
-          (etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) /
-            etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n))) ^ (k - 1)) := fun k hk =>
-  h (1 / 10) (1 / 10) (1 / 10) (1 / 16) 2 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 (fun _ => 1 / 16) (fun _ => 1 / 2)
-    (fun _ => le_rfl) (fun n => by norm_num) (fun n => by norm_num) hL k hk
-
-/-- **Step 1, instantiated**: any `𝔠_d ∈ (0, 10^{-2}]`; the stochastic premises `(a)`, `(c)` and
-`ML:Kbound` stay hypotheses. -/
-theorem inst_step1 (h : STStep1 3) {𝔠d : ℝ} (h0 : 0 < 𝔠d) (h1 : 𝔠d ≤ 1 / 100)
-    (hK : STKbound sz0 (STflowE z0)) (ha : STLK sz0 (STflowE z0) sInst)
-    (hc : STLocalMax sz0 (STflowE z0) sInst) :
-    STStep1Loop sz0 (STflowE z0) sInst tInst ∧ STStep1Weak sz0 (STflowE z0) sInst tInst :=
-  h (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 𝔠d h0 h1 (1 / 6) sz0 z0
-    flow_z0 sInst tInst (fun _ => le_rfl) (fun n => zero_le_lemT n)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) hK ha hc
-    (conStInd_inst h0)
-
-/-- **The bootstrap, instantiated**: the forbidden-region estimate at every time in `[0, 1/16]`
-stays a hypothesis. -/
-theorem inst_bootstrap (h : STBootstrap 3) (hc : STLocalMax sz0 (STflowE z0) sInst)
-    (hF : ∀ u : ℕ → ℝ, (∀ n, sInst n ≤ u n) → (∀ n, u n ≤ tInst n) →
-      STForbidden sz0 (STflowE z0) sInst u) :
-    Whp sz0 (fun n => {ω | ∀ u ∈ Set.Icc (sInst n) (tInst n),
-      ∀ x y : Idx 3 (sz0.L n) (sz0.W n),
-        ‖STGM sz0 n (STflowE z0 n) u ω x y‖ ≤ (sz0.Bctl n (sInst n)) ^ (1 / 4 : ℝ)}) :=
-  h (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0
-    sInst tInst (fun _ => le_rfl) (fun n => by simp only [sInst, tInst]; norm_num)
-    (fun n => sixteenth_le_lemT n) hc hF
-
-/-- **The net lift, instantiated.** -/
-theorem inst_netLift (h : STNetLift 3)
-    (hu : ∀ u : ℕ → ℝ, (∀ n, sInst n ≤ u n) → (∀ n, u n ≤ tInst n) →
-      ∀ k : ℕ, 1 ≤ k →
-        Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-          (fun n p ω => ‖Lloop sz0 n (STflowE z0 n) (u n) p.1 p.2 ω‖)
-          (fun n _ _ => ((1 - sInst n) / (1 - u n)) ^ (k - 1) * (sz0.Bctl n (sInst n)) ^ (k - 1))) :
-    STStep1Loop sz0 (STflowE z0) sInst tInst :=
-  h (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0
-    sInst tInst (fun _ => le_rfl) (fun n => by simp only [sInst, tInst]; norm_num)
-    (fun n => sixteenth_le_lemT n) hu
 
 /-! ### 3a. Extreme input: the end of the flow, `t = t₀(z_n) = lemT z_n` (`t → 1`)
 
@@ -622,114 +365,11 @@ endpoint: at `t = t₀`, `1 - t₀ = η/(Im m + η)` is as small as the domain `
 `η = N^{-4/5}`).  `lem:main_ind` and Step 1 need a step `(s, t)` with `(con_st_ind)` there, which is
 the numeric instance A of the report, section (a)(ii). -/
 
-/-- The end of the flow, `t₀ = lemT z_n`. -/
-def tEnd : ℕ → ℝ := fun n => lemT (z0 n)
-
-theorem tEnd_lt_one (n : ℕ) : tEnd n < 1 := lemT_lt_one (z0_im_pos n)
-
-/-- **`lem_GbEXP`, three parts, at the end of the flow** `t = t₀`, `ε₀ = 1/20`. -/
-theorem inst_gbEXP_endT (h : STGbEXP 3) :
-    STGiiGEX sz0 (STflowE z0) tEnd (1 / 20) ∧ STGijGEX sz0 (STflowE z0) tEnd (1 / 20) ∧
-      STGavLGEX sz0 (STflowE z0) tEnd (1 / 20) :=
-  ⟨h.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tEnd (fun n => zero_le_lemT n) (fun _ => le_rfl) (1 / 20) (by norm_num),
-    h.2.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tEnd (fun n => zero_le_lemT n) (fun _ => le_rfl) (1 / 20) (by norm_num),
-    h.2.2 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0
-      flow_z0 tEnd (fun n => zero_le_lemT n) (fun _ => le_rfl) (1 / 20) (by norm_num)⟩
-
-/-- **`lem_ConArg`, at the end of the flow**: `ε₁ = 1/16`, `C₀ = 2`, `s ≡ 1/16 ≤ t = t₀ < 1`;
-the premise `(eq:loopbound_s)` stays a hypothesis. -/
-theorem inst_conArg_endT (h : STConArg 3) (hL : STLmax sz0 (STflowE z0) (fun _ => 1 / 16)) :
-    ∀ k : ℕ, 2 ≤ k →
-      Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-        (fun n p ω => STomegaC sz0 n (STflowE z0 n) (tEnd n) 2 ω *
-          ‖Lloop sz0 n (STflowE z0 n) (tEnd n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz0.Bctl n ((fun _ => (1 : ℝ) / 16) n) *
-          (etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) /
-            etaT (STflowE z0 n) (tEnd n))) ^ (k - 1)) := fun k hk =>
-  h (1 / 10) (1 / 10) (1 / 10) (1 / 16) 2 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 (fun _ => 1 / 16) tEnd
-    (fun _ => le_rfl) (fun n => sixteenth_le_lemT n) tEnd_lt_one hL k hk
-
 /-! ### 3b. Extreme input: the lower end of `(eq:WO)`, `ilambda_n = W_n^{-d/2+𝔡}` exactly
 
 The four pins are applied again at the preflight sequence with `lam_n` replaced by its smallest
 admissible value, `W_n^{-3/2+1/10}` (`g → W^{-d/2+𝔡}`): `(eq:WO)` holds with equality at the lower
 end, `W^{-d}B_{t,0} ≥ W^{-d} g^{-2}...` is as large as the window allows (`≈ W^{-2𝔡}`), and the
 deterministic hypotheses are discharged by the same generic lemmas. -/
-
-/-- The preflight sequence with the coupling at the lower end of `(eq:WO)`. -/
-def sz1 : Sizes 3 := sz0.withLam fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ) / 2 + 1 / 10)
-
-theorem sz1_admissible : sz1.Admissible (1 / 6) (1 / 10) := by
-  refine ⟨by norm_num, by norm_num, sz0_tendsto, sz0_bandwidth, ?_⟩
-  refine Eventually.of_forall fun n => ⟨?_, ?_⟩
-  · change ((sz0.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 10) ≤
-      ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ) / 2 + 1 / 10)
-    norm_num
-  · have hW : (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := by exact_mod_cast sz0.W_pos n
-    have h := Real.rpow_le_one_of_one_le_of_nonpos hW (by norm_num : (-(3 : ℝ) / 2 + 1 / 10) ≤ 0)
-    change ((sz0.W n : ℕ) : ℝ) ^ (-(3 : ℝ) / 2 + 1 / 10) ≤ ((1 : ℝ) / 10)⁻¹
-    norm_num
-    linarith
-
-theorem flow_z1 : STFlow sz1 (1 / 10) (1 / 10) (1 / 6) (1 / 10) z0 :=
-  ⟨sz1_admissible, fun n => z0_locDomain n⟩
-
-theorem W_tendsto_sz1 : Tendsto (fun n : ℕ => ((sz1.W n : ℕ) : ℝ)) atTop atTop := W_tendsto_sz0
-
-/-- `lem:main_ind` at the extreme coupling. -/
-theorem inst_mainInd_lowg (h : STMainInd 3) :
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      ((STLK sz1 (STflowE z0) sInst ∧ STDecay sz1 (STflowE z0) sInst ∧
-          STDecayStrong sz1 (STflowE z0) sInst ∧ STLocalMax sz1 (STflowE z0) sInst ∧
-          STExp2 sz1 (STflowE z0) sInst) →
-        (STLK sz1 (STflowE z0) tInst ∧ STLmax sz1 (STflowE z0) tInst ∧
-          STDecay sz1 (STflowE z0) tInst ∧ STExp2 sz1 (STflowE z0) tInst ∧
-          STLocalEntry sz1 (STflowE z0) tInst ∧ STDecayStrong sz1 (STflowE z0) tInst)) := by
-  obtain ⟨𝔠d, h0, h1, hall⟩ :=
-    h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  refine ⟨𝔠d, h0, h1, fun hyp => ?_⟩
-  exact hall (1 / 6) sz1 z0 flow_z1 sInst tInst (fun _ => le_rfl) (fun n => zero_le_lemT n)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) hyp
-    (conStInd_gen sz1 W_tendsto_sz1 h0)
-
-/-- `lem_GbEXP` (three parts) at the extreme coupling. -/
-theorem inst_gbEXP_lowg (h : STGbEXP 3) :
-    STGiiGEX sz1 (STflowE z0) tInst (1 / 20) ∧ STGijGEX sz1 (STflowE z0) tInst (1 / 20) ∧
-      STGavLGEX sz1 (STflowE z0) tInst (1 / 20) :=
-  ⟨h.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz1 z0
-      flow_z1 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num),
-    h.2.1 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz1 z0
-      flow_z1 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num),
-    h.2.2 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz1 z0
-      flow_z1 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-      (by norm_num)⟩
-
-/-- `lem_ConArg` at the extreme coupling. -/
-theorem inst_conArg_lowg (h : STConArg 3) (hL : STLmax sz1 (STflowE z0) (fun _ => 1 / 16)) :
-    ∀ k : ℕ, 2 ≤ k →
-      Prec sz1 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz1.L n)))
-        (fun n p ω => STomegaC sz1 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) 2 ω *
-          ‖Lloop sz1 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz1.Bctl n ((fun _ => (1 : ℝ) / 16) n) *
-          (etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) /
-            etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n))) ^ (k - 1)) := fun k hk =>
-  h (1 / 10) (1 / 10) (1 / 10) (1 / 16) 2 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 6) sz1 z0 flow_z1 (fun _ => 1 / 16) (fun _ => 1 / 2)
-    (fun _ => le_rfl) (fun n => by norm_num) (fun n => by norm_num) hL k hk
-
-/-- Step 1 at the extreme coupling (any `𝔠_d ∈ (0, 10^{-2}]`). -/
-theorem inst_step1_lowg (h : STStep1 3) {𝔠d : ℝ} (h0 : 0 < 𝔠d) (h1 : 𝔠d ≤ 1 / 100)
-    (hK : STKbound sz1 (STflowE z0)) (ha : STLK sz1 (STflowE z0) sInst)
-    (hc : STLocalMax sz1 (STflowE z0) sInst) :
-    STStep1Loop sz1 (STflowE z0) sInst tInst ∧ STStep1Weak sz1 (STflowE z0) sInst tInst :=
-  h (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 𝔠d h0 h1 (1 / 6) sz1 z0
-    flow_z1 sInst tInst (fun _ => le_rfl) (fun n => zero_le_lemT n)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) hK ha hc
-    (conStInd_gen sz1 W_tendsto_sz1 h0)
 
 end RBM.Gauss.InductionDefsInst

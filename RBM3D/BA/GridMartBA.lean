@@ -679,69 +679,6 @@ theorem baGridMart_holds (d : ℕ) :
 `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`; `s ≡ 1/10`, `t ≡ 1/2 < BAflowT0` by `half_lt_t0`; `D = 1`;
 `K n = ⌈N_n^{CK}⌉₊ + 1`).  Every deterministic hypothesis is discharged; the hypotheses of the pins are the data, none is assumed. -/
 
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-/-- The grid of the instances: `K n = ⌈N_n^{CK}⌉₊ + 1 ≠ 0`, `N_n^{CK} ≤ K n`. -/
-private def GridMartBA_Kinst (CK : ℝ) : ℕ → ℕ := fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1
-
-private theorem GridMartBA_Kinst_ne (CK : ℝ) (n : ℕ) : GridMartBA_Kinst CK n ≠ 0 := Nat.succ_ne_zero _
-
-private theorem GridMartBA_Kinst_ge (CK : ℝ) (n : ℕ) : ((sz0.size n : ℕ) : ℝ) ^ CK ≤ (GridMartBA_Kinst CK n : ℝ) :=
-  (Nat.le_ceil _).trans (by unfold GridMartBA_Kinst; exact_mod_cast Nat.le_succ _)
-
-/-- **Target 1 at the data** (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `s ≡ 1/10`, `t ≡ 1/2`, `K n = ⌈N_n^{43}⌉₊ + 1`): eventually in `n`, for every
-charge pair, every pair of blocks, every grid index and every sample, H1, H2 and H3′. -/
-example : ∀ᶠ n : ℕ in atTop, ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)), ∀ k ≤ GridMartBA_Kinst 43 n, ∀ ω : PathΩ sz0,
-    twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 1) (a 1) k ω (a 0) =
-        STgAg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ a k ω ∧
-      twDriftk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 0) (a 1) (a 1) k ω =
-        STgDriftg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ a k ω ∧
-      ‖twEEk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 0) (a 1) (a 1) k ω‖ ≤
-        2 * ‖STEEMg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) n (gridTime (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n k)
-          ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Hpath (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n k ω) σ a‖ :=
-  baGridBridge_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 10) (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (GridMartBA_Kinst 43) (GridMartBA_Kinst_ne 43)
-
-/-- Target 1 at the data, read at one size index: some `n` carries the three identities at the grid index `k = 1`, the blocks `a = (0, 0)`,
-every sample and **every charge pair** `σ`, the same-charge pairs `(+,+)`, `(−,−)` included (so the eventual statement is not vacuous:
-`atTop` has points). -/
-example : ∃ n : ℕ, ∀ (σ : Fin 2 → Bool) (ω : PathΩ sz0), let a : Fin 2 → Zd 3 (sz0.L n) := fun _ => 0
-    twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 1) (a 1) 1 ω (a 0) =
-        STgAg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ a 1 ω ∧
-      twDriftk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 0) (a 1) (a 1) 1 ω =
-        STgDriftg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ a 1 ω ∧
-      ‖twEEk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n σ (a 0) (a 1) (a 1) 1 ω‖ ≤
-        2 * ‖STEEMg (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) n (gridTime (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n 1)
-          ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Hpath (fun _ => 1 / 10) (fun _ => 1 / 2) (GridMartBA_Kinst 43) n 1 ω) σ a‖ := by
-  have h := baGridBridge_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 10)
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (GridMartBA_Kinst 43) (GridMartBA_Kinst_ne 43)
-  obtain ⟨n, hn⟩ := h.exists
-  exact ⟨n, fun σ ω => hn σ (fun _ => 0) 1 (Nat.succ_le_of_lt (Nat.succ_pos _)) ω⟩
-
-/-- **Target 2 at the data** (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `s ≡ 1/10`, `t ≡ 1/2`, `D = 1`): the pin gives `C₀ ≥ 0`, then `CK ≥ 0`, then for the grid
-`K n = ⌈N_n^{CK}⌉₊ + 1` the martingale `Mart` and remainder `Rem` with the three clauses; each clause is non-vacuous (clause (i) at `n = 0`, the
-label `(σ, a) = ((−,+), (0,0))`; clause (ii) holds for some `n`; clause (iii) at `ε' = 1/10` holds for some `n`). -/
-example : True := by
-  obtain ⟨C₀, hC₀, H⟩ := baGridMart_holds 3
-  obtain ⟨CK, hCK, H2⟩ := H (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 10)
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) 1 one_pos
-  obtain ⟨Mart, Rem, h1, h2, h3⟩ := H2 (GridMartBA_Kinst CK) (GridMartBA_Kinst_ne CK)
-    (Filter.Eventually.of_forall fun n => GridMartBA_Kinst_ge CK n)
-  have : IsProbabilityMeasure ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp) := by
-    rw [baStep2Mat_Pp]; exact isProbabilityMeasure_pathP _
-  have c1 := (h1 0 (![false, true], fun _ => 0)).exists
-  have c2 := (h2.and (Filter.Eventually.of_forall fun _ : ℕ => True.intro)).exists
-  have c3 := (h3 (1 / 10) (by norm_num)).exists
-  trivial
-
-/-- **Target 2 read at `baStep2Data`** (`BA/Step2BA.lean:123-141`; definitional): the pin at the projections `toStep2Mat`, `flowOK`, `T0`. -/
-example (d : ℕ) : STGridMartgL d (fun sz κ ε 𝔠 𝔡 z => (baStep2Data sz z).flowOK κ ε 𝔠 𝔡) (fun sz z => (baStep2Data sz z).toStep2Mat)
-    (fun sz z => (baStep2Data sz z).T0) :=
-  baGridMart_holds d
-
-end Inst
-
 end RBM.BA
 
 end

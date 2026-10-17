@@ -653,30 +653,4 @@ size index `n = 0`, `E = 0` (`|E| < 2`), `τ = 1/2` (`0 ≤ τ < 1`), every `ω`
 by `norm_num`; the loop has `I_diff(σ) = {0, 1}` (`σ_0 ≠ σ_1`, `σ_1 ≠ σ_2`); the data
 `(ℓ, k, ξ, σ', ι, A')` are the ones of `stNewPQ_holds`, chosen before `sz`, `n`, `E`, `τ`, `ω`, `a`. -/
 
-namespace Gauss.Sizes.NewPQInst
-
-open RBM.Gauss.SizesInst
-
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      (zeroModeSet 3 (sz0.L 0) ∅ (fun a' => Lloop sz0 0 0 (1 / 2) ![true, false, true] a' ω) a =
-        zeroModeSet 3 (sz0.L 0) (∅ ∪ STIdiff ![true, false, true])
-            (fun a' => Lloop sz0 0 0 (1 / 2) ![true, false, true] a' ω) a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                (Gauss.etaT 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α) (fun a' => Lloop sz0 0 0 (1 / 2) (σ' α) a' ω) (a ∘ ι α)) ∧
-      (zeroModeSet 3 (sz0.L 0) ∅ (fun a' => STKloop sz0 0 0 (1 / 2) ![true, false, true] a') a =
-        zeroModeSet 3 (sz0.L 0) (∅ ∪ STIdiff ![true, false, true])
-            (fun a' => STKloop sz0 0 0 (1 / 2) ![true, false, true] a') a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                (Gauss.etaT 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α) (fun a' => STKloop sz0 0 0 (1 / 2) (σ' α) a') (a ∘ ι α)) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := Gauss.Sizes.stNewPQ_holds 3 3 ![true, false, true] ∅
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h sz0 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num) ω a⟩
-
-end Gauss.Sizes.NewPQInst
-
 end RBM

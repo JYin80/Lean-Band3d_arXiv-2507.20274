@@ -138,17 +138,6 @@ private theorem lemDecCalELip_G_le (ω : Ω d L W) {E t u Q : ℝ} (hE : |E| < 2
     (Hflow_isHermitian d L W u ω).submatrix _
   exact (norm_Gsig_le_inv_eta hHu hη (cont_eta_le_abs_im hE ht hut) σ).trans hQ
 
-/-- The size of a loop along the flow: `‖tr word‖ ≤ #Vtx · Q^length`. -/
-private theorem lemDecCalELip_word_trace_norm (hW : 1 ≤ W) (ω : Ω d L W) {E t u Q : ℝ}
-    (hE : |E| < 2) (ht : t < 1) (hut : u ≤ t) (hQ : (etaT E t)⁻¹ ≤ Q)
-    (l : List (Bool × Zd d L)) :
-    ‖Matrix.trace (lemDecCalELip_word (blockMat d L W (Hflow d L W u ω)) (zt E u) l)‖ ≤
-      (Fintype.card (Vtx d L W) : ℝ) * Q ^ l.length :=
-  (norm_matrix_trace_le_card_mul _).trans
-    (mul_le_mul_of_nonneg_left
-      (lemDecCalELip_word_norm hW (fun σ => lemDecCalELip_G_le ω hE ht hut hQ σ) l)
-      (Nat.cast_nonneg _))
-
 /-- The modulus of a loop of any length along the flow, on `‖X‖ ≤ Xb`; copy of `nl2_loop_sub`
 (`NetLift2:136`), stated for the trace of the word of an arbitrary list (the list loops `STLI`,
 `STeeLoop`) instead of `Fin k`-indexed `loopFine`. -/
@@ -217,19 +206,6 @@ private theorem lemDecCalELip_Xb (n : ℕ) (ω : sz.SeqΩ) {N : ℝ} (hN : N = (
   rw [lemDecCalELip_card_Vtx sz n hN] at h
   linarith
 
-/-- **The size of a loop of any length** (`STLI`, every list loop) on `contGood`: `‖𝓛_I‖ ≤ N^{2k+1}`,
-`k = |I|` the length of the zipped lists. -/
-theorem LemDecCalELip_STLI_norm (n : ℕ) (E : ℝ) {t u N : ℝ} (ω : sz.SeqΩ)
-    (hN : N = ((sz.size n : ℕ) : ℝ)) (hE : |E| < 2) (ht : t < 1) (hut : u ≤ t)
-    (hQ : (etaT E t)⁻¹ ≤ N ^ 2) (I : LoopIdx (Zd d (sz.L n))) :
-    ‖STLI sz n E u ω I‖ ≤ N ^ (2 * (I.σ.zip I.a).length + 1) := by
-  have h := lemDecCalELip_word_trace_norm (sz.W_pos n) (sz.slice n ω) hE ht hut hQ
-    (I.σ.zip I.a)
-  rw [lemDecCalELip_card_Vtx sz n hN] at h
-  refine h.trans (le_of_eq ?_)
-  rw [← pow_mul]
-  ring
-
 /-- **The modulus of a loop of any length** (`STLI`, every list loop) on `contGood`:
 `‖𝓛_I(u) - 𝓛_I(u')‖ ≤ 3 k N^{2k+7} √|u-u'|`, `k = |I|`; (`nl2_loop_sub`, `NetLift2:136`, with
 `Q = N²`, `Xb = 2N²`). -/
@@ -275,15 +251,6 @@ private theorem lemDecCalELip_len_loopOf (n : ℕ) {k : ℕ} (σ : Fin k → Boo
     (a : Fin k → Zd d (sz.L n)) :
     ((loopOf σ a).σ.zip (loopOf σ a).a).length = k := by
   simp [loopOf]
-
-/-- **The size of `𝓛^{(k)}`** on `contGood`: `‖𝓛^{(k)}_{u,σ,a}‖ ≤ N^{2k+1}`. -/
-theorem LemDecCalELip_Lloop_norm (n : ℕ) (E : ℝ) {t u N : ℝ} (ω : sz.SeqΩ)
-    (hN : N = ((sz.size n : ℕ) : ℝ)) (hE : |E| < 2) (ht : t < 1) (hut : u ≤ t)
-    (hQ : (etaT E t)⁻¹ ≤ N ^ 2) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) :
-    ‖Lloop sz n E u σ a ω‖ ≤ N ^ (2 * k + 1) := by
-  have h := LemDecCalELip_STLI_norm sz n E ω hN hE ht hut hQ (loopOf σ a)
-  rw [lemDecCalELip_len_loopOf] at h
-  rwa [LemDecCalELip_Lloop_eq_STLI]
 
 /-- **The modulus of `𝓛^{(k)}`** on `contGood`: `‖𝓛^{(k)}_u - 𝓛^{(k)}_{u'}‖ ≤ 3 k N^{2k+7} √|u-u'|`. -/
 theorem LemDecCalELip_Lloop_sub (n : ℕ) (E : ℝ) {t u u' N : ℝ} (ω : sz.SeqΩ)
@@ -681,60 +648,6 @@ theorem LemDecCalELip_LK_subg (hN1 : 1 ≤ N) (hM1 : 1 ≤ M)
   rw [hL'] at hL
   nlinarith [mul_le_mul_of_nonneg_right h2 hs0]
 
-/-- `‖(𝓛 - 𝒦)^{(2)}_u‖ ≤ 2 N⁵` over a carrier (band `LemDecCalELip_LK_norm`, `:502`). -/
-theorem LemDecCalELip_LK_normg (hN1 : 1 ≤ N)
-    (hLn : ∀ {k : ℕ}, 1 ≤ k → ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), ‖C.L n u σ a ω‖ ≤ N ^ (2 * k + 1))
-    (hKn : ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖C.K n u σ a‖ ≤ N)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ‖C.L n u σ a ω - C.K n u σ a‖ ≤ 2 * N ^ 5 := by
-  have hL := hLn (k := 2) (by norm_num) σ a
-  have hK := hKn σ a
-  have h1 : N ≤ N ^ 5 := by simpa using pow_le_pow_right₀ hN1 (show 1 ≤ 5 by norm_num)
-  have hL' : N ^ (2 * 2 + 1) = N ^ 5 := by norm_num
-  rw [hL'] at hL
-  exact (norm_sub_le _ _).trans (by linarith)
-
-/-- `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_u - ℰ^{…}_{u'}‖ ≤ 28 N^{16} M √|u-u'|` over a carrier, `Σ_y |S_{xy}| ≤ 1` and `W^d #Z_L^d = N` (band
-`LemDecCalELip_ELKLK_sub`, `:514`, `M = N`). -/
-theorem LemDecCalELip_ELKLK_subg (hN : N = ((sz.size n : ℕ) : ℝ)) (hN1 : 1 ≤ N) (hM1 : 1 ≤ M) (hu0 : 0 ≤ u) (hut : u ≤ t)
-    (hu'0 : 0 ≤ u') (hu't : u' ≤ t) (hS : ∀ a, ∑ b, ‖C.S n a b‖ ≤ 1)
-    (hLn : ∀ v : ℝ, 0 ≤ v → v ≤ t → ∀ {k : ℕ}, 1 ≤ k → ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), ‖C.L n v σ a ω‖ ≤ N ^ (2 * k + 1))
-    (hKn : ∀ v : ℝ, 0 ≤ v → v ≤ t → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖C.K n v σ a‖ ≤ N)
-    (hLs : ∀ {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
-      ‖C.L n u σ a ω - C.L n u' σ a ω‖ ≤ 3 * (k : ℝ) * N ^ (2 * k + 6) * M * Real.sqrt |u - u'|)
-    (hKs : ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖C.K n u σ a - C.K n u' σ a‖ ≤ N ^ 6 * Real.sqrt |u - u'|)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    ‖STELKLKg C n u σ a ω - STELKLKg C n u' σ a ω‖ ≤ 28 * N ^ 16 * M * Real.sqrt |u - u'| := by
-  have hs0 : 0 ≤ Real.sqrt |u - u'| := Real.sqrt_nonneg _
-  have hN0 : 0 ≤ N := by linarith
-  have hM0 : 0 ≤ M := by linarith
-  have hbil := lemDecCalELip_bilin (d := d) (L := sz.L n) (C.S n) hS
-    (fun x => C.L n u σ ![x, a 1] ω - C.K n u σ ![x, a 1])
-    (fun x => C.L n u' σ ![x, a 1] ω - C.K n u' σ ![x, a 1])
-    (fun y => C.L n u σ ![a 0, y] ω - C.K n u σ ![a 0, y])
-    (fun y => C.L n u' σ ![a 0, y] ω - C.K n u' σ ![a 0, y])
-    (δA := 7 * N ^ 10 * M * Real.sqrt |u - u'|) (δB := 7 * N ^ 10 * M * Real.sqrt |u - u'|)
-    (αA := 2 * N ^ 5) (βB := 2 * N ^ 5) (by positivity) (by positivity) (by positivity)
-    (by positivity)
-    (fun x => LemDecCalELip_LK_subg C n ω hN1 hM1 hLs hKs σ _)
-    (fun y => LemDecCalELip_LK_normg C n ω hN1 (hLn u hu0 hut) (hKn u hu0 hut) σ _)
-    (fun x => LemDecCalELip_LK_normg C n ω hN1 (hLn u' hu'0 hu't) (hKn u' hu'0 hu't) σ _)
-    (fun y => LemDecCalELip_LK_subg C n ω hN1 hM1 hLs hKs σ _)
-  have eq : ∀ v : ℝ, STELKLKg C n v σ a ω = (((sz.W n : ℕ) : ℂ) ^ d) * ∑ x, ∑ y,
-      (C.L n v σ ![x, a 1] ω - C.K n v σ ![x, a 1]) * C.S n x y * (C.L n v σ ![a 0, y] ω - C.K n v σ ![a 0, y]) :=
-    fun v => rfl
-  rw [eq u, eq u', ← mul_sub, norm_mul, norm_pow, Complex.norm_natCast]
-  have hWd : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d := by positivity
-  calc ((sz.W n : ℕ) : ℝ) ^ d * ‖∑ x, ∑ y, (C.L n u σ ![x, a 1] ω - C.K n u σ ![x, a 1]) * C.S n x y *
-          (C.L n u σ ![a 0, y] ω - C.K n u σ ![a 0, y]) -
-        ∑ x, ∑ y, (C.L n u' σ ![x, a 1] ω - C.K n u' σ ![x, a 1]) * C.S n x y *
-          (C.L n u' σ ![a 0, y] ω - C.K n u' σ ![a 0, y])‖
-      ≤ ((sz.W n : ℕ) : ℝ) ^ d * ((Fintype.card (Zd d (sz.L n)) : ℝ) *
-          (7 * N ^ 10 * M * Real.sqrt |u - u'| * (2 * N ^ 5) + 2 * N ^ 5 * (7 * N ^ 10 * M * Real.sqrt |u - u'|))) :=
-        mul_le_mul_of_nonneg_left hbil hWd
-    _ = N * (28 * N ^ 15 * M * Real.sqrt |u - u'|) := by
-        rw [← mul_assoc, lemDecCalELip_Wd_card sz n hN]; ring
-    _ = 28 * N ^ 16 * M * Real.sqrt |u - u'| := by ring
-
 /-- The one-loop `⟨G̃_u(τ) E_x⟩ = 𝓛^{(1)}_{u,τ,x} - m(τ)` moves by `3 N⁸ M √|u-u'|` over a carrier (band: `3 N⁹ √`, `M = N`). -/
 private theorem lemDecCalELip_avg_sub
     (hLs : ∀ {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
@@ -820,67 +733,6 @@ theorem LemDecCalELip_EGt_subg (hN : N = ((sz.size n : ℕ) : ℝ)) (hN1 : 1 ≤
 end FunctionalsG
 
 
-section FunctionalsG3
-
-open scoped Matrix.Norms.L2Operator
-
-variable {d : ℕ} {sz : Sizes d}
-
-/-- The cut loop `STeeLoop` of `m = 2` and `k ∈ {1, 2}` has `6` edges. -/
-private theorem lemDecCalELip_STeeLoop_len {α : Type*} (σ : Fin 2 → Bool) (a a' : Fin 2 → α)
-    {k : ℕ} (hk : k ∈ Finset.Icc 1 2) (b b' : α) :
-    ((STeeLoop (List.ofFn σ) (List.ofFn a) (List.ofFn a') k b b').σ.zip
-      (STeeLoop (List.ofFn σ) (List.ofFn a) (List.ofFn a') k b b').a).length = 6 := by
-  have hk' : k = 1 ∨ k = 2 := by
-    simp only [Finset.mem_Icc] at hk
-    omega
-  rcases hk' with rfl | rfl <;> simp [STeeLoop, List.ofFn_succ]
-
-/-- **2d (deterministic) over a carrier** (band `LemDecCalELip_ee_sub`, `:646`): for a Hermitian flow matrix `Hf` of entrywise modulus
-`2 N^c √|u-u'|`, `‖(ℰ⊗ℰ)^{M,(2)}_u - (ℰ⊗ℰ)^{M,(2)}_{u'}‖ ≤ 36 N^{19} N^c √|u-u'|` (the `6`-loop `STeeLoop` moves by `18 N^{18} N^c √`,
-`Σ_{b'} |S_{bb'}| ≤ 1`, `W^d L^d = N`). -/
-theorem LemDecCalELip_ee_subg {Cm : Step2Mat sz} {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
-    (Hf : ∀ n : ℕ, ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    {c : ℝ} (hc : 0 ≤ c) {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1) {t u u' N : ℝ} (ω : sz.SeqΩ) (hN : N = ((sz.size n : ℕ) : ℝ)) (hN1 : 1 ≤ N)
-    (ht : t < 1) (hu0 : 0 ≤ u) (hut : u ≤ t) (hu'0 : 0 ≤ u') (hu't : u' ≤ t) (hQ : (Cm.eta n t)⁻¹ ≤ N ^ 2)
-    (hS : ∀ a, ∑ b, ‖Cm.S n a b‖ ≤ 1)
-    (hherm : ∀ v : ℝ, 0 ≤ v → v ≤ t → (Hf n v ω).IsHermitian)
-    (hmod : ∀ x y, ‖Hf n u ω x y - Hf n u' ω x y‖ ≤ 2 * N ^ c * Real.sqrt |u - u'|)
-    (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd d (sz.L n)) :
-    ‖STeeg Cm Hf n u ω σ a a' - STeeg Cm Hf n u' ω σ a a'‖ ≤ 36 * N ^ 19 * N ^ c * Real.sqrt |u - u'| := by
-  have hN0 : 0 ≤ N := by linarith
-  set K : ℝ := 18 * N ^ 18 * N ^ c * Real.sqrt |u - u'| with hK
-  have hK0 : 0 ≤ K := by have := Real.rpow_nonneg hN0 c; positivity
-  set T : ℕ → Zd d (sz.L n) → Zd d (sz.L n) → ℂ := fun k b b' =>
-    Cm.S n b b' * Cm.LIM n u (Hf n u ω) (STeeLoop (List.ofFn σ) (List.ofFn a) (List.ofFn a') k b b') -
-      Cm.S n b b' * Cm.LIM n u' (Hf n u' ω) (STeeLoop (List.ofFn σ) (List.ofFn a) (List.ofFn a') k b b') with hT
-  have hloop : ∀ k ∈ Finset.Icc 1 2, ∀ b b' : Zd d (sz.L n), ‖T k b b'‖ ≤ ‖Cm.S n b b'‖ * K := by
-    intro k hk b b'
-    rw [hT]; dsimp only
-    rw [← mul_sub, norm_mul, (hL n).2.2.1 u (Hf n u ω), (hL n).2.2.1 u' (Hf n u' ω)]
-    refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
-    have h := LemDecCalELip_loopL_subg hL hc hm ω hN hN1 ht hu0 hut hu'0 hu't hQ hherm hmod
-      (STeeLoop (List.ofFn σ) (List.ofFn a) (List.ofFn a') k b b')
-    rw [lemDecCalELip_STeeLoop_len σ a a' hk b b'] at h
-    exact h.trans (le_of_eq (by rw [hK]; norm_num))
-  have hrow : ∀ k ∈ Finset.Icc 1 2, ∀ b : Zd d (sz.L n), ‖∑ b', T k b b'‖ ≤ K := fun k hk b =>
-    (norm_sum_le _ _).trans ((Finset.sum_le_sum fun b' _ => hloop k hk b b').trans
-      (by rw [← Finset.sum_mul]; exact (mul_le_mul_of_nonneg_right (hS b) hK0).trans_eq (one_mul K)))
-  have htot : ‖∑ k ∈ Finset.Icc 1 2, ∑ b, ∑ b', T k b b'‖ ≤ 2 * ((Fintype.card (Zd d (sz.L n)) : ℝ) * K) :=
-    (norm_sum_le _ _).trans <| (Finset.sum_le_sum fun k hk => (norm_sum_le _ _).trans
-      (Finset.sum_le_sum fun b _ => hrow k hk b)).trans_eq (by simp [Finset.sum_const, nsmul_eq_mul])
-  have heq : STeeg Cm Hf n u ω σ a a' - STeeg Cm Hf n u' ω σ a a' =
-      (((sz.W n : ℕ) : ℂ) ^ d) * ∑ k ∈ Finset.Icc 1 2, ∑ b, ∑ b', T k b b' := by
-    unfold STeeg STeeMg
-    rw [← mul_sub, hT]; simp only [← Finset.sum_sub_distrib]; rfl
-  rw [heq, norm_mul, norm_pow, Complex.norm_natCast]
-  calc _ ≤ ((sz.W n : ℕ) : ℝ) ^ d * (2 * ((Fintype.card (Zd d (sz.L n)) : ℝ) * K)) :=
-        mul_le_mul_of_nonneg_left htot (by positivity)
-    _ = (((sz.W n : ℕ) : ℝ) ^ d * (Fintype.card (Zd d (sz.L n)) : ℝ)) * (2 * K) := by ring
-    _ = 36 * N ^ 19 * N ^ c * Real.sqrt |u - u'| := by rw [lemDecCalELip_Wd_card sz n hN, hK]; ring
-
-end FunctionalsG3
-
 /-! ### 3b. The band functionals as corollaries of the carrier ones (names and types unchanged)
 
 The band carrier is `bandFM sz (fun _ => E)` (`bandFM_STELKLK`, ... are `rfl`), D2 holds at `c = 1` (`M = N`), the kernel rows sum to `1`
@@ -890,18 +742,6 @@ sections 1 and 2. -/
 section FunctionalsBand
 
 variable {d : ℕ} (sz : Sizes d)
-
-/-- Band input: the size `N^{2k+1}` of the loops and `N` of `𝒦^{(2)}`'s companion rows. -/
-private theorem lemDecCalELip_bandIn_Ln (n : ℕ) (E : ℝ) {t N : ℝ} (ω : sz.SeqΩ) (hN : N = ((sz.size n : ℕ) : ℝ)) (hE : |E| < 2)
-    (ht : t < 1) (hQ : (etaT E t)⁻¹ ≤ N ^ 2) :
-    ∀ v : ℝ, 0 ≤ v → v ≤ t → ∀ {k : ℕ}, 1 ≤ k → ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
-      ‖(bandFM sz fun _ => E).L n v σ a ω‖ ≤ N ^ (2 * k + 1) :=
-  fun _ _ hvt _ _ σ a => LemDecCalELip_Lloop_norm sz n E ω hN hE ht hvt hQ σ a
-
-/-- Band input: the size `N` of `𝒦^{(2)}`. -/
-private theorem lemDecCalELip_bandIn_Kn (n : ℕ) (E : ℝ) {t N : ℝ} (hE : |E| < 2) (ht : t < 1) (htN : (1 - t)⁻¹ ≤ N) :
-    ∀ v : ℝ, 0 ≤ v → v ≤ t → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖(bandFM sz fun _ => E).K n v σ a‖ ≤ N :=
-  fun _ hv0 hvt σ a => LemDecCalELip_STKloop_two_norm sz n hE.le ht hv0 hvt htN σ a
 
 /-- Band input: the modulus `3 k N^{2k+6} N √|u-u'|` of the loops (exponent `2k+7` of `LemDecCalELip_Lloop_sub`). -/
 private theorem lemDecCalELip_bandIn_Ls (n : ℕ) (E : ℝ) {t u u' N : ℝ} (ω : sz.SeqΩ) (hN : N = ((sz.size n : ℕ) : ℝ)) (hN1 : 1 ≤ N)
@@ -945,45 +785,6 @@ theorem LemDecCalELip_LK2_sub (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)
     |STLK2 sz n E u σ a ω - STLK2 sz n E u' σ a ω| ≤ 7 * N ^ 11 * Real.sqrt |u - u'| :=
   (abs_norm_sub_norm_le _ _).trans (LemDecCalELip_LK_sub sz n E ω hN hN1 hE ht hu0 hut hu'0 hu't hQ
     hgood htN σ a)
-
-omit hu'0 hu't hgood in
-/-- `‖(𝓛 - 𝒦)^{(2)}_u‖ ≤ 2 N⁵`. -/
-theorem LemDecCalELip_LK_norm (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    ‖Lloop sz n E u σ a ω - STKloop sz n E u σ a‖ ≤ 2 * N ^ 5 :=
-  LemDecCalELip_LK_normg (bandFM sz fun _ => E) n ω hN1 (lemDecCalELip_bandIn_Ln sz n E ω hN hE ht hQ u hu0 hut)
-    (lemDecCalELip_bandIn_Kn sz n E hE ht htN u hu0 hut) σ a
-
-/-- **2b (deterministic)**: `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_u - ℰ^{…}_{u'}‖ ≤ 28 N^{17} √|u-u'|`
-(`W^d Σ_{x,y} |A_x||S_{xy}||B_y|`, `Σ_y |S_{xy}| = 1`, `W^d #Z_L^d = N`). -/
-theorem LemDecCalELip_ELKLK_sub (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    ‖STELKLK sz n E u σ a ω - STELKLK sz n E u' σ a ω‖ ≤ 28 * N ^ 17 * Real.sqrt |u - u'| :=
-  (LemDecCalELip_ELKLK_subg (bandFM sz fun _ => E) n ω hN hN1 hN1 hu0 hut hu'0 hu't
-    (fun a => (sum_norm_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a).le)
-    (lemDecCalELip_bandIn_Ln sz n E ω hN hE ht hQ) (lemDecCalELip_bandIn_Kn sz n E hE ht htN)
-    (lemDecCalELip_bandIn_Ls sz n E ω hN hN1 hE ht hu0 hut hu'0 hu't hQ hgood)
-    (lemDecCalELip_bandIn_Ks sz n E hN1 hE ht hu0 hut hu'0 hu't htN) σ a).trans (le_of_eq (by ring))
-
-omit htN in
-/-- **2c (deterministic)**: `‖ℰ^{G̃,(2)}_u - ℰ^{G̃,(2)}_{u'}‖ ≤ 42 N^{17} √|u-u'|`. -/
-theorem LemDecCalELip_EGt_sub (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    ‖STEGt sz n E u σ a ω - STEGt sz n E u' σ a ω‖ ≤ 42 * N ^ 17 * Real.sqrt |u - u'| :=
-  (LemDecCalELip_EGt_subg (bandFM sz fun _ => E) n ω hN hN1 hN1 hu0 hut hu'0 hu't (by simp [bandFM, norm_mE hE.le])
-    (fun a => (sum_norm_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a).le)
-    (lemDecCalELip_bandIn_Ln sz n E ω hN hE ht hQ)
-    (lemDecCalELip_bandIn_Ls sz n E ω hN hN1 hE ht hu0 hut hu'0 hu't hQ hgood) σ a).trans (le_of_eq (by ring))
-
-omit htN in
-/-- **2d (deterministic)**: `‖(ℰ⊗ℰ)^{M,(2)}_u - (ℰ⊗ℰ)^{M,(2)}_{u'}‖ ≤ 36 N^{20} √|u-u'|`
-(`LemDecCalELip_ee_subg` at the band carrier, `Hf = seqHflow`, `c = 1`). -/
-theorem LemDecCalELip_ee_sub (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd d (sz.L n)) :
-    ‖STee sz n E u ω σ a a' - STee sz n E u' ω σ a a'‖ ≤ 36 * N ^ 20 * Real.sqrt |u - u'| := by
-  have h := LemDecCalELip_ee_subg (stepDecompGen_loopForm_band sz (fun _ => E) fun _ => hE) (seqHflow sz)
-    zero_le_one (n := n) (by simp [bandStep2Mat, bandFM, norm_mE hE.le]) ω hN hN1 ht hu0 hut hu'0 hu't hQ
-    (fun a => (sum_norm_SB_row d (sz.L n) (sz.lam n) (sz.three_le_L n) a).le)
-    (fun v _ _ => Sizes.seqHflow_isHermitian sz n v ω)
-    (fun x y => by subst hN; exact lemDecCalELipG_seqHflow_entry_sub sz n hgood hu0 hu'0 x y) σ a a'
-  rw [Real.rpow_one] at h
-  exact h.trans (le_of_eq (by ring))
 
 end Det
 
@@ -1054,51 +855,6 @@ theorem LemDecCalELip_LK2 (sz : Sizes d) (E s t : ℕ → ℝ) (κ : ℝ) (_hd :
   have h := LemDecCalELip_LK2_sub sz n (E n) ω (N := ((sz.size n : ℕ) : ℝ)) rfl h1 hE2 (ht n)
     ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 hQ (fun c => hω c) hN1 σ a
   exact h.trans (lemDecCalELip_absorb (e := 11) h7 (by linarith) (Real.sqrt_nonneg _))
-
-/-- **2b (L1)**: `STELKLK` is Hölder-1/2 in `u` on `contGood`, constant `N^{18}`. -/
-theorem LemDecCalELip_ELKLK (sz : Sizes d) (E s t : ℕ → ℝ) (κ : ℝ) (_hd : 3 ≤ d)
-    (hsize : sz.SizeTendsto) (hκ : 0 < κ) (hE : ∀ n, |E n| ≤ 2 - κ) (hs : ∀ n, 0 ≤ s n)
-    (ht : ∀ n, t n < 1) (htN : ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz n,
-      ∀ (u u' : TimeIcc s t n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
-        ‖STELKLK sz n (E n) (u : ℝ) σ a ω - STELKLK sz n (E n) (u' : ℝ) σ a ω‖ ≤
-          ((sz.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| := by
-  refine ⟨((17 + 1 : ℕ) : ℝ), Nat.cast_nonneg _, ?_⟩
-  filter_upwards [LemDecCalELip_env sz E t κ hκ hE hsize htN 28] with n hn ω hω u u' σ a
-  obtain ⟨h7, h1, hE2, hQ, hN1⟩ := hn
-  have h := LemDecCalELip_ELKLK_sub sz n (E n) ω (N := ((sz.size n : ℕ) : ℝ)) rfl h1 hE2 (ht n)
-    ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 hQ (fun c => hω c) hN1 σ a
-  exact h.trans (lemDecCalELip_absorb (e := 17) h7 (by linarith) (Real.sqrt_nonneg _))
-
-/-- **2c (L1)**: `STEGt` is Hölder-1/2 in `u` on `contGood`, constant `N^{18}`. -/
-theorem LemDecCalELip_EGt (sz : Sizes d) (E s t : ℕ → ℝ) (κ : ℝ) (_hd : 3 ≤ d)
-    (hsize : sz.SizeTendsto) (hκ : 0 < κ) (hE : ∀ n, |E n| ≤ 2 - κ) (hs : ∀ n, 0 ≤ s n)
-    (ht : ∀ n, t n < 1) (htN : ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz n,
-      ∀ (u u' : TimeIcc s t n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
-        ‖STEGt sz n (E n) (u : ℝ) σ a ω - STEGt sz n (E n) (u' : ℝ) σ a ω‖ ≤
-          ((sz.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| := by
-  refine ⟨((17 + 1 : ℕ) : ℝ), Nat.cast_nonneg _, ?_⟩
-  filter_upwards [LemDecCalELip_env sz E t κ hκ hE hsize htN 42] with n hn ω hω u u' σ a
-  obtain ⟨h7, h1, hE2, hQ, hN1⟩ := hn
-  have h := LemDecCalELip_EGt_sub sz n (E n) ω (N := ((sz.size n : ℕ) : ℝ)) rfl h1 hE2 (ht n)
-    ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 hQ (fun c => hω c) σ a
-  exact h.trans (lemDecCalELip_absorb (e := 17) h7 (by linarith) (Real.sqrt_nonneg _))
-
-/-- **2d (L1)**: `STee` (`m = 2`, every `a'`) is Hölder-1/2 in `u` on `contGood`, constant `N^{21}`. -/
-theorem LemDecCalELip_ee (sz : Sizes d) (E s t : ℕ → ℝ) (κ : ℝ) (_hd : 3 ≤ d)
-    (hsize : sz.SizeTendsto) (hκ : 0 < κ) (hE : ∀ n, |E n| ≤ 2 - κ) (hs : ∀ n, 0 ≤ s n)
-    (ht : ∀ n, t n < 1) (htN : ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz n,
-      ∀ (u u' : TimeIcc s t n) (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd d (sz.L n)),
-        ‖STee sz n (E n) (u : ℝ) ω σ a a' - STee sz n (E n) (u' : ℝ) ω σ a a'‖ ≤
-          ((sz.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| := by
-  refine ⟨((20 + 1 : ℕ) : ℝ), Nat.cast_nonneg _, ?_⟩
-  filter_upwards [LemDecCalELip_env sz E t κ hκ hE hsize htN 36] with n hn ω hω u u' σ a a'
-  obtain ⟨h7, h1, hE2, hQ, hN1⟩ := hn
-  have h := LemDecCalELip_ee_sub sz n (E n) ω (N := ((sz.size n : ℕ) : ℝ)) rfl h1 hE2 (ht n)
-    ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 hQ (fun c => hω c) σ a a'
-  exact h.trans (lemDecCalELip_absorb (e := 20) h7 (by linarith) (Real.sqrt_nonneg _))
 
 end L1
 
@@ -1598,77 +1354,11 @@ end Lift
 
 end RBM.Gauss.Sizes
 
-namespace RBM.BA
-
-set_option linter.style.longLine false
-set_option linter.unusedVariables false
-
-open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
-
 /-! ## 8. The `lem_dec_calE` pins over a carrier (`3_5:2314-2338`; moved here from T2458, item 11)
 
 `STLemDecCalEConclgL` is `STLemDecCalEConcl` (`Step5Pins:161`) with the `Prec` of the law `μ`, `STLK2g`, `STELKLKg`, `STEGtg` of the
 carrier and `STeeg Cm Hf` of the sample matrix; `STLemDecCalEgL` is the regime-(iii) pin over a carrier tuple; the band bridge is
 `Step5Gen_ingR5_iff_congr`.  There is no generic proof of `STLemDecCalEgL` (it stays with `LemDecCalEPrec`, band). -/
-
-/-- **`lem_dec_calE`, the conclusion over a sample carrier `(Cm, Hf)` and a law `μ`** (target 2). -/
-def STLemDecCalEConclgL {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz)
-    (Hf : ∀ n : ℕ, ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ) : Prop :=
-  ∀ Jst : ℕ → ℝ → ℝ → ℝ, (∀ n u D, 1 ≤ Jst n u D) →
-    (∀ n u D, Jst n u D ≤ ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ)) →
-    ∀ D : ℝ, 0 < D →
-      (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D) →
-      PrecL sz μ (U := STIdx2 sz s t)
-        (fun n p ω => STLK2g Cm.toFlowFM n (p.1 : ℝ) p.2.1 p.2.2 ω)
-        (fun n p _ => Jst n (p.1 : ℝ) D * STtailTD sz n (p.1 : ℝ) D p.2.2) →
-      PrecL sz μ (U := STIdx2 sz s t)
-        (fun n p ω => ‖STELKLKg Cm.toFlowFM n (p.1 : ℝ) p.2.1 p.2.2 ω‖)
-        (fun n p _ => (1 - (p.1 : ℝ))⁻¹ * (((sz.W n : ℕ) : ℝ) ^ d * |1 - (p.1 : ℝ)|)⁻¹ * Jst n (p.1 : ℝ) D ^ 2 *
-          STtailTD sz n (p.1 : ℝ) D p.2.2) ∧
-      PrecL sz μ (U := STIdx2 sz s t)
-        (fun n p ω => ‖STEGtg Cm.toFlowFM n (p.1 : ℝ) p.2.1 p.2.2 ω‖)
-        (fun n p _ => (1 - (p.1 : ℝ))⁻¹ *
-          ((if ((zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1) : ℕ) : ℝ) ≤ Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)
-              then 1 else 0) +
-            (((sz.W n : ℕ) : ℝ) ^ d * |1 - (p.1 : ℝ)|)⁻¹ ^ (1 / 2 : ℝ) * Jst n (p.1 : ℝ) D ^ (3 / 2 : ℝ)) *
-          STtailTD sz n (p.1 : ℝ) D p.2.2) ∧
-      PrecL sz μ
-        (U := fun n => {q : STIdx2 sz s t n × (Fin 2 → Zd d (sz.L n)) //
-          ∀ i : Fin 2, ((zdistInf d (sz.L n) (q.1.2.2 i - q.2 i) : ℕ) : ℝ) ≤ Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)})
-        (fun n q ω => ‖STeeg Cm Hf n (q.1.1.1 : ℝ) ω q.1.1.2.1 q.1.1.2.2 q.1.2‖)
-        (fun n q _ => (1 - (q.1.1.1 : ℝ))⁻¹ *
-          ((if ((zdistInf d (sz.L n) (q.1.1.2.2 0 - q.1.1.2.2 1) : ℕ) : ℝ) ≤ 4 * Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)
-              then 1 else 0) +
-            (((sz.W n : ℕ) : ℝ) ^ d * |1 - (q.1.1.1 : ℝ)|)⁻¹ ^ (1 / 2 : ℝ) * Jst n (q.1.1.1 : ℝ) D ^ (3 : ℝ)) *
-          STtailTD sz n (q.1.1.1 : ℝ) D q.1.1.2.2 ^ 2)
-
-/-- **`lem_dec_calE`, regime (iii), over a carrier tuple** (target 2; the shape of `STSEforLngL`, `Step34Gen:404`). -/
-def STLemDecCalEgL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
-    (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mkM : ∀ (sz : Sizes d) (z : ℕ → ℂ), Step2Mat sz)
-    (Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ), ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
-  STIngR5gL d STReg5III law Flow (fun sz z => (mkM sz z).toFlowFM) T0
-    (fun sz z s t => STLemDecCalEConclgL (mkM sz z) (Hf sz z) (law sz) s t)
-
-/-- **The band bridge of `lem_dec_calE`** (target 2): `STLemDecCalE d` is `STLemDecCalEgL` at the band tuple
-`(seqP, STFlow, bandStep2Mat ∘ STflowE, seqHflow, lemT)`. -/
-theorem STLemDecCalE_iff_gL (d : ℕ) :
-    STLemDecCalE d ↔
-      STLemDecCalEgL d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-        (fun sz z => bandStep2Mat sz (STflowE z)) (fun sz _ => seqHflow sz) (fun _ z n => lemT (z n)) :=
-  Step5Gen_ingR5_iff_congr d STReg5III (fun sz E s t => STLemDecCalEConcl sz E s t) _ (fun sz z s t => Iff.rfl)
-
-end RBM.BA
-
-namespace RBM.Gauss.Sizes
-
-open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Loop RBM.Path RBM.Gauss
-  RBM.Ind.ContinuityNet RBM.BA
-open scoped NNReal ENNReal
-
-set_option linter.style.longLine false
-
 
 /-! ## 9. Compiled nonempty instances at `d = 3`
 
@@ -1676,103 +1366,3 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 `W_n = (2(n+1))^5`, `N_n = (W_n L_n)^3`; `N_0 = 2097152`), `SizeTendsto` by `sz0_tendsto`, `E ≡ 1/2`,
 `κ = 1` (`|E| = 1/2 ≤ 1`), `s ≡ 0`, `t ≡ 1/16` (`sInst`, `tInst`).  Every deterministic hypothesis
 is discharged; for (L1) and target 4 the premise `(1 - t_n)⁻¹ = 16/15 ≤ N_n` holds for every `n`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `(1 - 1/16)⁻¹ = 16/15 ≤ N_n` for every `n` (`N_n ≥ 4`). -/
-private theorem lemDecCalELip_inst_tN (n : ℕ) :
-    (1 - tInst n)⁻¹ ≤ ((sz0.size n : ℕ) : ℝ) := by
-  have h1 : 4 * (n + 1) ≤ (2 * (n + 1)) ^ 5 * (4 * (n + 1)) :=
-    Nat.le_mul_of_pos_left _ (by positivity)
-  have h2 : (2 * (n + 1)) ^ 5 * (4 * (n + 1)) ≤ ((2 * (n + 1)) ^ 5 * (4 * (n + 1))) ^ 3 :=
-    Nat.le_self_pow (by norm_num) _
-  have h3 : 4 ≤ sz0.size n := by
-    change 4 ≤ ((2 * (n + 1)) ^ 5 * (4 * (n + 1))) ^ 3
-    omega
-  have h4 : (4 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast h3
-  have h5 : (1 - tInst n)⁻¹ = 16 / 15 := by
-    simp only [tInst]; norm_num
-  rw [h5]
-  linarith
-
-/-- **(f)** target 2: the generic pin at the band tuple (a hypothesis: it has no generic proof) gives, through `STLemDecCalE_iff_gL`, the
-instance `InstIng5Concl` of `inst_lemDecCalE` at `(sz0, z0, 0, 1/16)`. -/
-example (h : STLemDecCalEgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun sz _ => seqHflow sz) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
-    Step5Inst.InstIng5Concl (fun sz E s t => STLemDecCalEConcl sz E s t) sz0 z0 sInst tInst Cd :=
-  Step5Inst.inst_lemDecCalE ((STLemDecCalE_iff_gL 3).2 h) Cd hCd
-
-/-- **(a)** 2a at `sz0`, `E ≡ 1/2`, `κ = 1`, `s ≡ 0`, `t ≡ 1/16`: every premise discharged. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      |STLK2 sz0 n (1 / 2) (u : ℝ) σ a ω - STLK2 sz0 n (1 / 2) (u' : ℝ) σ a ω| ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_LK2 sz0 (fun _ => 1 / 2) sInst tInst 1 (by norm_num) sz0_tendsto one_pos
-    (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num [tInst])
-    (Eventually.of_forall lemDecCalELip_inst_tN)
-
-/-- **(a)** 2b at the same data. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STELKLK sz0 n (1 / 2) (u : ℝ) σ a ω - STELKLK sz0 n (1 / 2) (u' : ℝ) σ a ω‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_ELKLK sz0 (fun _ => 1 / 2) sInst tInst 1 (by norm_num) sz0_tendsto one_pos
-    (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num [tInst])
-    (Eventually.of_forall lemDecCalELip_inst_tN)
-
-/-- **(a)** 2c at the same data. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STEGt sz0 n (1 / 2) (u : ℝ) σ a ω - STEGt sz0 n (1 / 2) (u' : ℝ) σ a ω‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_EGt sz0 (fun _ => 1 / 2) sInst tInst 1 (by norm_num) sz0_tendsto one_pos
-    (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num [tInst])
-    (Eventually.of_forall lemDecCalELip_inst_tN)
-
-/-- **(a)** 2d at the same data (`m = 2`, every `a'`). -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STee sz0 n (1 / 2) (u : ℝ) ω σ a a' - STee sz0 n (1 / 2) (u' : ℝ) ω σ a a'‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_ee sz0 (fun _ => 1 / 2) sInst tInst 1 (by norm_num) sz0_tendsto one_pos
-    (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num [tInst])
-    (Eventually.of_forall lemDecCalELip_inst_tN)
-
-/-- **(b)** target 3 at `sz0`, `n = 1`, `t = 1/16`, `u = 0`, `u' = 1/16`, `D = 42`, `a ≡ 0`: all five
-inequalities with `ρ = 1 + (15/16)⁻¹ · 1/16 = 16/15 > 1`. -/
-example := LemDecCalELip_relcont sz0 1 (1 / 16) 0 (1 / 16) 42 (fun _ => 0) (by norm_num)
-  (by norm_num) le_rfl
-
-/-- **(c)** target 1 at `sz0` (`n = 1`, `u = 0`, `D = 42`, the zero sample): `1 ≤ J♯` and the two
-other properties. -/
-example := LemDecCalELip_Jsharp_basic sz0 (fun _ => 1 / 2) 42 1 0 (fun _ => 0)
-
-/-- Target 4 at the same data as (a), `D = 42`. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ u u' : TimeIcc sInst tInst n,
-      LemDecCalELip_Jsharp sz0 (fun _ => 1 / 2) 42 n (u' : ℝ) ω ≤
-        (1 + ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)|) *
-          LemDecCalELip_Jsharp sz0 (fun _ => 1 / 2) 42 n (u : ℝ) ω :=
-  LemDecCalELip_Jsharp_rel sz0 (fun _ => 1 / 2) sInst tInst 1 42 (by norm_num) sz0_tendsto one_pos
-    (by norm_num) (fun _ => by norm_num) (fun _ => le_rfl) (fun _ => by norm_num [tInst])
-    (Eventually.of_forall lemDecCalELip_inst_tN)
-
-/-- **(d)** target 5 at `sz0`, `V = fun _ => Unit`, `ξ ≡ 0`, `J ≡ 1`, `R₀ ≡ 0`, `R ≡ 1`, `m = 2`,
-`Cv = C = CR = 0`, `s ≡ 0`, `t ≡ 1/16`: every premise discharged (`PrecPT` by `precPT_of_le`). -/
-example : Prec sz0 (U := fun n => TimeIcc sInst tInst n × Unit)
-    (fun _ _ _ => (0 : ℝ)) (fun _ _ _ => 0 + (1 : ℝ) ^ (2 : ℝ) * 1) :=
-  LemDecCalELip_lift sz0 sInst tInst (fun _ => Unit) (fun _ _ _ => (0 : ℝ))
-    (fun _ _ _ => (1 : ℝ)) (fun _ _ => (0 : ℝ)) (fun _ _ => (1 : ℝ)) 2 0 0 0 sz0_tendsto
-    (fun _ => by norm_num [sInst, tInst]) (fun _ => by norm_num [sInst, tInst]) (by norm_num)
-    (Eventually.of_forall fun n => by simp)
-    (fun _ _ _ => le_rfl) (fun _ _ => le_rfl)
-    (Eventually.of_forall fun n p => by simp)
-    (Eventually.of_forall fun n u u' v => ⟨by simp, by simp⟩)
-    (Eventually.of_forall fun n ω _ u u' => ⟨fun v => by simp, by simp⟩)
-    (precPT_of_le sz0 (fun n p ω => by norm_num) (fun n p ω => by norm_num))
-
-end Instances
-
-end RBM.Gauss.Sizes

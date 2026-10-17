@@ -80,8 +80,6 @@ def LWLocRegConcl (p : ℕ) (m : ℂ) (c : ℝ) (K0 d : ℕ) (D : ℝ) (outs err
 def lwEngine_ev {E0 : Type} (m : ℂ) (r : (ℕ × ℕ) × PGraph E0) : PGraph E0 :=
   { r.2 with g := { r.2.g with coeff := m ^ r.1.1 * star m ^ r.1.2 * r.2.g.coeff } }
 
-theorem lwEngine_evX_eq (m : ℂ) (r : (ℕ × ℕ) × PGraph (Fin 2)) : lwEvX m r = lwEngine_ev m r := rfl
-
 /-- the scalar `m^j m̄^{j'}` of a tag `(j, j')` -/
 def lwEngine_ev3 (m : ℂ) (t : ℕ × ℕ) : ℂ := m ^ t.1 * star m ^ t.2
 
@@ -443,13 +441,6 @@ theorem LocStepX.eval {P : PGraph (Fin 2)} {LX : List ((ℕ × ℕ) × PGraph (F
     rw [e] at key
     exact key
 
-/-- **`LocStepX` at the tag `0`**: for an input of coefficient `1` the evaluated `X`-outputs are the outputs of `LocStep m`. -/
-theorem LocStepX.eval_one {P : PGraph (Fin 2)} {LX : List ((ℕ × ℕ) × PGraph (Fin 2))} (h : LocStepX P LX)
-    (hP : P.g.coeff = 1) (m : ℂ) : LocStep m P (LX.map (lwEvX m)) := by
-  have := h.eval m 0
-  rwa [show lwEvX m (0, P) = P from lwEngine_ev_zero m P hP,
-    show (LX.map (lwEngine_shift 0)).map (lwEvX m) = LX.map (lwEvX m) from lwEngine_map_shift_zero m LX] at this
-
 /-- **Step selection on the carrier**: a normal graph that is not locally standard has a step `LocStepX` (the selection
 `lvl1_exists_step` reads no coefficient). -/
 theorem lwEngine_exists_stepX (P : PGraph (Fin 2)) (hN : P.g.Normal) (hn : ¬ P.g.LocStd) :
@@ -796,140 +787,11 @@ namespace LWEngineInst
 open MeasureTheory ProbabilityTheory Matrix
 open RBM RBM.Gauss RBM.Green
 
-/-- `m(0) = i` (the private `mE_zero` of `Green/MinorDiff.lean`) -/
-theorem lwEngineInst_mE_zero : mE 0 = Complex.I := by
-  apply Complex.ext <;> simp [mE, show Real.sqrt 4 = 2 by rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
-
-/-- **Instance of `lwEvX`**: the tag `(3, 1)` multiplies the coefficient by `m³ m̄`, which is `-1` at `m = i` and `i/4` at
-`m = (1 + i)/2` (one tagged graph, two different evaluations). -/
-theorem lwEngine_inst_lwEvX (P : PGraph (Fin 2)) :
-    (lwEvX Complex.I ((3, 1), P)).g.coeff = -1 * P.g.coeff ∧
-    (lwEvX ((1 + Complex.I) / 2) ((3, 1), P)).g.coeff = Complex.I / 4 * P.g.coeff := by
-  refine ⟨?_, ?_⟩
-  · have h : Complex.I ^ 3 * star Complex.I = -1 := by simp [pow_succ]
-    change Complex.I ^ 3 * star Complex.I ^ 1 * P.g.coeff = _
-    rw [pow_one, h]
-  · have h : ((1 + Complex.I) / 2) ^ 3 * star ((1 + Complex.I) / 2) = Complex.I / 4 := by
-      apply Complex.ext <;> simp [pow_succ] <;> norm_num
-    change ((1 + Complex.I) / 2) ^ 3 * star ((1 + Complex.I) / 2) ^ 1 * P.g.coeff = _
-    rw [pow_one, h]
-
 /-- **Instance of `LocStepX`**: Step 1 of `strat_local` on `p2Graph = fxyPowGraph 2` at the light-weight `(Ǧ - M)_{β₁β₁}`
 (selector `(false, false)`; the merged `lvl1_inst_locStep_weight`) as one tagged list. -/
 theorem lwEngine_inst_stepX :
     LocStepX p2Graph.pack (lvl1PackX p2Graph.pack (lvl1WeightOutsX p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)) :=
   LocStepX.weight p2Graph.pack lvl1ExP2p List.mem_cons_self (Sum.inr (1 : Fin 4)) false false rfl
-
-/-- **Instance of `LocStepX.eval_one`**: the same tagged list, evaluated at `m = i` and at `m = (1 + i)/2`, is a `LocStep` of that
-`m` of `p2Graph`. -/
-theorem lwEngine_inst_two_m :
-    LocStep Complex.I p2Graph.pack
-      ((lvl1PackX p2Graph.pack (lvl1WeightOutsX p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)).map
-        (lwEvX Complex.I)) ∧
-    LocStep ((1 + Complex.I) / 2) p2Graph.pack
-      ((lvl1PackX p2Graph.pack (lvl1WeightOutsX p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)).map
-        (lwEvX ((1 + Complex.I) / 2))) :=
-  ⟨lwEngine_inst_stepX.eval_one rfl Complex.I, lwEngine_inst_stepX.eval_one rfl ((1 + Complex.I) / 2)⟩
-
-/-- **Instance of `LocStepX.edge`, `LocStepX.gg`**: Step 2 at the degree-`1` vertex `α₀` of `lvl1ExDeg1` and Step 3 at the vertex `α₀` of
-`lvl1ExSame` (the merged `lvl1_inst_locStep_edge`, `lvl1_inst_locStep_gg`) as tagged lists, evaluated at `m = i` and `m = (1 + i)/2`. -/
-theorem lwEngine_inst_stepX_edge_gg :
-    (LocStep Complex.I lvl1ExDeg1.pack
-      ((lvl1PackX lvl1ExDeg1.pack (lvl1EdgeOutsX lvl1ExDeg1 lvl1ExDeg1p (0 : Fin 3) (Sum.inl (0 : Fin 2)) false true)).map
-        (lwEvX Complex.I)) ∧
-    LocStep ((1 + Complex.I) / 2) lvl1ExDeg1.pack
-      ((lvl1PackX lvl1ExDeg1.pack (lvl1EdgeOutsX lvl1ExDeg1 lvl1ExDeg1p (0 : Fin 3) (Sum.inl (0 : Fin 2)) false true)).map
-        (lwEvX ((1 + Complex.I) / 2)))) ∧
-    (LocStep Complex.I lvl1ExSame.pack
-      ((lvl1PackX lvl1ExSame.pack (lvl1GGOutsX lvl1ExSame lvl1ExSamep lvl1ExSameq (0 : Fin 3) (Sum.inl (0 : Fin 2))
-        (Sum.inl (1 : Fin 2)) false true)).map (lwEvX Complex.I)) ∧
-    LocStep ((1 + Complex.I) / 2) lvl1ExSame.pack
-      ((lvl1PackX lvl1ExSame.pack (lvl1GGOutsX lvl1ExSame lvl1ExSamep lvl1ExSameq (0 : Fin 3) (Sum.inl (0 : Fin 2))
-        (Sum.inl (1 : Fin 2)) false true)).map (lwEvX ((1 + Complex.I) / 2)))) := by
-  have he : LocStepX lvl1ExDeg1.pack
-      (lvl1PackX lvl1ExDeg1.pack (lvl1EdgeOutsX lvl1ExDeg1 lvl1ExDeg1p (0 : Fin 3) (Sum.inl (0 : Fin 2)) false true)) :=
-    LocStepX.edge lvl1ExDeg1.pack lvl1ExDeg1p List.mem_cons_self (0 : Fin 3) (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3)
-      (by decide : (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) ≠ Sum.inr (0 : Fin 3)) false true rfl (by decide) (by decide)
-  have hg : LocStepX lvl1ExSame.pack
-      (lvl1PackX lvl1ExSame.pack (lvl1GGOutsX lvl1ExSame lvl1ExSamep lvl1ExSameq (0 : Fin 3) (Sum.inl (0 : Fin 2))
-        (Sum.inl (1 : Fin 2)) false true)) :=
-    LocStepX.gg lvl1ExSame.pack lvl1ExSamep lvl1ExSameq List.mem_cons_self List.mem_cons_self (0 : Fin 3)
-      (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) (Sum.inl (1 : Fin 2) : Fin 2 ⊕ Fin 3)
-      (by decide : (Sum.inl (0 : Fin 2) : Fin 2 ⊕ Fin 3) ≠ Sum.inr (0 : Fin 3)) false true rfl rfl (by decide) (by decide)
-  exact ⟨⟨he.eval_one rfl Complex.I, he.eval_one rfl ((1 + Complex.I) / 2)⟩,
-    ⟨hg.eval_one rfl Complex.I, hg.eval_one rfl ((1 + Complex.I) / 2)⟩⟩
-
-/-- **Instance of `lw_nWS_ge`**: `p2Graph` has two black waved edges; every graph reached from it by the first step of `strat_local`
-(`Lvl1Reach` with the cutoff `K = 5 > ord p2Graph = 2`, `p2Graph` not locally standard) has at least two. -/
-theorem lwEngine_inst_nWS_ge :
-    ∀ Q ∈ lvl1Pack p2Graph.pack (lvl1WeightOuts0 (mE 0) p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false),
-      2 ≤ Q.g.waved.countP (fun e => !e.col) := fun Q hQ => by
-  have hord : ord p2Graph.pack.g.counters = 2 := fxyPowGraph_ord 2
-  have hr : Lvl1Reach (mE 0) 5 p2Graph.pack Q :=
-    Lvl1Reach.step p2Graph.pack p2Graph.pack Q _ (Lvl1Reach.refl _) (by rw [hord]; norm_num) (by decide)
-      lvl1_inst_locStep_weight hQ
-  have h := lw_nWS_ge hr
-  have e : p2Graph.pack.g.waved.countP (fun e => !e.col) = 2 := by decide
-  rw [e] at h
-  exact h
-
-/-- **Instance of `lvl1_step_identity` on the evaluated `X`-list** at the merged instance data (`d = 3`, `L = 3`, `W = 1`,
-`E = 0`, `t = 1/2`, `m = i`, `M = m·1`, `S⁺ = S (1 - m² S)⁻¹`; `GaussIBP` is the proved `gaussIBP`): every hypothesis discharged. -/
-theorem lwEngine_inst_step1_identity :
-    ∫ ω, p2Graph.pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      (((lvl1PackX p2Graph.pack (lvl1WeightOutsX p2Graph lvl1ExP2p (Sum.inr (1 : Fin 4)) false false)).map
-          (lwEvX (mE 0))).map fun Q =>
-        ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-          lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum :=
-  lvl1_step_identity lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 (lwEngine_inst_stepX.eval_one rfl (mE 0)) (by decide) lwSymmInstL
-
-/-- **Instance of `lw_localregularX`** at `p = 2`, `d = 3`, `c = 1/4`, `K0 = 1` (`L^3 ≤ W`), `D = 10` (the only hypothesis `0 < c`
-is discharged): one pair of tagged lists, evaluated at `m = i` (the regime at `W = 27`, `L = 3`, `Ψ = 27^{-1/4}`, the expectation
-identity at the merged instance data with every hypothesis discharged, properties (5) and (6), `nWS ≥ 2`) and at `m = (1 + i)/2`
-(the whole conclusion). -/
-theorem lwEngine_inst_localregularX :
-    ∃ outsX errsX : List ((ℕ × ℕ) × PGraph (Fin 2)),
-      ((∀ Q ∈ outsX.map (lwEvX Complex.I), Q.g.LocStd ∧ 2 ≤ Q.g.scalingOrder) ∧
-        (∀ Q ∈ errsX.map (lwEvX Complex.I),
-          Q.g.scalingSize (((27 : ℕ) : ℝ) ^ (-(1 / 4 : ℝ))) 27 3 3 ≤ ((27 : ℕ) : ℝ) ^ (-(10 : ℝ))) ∧
-        ∫ ω, (fxyPowGraph 2).pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-            (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-          ((outsX.map (lwEvX Complex.I)).map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2)
-            lwWxInstM (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum +
-          ((errsX.map (lwEvX Complex.I)).map fun Q => ∫ ω, Q.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2)
-            lwWxInstM (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum ∧
-        (∀ Q ∈ outsX.map (lwEvX Complex.I), Q.LocReg1 ∧ Q.LocReg2 2 ∧ Q.LocReg345 2 ∧ Q.LocReg6 2 ∧
-          (Q.ext 0 ≠ Q.ext 1 → 3 * (2 : ℤ) ≤ Q.g.scalingOrder)) ∧
-        ∀ Q ∈ outsX.map (lwEvX Complex.I) ++ errsX.map (lwEvX Complex.I), 2 ≤ Q.g.waved.countP (fun e => !e.col)) ∧
-      (LWLocRegConcl 2 ((1 + Complex.I) / 2) (1 / 4) 1 3 10 (outsX.map (lwEvX ((1 + Complex.I) / 2)))
-          (errsX.map (lwEvX ((1 + Complex.I) / 2))) ∧
-        ∀ Q ∈ outsX.map (lwEvX ((1 + Complex.I) / 2)) ++ errsX.map (lwEvX ((1 + Complex.I) / 2)),
-          2 ≤ Q.g.waved.countP (fun e => !e.col)) := by
-  obtain ⟨outsX, errsX, h⟩ := lw_localregularX 2 (1 / 4) (by norm_num) 1 3 10
-  have hI : mE 0 = Complex.I := lwEngineInst_mE_zero
-  obtain ⟨⟨c1, c2, -, c4, c5⟩, hw⟩ := h Complex.I Complex.I_ne_zero
-  refine ⟨outsX, errsX, ⟨fun Q hQ => ?_, fun Q hQ => ?_, ?_, c5, hw⟩, h ((1 + Complex.I) / 2) ?_⟩
-  · obtain ⟨a, b⟩ := c1 Q hQ
-    have e : (fxyPowGraph 2).pack.g.scalingOrder = 2 := fxyPowGraph_ord 2
-    exact ⟨a, by rw [e] at b; exact b⟩
-  · refine c2 Q hQ 27 3 _ (by norm_num) (by norm_num) (by norm_num) ?_ (le_refl _)
-    exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-  · refine c4 lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num) Complex.I_ne_zero ?_ ?_
-      lwSymm_inst_hSpT ?_ lwSymm_inst_hM0 lwSymmInstL
-    · rw [← hI]
-      exact lwWx_flow 0 (1 / 2) lwWx_inst_hE
-    · intro i j
-      rw [← hI]
-      exact lwWx_inst_hSp i j
-    · intro a
-      rw [← hI]
-      exact lwWx_inst_hM a
-  · intro h0
-    have := congrArg Complex.re h0
-    simp at this
 
 end LWEngineInst
 

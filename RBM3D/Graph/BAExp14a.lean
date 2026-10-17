@@ -622,15 +622,6 @@ theorem BAExp14a_T_MM_supp (Wk Mm : Idx d L W → Idx d L W → ℂ)
   · rw [hMo x β h]
     simp
 
-/-- `J_MM(x,y) = Σ_α X_{[α]} Σ_β Wk_{αβ} M_{xβ} M_{βy}`: `|J| ≤ a S CM`. -/
-theorem BAExp14a_J_MM_le (X : Zd d L → ℂ) (Wk Mm : Idx d L W → Idx d L W → ℂ) {a S CM : ℝ}
-    (ha : ∀ c, ‖X c‖ ≤ a) (hWk : ∀ β, ∑ α, ‖Wk α β‖ ≤ S) (hM1 : ∀ x y, ‖Mm x y‖ ≤ 1)
-    (hMr : ∀ x, ∑ y, ‖Mm x y‖ ≤ CM) (x y : Idx d L W) :
-    ‖∑ α, X (split d L W α).1 * ∑ β, Wk α β * Mm x β * Mm β y‖ ≤ a * (S * CM) := by
-  have ha0 : 0 ≤ a := (norm_nonneg _).trans (ha 0)
-  exact (BAExp14a_sum_X_le X _ ha).trans
-    (mul_le_mul_of_nonneg_left (BAExp14a_T_MM_l1 Wk Mm hWk hM1 hMr x y) ha0)
-
 /-- **Schur / AM-GM**: `Σ_{w,γ} |M_{wγ}| v_γ u_w ≤ (CM/2)(Σ_γ v_γ² + Σ_w u_w²)` (row and column sums of `|M|` at most `CM`). -/
 theorem BAExp14a_schur (Mm : Idx d L W → Idx d L W → ℂ) {CM : ℝ} (hMr : ∀ x, ∑ y, ‖Mm x y‖ ≤ CM)
     (hMc : ∀ y, ∑ x, ‖Mm x y‖ ≤ CM) (u v : Idx d L W → ℝ) :

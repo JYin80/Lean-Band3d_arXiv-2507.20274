@@ -55,7 +55,7 @@ noncomputable section
 namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
-open RBM.Ind (QProxyG_KerEK4 QProxyG_KerEK4Fam altYGridNg startLevelQNg qProxyG_kerEK4_band qProxy4C qProxy4C_pos qProxyG_kerEK4_band_at)
+open RBM.Ind (QProxyG_KerEK4 QProxyG_KerEK4Fam altYGridNg startLevelQNg qProxy4C qProxy4C_pos qProxyG_kerEK4_band_at)
 
 /-! ## 1. Target 11: the round texts -/
 
@@ -83,21 +83,6 @@ def STOeqQtRoundPTgL'' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
   STIngRgL d STCaseI law Flow mk T0 (fun sz z s t => STXiRoundPTgL'' (mk sz z) (law sz) s t)
 
 end Texts
-
-section TextBridges
-
-variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ)
-
-/-- The band round pin is the carrier text at the band carrier (the band file is not edited). -/
-theorem bandFM_STXiRoundPT'' : STXiRoundPT'' sz E s t ↔ STXiRoundPTgL'' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
-
-end TextBridges
-
-/-- The band family pin `STOeqQtRoundPT'' d` is the carrier family text at the band family, through `bandFM_STIngR`. -/
-theorem bandFM_STOeqQtRoundPT'' (d : ℕ) :
-    STOeqQtRoundPT'' d ↔ STOeqQtRoundPTgL'' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STCaseI (fun sz E s t => STXiRoundPT'' sz E s t)
 
 /-! ## 2. Helpers over a carrier (generic forms of `QEndB1` §0-§5, private) -/
 
@@ -1019,107 +1004,12 @@ The band family `(seqP, STFlow, bandStep2Mat · (STflowE ·), lemT)`, `Hf = seqH
 discharges of `stOeqNQPTgL''_band` (`Chain/NQEndFlowGen.lean`); row 8 (D1) is `qProxyG_kerEK4_band`; row 9 is `step5KerGen_thDecay_band` (the constant does not depend on
 `κ`, so the `∃ C₆` after `κ` is the same one) and `b45Gen_facts_band`.  No hypothesis is left open: the pin is a theorem at every `d ≥ 3`. -/
 
-section BandReDerivation
-
-namespace QEndB1GenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- The energy of a flow is in the bulk: `|E(z)| ≤ |Re z| ≤ 2 - κ` (`abs_lemE_le`). -/
-private theorem flow_abs_le {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (ST_flow_im_pos sz hz n)).trans (hz.2 n).1
-
-/-- **The band re-derivation of `stOeqQtRoundPT''_holds` at every `d ≥ 3`** through `stOeqQtRoundPTgL''_of`: every row of the family-premise table is discharged at the
-band family; the generic pin `STOeqQtRoundPTgL''` holds with no open hypothesis. -/
-theorem stOeqQtRoundPTgL''_band (d : ℕ) (hd : 3 ≤ d) :
-    STOeqQtRoundPTgL'' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n)) :=
-  stOeqQtRoundPTgL''_of d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz z => seqHflow sz) (fun _ z => STflowE z)
-    (fun sz _ => sz.lam) (fun sz _ => sz.lam) (fun _ _ _ => 0) (fun _ => 1)
-    ((bandFM_STSEforLn d).1 (stSEforLn_holds d)) (Step2EventsGen_bandFlow d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => ⟨Real.sqrt κ / 2, DecayGen_bandSpec sz hκ (flow_abs_le hz)⟩)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stepDecompGen_loopForm_band sz _ fun n => (flow_abs_le hz n).trans_lt (by linarith))
-    (fun sz κ ε 𝔠 𝔡 z _ _ => stepDecompGen_walkForm_band sz _)
-    (fun sz z => Step2EventsGen_bandLaw sz _) (fun sz z => bandStep34_LCompat sz _)
-    (fun sz z => DecayGen_bandWardPair sz _)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => bandFM_STKcalDecay hd sz hκ hz.1 (flow_abs_le hz))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz s t hs hst ht1 hU k hk σ =>
-      stEtermDecay hd sz hκ (flow_abs_le hz) hz.1 hs hst ht1 ((bandFM_STDecayLoopU sz _ s t).2 hU) k hk σ)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz n => (norm_mE (by linarith [flow_abs_le hz n])).le)
-    (fun sz z n => rfl) (fun sz z n a => hierDriftGen_SB_row sz n a)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz n => gridRepTailGen_ker_band sz _ n (by linarith [flow_abs_le hz n]))
-    (fun sz z n w k σ a => rfl)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall fun n s' t' K' =>
-      hierDriftGen_expand_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith)) s' t' K' n)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_kLoop_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_kTwo_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_uStep_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (nqGoodGen_kerNAL_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => ⟨le_rfl, fun n => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩⟩)
-    (fun sz κ ε 𝔠 𝔡 z hκ hε hz => ⟨ε / 2, half_pos hε, (Green.v3_premises_of_stFlow sz hκ hε hz (fun n => le_rfl)).2.2.2⟩)
-    (qProxyG_kerEK4_band d)
-    (fun 𝔡 h𝔡 κ hκ => by
-      obtain ⟨C₆, hC₆, h⟩ := step5KerGen_thDecay_band d 𝔡⁻¹ hd (inv_pos.2 h𝔡)
-      exact ⟨C₆, hC₆, fun sz ε 𝔠 z hz => h sz (STflowE z) fun n => (flow_abs_le hz n).trans (by linarith)⟩)
-    (b45Gen_facts_band d)
-
-/-- `stOeqQtRoundPTgL''_band` at `d = 3` (used by the instances of §5). -/
-theorem stOeqQtRoundPTgL''_band3 : STOeqQtRoundPTgL'' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n)) :=
-  stOeqQtRoundPTgL''_band 3 le_rfl
-
-end QEndB1GenCheck
-
-/-- **Band re-derivation of `stOeqQtRoundPT''_holds`** (`QEndB1:1841`, the same statement `∀ d, STOeqQtRoundPT'' d`): for `3 ≤ d` the band pin from the generic one
-(`stOeqQtRoundPTgL''_band`) through `bandFM_STOeqQtRoundPT''`; for `d < 3` the pin is vacuous (`STIngRgL` starts with `3 ≤ d →`). -/
-theorem stOeqQtRoundPT''_holds_of_gen (d : ℕ) : STOeqQtRoundPT'' d := by
-  by_cases hd : 3 ≤ d
-  · exact (bandFM_STOeqQtRoundPT'' d).2 (QEndB1GenCheck.stOeqQtRoundPTgL''_band d hd)
-  · exact fun h => absurd h hd
-
-end BandReDerivation
-
 /-! ## 5. Compiled nonempty instances (`d = 3`)
 
 Data of the merged band instances (`Induction/Step34PinsP.lean:170-215`, `Induction/Defs.lean:435`): `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`:
 `L = 4`, `W = 32`, `N = 2^21`), the flow `z0` (`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`), `s ≡ 0`, `t ≡ 1/16`
 (`t ≤ lemT z0`, `STCaseI`: `sz0_caseI`; `(con_st_ind)` for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`.  What stays a hypothesis of an example is a stochastic premise that is
 another gate's pin (`STKboundgL`, `STKwardgL`, `STLKgL s`, `STStep2ConclgL`): they are the premises of `STIngRgL`. -/
-
-section Instances
-
-namespace QEndB1GenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- **Target 12 at the data**: the generic per-time pin `STOeqQtRoundPTgL''` (no open hypothesis, `stOeqQtRoundPTgL''_band3`, i.e. `stOeqQtRoundPTgL''_of` with all 25
-rows discharged at the band family) evaluated at `(sz0, z0)`, window `[0, 1/16]`, `C_d = 1`: given the four stochastic pins of `STIngRgL`, the per-time round
-`STXiRoundPTgL''` (target 11) holds for the band carrier. -/
-example (hKb : STKboundgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0)) (hKw : STKwardgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0))
-    (hLK : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst)
-    (hStep2 : STStep2ConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst 1) :
-    STXiRoundPTgL'' (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst := by
-  obtain ⟨𝔠d, h0, -, hC⟩ := stOeqQtRoundPTgL''_band3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) 1 one_pos
-  exact hC (1 / 6) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI hKb hKw hLK (sz0_con 𝔠d h0) hStep2
-
-/-- **Target 12, band corollary at the data**: the band pin `STOeqQtRoundPT'' 3` (`stOeqQtRoundPT''_holds_of_gen 3`) evaluated at `(sz0, z0)` by the merged `inst_ing`. -/
-example : InstIngConcl (fun sz E s t => STXiRoundPT'' sz E s t) sz0 z0 sInst tInst 1 :=
-  inst_ing STCaseI (fun sz E s t => STXiRoundPT'' sz E s t) (stOeqQtRoundPT''_holds_of_gen 3) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con 1 one_pos
-
-/-- **Target 11, the texts at the band** (`bandFM_STIngR`): the band pin is the generic one. -/
-example : STOeqQtRoundPT'' 3 ↔ STOeqQtRoundPTgL'' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := bandFM_STOeqQtRoundPT'' 3
-
-end QEndB1GenCheck
-
-end Instances
 
 end RBM.BA
 

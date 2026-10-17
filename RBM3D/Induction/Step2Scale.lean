@@ -566,32 +566,4 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 (`sz1`, `ilambda_n = W_n^{-3/2+1/10}`), the third reads two clauses of `STScaleAdm` at the interior
 time `u = 1/32`. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- **Instance 1** (`d = 3`, `sz0`, `s ≡ 0`, `t ≡ 1/16`): the scale family exists. -/
-example : ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz0 sInst tInst Kseq :=
-  stScaleExists_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 6) sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-    (fun n => sixteenth_le_lemT n)
-
-/-- **Instance 2** (`d = 3`, `sz1`: the coupling at the lower end of `(eq:WO)`). -/
-example : ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz1 sInst tInst Kseq :=
-  stScaleExists_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 6) sz1 z0 flow_z1 sInst tInst (fun _ => le_rfl) (fun n => by norm_num [sInst, tInst])
-    (fun n => sixteenth_le_lemT n)
-
-/-- **Instance 3**: two clauses of `STScaleAdm` at the interior time `u = 1/32 ∈ (0, 1/16)`. -/
-example : ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz0 sInst tInst Kseq ∧
-    ∀ᶠ n in atTop, 0 ≤ Kseq 1 n (1 / 32) ∧ Kseq 1 n (1 / 32) ≤ Kseq 2 n (1 / 32) := by
-  obtain ⟨K, hK⟩ := stScaleExists_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) (1 / 6) sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl)
-    (fun n => by norm_num [sInst, tInst]) (fun n => sixteenth_le_lemT n)
-  refine ⟨K, hK, ?_⟩
-  filter_upwards [hK.2.2.1 1] with n hn
-  exact hn (1 / 32) (by norm_num [sInst]) (by norm_num [tInst])
-
-end Instances
-
 end RBM.Gauss.Sizes

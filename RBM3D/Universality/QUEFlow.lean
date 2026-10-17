@@ -955,49 +955,6 @@ theorem g2bRow : UNG2bRow :=
 
 /-! ## 6. Compiled instances (`d = 3`, `sz0`, band kind; the owed pin `UNOUEq747k` stays a hypothesis) -/
 
-namespace QUEFlowInst
-
-open RBM.Gauss.SizesInst
-
-/-- `g2bRowk` at `UNKind.band 3`, `UNOUProfile.band 3`, applied at `sz0` (admissible at `𝔠 = 1/6`,
-`𝔡 = 1/10`) and `τ_U = 1/1000`: `UNOUQUEk` from `UNOUEq747k` (UN-51's pin, a hypothesis) and the row
-differences `UNOUProfRowk` (`unOUProfRowk_band`, discharged); no bound `τ_U ≤ ouTauMax` is used.  An anonymous
-`example`, not a named theorem: `UNOUEq747k` is in no list of `RBM.Audit` (`Test/Axioms.lean`), and the registry
-scan fails on a named theorem that carries an unlisted premise. -/
-example
-    (hE : UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (1 / 1000)) :
-    UNOUQUEk (UNKind.band 3) sz0 (1 / 10) (1 / 1000) :=
-  g2bRowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d) 3 le_rfl
-    (unOUProfRowk_band le_rfl) (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 1000) (by norm_num) hE
-
-/-- `g2bRow` (the band corollary) at `sz0`, `τ_U = 1/1000 ≤ ouTauMax = 1/720` (an `example`, as above). -/
-example (hE : UNOUEq747 sz0 (1 / 10) (1 / 1000)) :
-    UNOUQUE sz0 (1 / 10) (1 / 1000) :=
-  g2bRow 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 1000) (by norm_num)
-    (by rw [show ouTauMax (1 / 6) (1 / 10) = 1 / 720 by unfold ouTauMax; norm_num [min_def]]
-        norm_num) hE
-
-/-- The scale of `UNOUEq747k` is the scale of `queFixed` at `ε₀ = 𝔡/3`: `ouEtaQ sz 𝔡 n = etaQ sz n (𝔡/3)`
-(unfolding both definitions; used in `g2bRowk` where `hQn` is applied at `etaQ sz n (𝔡/3)`). -/
-theorem inst_ouEtaQ {d : ℕ} (sz : Sizes d) (𝔡 : ℝ) (n : ℕ) :
-    ouEtaQ sz 𝔡 n = etaQ sz n (𝔡 / 3) := rfl
-
-/-- The exponent identity of `queChain` at `(ε₀, c) = (𝔡/3, 𝔡/6)`, `𝔡 = 1/10`:
-`-(min (2𝔡/3) (2𝔡/5)) + 𝔡/3 + τ = -𝔡/15 + τ` (`2 ε₀ = 2𝔡/3 > 2𝔡/5`, so the minimum is `2𝔡/5`). -/
-theorem inst_exponent (τ : ℝ) :
-    -(min (2 * ((1 / 10 : ℝ) / 3)) (2 * (1 / 10 : ℝ) / 5)) + 2 * ((1 / 10 : ℝ) / 6) + τ =
-      -((1 / 10 : ℝ) / 15) + τ := by
-  norm_num [min_def]
-
-/-- The bound of `UNOUQUEk` at `𝔡 = 1/10`: `queBound W 𝔡 (𝔡/3) (𝔡/6) τ = W^{-𝔡/15 + τ}`. -/
-theorem inst_queBound (W : ℕ) (τ : ℝ) :
-    queBound W (1 / 10) ((1 / 10) / 3) ((1 / 10) / 6) τ =
-      ENNReal.ofReal ((W : ℝ) ^ (-((1 / 10 : ℝ) / 15) + τ)) := by
-  unfold queBound
-  rw [inst_exponent]
-
-end QUEFlowInst
-
 end RBM.Univ
 
 end

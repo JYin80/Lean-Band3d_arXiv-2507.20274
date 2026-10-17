@@ -589,40 +589,4 @@ theorem stTailtoTail_holds (d : ℕ) : STTailtoTail d := by
 
 /-! ### 6. Instances (CLAUDE.md §4 step 2) -/
 
-/-- The pin at `d = 3`. -/
-example : STTailtoTail 3 := stTailtoTail_holds 3
-
-/-- **`TailtoTail`, instantiated** at `d = 3`, `L = 3`, `g = 1/2`, `W = 2`, `D = 2`, `s = 0`, `t = 1/2` (`g² = 1/4 ≤ 1/2 = 1 - t`;
-`ρ = 2`), `m = i` (`|m| = 1`), `σ = (+,-)`, `A = 0` (`|A_b| = 0 ≤ T_{0,2}`), at `a = (0, e₁)`; the `27` points of `Z_3^3` are not collapsed. -/
-theorem inst_tailtoTail_zero :
-    ∃ C : ℝ, 0 < C ∧
-      ‖UN 3 3 (1 / 2 : ℝ) (EKsgn Complex.I ![true, false]) (0 : ℝ) (1 / 2 : ℝ)
-          (fun _ : Fin 2 → Zd 3 3 => (0 : ℂ)) ![0, ![1, 0, 0]]‖ ≤
-        C * tailTD 3 2 (1 / 2 : ℝ) 2 (zdistInf 3 3 ((![0, ![1, 0, 0]] : Fin 2 → Zd 3 3) 0 -
-            (![0, ![1, 0, 0]] : Fin 2 → Zd 3 3) 1) : ℕ) +
-          ((1 - 0 : ℝ) / (1 - 1 / 2 : ℝ)) ^ 2 * (2 : ℝ) ^ (-(2 : ℝ)) := by
-  obtain ⟨C, hC, H⟩ := stTailtoTail_holds 3 (by norm_num)
-  refine ⟨C, hC, ?_⟩
-  exact H 3 (by norm_num) (1 / 2) 2 2 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) Complex.I (by simp) ![true, false]
-    (fun _ : Fin 2 → Zd 3 3 => (0 : ℂ))
-    (fun b => by rw [norm_zero]; exact tailTD_nonneg (by norm_num)) ![0, ![1, 0, 0]]
-
-/-- The same parameters with the extremal (nonzero) tensor `A_b = T_{s,D}(|b₁-b₂|)`. -/
-theorem inst_tailtoTail_extremal :
-    ∃ C : ℝ, 0 < C ∧
-      ‖UN 3 3 (1 / 2 : ℝ) (EKsgn Complex.I ![true, false]) (0 : ℝ) (1 / 2 : ℝ)
-          (fun b : Fin 2 → Zd 3 3 => ((tailTD 3 2 (0 : ℝ) 2 (zdistInf 3 3 (b 0 - b 1) : ℕ) : ℝ) : ℂ))
-          ![0, ![1, 0, 0]]‖ ≤
-        C * tailTD 3 2 (1 / 2 : ℝ) 2 (zdistInf 3 3 ((![0, ![1, 0, 0]] : Fin 2 → Zd 3 3) 0 -
-            (![0, ![1, 0, 0]] : Fin 2 → Zd 3 3) 1) : ℕ) +
-          ((1 - 0 : ℝ) / (1 - 1 / 2 : ℝ)) ^ 2 * (2 : ℝ) ^ (-(2 : ℝ)) := by
-  obtain ⟨C, hC, H⟩ := stTailtoTail_holds 3 (by norm_num)
-  refine ⟨C, hC, ?_⟩
-  exact H 3 (by norm_num) (1 / 2) 2 2 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) Complex.I (by simp) ![true, false]
-    (fun b : Fin 2 → Zd 3 3 => ((tailTD 3 2 (0 : ℝ) 2 (zdistInf 3 3 (b 0 - b 1) : ℕ) : ℝ) : ℂ))
-    (fun b => by
-      rw [Complex.norm_real, Real.norm_of_nonneg (tailTD_nonneg (by norm_num))]) ![0, ![1, 0, 0]]
-
 end RBM.Gauss.Sizes

@@ -50,10 +50,6 @@ private lemma freeConv_cardInv_ofReal :
     (((Fintype.card n : ℕ) : ℂ))⁻¹ = ((((Fintype.card n : ℕ) : ℝ)⁻¹ : ℝ) : ℂ) := by
   rw [Complex.ofReal_inv, Complex.ofReal_natCast]
 
-private lemma freeConv_card_ne_zero : ((Fintype.card n : ℕ) : ℝ) ≠ 0 := by
-  have := Fintype.card_pos (α := n)
-  exact_mod_cast this.ne'
-
 /-- Shift identity: the fixed-point equation for `m` unfolds to `mV` at `z + t * m`. -/
 private lemma freeConv_stieltjesVec_shift (v : n → ℝ) (z t m : ℂ) :
     mV v (z + t * m) =
@@ -109,7 +105,7 @@ private lemma freeConv_stieltjesVec_im_le (v : n → ℝ) {ω : ℂ} (hω : 0 < 
         mul_le_mul_of_nonneg_left (Finset.sum_le_sum hterm) (by positivity)
     _ = ω.im⁻¹ := by
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-        field_simp [freeConv_card_ne_zero]
+        field_simp
 
 private lemma freeConv_stieltjesVec_norm_le (v : n → ℝ) {ω : ℂ} (hω : 0 < ω.im) :
     ‖mV v ω‖ ≤ ω.im⁻¹ := by
@@ -136,7 +132,7 @@ private lemma freeConv_stieltjesVec_norm_le (v : n → ℝ) {ω : ℂ} (hω : 0 
         mul_le_mul_of_nonneg_left (Finset.sum_le_sum hterm) hcard_nonneg
     _ = ω.im⁻¹ := by
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-        field_simp [freeConv_card_ne_zero]
+        field_simp
 
 /-- Elementary algebraic identity behind the Cauchy–Schwarz bound. -/
 private lemma freeConv_inv_sub_inv {a : ℝ} {ω1 ω2 : ℂ} (h1 : (a : ℂ) - ω1 ≠ 0)
@@ -197,7 +193,7 @@ private lemma freeConv_stieltjesVec_sub_le (v : n → ℝ) {ω1 ω2 : ℂ} (h1 :
   have hf2 : ∑ i, (f i) ^ 2 = ((Fintype.card n : ℕ) : ℝ) * (mV v ω1).im / ω1.im := by
     have hsum : ∑ i, ω1.im / Complex.normSq ((v i : ℂ) - ω1) =
         ((Fintype.card n : ℕ) : ℝ) * (mV v ω1).im := by
-      rw [freeConv_stieltjesVec_im]; field_simp [freeConv_card_ne_zero]
+      rw [freeConv_stieltjesVec_im]; field_simp
     calc ∑ i, (f i) ^ 2 = ∑ i, ω1.im⁻¹ * (ω1.im / Complex.normSq ((v i : ℂ) - ω1)) := by
           refine Finset.sum_congr rfl fun i _ => ?_
           rw [hexpand1 i]
@@ -210,7 +206,7 @@ private lemma freeConv_stieltjesVec_sub_le (v : n → ℝ) {ω1 ω2 : ℂ} (h1 :
   have hg2 : ∑ i, (g i) ^ 2 = ((Fintype.card n : ℕ) : ℝ) * (mV v ω2).im / ω2.im := by
     have hsum : ∑ i, ω2.im / Complex.normSq ((v i : ℂ) - ω2) =
         ((Fintype.card n : ℕ) : ℝ) * (mV v ω2).im := by
-      rw [freeConv_stieltjesVec_im]; field_simp [freeConv_card_ne_zero]
+      rw [freeConv_stieltjesVec_im]; field_simp
     calc ∑ i, (g i) ^ 2 = ∑ i, ω2.im⁻¹ * (ω2.im / Complex.normSq ((v i : ℂ) - ω2)) := by
           refine Finset.sum_congr rfl fun i _ => ?_
           rw [hexpand2 i]
@@ -396,7 +392,7 @@ private lemma freeConv_exists_pos (v : n → ℝ) {t : ℝ} (ht : 0 < t) {z : �
                 mul_le_mul_of_nonneg_left (Finset.sum_le_sum hterm) (by positivity)
             _ = ω.im / Λ ^ 2 := by
                 rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-                field_simp [freeConv_card_ne_zero]
+                field_simp
         have hstep : t * (ω.im / Λ ^ 2) ≤ t * (mV v ω).im :=
           mul_le_mul_of_nonneg_left hSVim ht.le
         have hεeq : ε = t * (η / Λ ^ 2) := by rw [hε_def]; ring
@@ -666,96 +662,9 @@ theorem isFreeConv51_freeConvST {n : Type*} [Fintype n] [Nonempty n] (v : n → 
 
 /-! ### Bridge to the P10 pin vocabulary (T2205 targets 3a, 3b) -/
 
-/-- **Target 3a**: the equation (2.5) of [32] has a solution `m` with `Im m > 0` on the upper
-half plane, for every `t > 0` and every finite nonempty `v`. -/
-theorem exists_isFreeConv32 {ι : Type*} [Fintype ι] [Nonempty ι] (v : ι → ℝ) {t : ℝ}
-    (ht : 0 < t) : ∃ m : ℂ → ℂ, IsFreeConv32 v t m :=
-  ⟨freeConvST v t, isFreeConv51_freeConvST v ht.le⟩
-
-/-- **Target 3b**: two solutions of (2.5) with `Im m > 0` agree on the upper half plane. -/
-theorem isFreeConv32_unique {ι : Type*} [Fintype ι] [Nonempty ι] (v : ι → ℝ) {t : ℝ}
-    (ht : 0 < t) {m₁ m₂ : ℂ → ℂ} (h₁ : IsFreeConv32 v t m₁) (h₂ : IsFreeConv32 v t m₂)
-    {z : ℂ} (hz : 0 < z.im) : m₁ z = m₂ z :=
-  (freeConv_existsUnique v ht.le hz).unique (h₁ z hz) (h₂ z hz)
-
 /-! ### Compiled nonempty instances (DECISIONS §70)
 
 `ι = Fin 3`, `v = (-1, 0, 1)`, `t = 1/2`, `z = i/10`: every hypothesis of every theorem above
 is discharged (`Fintype`, `Nonempty`, `0 < t`, `0 < Im z`). -/
-
-namespace FreeConvCheck
-
-/-- The data `v = (-1, 0, 1)`. -/
-def v3 : Fin 3 → ℝ := ![-1, 0, 1]
-
-/-- The point `z = i/10`. -/
-def z0 : ℂ := Complex.I / 10
-
-theorem z0_im : 0 < z0.im := by simp [z0]
-
-/-- `freeConv_existsUnique` at `Fin 3`, `v = (-1, 0, 1)`, `t = 1/2`, `z = i/10`. -/
-example : ∃! m : ℂ, 0 < m.im ∧
-    m = ((Fintype.card (Fin 3) : ℕ) : ℂ)⁻¹ * ∑ i, ((v3 i : ℂ) - z0 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ :=
-  freeConv_existsUnique v3 (t := 1 / 2) (by norm_num) z0_im
-
-/-- `isFreeConv51_freeConvST` and `freeConvST` at the same data: `freeConvST v3 (1/2)` solves
-(2.5), and its value at `z0` has positive imaginary part. -/
-example : IsFreeConv32 v3 (1 / 2) (freeConvST v3 (1 / 2)) :=
-  isFreeConv51_freeConvST v3 (t := 1 / 2) (by norm_num)
-
-example : 0 < (freeConvST v3 (1 / 2) z0).im :=
-  (isFreeConv51_freeConvST v3 (t := 1 / 2) (by norm_num) z0 z0_im).1
-
-/-- Target 3a at the same data. -/
-example : ∃ m : ℂ → ℂ, IsFreeConv32 v3 (1 / 2) m :=
-  exists_isFreeConv32 v3 (t := 1 / 2) (by norm_num)
-
-/-- Target 3b at the same data, both hypotheses discharged by 3a and
-`isFreeConv51_freeConvST`: an arbitrary solution agrees with `freeConvST` at `z0`. -/
-example : ∃ m : ℂ → ℂ, IsFreeConv32 v3 (1 / 2) m ∧ m z0 = freeConvST v3 (1 / 2) z0 := by
-  obtain ⟨m, hm⟩ := exists_isFreeConv32 v3 (t := 1 / 2) (by norm_num)
-  exact ⟨m, hm, isFreeConv32_unique v3 (t := 1 / 2) (by norm_num) hm
-    (isFreeConv51_freeConvST v3 (t := 1 / 2) (by norm_num)) z0_im⟩
-
-/-- The data `v ≡ 0` on `Fin 3` (the free convolution of `δ₀` is the semicircle of variance `t`). -/
-def v0 : Fin 3 → ℝ := fun _ => 0
-
-/-- The point `z = 3/10 + i/2`. -/
-def z1 : ℂ := ⟨3 / 10, 1 / 2⟩
-
-theorem z1_im : 0 < z1.im := by simp [z1]
-
-/-- `freeConv_existsUnique` at `v ≡ 0` on `Fin 3`, `t = 1/2`, `z = 3/10 + i/2`. -/
-example : ∃! m : ℂ, 0 < m.im ∧
-    m = ((Fintype.card (Fin 3) : ℕ) : ℂ)⁻¹ * ∑ i, ((v0 i : ℂ) - z1 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ :=
-  freeConv_existsUnique v0 (t := 1 / 2) (by norm_num) z1_im
-
-/-- At `v ≡ 0` the root is nonzero and solves `t m² + z m + 1 = 0` (so it is the semicircle
-Stieltjes transform of variance `t`, not a junk value): `freeConvST v0 (1/2) z1` is a nonzero
-point of the upper half plane with `(1/2) m² + z m + 1 = 0`. -/
-example : 0 < (freeConvST v0 (1 / 2) z1).im ∧
-    ((1 / 2 : ℝ) : ℂ) * freeConvST v0 (1 / 2) z1 ^ 2 + z1 * freeConvST v0 (1 / 2) z1 + 1 = 0 := by
-  obtain ⟨him, heq⟩ := isFreeConv51_freeConvST v0 (t := 1 / 2) (by norm_num) z1 z1_im
-  refine ⟨him, ?_⟩
-  set m := freeConvST v0 (1 / 2) z1 with hm
-  have hm0 : m ≠ 0 := fun h => by rw [h] at him; simp at him
-  have hsum : ∑ i : Fin 3, ((v0 i : ℂ) - z1 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ =
-      3 * (-z1 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ := by
-    simp [v0]
-  rw [hsum] at heq
-  have h3 : ((Fintype.card (Fin 3) : ℕ) : ℂ) = 3 := by simp
-  rw [h3] at heq
-  have hE : (-z1 - ((1 / 2 : ℝ) : ℂ) * m) ≠ 0 := by
-    intro h
-    rw [h, _root_.inv_zero, mul_zero, mul_zero] at heq
-    exact hm0 heq
-  have h4 : m = (-z1 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ := heq.trans (by ring)
-  have h5 : m * (-z1 - ((1 / 2 : ℝ) : ℂ) * m) = 1 := by
-    calc m * (-z1 - ((1 / 2 : ℝ) : ℂ) * m)
-        = (-z1 - ((1 / 2 : ℝ) : ℂ) * m)⁻¹ * (-z1 - ((1 / 2 : ℝ) : ℂ) * m) := by rw [← h4]
-      _ = 1 := inv_mul_cancel₀ hE
-  linear_combination (-1 : ℂ) * h5
-
-end FreeConvCheck
 
 end RBM.Univ

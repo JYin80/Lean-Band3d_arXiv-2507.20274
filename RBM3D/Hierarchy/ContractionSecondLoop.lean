@@ -249,62 +249,6 @@ theorem sum_coordinateBlock_trace_pair
   rw [sum_allCoords_trace_blocks]
   rw [blockRelabel_submatrix_split, blockRelabel_submatrix_split]
 
-/-- One actual second Green derivative produces a twice-weighted same-edge
-`A B C B` contraction. The trace rotation puts the fixed block projector
-inside `A = G Eₐ G`. `RBM2D/Hierarchy/ContractionSecondLoopSameEdge.lean:77`. -/
-theorem trace_gsigCoordinateSecondDeriv_Eblk
-    (u : ℝ) (hu : 0 ≤ u) (ω : Ω d L W)
-    (γ : CoordF d L W) (z : ℂ) (s : Bool) (a : Zd d L) :
-    let G := Gres (HflowBlock d L W u ω) z s
-    Matrix.trace (gsigCoordinateSecondDeriv d L W u ω γ z s * Eblk d L W a) =
-      (2 : ℂ) * (u : ℂ) *
-        Matrix.trace ((G * Eblk d L W a * G) * coordinateBlock d L W γ * G *
-          coordinateBlock d L W γ) := by
-  let G := Gres (HflowBlock d L W u ω) z s
-  let E := Eblk d L W a
-  let D := coordinateBlock d L W γ
-  let B := Real.sqrt u • D
-  have hcyc : Matrix.trace (G * B * G * B * G * E) =
-      Matrix.trace ((G * E * G) * B * G * B) := by
-    simpa only [Matrix.mul_assoc] using Matrix.trace_mul_comm (G * B * G * B) (G * E)
-  change Matrix.trace (((2 : ℝ) • (G * B * G * B * G)) * E) =
-    (2 : ℂ) * (u : ℂ) * Matrix.trace ((G * E * G) * D * G * D)
-  rw [smul_mul_assoc, Matrix.trace_smul, hcyc, trace_two_smul d L W u hu]
-  simp only [two_smul, two_mul]
-  ring
-
-/-- Gaussian variance contraction of the actual second derivative at one
-Green edge. The first trace contains the two-edge loop `G Eₐ G Eₚ`, and the
-second trace is the one-edge loop `G E_q`.
-`RBM2D/Hierarchy/ContractionSecondLoopSameEdge.lean:101`. -/
-theorem sum_gsigCoordinateSecondDeriv_Eblk
-    (u : ℝ) (hu : 0 ≤ u) (ω : Ω d L W)
-    (z : ℂ) (s : Bool) (a : Zd d L) :
-    let G := Gres (HflowBlock d L W u ω) z s
-    ∑ γ : CoordF d L W,
-      (((gvarF d L W g γ : ℝ) : ℂ) *
-        Matrix.trace (gsigCoordinateSecondDeriv d L W u ω γ z s * Eblk d L W a)) =
-    (2 : ℂ) * (u : ℂ) * (W : ℂ) ^ d *
-      ∑ p : Zd d L, ∑ q : Zd d L,
-        Matrix.trace ((G * Eblk d L W a * G) * Eblk d L W p) * SB d L g p q *
-          Matrix.trace (G * Eblk d L W q) := by
-  dsimp only
-  simp_rw [trace_gsigCoordinateSecondDeriv_Eblk d L W u hu ω]
-  calc
-    _ = ((2 : ℂ) * (u : ℂ)) * ∑ γ : CoordF d L W,
-          (((gvarF d L W g γ : ℝ) : ℂ) *
-            Matrix.trace ((Gres (HflowBlock d L W u ω) z s * Eblk d L W a *
-              Gres (HflowBlock d L W u ω) z s) *
-              coordinateBlock d L W γ *
-              Gres (HflowBlock d L W u ω) z s *
-              coordinateBlock d L W γ)) := by
-        rw [Finset.mul_sum]
-        refine Finset.sum_congr rfl fun γ _ => ?_
-        ring
-    _ = _ := by
-      rw [sum_coordinateBlock_trace_pair d L W g]
-      ring
-
 end Sec2
 
 /-! ## 3. A same-edge second derivative inside a finite matrix word
@@ -532,22 +476,6 @@ theorem edgeSplits_prefix_lengths {α : Type*} (l : List α) :
       rw [← ih, List.map_map]
       rfl
 
-/-- Each valid position occurs exactly once in the edge-split enumeration.
-`RBM2D/Hierarchy/ContractionEdgeSplits.lean:52`. -/
-theorem edgeSplits_unique_position {α : Type*} (l : List α)
-    (i : ℕ) (hi : i < l.length) :
-    ∃! e : EdgeSplit α, e ∈ edgeSplits l ∧ e.before.length = i := by
-  have hmap : ((edgeSplits l).map (fun e => e.before.length)).Nodup := by
-    rw [edgeSplits_prefix_lengths]
-    exact List.nodup_range
-  have himem : i ∈ (edgeSplits l).map (fun e => e.before.length) := by
-    rw [edgeSplits_prefix_lengths]
-    exact List.mem_range.mpr hi
-  obtain ⟨e, he, heq⟩ := List.mem_map.mp himem
-  refine ⟨e, ⟨he, heq⟩, ?_⟩
-  intro d ⟨hd, hdeq⟩
-  exact (List.inj_on_of_nodup_map hmap he hd (heq.trans hdeq.symm)).symm
-
 end Sec5
 
 /-! ## 6. Enumerating two ordered edges of a finite word
@@ -592,66 +520,6 @@ theorem pairSplits_reconstruct {α : Type*} (l : List α)
   have hinner := edgeSplits_reconstruct e.after f hf
   simpa only [List.append_assoc, List.cons_append] using
     (hinner ▸ houter)
-
-/-- An enumerated pair always consists of two valid increasing positions.
-`RBM2D/Hierarchy/ContractionPairSplits.lean:50`. -/
-theorem pairSplits_positions_valid {α : Type*} (l : List α)
-    (p : PairSplit α) (hp : p ∈ pairSplits l) :
-    p.before.length < p.before.length + 1 + p.middle.length ∧
-      p.before.length + 1 + p.middle.length < l.length := by
-  have h := pairSplits_reconstruct l p hp
-  have hlen : l.length =
-      p.before.length + 1 + p.middle.length + 1 + p.after.length := by
-    rw [← h, List.length_append, List.length_cons, List.length_append,
-      List.length_cons]
-    omega
-  omega
-
-private theorem edgeSplits_injective_position {α : Type*} (l : List α)
-    (e d : EdgeSplit α) (he : e ∈ edgeSplits l) (hd : d ∈ edgeSplits l)
-    (h : e.before.length = d.before.length) : e = d := by
-  have hnodup : ((edgeSplits l).map (fun x => x.before.length)).Nodup := by
-    rw [edgeSplits_prefix_lengths]
-    exact List.nodup_range
-  exact List.inj_on_of_nodup_map hnodup he hd h
-
-private theorem pairSplits_injective_positions {α : Type*} (l : List α)
-    (p q : PairSplit α) (hp : p ∈ pairSplits l) (hq : q ∈ pairSplits l)
-    (hfirst : p.before.length = q.before.length)
-    (hsecond : p.middle.length = q.middle.length) : p = q := by
-  obtain ⟨e, he, f, hf, rfl⟩ := (mem_pairSplits_iff l p).mp hp
-  obtain ⟨d, hd, g, hg, rfl⟩ := (mem_pairSplits_iff l q).mp hq
-  have hed : e = d := edgeSplits_injective_position l e d he hd hfirst
-  subst d
-  have hfg : f = g := edgeSplits_injective_position e.after f g hf hg hsecond
-  subst g
-  rfl
-
-/-- Every ordered pair of distinct positions occurs exactly once.
-`RBM2D/Hierarchy/ContractionPairSplits.lean:83`. -/
-theorem pairSplits_unique_positions {α : Type*} (l : List α)
-    (i j : ℕ) (hij : i < j) (hj : j < l.length) :
-    ∃! p : PairSplit α,
-      p ∈ pairSplits l ∧ p.before.length = i ∧
-        p.before.length + 1 + p.middle.length = j := by
-  obtain ⟨e, ⟨he, hei⟩, _⟩ := edgeSplits_unique_position l i (lt_trans hij hj)
-  have hlen : l.length = e.before.length + 1 + e.after.length := by
-    have h := edgeSplits_reconstruct l e he
-    rw [← h, List.length_append, List.length_cons]
-    omega
-  have hk : j - (i + 1) < e.after.length := by omega
-  obtain ⟨f, ⟨hf, hfk⟩, _⟩ :=
-    edgeSplits_unique_position e.after (j - (i + 1)) hk
-  let p : PairSplit α := ⟨e.before, e.selected, f.before, f.selected, f.after⟩
-  have hp : p ∈ pairSplits l := (mem_pairSplits_iff l p).mpr ⟨e, he, f, hf, rfl⟩
-  refine ⟨p, ⟨hp, hei, ?_⟩, ?_⟩
-  · dsimp [p]
-    omega
-  · intro q ⟨hq, hqi, hqj⟩
-    apply pairSplits_injective_positions l q p hq hp
-    · exact hqi.trans hei.symm
-    · dsimp [p] at hqj ⊢
-      omega
 
 end Sec6
 
@@ -945,42 +813,6 @@ theorem coordinateWordProduct_eq_gloopProd
   unfold coordinateWordProduct gloopProd segmentLoopIdx
   rw [zip_segment_projections d L l]
 
-/-- Both segments of a one-edge split have genuine, well-formed loop words.
-`RBM2D/Hierarchy/ContractionPositionLoopBridge.lean:47`. -/
-theorem edgeSplit_segment_products
-    (u : ℝ) (ω : Ω d L W) (z : ℂ)
-    (e : EdgeSplit (Bool × Zd d L)) :
-    (segmentLoopIdx d L e.before).WF ∧
-      (segmentLoopIdx d L e.after).WF ∧
-      coordinateWordProduct d L W u ω z e.before =
-        gloopProd d L W (HflowBlock d L W u ω) z (segmentLoopIdx d L e.before) ∧
-      coordinateWordProduct d L W u ω z e.after =
-        gloopProd d L W (HflowBlock d L W u ω) z (segmentLoopIdx d L e.after) := by
-  exact ⟨segmentLoopIdx_WF d L e.before, segmentLoopIdx_WF d L e.after,
-    coordinateWordProduct_eq_gloopProd d L W u ω z e.before,
-    coordinateWordProduct_eq_gloopProd d L W u ω z e.after⟩
-
-/-- All three segments of a two-edge split have genuine, well-formed loop
-words, and their products agree with the coordinate-derivative convention.
-`RBM2D/Hierarchy/ContractionPositionLoopBridge.lean:62`. -/
-theorem pairSplit_segment_products
-    (u : ℝ) (ω : Ω d L W) (z : ℂ)
-    (p : PairSplit (Bool × Zd d L)) :
-    (segmentLoopIdx d L p.before).WF ∧
-      (segmentLoopIdx d L p.middle).WF ∧
-      (segmentLoopIdx d L p.after).WF ∧
-      coordinateWordProduct d L W u ω z p.before =
-        gloopProd d L W (HflowBlock d L W u ω) z (segmentLoopIdx d L p.before) ∧
-      coordinateWordProduct d L W u ω z p.middle =
-        gloopProd d L W (HflowBlock d L W u ω) z (segmentLoopIdx d L p.middle) ∧
-      coordinateWordProduct d L W u ω z p.after =
-        gloopProd d L W (HflowBlock d L W u ω) z (segmentLoopIdx d L p.after) := by
-  exact ⟨segmentLoopIdx_WF d L p.before, segmentLoopIdx_WF d L p.middle,
-    segmentLoopIdx_WF d L p.after,
-    coordinateWordProduct_eq_gloopProd d L W u ω z p.before,
-    coordinateWordProduct_eq_gloopProd d L W u ω z p.middle,
-    coordinateWordProduct_eq_gloopProd d L W u ω z p.after⟩
-
 end Sec10
 
 /-! ## 11. The same-edge cut formula at one enumerated loop position
@@ -1019,29 +851,6 @@ theorem sum_coordinateSameEdgeTerm_cutLoops
     (e.before.map Prod.fst) (e.after.map Prod.fst)
     (e.before.map Prod.snd) (e.after.map Prod.snd)
     e.selected.1 e.selected.2 h₁ h₂
-
-/-- Membership in the position enumerator supplies the literal split of the
-original word, together with its cut-loop contraction.
-`RBM2D/Hierarchy/ContractionSameEdgePositionCut.lean:49`. -/
-theorem sum_coordinateSameEdgeTerm_cutLoops_of_mem
-    (u : ℝ) (hu : 0 ≤ u) (ω : Ω d L W) (z : ℂ)
-    (l : List (Bool × Zd d L)) (e : EdgeSplit (Bool × Zd d L))
-    (he : e ∈ edgeSplits l) :
-    e.before ++ e.selected :: e.after = l ∧
-      (let H := HflowBlock d L W u ω
-       let I₁ := segmentLoopIdx d L e.before
-       let I₂ := segmentLoopIdx d L e.after
-       ∑ γ : CoordF d L W,
-         (((gvarF d L W g γ : ℝ) : ℂ) *
-           Matrix.trace (coordinateSameEdgeTerm d L W u ω γ z e)) =
-       (2 : ℂ) * (u : ℂ) * (W : ℂ) ^ d *
-         ∑ p : Zd d L, ∑ q : Zd d L,
-           loopL d L W H z
-             ⟨e.selected.1 :: (I₂.σ ++ (I₁.σ ++ [e.selected.1])),
-               e.selected.2 :: (I₂.a ++ (I₁.a ++ [p]))⟩ *
-             SB d L g p q * loopL d L W H z ⟨[e.selected.1], [q]⟩) := by
-  exact ⟨edgeSplits_reconstruct l e he,
-    sum_coordinateSameEdgeTerm_cutLoops d L W g u hu ω z e⟩
 
 end Sec11
 
@@ -1087,34 +896,6 @@ theorem sum_coordinatePairTerm_cutLoops
     (p.before.map Prod.fst) (p.middle.map Prod.fst) (p.after.map Prod.fst)
     (p.before.map Prod.snd) (p.middle.map Prod.snd) (p.after.map Prod.snd)
     p.first.1 p.second.1 p.first.2 p.second.2 h₁ h₂
-
-/-- Pair membership supplies the literal five-part split of the original
-word, alongside the fixed-position variance contraction.
-`RBM2D/Hierarchy/ContractionPairPositionCut.lean:55`. -/
-theorem sum_coordinatePairTerm_cutLoops_of_mem
-    (u : ℝ) (hu : 0 ≤ u) (ω : Ω d L W) (z : ℂ)
-    (l : List (Bool × Zd d L)) (p : PairSplit (Bool × Zd d L))
-    (hp : p ∈ pairSplits l) :
-    p.before ++ p.first :: p.middle ++ p.second :: p.after = l ∧
-      (let H := HflowBlock d L W u ω
-       let I₁ := segmentLoopIdx d L p.before
-       let I₂ := segmentLoopIdx d L p.middle
-       let I₃ := segmentLoopIdx d L p.after
-       ∑ γ : CoordF d L W,
-         (((gvarF d L W g γ : ℝ) : ℂ) *
-           Matrix.trace (coordinatePairTerm d L W u ω γ z p)) =
-       (u : ℂ) * (W : ℂ) ^ d * ∑ v : Zd d L, ∑ w : Zd d L,
-         loopL d L W H z
-           ((⟨I₁.σ ++ p.first.1 :: I₂.σ ++ p.second.1 :: I₃.σ,
-               I₁.a ++ p.first.2 :: I₂.a ++ p.second.2 :: I₃.a⟩ : Loop.LoopIdx (Zd d L)).cutGlueL
-             (I₁.σ.length + 1) (I₁.σ.length + I₂.σ.length + 2) v) *
-           SB d L g v w *
-         loopL d L W H z
-           ((⟨I₁.σ ++ p.first.1 :: I₂.σ ++ p.second.1 :: I₃.σ,
-               I₁.a ++ p.first.2 :: I₂.a ++ p.second.2 :: I₃.a⟩ : Loop.LoopIdx (Zd d L)).cutGlueR
-             (I₁.σ.length + 1) (I₁.σ.length + I₂.σ.length + 2) w)) := by
-  exact ⟨pairSplits_reconstruct l p hp,
-    sum_coordinatePairTerm_cutLoops d L W g u hu ω z p⟩
 
 end Sec12
 
@@ -1190,37 +971,6 @@ theorem sum_coordinateSecondWordDeriv_allCuts
   rw [list_sum_map_mul_left, list_sum_map_mul_left]
   ring
 
-omit [NeZero L] [NeZero W] in
-/-- Zipping a well-formed loop and projecting it back preserves its literal
-sign and block-label lists. `RBM2D/Hierarchy/ContractionSecondLoopAllCuts.lean:84`. -/
-theorem segmentLoopIdx_zip_eq (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) :
-    segmentLoopIdx d L (I.σ.zip I.a) = I := by
-  cases I with
-  | mk σ a =>
-      change σ.length = a.length at hwf
-      change (⟨(σ.zip a).map Prod.fst, (σ.zip a).map Prod.snd⟩ :
-        Loop.LoopIdx (Zd d L)) = ⟨σ, a⟩
-      rw [List.map_fst_zip hwf.le, List.map_snd_zip hwf.ge]
-
-/-- The full samplewise cut formula for a well-formed finite loop. The first
-conclusion certifies that the signed word used by the derivative is exactly
-the supplied loop, without truncation by `List.zip`.
-`RBM2D/Hierarchy/ContractionSecondLoopAllCuts.lean:96`. -/
-theorem sum_gloopSecondWordDeriv_allCuts
-    (u : ℝ) (hu : 0 ≤ u) (ω : Ω d L W) (z : ℂ)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) :
-    let l := I.σ.zip I.a
-    segmentLoopIdx d L l = I ∧
-      (∑ γ : CoordF d L W,
-        (((gvarF d L W g γ : ℝ) : ℂ) *
-          Matrix.trace (coordinateSecondWordDeriv d L W u ω γ z l)) =
-       (2 : ℂ) * (u : ℂ) * (W : ℂ) ^ d *
-         ((edgeSplits l).map (sameEdgeCutValue d L W g u ω z)).sum +
-       (2 : ℂ) * (u : ℂ) * (W : ℂ) ^ d *
-         ((pairSplits l).map (pairCutValue d L W g u ω z)).sum) := by
-  exact ⟨segmentLoopIdx_zip_eq d L I hwf,
-    sum_coordinateSecondWordDeriv_allCuts d L W g u hu ω z (I.σ.zip I.a)⟩
-
 end Sec13
 
 /-! ## 14. Compiled nonempty instances
@@ -1232,159 +982,5 @@ there are `27` blocks.  The statements are unconditional identities at an arbitr
 `0 ≤ u` and the length conditions are discharged by `norm_num` and `rfl`.  The chain data have
 the two cut positions `σ₁ = [+, -]`, `σ₂ = [-, +]`, `σ₃ = [+]` (loop length `7`, cuts
 `k = 3`, `l = 6`); the word of the position sums has three edges. -/
-
-namespace SecondLoopInst
-
-/-- A block label of `Z_3^3`. -/
-private def lab (n : ℕ) : Zd 3 3 := fun i => ((n + i.val : ℕ) : ZMod 3)
-
-/-- A coordinate: the off-diagonal real coordinate `(0, (1,0,0), true)` of `Z_6^3`. -/
-private def γ0 : CoordF 3 3 2 := (![0, 0, 0], ![1, 0, 0], true)
-
-/-- A signed word of three edges. -/
-private def word3 : List (Bool × Zd 3 3) := [(true, lab 1), (false, lab 2), (true, lab 3)]
-
-/-- The split at the middle edge. -/
-private def e1 : EdgeSplit (Bool × Zd 3 3) := ⟨[(true, lab 1)], (false, lab 2), [(true, lab 3)]⟩
-
-private theorem e1_mem : e1 ∈ edgeSplits word3 := by
-  simp [edgeSplits, word3, e1]
-
-/-- The pair of the first and the last edge. -/
-private def p13 : PairSplit (Bool × Zd 3 3) :=
-  ⟨[], (true, lab 1), [(false, lab 2)], (true, lab 3), []⟩
-
-private theorem p13_mem : p13 ∈ pairSplits word3 := by
-  simp [pairSplits, edgeSplits, word3, p13]
-
-/-- `trace_twoEdge_mixed_eq_cutChains`. -/
-example (ω : Ω 3 3 2) :=
-  trace_twoEdge_mixed_eq_cutChains 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) Complex.I
-    [true, false] [false, true] [true] [lab 4, lab 17] [lab 9, lab 22] [lab 0]
-    true false (lab 5) (lab 2) (coordinateBlock 3 3 2 γ0)
-
-/-- `sum_twoEdge_mixed_cutChains`. -/
-example (ω : Ω 3 3 2) :=
-  sum_twoEdge_mixed_cutChains 3 3 2 (1 / 2) (HflowBlock 3 3 2 (1 / 2) ω) Complex.I
-    [true, false] [false, true] [true] [lab 4, lab 17] [lab 9, lab 22] [lab 0]
-    true false (lab 5) (lab 2) rfl rfl
-
-/-- `sum_twoEdge_mixed_coordinate`. -/
-example (ω : Ω 3 3 2) :=
-  sum_twoEdge_mixed_coordinate 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-    [true, false] [false, true] [true] [lab 4, lab 17] [lab 9, lab 22] [lab 0]
-    true false (lab 5) (lab 2) rfl rfl
-
-/-- `sum_twoEdge_mixed_deriv`. -/
-example (ω : Ω 3 3 2) :=
-  sum_twoEdge_mixed_deriv 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-    [true, false] [false, true] [true] [lab 4, lab 17] [lab 9, lab 22] [lab 0]
-    true false (lab 5) (lab 2) rfl rfl
-
-/-- `sum_coordinateBlock_trace_pair`. -/
-example (ω : Ω 3 3 2) :=
-  sum_coordinateBlock_trace_pair 3 3 2 (1 / 2) (HflowBlock 3 3 2 (1 / 2) ω)
-    (HflowBlock 3 3 2 (1 / 2) ω)
-
-/-- `trace_gsigCoordinateSecondDeriv_Eblk`. -/
-example (ω : Ω 3 3 2) :=
-  trace_gsigCoordinateSecondDeriv_Eblk 3 3 2 (1 / 2) (by norm_num) ω γ0 Complex.I true (lab 5)
-
-/-- `sum_gsigCoordinateSecondDeriv_Eblk`. -/
-example (ω : Ω 3 3 2) :=
-  sum_gsigCoordinateSecondDeriv_Eblk 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I true (lab 5)
-
-/-- `trace_gsigCoordinateSecondDeriv_word`. -/
-example (ω : Ω 3 3 2) :=
-  trace_gsigCoordinateSecondDeriv_word 3 3 2 (1 / 2) (by norm_num) ω γ0 Complex.I true (lab 5)
-    (HflowBlock 3 3 2 (1 / 2) ω) (HflowBlock 3 3 2 (1 / 2) ω)
-
-/-- `sum_gsigCoordinateSecondDeriv_word`. -/
-example (ω : Ω 3 3 2) :=
-  sum_gsigCoordinateSecondDeriv_word 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I true
-    (lab 5) (HflowBlock 3 3 2 (1 / 2) ω) (HflowBlock 3 3 2 (1 / 2) ω)
-
-/-- `trace_sameEdge_cutLoop`. -/
-example (ω : Ω 3 3 2) :=
-  trace_sameEdge_cutLoop 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) Complex.I
-    [true, false] [false, true] [lab 4, lab 17] [lab 9, lab 22] true (lab 5) (lab 6) rfl rfl
-
-/-- `trace_sameEdge_oneLoop`. -/
-example (ω : Ω 3 3 2) :=
-  trace_sameEdge_oneLoop 3 3 2 (HflowBlock 3 3 2 (1 / 2) ω) Complex.I true (lab 6)
-
-/-- `sum_sameEdge_cutLoops`. -/
-example (ω : Ω 3 3 2) :=
-  sum_sameEdge_cutLoops 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-    [true, false] [false, true] [lab 4, lab 17] [lab 9, lab 22] true (lab 5) rfl rfl
-
-/-- `edgeSplits_reconstruct`, `edgeSplits_prefix_lengths`, `edgeSplits_unique_position`. -/
-example : e1.before ++ e1.selected :: e1.after = word3 ∧
-    (edgeSplits word3).map (fun e => e.before.length) = List.range word3.length ∧
-    ∃! e : EdgeSplit (Bool × Zd 3 3), e ∈ edgeSplits word3 ∧ e.before.length = 1 :=
-  ⟨edgeSplits_reconstruct word3 e1 e1_mem, edgeSplits_prefix_lengths word3,
-    edgeSplits_unique_position word3 1 (by simp [word3])⟩
-
-/-- `pairSplits_reconstruct`, `pairSplits_positions_valid`, `pairSplits_unique_positions`. -/
-example : p13.before ++ p13.first :: p13.middle ++ p13.second :: p13.after = word3 ∧
-    (p13.before.length < p13.before.length + 1 + p13.middle.length ∧
-      p13.before.length + 1 + p13.middle.length < word3.length) ∧
-    ∃! p : PairSplit (Bool × Zd 3 3), p ∈ pairSplits word3 ∧ p.before.length = 0 ∧
-      p.before.length + 1 + p.middle.length = 2 :=
-  ⟨pairSplits_reconstruct word3 p13 p13_mem, pairSplits_positions_valid word3 p13 p13_mem,
-    pairSplits_unique_positions word3 0 2 (by norm_num) (by simp [word3])⟩
-
-/-- `coordinateWordDeriv_eq_edgeSplits_sum`. -/
-example (ω : Ω 3 3 2) :=
-  coordinateWordDeriv_eq_edgeSplits_sum 3 3 2 (1 / 2) ω γ0 Complex.I word3
-
-/-- `coordinateSecondWordDeriv_eq_position_sums`. -/
-example (ω : Ω 3 3 2) :=
-  coordinateSecondWordDeriv_eq_position_sums 3 3 2 (1 / 2) ω γ0 Complex.I word3
-
-/-- `sum_coordinateSecondWordDeriv_trace_positions`. -/
-example (ω : Ω 3 3 2) :=
-  sum_coordinateSecondWordDeriv_trace_positions 3 3 2 (1 / 2) (1 / 2) ω Complex.I word3
-
-/-- `segmentLoopIdx_WF`, `coordinateWordProduct_eq_gloopProd`. -/
-example (ω : Ω 3 3 2) :=
-  And.intro (segmentLoopIdx_WF 3 3 word3)
-    (coordinateWordProduct_eq_gloopProd 3 3 2 (1 / 2) ω Complex.I word3)
-
-/-- `edgeSplit_segment_products`. -/
-example (ω : Ω 3 3 2) :=
-  edgeSplit_segment_products 3 3 2 (1 / 2) ω Complex.I e1
-
-/-- `pairSplit_segment_products`. -/
-example (ω : Ω 3 3 2) :=
-  pairSplit_segment_products 3 3 2 (1 / 2) ω Complex.I p13
-
-/-- `sum_coordinateSameEdgeTerm_cutLoops` and `_of_mem`. -/
-example (ω : Ω 3 3 2) :=
-  And.intro
-    (sum_coordinateSameEdgeTerm_cutLoops 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I e1)
-    (sum_coordinateSameEdgeTerm_cutLoops_of_mem 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-      word3 e1 e1_mem)
-
-/-- `sum_coordinatePairTerm_cutLoops` and `_of_mem`. -/
-example (ω : Ω 3 3 2) :=
-  And.intro
-    (sum_coordinatePairTerm_cutLoops 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I p13)
-    (sum_coordinatePairTerm_cutLoops_of_mem 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-      word3 p13 p13_mem)
-
-/-- `sum_coordinateSecondWordDeriv_allCuts`. -/
-example (ω : Ω 3 3 2) :=
-  sum_coordinateSecondWordDeriv_allCuts 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I word3
-
-/-- `segmentLoopIdx_zip_eq`, `sum_gloopSecondWordDeriv_allCuts`, for the loop `(+,-,+)`. -/
-example (ω : Ω 3 3 2) :=
-  And.intro
-    (segmentLoopIdx_zip_eq 3 3
-      (⟨[true, false, true], [lab 1, lab 2, lab 3]⟩ : Loop.LoopIdx (Zd 3 3)) rfl)
-    (sum_gloopSecondWordDeriv_allCuts 3 3 2 (1 / 2) (1 / 2) (by norm_num) ω Complex.I
-      ⟨[true, false, true], [lab 1, lab 2, lab 3]⟩ rfl)
-
-end SecondLoopInst
 
 end RBM.Gauss

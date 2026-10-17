@@ -40,8 +40,6 @@ open private expHier_Good expHier_Good.mk expHier_Good.cont_ω expHier_Good.cont
   expHier_Good_sum expHier_Good_integrable expHier_Good_continuousOn_integral expHier_Good_congr
   expHier_continuousOn_Ico expHier_loopOf_wf from RBM3D.Induction.ExpHier
 
-open private Step6Gen_STthetaOp_eq from RBM3D.Chain.Step6Gen
-
 open private expHier_integral_slice from RBM3D.Induction.ExpHier
 
 open private OneStep_Hs OneStep_Hs_eq OneStep_Hs_herm OneStep_continuous_Hs OneStep_stein_coord
@@ -813,21 +811,6 @@ theorem stExpHiergL_ev {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
   have h := stExpHiergL_at (mkM sz z) (law sz) H₀ g' E n (by rw [hmk]; exact hClt) hL (hS n) hK hT hLink
   rwa [hmk] at h
 
-/-- **Target 12, band re-derivation** (`stExpHier_holds`, `ExpHier:770`, from `stExpHiergL_at` at `bandStep2Mat sz (fun _ => E)`, `H₀ = 0`, `g' = sz.lam`,
-and the band classes of `CltGen`, `StepDecompGen`, `HierDriftGen`; `Θ^{(2)}` is `Step2Gen_ThetaN` by `Step6Gen_STthetaOp_eq`). -/
-theorem stExpHier_of_gL (d : ℕ) : STExpHier d := by
-  intro _ sz n E hE σ a
-  have h : STExpHierAtgL (bandFM sz (fun _ => E)) (Sizes.seqP sz) n :=
-    stExpHiergL_at (bandStep2Mat sz (fun _ => E)) (Sizes.seqP sz) (fun _ => 0) sz.lam (fun _ => E) n
-      (cltRepg_band sz _) (stepDecompGen_loopForm_band sz _ (fun _ => hE)) rfl
-      (hierDriftGen_kLoop_band sz _ (fun _ => hE) n) (hierDriftGen_kTwo_band sz _ (fun _ => hE) n)
-      (hierDriftGen_kLink_band sz _ n)
-  obtain ⟨h1, h2, h3⟩ := h σ a
-  refine ⟨h1, h2, fun u hu => ?_⟩
-  have h3' := h3 u hu
-  rw [← Step6Gen_STthetaOp_eq (E := fun _ => E)] at h3'
-  exact h3'
-
 end Target
 
 /-! ## 6. Compiled nonempty instances (targets 10-12)
@@ -835,51 +818,5 @@ end Target
 Data: `d = 3`, the merged admissible sequence `sz0` (`n = 0`: `L = 4`, `W = 32`, `lam = 1/64`, `(WL)^3 = 2097152` sites), the band carrier at the constant energy
 `E = 1/2` (`|E| < 2`), `H₀ = 0`, `g' = sz0.lam`, the loop `((+,-), (0, e₁))`, `u = 1/2`.  Every deterministic hypothesis (`CltRepg`, `LoopForm`, the variance law, `KLoop`,
 `KTwo`, `KLink`) is discharged by the band theorems; nothing stays a hypothesis.  The instance of `stExpHiergL_ev` takes `Flow = True` and the band tuple. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst
-
-/-- Target 12 at `(sz0, n = 0)`: the pin at one index, every hypothesis discharged. -/
-theorem stExpHiergL_at_inst : STExpHierAtgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) 0 :=
-  stExpHiergL_at (bandStep2Mat sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) (fun _ => 0) sz0.lam (fun _ => 1 / 2) 0
-    (cltRepg_band sz0 _) (stepDecompGen_loopForm_band sz0 _ (fun _ => by norm_num)) rfl
-    (hierDriftGen_kLoop_band sz0 _ (fun _ => by norm_num) 0) (hierDriftGen_kTwo_band sz0 _ (fun _ => by norm_num) 0)
-    (hierDriftGen_kLink_band sz0 _ 0)
-
-/-- Target 12, the derivative statement at `u = 1/2` for `σ = (+,-)`, `a = (0, e₁)` (nonvacuous: the three conjuncts at concrete data). -/
-example : ∃ f' : ℂ, HasDerivAt (fun v : ℝ =>
-      (∫ ω, (bandFM sz0 (fun _ => 1 / 2)).L 0 v ![true, false] ![0, Pi.single 0 1] ω ∂(Sizes.seqP sz0)) -
-        (bandFM sz0 (fun _ => 1 / 2)).K 0 v ![true, false] ![0, Pi.single 0 1]) f' (1 / 2) :=
-  ⟨_, (stExpHiergL_at_inst ![true, false] ![0, Pi.single 0 1]).2.2 (1 / 2) ⟨by norm_num, by norm_num⟩⟩
-
-/-- Target 12, the eventual form at the band tuple with `Flow = True` (the premises of rows 9-12 discharged by the band theorems), applied at `sz0`. -/
-theorem stExpHiergL_ev_inst : ∀ (sz : Sizes 3) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → True →
-    ∀ᶠ n in atTop, STExpHierAtgL (bandFM sz (fun _ => 1 / 2)) (Sizes.seqP sz) n :=
-  stExpHiergL_ev (fun sz => Sizes.seqP sz) (fun _ _ _ _ _ _ => True) (fun sz _ => bandFM sz (fun _ => 1 / 2))
-    (fun sz _ => bandStep2Mat sz (fun _ => 1 / 2)) (fun _ _ => rfl)
-    (fun sz _ _ _ _ _ _ _ => ⟨fun _ => 0, sz.lam, fun _ => 1 / 2, cltRepg_band sz _,
-      stepDecompGen_loopForm_band sz _ (fun _ => by norm_num), fun _ => rfl⟩)
-    (fun sz _ _ _ _ _ _ _ => Filter.Eventually.of_forall fun n =>
-      ⟨hierDriftGen_kLoop_band sz _ (fun _ => by norm_num) n, hierDriftGen_kTwo_band sz _ (fun _ => by norm_num) n,
-        hierDriftGen_kLink_band sz _ n⟩)
-
-example : ∃ n : ℕ, STExpHierAtgL (bandFM sz0 (fun _ => 1 / 2)) (Sizes.seqP sz0) n :=
-  (stExpHiergL_ev_inst sz0 1 1 1 1 (fun _ => 0) one_pos trivial).exists
-
-/-- Target 12, band re-derivation at `d = 3`, `sz0`, `n = 0`, `E = 1/2`. -/
-example : ContinuousOn (fun u => sz0.STExpErr 0 (1 / 2) u ![true, false] ![0, Pi.single 0 1]) (Set.Ico 0 1) :=
-  (stExpHier_of_gL 3 (by norm_num) sz0 0 (1 / 2) (by norm_num) ![true, false] ![0, Pi.single 0 1]).1
-
-/-- The heart of W2 at a **nonzero** Hermitian `H₀` (`M₀ = 1`; the carrier instances above are at `H₀ = 0`, the BA carrier has `H₀ = λ₀Ψ` and is not importable here): `d = 3`, `L = 4`, `W = 32`,
-`g = 1/64`, `m = i` (`Im m = 1 > 0`, not `mE`), `E = 0`, `u = 1/2`, the loop `((+,-), (0, e₁))`: `u ↦ 𝔼 𝓛(H₀ + √u X; ztOf m E u)` is differentiable and its derivative is the expected generator
-(`ExpHierGen_hasDerivAt_integral`, every deterministic hypothesis discharged). -/
-example : ∃ f' : ℂ, HasDerivAt (fun v : ℝ => ∫ ω : Ω 3 4 32,
-      loopL 3 4 32 (OneStep_Hs (1 : Matrix (Idx 3 4 32) (Idx 3 4 32) ℂ) (Real.sqrt v) ω) (ztOf Complex.I 0 v)
-        (loopOf ![true, false] ![(0 : Zd 3 4), Pi.single 0 1]) ∂(PF 3 4 32 (1 / 64))) f' (1 / 2) :=
-  ⟨_, ExpHierGen_hasDerivAt_integral (1 / 64) Matrix.isHermitian_one (by simp) 0 (by norm_num) (by norm_num)
-    (by simp [Loop.LoopIdx.WF, loopOf])⟩
-
-end Instances
 
 end RBM.BA

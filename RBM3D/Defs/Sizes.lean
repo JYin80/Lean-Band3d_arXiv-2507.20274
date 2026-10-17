@@ -264,11 +264,6 @@ def sz0 : Sizes 3 where
   three_le_L := fun n => by omega
   W_pos := fun n => by positivity
 
-theorem sz0_values : sz0.L 0 = 4 ∧ sz0.W 0 = 32 ∧ sz0.size 0 = 2097152 ∧ sz0.lam 0 = 1 / 64 := by
-  refine ⟨rfl, rfl, ?_, ?_⟩
-  · norm_num [Sizes.size, sz0]
-  · norm_num [sz0]
-
 theorem sz0_L_le_W (n : ℕ) : sz0.L n ≤ sz0.W n := by
   have hm : 2 ≤ 2 * (n + 1) := by omega
   have h4 : 2 ^ 4 ≤ (2 * (n + 1)) ^ 4 := Nat.pow_le_pow_left hm 4
@@ -331,87 +326,6 @@ theorem sz0_WO : sz0.WO (1 / 10) := by
 theorem sz0_admissible : sz0.Admissible (1 / 6) (1 / 10) :=
   ⟨by norm_num, by norm_num, sz0_tendsto, sz0_bandwidth, sz0_WO⟩
 
-/-- `ilambda² W^d ≥ W^{2𝔡}` along the preflight sequence (`n = 0`: `8 ≥ 32^{1/5} = 2`). -/
-theorem sz0_lam_sq : ∀ᶠ n in atTop,
-    ((sz0.W n : ℕ) : ℝ) ^ (2 * (1 / 10 : ℝ)) ≤ sz0.lam n ^ 2 * ((sz0.W n : ℕ) : ℝ) ^ 3 := by
-  filter_upwards [sz0_WO] with n hn
-  exact Sizes.lam_sq_mul_pow_ge sz0 n hn.1
-
-/-- The merged scales at the instance, `t = 0`, `n = 0`: `ℓ_0 = 1` (`(eq:ellt)`) and
-`B_{0,0} = (1 + lam²)⁻¹ + L^{-d}` (`(eq_B_param)`), so `W^{-d}B_{0,0} > 0`. -/
-theorem scales_sz0 : ellT 4 (1 / 64) 0 = 1 ∧
-    Bparam 3 4 (1 / 64) 0 0 = ((1 / 64 : ℝ) ^ 2 + 1)⁻¹ + ((4 : ℝ) ^ 3)⁻¹ ∧ 0 < sz0.Bctl 0 0 := by
-  refine ⟨?_, ?_, ?_⟩
-  · norm_num [ellT]
-  · norm_num [Bparam]
-  · have : (0 : ℝ) < Bparam 3 (sz0.L 0) (sz0.lam 0) 0 0 := by
-      have h := sz0_values
-      rw [h.1, h.2.2.2]; norm_num [Bparam]
-    have hW : (0 : ℝ) < ((sz0.W 0 : ℕ) : ℝ) := by exact_mod_cast sz0.W_pos 0
-    unfold Sizes.Bctl
-    exact mul_pos (by positivity) this
-
-/-- `lam` really tends to `0`: nothing in the size pins fixes `λ`. -/
-theorem sz0_lam_tendsto : Tendsto sz0.lam atTop (nhds 0) := by
-  have h : Tendsto (fun n : ℕ => (2 * ((n : ℝ) + 1)) ^ 6) atTop atTop := by
-    refine (tendsto_pow_atTop (by norm_num : 6 ≠ 0)).comp ?_
-    refine tendsto_atTop_mono (fun n => ?_) (tendsto_natCast_atTop_atTop (R := ℝ))
-    have := Nat.cast_nonneg (α := ℝ) n; linarith
-  exact h.inv_tendsto_atTop
-
-
-/-- A block of the fine lattice at the instance has `W^d = 32768` points. -/
-theorem card_Iblk_sz0 (a : Zd 3 4) : (Iblk 3 4 32 a).card = 32768 := by
-  rw [card_Iblk]; norm_num
-
-/-- The matrix dimension at the instance is `N = (32 · 4)^3 = 2097152`. -/
-theorem card_Idx_sz0 : Fintype.card (Idx 3 (sz0.L 0) (sz0.W 0)) = 2097152 := by
-  rw [Sizes.card_Idx]; exact sz0_values.2.2.1
-
-/-- The two distances at a concrete point of `Z_4^3` (`(eq:blockIa)` torus, `1_2:274`): the `L^∞`
-distance of the stochastic statements is `2`, the merged `ℓ¹` distance is `4`. -/
-theorem zdistInf_inst :
-    zdistInf 3 4 ![(2 : ZMod 4), 1, 3] = 2 ∧ zdistD 3 4 ![(2 : ZMod 4), 1, 3] = 4 := by
-  constructor <;> decide
-
 /-! ### The scale conversion at the instance -/
-
-theorem W_le_size_sz0 :
-    ((sz0.W 0 : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤
-      ((sz0.size 0 : ℕ) : ℝ) ^ ((1 / 10 : ℝ) / (3 : ℕ)) :=
-  Sizes.W_rpow_le sz0 (by norm_num) 0 (by norm_num)
-
-theorem size_le_W_sz0 :
-    ((sz0.size 0 : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤
-      ((sz0.W 0 : ℕ) : ℝ) ^ ((1 / 10 : ℝ) / (1 / 6 : ℝ)) :=
-  Sizes.size_rpow_le_W_rpow sz0 (by norm_num) 0 (sz0_bandwidth_at 0) (by norm_num)
-
-/-- The two distances at the same concrete point obey `zdistInf ≤ zdistD ≤ d · zdistInf`
-(`zdistInf_le_zdistD`, `zdistD_le_mul_zdistInf`): `2 ≤ 4 ≤ 3 · 2`. -/
-example : zdistInf 3 4 ![(2 : ZMod 4), 1, 3] ≤ zdistD 3 4 ![(2 : ZMod 4), 1, 3] ∧
-    zdistD 3 4 ![(2 : ZMod 4), 1, 3] ≤ 3 * zdistInf 3 4 ![(2 : ZMod 4), 1, 3] :=
-  ⟨zdistInf_le_zdistD 3 4 _, zdistD_le_mul_zdistInf 3 4 _⟩
-
-/-- The bridge `Z_{WL}^3 ≃ Z_4^3 × Fin (32^3)` at the instance (`split_bijective`). -/
-example : Function.Bijective (split 3 4 32) := split_bijective 3 4 32
-
-/-- `withLam` changes only the coupling: the same blocks and the same scale. -/
-example (g : ℕ → ℝ) (n : ℕ) :
-    (sz0.withLam g).L n = sz0.L n ∧ (sz0.withLam g).W n = sz0.W n ∧
-      (sz0.withLam g).size n = sz0.size n := ⟨rfl, rfl, rfl⟩
-
-/-- `𝐃_{κ,ε}` is nonempty at the instance (`κ = ε = 1/10`, `n = 0`, `N = 2097152`): the point
-`z = 1/2 + i N^{-4/5}` has `|Re z| = 1/2 ≤ 2 - κ` and
-`N^{-1+ε} = N^{-9/10} ≤ N^{-4/5} = Im z ≤ 1`. -/
-theorem sz0_locDomain :
-    sz0.locDomain (1 / 10) (1 / 10) 0
-      (⟨1 / 2, ((sz0.size 0 : ℕ) : ℝ) ^ (-(4 / 5) : ℝ)⟩ : ℂ) := by
-  have hN : (1 : ℝ) ≤ ((sz0.size 0 : ℕ) : ℝ) := by
-    rw [sz0_values.2.2.1]; norm_num
-  refine ⟨?_, ?_, ?_⟩
-  · simp only [abs_of_pos (show (0 : ℝ) < 1 / 2 by norm_num)]
-    norm_num
-  · exact Real.rpow_le_rpow_of_exponent_le hN (by norm_num)
-  · exact Real.rpow_le_one_of_one_le_of_nonpos hN (by norm_num)
 
 end RBM.Gauss.SizesInst

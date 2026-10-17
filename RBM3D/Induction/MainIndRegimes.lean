@@ -88,28 +88,6 @@ private def STMainIndRAt (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ)
         STExp2 sz (STflowE z) t ∧ STLocalEntry sz (STflowE z) t ∧
         STDecayStrong sz (STflowE z) t
 
-/-- **`STMainInd` is the regime-free instance** (`STAny` is `True`). -/
-theorem ST_mainInd_iff_any (d : ℕ) : STMainInd d ↔ STMainIndR d STAny := by
-  constructor
-  · intro h hd κ ε 𝔡 hκ hε h𝔡
-    obtain ⟨c, hc, hc', H⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-    exact ⟨c, hc, hc', fun 𝔠 sz z hflow s t hs0 hsT hst htT _ hyp hcon =>
-      H 𝔠 sz z hflow s t hs0 hsT hst htT hyp hcon⟩
-  · intro h hd κ ε 𝔡 hκ hε h𝔡
-    obtain ⟨c, hc, hc', H⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-    exact ⟨c, hc, hc', fun 𝔠 sz z hflow s t hs0 hsT hst htT hyp hcon =>
-      H 𝔠 sz z hflow s t hs0 hsT hst htT trivial hyp hcon⟩
-
-/-- **A weaker regime gives a stronger statement** (as `ST_step6R_mono`): `R' ⊆ R` and `STMainIndR d R`
-give `STMainIndR d R'`. -/
-theorem STMainIndR_mono (d : ℕ) (R R' : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (hRR : ∀ (sz : Sizes d) (s t : ℕ → ℝ), R' sz s t → R sz s t) (h : STMainIndR d R) :
-    STMainIndR d R' := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c, hc, hc', H⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-  exact ⟨c, hc, hc', fun 𝔠 sz z hflow s t hs0 hsT hst htT hR' hyp hcon =>
-    H 𝔠 sz z hflow s t hs0 hsT hst htT (hRR sz s t hR') hyp hcon⟩
-
 /-- `STMainIndRAt` at a smaller constant (a smaller exponent is the stronger hypothesis
 `(con_st_ind)`, `st5_conStInd_mono`). -/
 private theorem STMainIndRAt_mono {d : ℕ} {R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop}
@@ -213,16 +191,6 @@ theorem ST_mainIndR_of_steps (d : ℕ) (R R34 : ∀ {d : ℕ}, Sizes d → (ℕ 
     STExp2_of_STExp2U sz (fun n => (hst n).le) hS6,
     STLocalEntry_of_STLocalEntryU sz (fun n => (hst n).le) hS2.1, hDS5⟩
 
-/-- **Regime (iii)** (`1-s ≥ 1-t ≥ ilambda²`): Steps 3-4 in case (i), Steps 5, 6 in regime (iii). -/
-theorem ST_mainIndR_III_of_steps (d : ℕ) (h1 : STStep1 d) (h2 : STStep2 d) (h3 : STStep3I d)
-    (h4 : STStep4I d) (h5 : STStep5III d) (h6 : STStep6III d) : STMainIndR d STReg5III :=
-  ST_mainIndR_of_steps d STReg5III STCaseI (fun _ => st_caseI_of_reg5III d) h1 h2 h3 h4 h5 h6
-
-/-- **Regime (i)** (`ilambda²/L² ≤ 1-t ≤ 1-s ≤ ilambda²`): Steps 3-4 in case (i). -/
-theorem ST_mainIndR_I_of_steps (d : ℕ) (h1 : STStep1 d) (h2 : STStep2 d) (h3 : STStep3I d)
-    (h4 : STStep4I d) (h5 : STStep5I d) (h6 : STStep6I d) : STMainIndR d STReg5I :=
-  ST_mainIndR_of_steps d STReg5I STCaseI (fun _ => st_caseI_of_reg5I d) h1 h2 h3 h4 h5 h6
-
 /-- **Regime (ii)** (`ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²`): Steps 3-4 in case (ii). -/
 theorem ST_mainIndR_II_of_steps (d : ℕ) (h1 : STStep1 d) (h2 : STStep2 d) (h3 : STStep3II d)
     (h4 : STStep4II d) (h5 : STStep5II d) (h6 : STStep6II d) : STMainIndR d STReg5II :=
@@ -283,16 +251,6 @@ private theorem STMainIndRAt_seq {d : ℕ} {R₁ R₂ : ∀ {d : ℕ}, Sizes d �
   exact h₂ 𝔠 sz z hflow m t (fun n => (hs0 n).trans (hsm n).le) hmT hmt htT hR₂
     ⟨hLK₁, hDec₁, hDecS₁, STLocalMax_of_STLocalEntry d sz _ _ hLE₁, hExp₁⟩
     (st5_conStInd_mono sz hcon₂ ht1 hcpos (min_le_right _ _))
-
-/-- **Chaining two stages**: `STMainIndR d R₁ → STMainIndR d R₂ → STMainIndR d (STRegSeq R₁ R₂)`; the
-constant is `min c₁ c₂`; the final conclusions are those of stage 2, all at the single time `t`. -/
-theorem ST_mainIndR_seq (d : ℕ) (R₁ R₂ : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (h₁ : STMainIndR d R₁) (h₂ : STMainIndR d R₂) : STMainIndR d (STRegSeq R₁ R₂) := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c₁, hc₁, hc₁', H₁⟩ := h₁ hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c₂, hc₂, hc₂', H₂⟩ := h₂ hd κ ε 𝔡 hκ hε h𝔡
-  exact ⟨min c₁ c₂, lt_min hc₁ hc₂, (min_le_left _ _).trans hc₁',
-    STMainIndRAt_seq hc₁ hc₂ H₁ H₂⟩
 
 end RBM.Gauss.Sizes
 
@@ -455,10 +413,6 @@ def STRegChain (i m : ℕ) {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) : Prop :
   | 0 => STRegK i sz s t
   | m + 1 => ∃ mid : ℕ → ℝ, (∀ n, s n < mid n) ∧ (∀ n, mid n < t n) ∧ STRegK i sz s mid ∧
       STRegChain (i + 1) m sz mid t
-
-/-- One step of the nesting is `STRegSeq`. -/
-theorem STRegChain_succ (i m : ℕ) {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) :
-    STRegChain i (m + 1) sz s t ↔ STRegSeq (STRegK i) (STRegChain (i + 1) m) sz s t := Iff.rfl
 
 set_option linter.flexible false in
 /-- The regime of stage `k` in terms of the cuts: `c_k ≤ s` (`k ≥ 1`) and `t ≤ c_{k+1}` (`k ≤ 2`). -/
@@ -663,27 +617,6 @@ end RBM.Gauss.Sizes
 
 /-! ## 7. `lem:main_ind` from the ten step pins that are still owed -/
 
-namespace RBM.Gauss.Sizes
-
-open RBM RBM.Loop RBM.Path RBM.Gauss
-
-/-- **What `lem:main_ind` still owes** (T2245): `STMainInd d` from `STStep2`, `STStep3I/II`, `STStep4I/II`,
-`STStep5I/II`, `STStep6I/II/III`.  The other four step pins are proved: `STStep1` by `RBM.Green.stStep1_holds`
-(`Green/GbEXP.lean:816`), `STStep5III` by `stStep5III_holds` (`Induction/PfStep5.lean:2473`), `STStep5IV` by
-`stStep5IV_holds` (`Induction/Step5Kit.lean:549`), `STStep6IV` by `stStep6IV_holds` (`Induction/ExpIntEasy.lean:626`). -/
-theorem ST_mainInd_of_pins (d : ℕ) (h2 : STStep2 d) (h3I : STStep3I d) (h3II : STStep3II d)
-    (h4I : STStep4I d) (h4II : STStep4II d) (h5I : STStep5I d) (h5II : STStep5II d)
-    (h6I : STStep6I d) (h6II : STStep6II d) (h6III : STStep6III d) : STMainInd d := by
-  intro hd
-  have h1 : STStep1 d := RBM.Green.stStep1_holds hd
-  exact ST_mainInd_of_regimes d
-    (ST_mainIndR_III_of_steps d h1 h2 h3I h4I (stStep5III_holds d) h6III)
-    (ST_mainIndR_I_of_steps d h1 h2 h3I h4I h5I h6I)
-    (ST_mainIndR_II_of_steps d h1 h2 h3II h4II h5II h6II)
-    (ST_mainIndR_IV_of_steps d h1 h2 h3II h4II (stStep5IV_holds d) (stStep6IV_holds d)) hd
-
-end RBM.Gauss.Sizes
-
 /-! ## 8. Compiled nonempty instances at `d = 3`
 
 Data (all merged): `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`; `sz0`, `z0`, `(s,t) = (0, 1/16)` (regime (iii)); `szB` (`L = 4`,
@@ -693,209 +626,4 @@ deterministic hypothesis (flow, time ranges, regime, `(con_st_ind)` for every `�
 hypothesis of an instance is a premise that is the statement of another gate's pin (`STStep2`, `STStep3I`, ..., the
 regime statements `STMainIndR`) or the stochastic premises `(a)`-`(d)` at `s`. -/
 
-namespace RBM.Gauss.MainIndRegimesInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-  RBM.Gauss.Step5Inst RBM.Path Filter
-
-/-- 1. The regime-(iii) data of `sz0_reg5III` are in case (i) of Steps 3-4. -/
-theorem inst_caseI_III : STCaseI sz0 sInst tInst := st_caseI_of_reg5III 3 sz0 sInst tInst sz0_reg5III
-
-/-- 2. The regime-(i) data of `szB_reg5I`. -/
-theorem inst_caseI_I : STCaseI szB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  st_caseI_of_reg5I 3 szB _ _ szB_reg5I
-
-/-- 3. The regime-(ii) data of `szB_reg5II`. -/
-theorem inst_caseII_II : STCaseII szB (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  st_caseII_of_reg5II 3 szB _ _ szB_reg5II
-
-/-- 4. The regime-(iv) data of `szG_reg4` (`d = 3`). -/
-theorem inst_caseII_IV : STCaseII szG (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  st_caseII_of_reg5IV 3 (by norm_num) szG _ _ szG_reg4
-
-/-- 5. Two nonempty stages (i), (ii) at `szB` on `[0, 49/50]`, cut at `15/16` (`1/16 ≤ 1/16`, `1 ≤ 1`; `1/64 ≤ 1/50`,
-`1/16 ≤ 1/16`). -/
-theorem inst_regSeq_szB : STRegSeq STReg5I STReg5II szB (fun _ => 0) (fun _ => 49 / 50) :=
-  ⟨fun _ => 15 / 16, fun _ => by norm_num, fun _ => by norm_num,
-    fun n => ⟨by norm_num [szB], by norm_num [szB]⟩, fun n => ⟨by norm_num [szB], by norm_num [szB]⟩⟩
-
-/-- 6. The bridge `(Gt_bound) ⇒ (Gt_bound+IND)` at the merged flow data of `sz0` (the premise is the pin
-`STLocalEntry`, the conclusion of the induction). -/
-theorem inst_localMax_sz0 :
-    STLocalEntry sz0 (STflowE z0) sInst → STLocalMax sz0 (STflowE z0) sInst :=
-  STLocalMax_of_STLocalEntry 3 sz0 (STflowE z0) sInst
-
-/-- 7. The four regime steps give `lem:main_ind` at `d = 3`. -/
-theorem inst_regimes3 :
-    STMainIndR 3 STReg5III → STMainIndR 3 STReg5I → STMainIndR 3 STReg5II → STMainIndR 3 STReg5IV →
-      STMainInd 3 :=
-  ST_mainInd_of_regimes 3
-
-/-- 8. `lem:main_ind` at `d = 3` from the ten owed step pins. -/
-theorem inst_mainInd3 :
-    STStep2 3 → STStep3I 3 → STStep3II 3 → STStep4I 3 → STStep4II 3 →
-      STStep5I 3 → STStep5II 3 → STStep6I 3 → STStep6II 3 → STStep6III 3 → STMainInd 3 :=
-  ST_mainInd_of_pins 3
-
 /-! ### Extra instances: the classifier at `(szB, 0, 49/50)`, the targets applied at the data -/
-
-/-- The pattern of `(szB, 0, 49/50)` is `((i), (ii))` (stage `1` of `s`, stage `2` of `t`) for every `n`:
-`c₁ = 0 ≤ 0 < c₂ = 15/16`, `c₂ = 15/16 < 49/50 ≤ c₃ = 63/64`. -/
-theorem inst_pattern_szB (n : ℕ) :
-    STPattern szB (fun _ => 0) (fun _ => 49 / 50) n = ((1 : Fin 4), (2 : Fin 4)) := by
-  refine Prod.ext (Fin.ext ?_) (Fin.ext ?_)
-  · change STStageS szB (fun _ => (0 : ℝ)) n = 1
-    simp only [STStageS, STCutK, szB]
-    norm_num
-  · change STStageT szB (fun _ => (49 / 50 : ℝ)) n = 2
-    simp only [STStageT, STCutK, szB]
-    norm_num
-
-/-- The regime of the pattern `((i), (ii))` at `szB` on `[0, 49/50]` (`STRegChain_of_class` at `φ = id`): the chain of
-the two stages (i), (ii), cut at the intermediate time `c₂ = 15/16`. -/
-theorem inst_chain_szB :
-    STRegChain 1 1 (szB.comp id) (fun j => (fun _ => (0 : ℝ)) (id j)) (fun j => (fun _ => (49 / 50 : ℝ)) (id j)) :=
-  (STRegChain_of_class (d := 3) (by norm_num) szB (fun _ => 0) (fun _ => 49 / 50)
-    (fun _ => by norm_num) (fun _ => by norm_num) id ((1 : Fin 4), (2 : Fin 4))
-    (fun j => inst_pattern_szB j)).2
-
-/-- The seven cover transfers at `sz0` along the two parity classes. -/
-theorem parity_strictMono (r : Fin 2) : StrictMono (Nat.nth (fun m => m % 2 = (r : ℕ))) :=
-  Nat.nth_strictMono (SizesCompInst.parity_infinite r)
-
-theorem parity_cover :
-    ∀ᶠ n in atTop, ∃ r : Fin 2, n ∈ Set.range (Nat.nth fun m => m % 2 = (r : ℕ)) :=
-  Eventually.of_forall fun n =>
-    ⟨⟨n % 2, Nat.mod_lt _ (by norm_num)⟩, by
-      rw [Nat.range_nth_of_infinite (SizesCompInst.parity_infinite _)]; rfl⟩
-
-theorem inst_STLK_iff :
-    STLK sz0 (STflowE z0) sInst ↔ ∀ r : Fin 2, STLK (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-      (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-      (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STLK_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ))) parity_strictMono
-    parity_cover _ _
-
-theorem inst_STLmax_iff :
-    STLmax sz0 (STflowE z0) sInst ↔ ∀ r : Fin 2, STLmax (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-      (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-      (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STLmax_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ))) parity_strictMono
-    parity_cover _ _
-
-theorem inst_STDecay_iff :
-    STDecay sz0 (STflowE z0) sInst ↔ ∀ r : Fin 2, STDecay (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-      (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-      (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STDecay_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ))) parity_strictMono
-    parity_cover _ _
-
-theorem inst_STDecayStrong_iff :
-    STDecayStrong sz0 (STflowE z0) sInst ↔
-      ∀ r : Fin 2, STDecayStrong (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-        (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-        (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STDecayStrong_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ)))
-    parity_strictMono parity_cover _ _
-
-theorem inst_STLocalMax_iff :
-    STLocalMax sz0 (STflowE z0) sInst ↔
-      ∀ r : Fin 2, STLocalMax (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-        (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-        (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STLocalMax_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ)))
-    parity_strictMono parity_cover _ _
-
-theorem inst_STLocalEntry_iff :
-    STLocalEntry sz0 (STflowE z0) sInst ↔
-      ∀ r : Fin 2, STLocalEntry (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-        (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-        (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STLocalEntry_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ)))
-    parity_strictMono parity_cover _ _
-
-theorem inst_STExp2_iff :
-    STExp2 sz0 (STflowE z0) sInst ↔ ∀ r : Fin 2, STExp2 (sz0.comp (Nat.nth (fun m => m % 2 = (r : ℕ))))
-      (fun j => STflowE z0 (Nat.nth (fun m => m % 2 = (r : ℕ)) j))
-      (fun j => sInst (Nat.nth (fun m => m % 2 = (r : ℕ)) j)) :=
-  STExp2_iff_comp_cover 3 sz0 (Fin 2) (fun r => Nat.nth (fun m => m % 2 = (r : ℕ))) parity_strictMono
-    parity_cover _ _
-
-/-- Targets 1: the regime-free statement gives regime (i) (the weaker regime). -/
-theorem inst_mono_I : STMainInd 3 → STMainIndR 3 STReg5I := fun h =>
-  STMainIndR_mono 3 STAny STReg5I (fun _ _ _ _ => trivial) ((ST_mainInd_iff_any 3).1 h)
-
-/-- The result of applying a regime statement `STMainIndR 3 R` at the data `(sz, z, s, t)`: the constant `𝔠_d`, then the
-stochastic premises `(a)`-`(d)` at `s`, then the conclusions at `t`. -/
-def InstMainIndRConcl (_R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (sz : Sizes 3) (z : ℕ → ℂ)
-    (s t : ℕ → ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    ((STLK sz (STflowE z) s ∧ STDecay sz (STflowE z) s ∧ STDecayStrong sz (STflowE z) s ∧
-        STLocalMax sz (STflowE z) s ∧ STExp2 sz (STflowE z) s) →
-      STLK sz (STflowE z) t ∧ STLmax sz (STflowE z) t ∧ STDecay sz (STflowE z) t ∧
-        STExp2 sz (STflowE z) t ∧ STLocalEntry sz (STflowE z) t ∧ STDecayStrong sz (STflowE z) t)
-
-/-- The common shape of the instances: the constant `𝔠_d`, then the deterministic data with the regime `R` and
-`(con_st_ind)`. -/
-theorem inst_mainIndR (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STMainIndR 3 R)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hsT : ∀ n, s n ≤ lemT (z n)) (hst : ∀ n, s n < t n)
-    (ht : ∀ n, t n ≤ lemT (z n)) (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) :
-    InstMainIndRConcl R sz z s t := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num)
-  exact ⟨𝔠d, h0, h1, fun hyp => H (1 / 6) sz z hflow s t hs0 hsT hst ht hR hyp (hcon 𝔠d h0)⟩
-
-/-- Target 4 applied: two stages (i), (ii) of `szB` cut at `15/16` on `[7/8, 31/32]`, every deterministic hypothesis
-discharged. -/
-theorem inst_mainIndR_seq (hI : STMainIndR 3 STReg5I) (hII : STMainIndR 3 STReg5II) :
-    InstMainIndRConcl (STRegSeq STReg5I STReg5II) szB zB (fun _ => 7 / 8) (fun _ => 31 / 32) :=
-  inst_mainIndR _ (ST_mainIndR_seq 3 STReg5I STReg5II hI hII) szB zB flow_zB _ _ (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) (fun _ => by norm_num) (szB_flow_ht (by norm_num))
-    ⟨fun _ => 15 / 16, fun _ => by norm_num, fun _ => by norm_num, szB_reg5I, szB_reg5II⟩
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Target 3 applied, regime (iii) at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_steps_III (h2 : STStep2 3) (h3 : STStep3I 3) (h4 : STStep4I 3) (h5 : STStep5III 3)
-    (h6 : STStep6III 3) : InstMainIndRConcl STReg5III sz0 z0 sInst tInst :=
-  inst_mainIndR _ (ST_mainIndR_III_of_steps 3 (RBM.Green.stStep1_holds (by norm_num)) h2 h3 h4 h5 h6)
-    sz0 z0 flow_z0 sInst tInst sz0_hs0 (fun n => (sz0_hst n).le.trans (sz0_ht n)) sz0_hst sz0_ht
-    sz0_reg5III sz0_con
-
-/-- Target 3 applied, regime (i) at `(szB, zB, 7/8, 15/16)`. -/
-theorem inst_steps_I (h2 : STStep2 3) (h3 : STStep3I 3) (h4 : STStep4I 3) (h5 : STStep5I 3)
-    (h6 : STStep6I 3) : InstMainIndRConcl STReg5I szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_mainIndR _ (ST_mainIndR_I_of_steps 3 (RBM.Green.stStep1_holds (by norm_num)) h2 h3 h4 h5 h6)
-    szB zB flow_zB _ _ (fun _ => by norm_num) (szB_flow_ht (by norm_num)) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5I
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Target 3 applied, regime (ii) at `(szB, zB, 15/16, 31/32)`. -/
-theorem inst_steps_II (h2 : STStep2 3) (h3 : STStep3II 3) (h4 : STStep4II 3) (h5 : STStep5II 3)
-    (h6 : STStep6II 3) : InstMainIndRConcl STReg5II szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_mainIndR _ (ST_mainIndR_II_of_steps 3 (RBM.Green.stStep1_holds (by norm_num)) h2 h3 h4 h5 h6)
-    szB zB flow_zB _ _ (fun _ => by norm_num) (szB_flow_ht (by norm_num)) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szB_reg5II
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Target 3 applied, regime (iv) at `(szG, zB, 5/8, 3/4)`. -/
-theorem inst_steps_IV (h2 : STStep2 3) (h3 : STStep3II 3) (h4 : STStep4II 3) :
-    InstMainIndRConcl STReg5IV szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_mainIndR _ (ST_mainIndR_IV_of_steps 3 (RBM.Green.stStep1_holds (by norm_num)) h2 h3 h4
-      (stStep5IV_holds 3) (stStep6IV_holds 3))
-    szG zB flow_zG _ _ (fun _ => by norm_num) (szB_flow_ht (by norm_num)) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) szG_reg4
-    (fun _ h𝔠 => conStInd_const szG szG_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-/-- Target 7 applied: `lem:main_ind` at `d = 3` on `(szB, zB, 0, 31/32)` (the pattern `((i), (ii))` over three
-cuts), from the ten owed step pins; only the stochastic premises `(a)`-`(d)` at `s` stay. -/
-theorem inst_mainInd3_data (h2 : STStep2 3) (h3I : STStep3I 3) (h3II : STStep3II 3) (h4I : STStep4I 3)
-    (h4II : STStep4II 3) (h5I : STStep5I 3) (h5II : STStep5II 3) (h6I : STStep6I 3) (h6II : STStep6II 3)
-    (h6III : STStep6III 3) :
-    InstMainIndRConcl STAny szB zB (fun _ => 0) (fun _ => 31 / 32) :=
-  inst_mainIndR _ ((ST_mainInd_iff_any 3).1 (ST_mainInd_of_pins 3 h2 h3I h3II h4I h4II h5I h5II h6I h6II h6III))
-    szB zB flow_zB _ _ (fun _ => by norm_num) (szB_flow_ht (by norm_num)) (fun _ => by norm_num)
-    (szB_flow_ht (by norm_num)) trivial
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠)
-
-end RBM.Gauss.MainIndRegimesInst

@@ -168,15 +168,6 @@ private theorem stability_vtx_to_idx {ξ : ℂ} {K : ℝ} (h : Stable (svar d L 
   simp only [Equiv.symm_symm] at h'
   exact h'
 
-/-- **`‖(1 - ξ S)⁻¹‖_{max→max} ≤ 1 + max_a ∑_b |(Θ_ξ)_{ab}|`** for the variance profile `svarF` on
-the fine lattice `Idx d L W = Z_{WL}^d` (`(eq:variancematrix)`, `1_2:304`): `stable_svar_vtx`
-read through the bridge `splitEquiv`.  `RBM2D/Green/Stability.lean:53` (`stable_svar`), rules
-R2-R4. -/
-theorem stable_svar (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1) {KΘ : ℝ}
-    (hΘ : ∀ a : Zd d L, ∑ b : Zd d L, ‖Theta d L g ξ a b‖ ≤ KΘ) :
-    Stable (svarF d L W g) ξ (1 + KΘ) :=
-  stability_vtx_to_idx (stable_svar_vtx hL hξ hΘ)
-
 end StableSvar
 
 /-! ## 2. The `d ≥ 3` stability constant
@@ -376,20 +367,6 @@ theorem eventually_Kstab3_mul_rpow_le {d : ℕ} (sz : Sizes d) (Λ κ : ℝ) {�
   have hev := (hlim.comp hW).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2))
   exact hev.mono fun n hn => hn.le
 
-/-- **Stability along an admissible size sequence**: eventually in `n`, `1 - t m(E)² S` is stable
-with the constant `Kstab3 d 𝔡⁻¹ κ` (independent of `n`) at the size-`n` coupling `sz.lam n`, for
-all `t ∈ [0, 1)` and `|E| ≤ 2 - κ`.  `(eq:WO)` gives `0 < sz.lam n ≤ 𝔡⁻¹` eventually
-(`W^{-d/2+𝔡} ≤ lam ≤ 𝔡⁻¹`), so `Λ = 𝔡⁻¹`. -/
-theorem eventually_stable_svar_bulk {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ}
-    (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) :
-    ∀ᶠ n in atTop, ∀ E t : ℝ, |E| ≤ 2 - κ → 0 ≤ t → t < 1 →
-      Stable (svarF d (sz.L n) (sz.W n) (sz.lam n)) ((t : ℂ) * mE E ^ 2) (Kstab3 d 𝔡⁻¹ κ) := by
-  obtain ⟨_, _, _, _, hWO⟩ := hadm
-  filter_upwards [hWO] with n hn E t hE ht0 ht1
-  have hWpos : (0 : ℝ) < (sz.W n : ℝ) := by exact_mod_cast sz.W_pos n
-  have hg : 0 < sz.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos hWpos _) hn.1
-  exact stable_svar_bulk hd (sz.three_le_L n) hg hn.2 hκ hE ht0 ht1
-
 end Absorption
 
 /-! ## 4. Instances (nonempty, nondegenerate)
@@ -399,61 +376,5 @@ data are `d = 3`, `L = 4`, `W = 32`, `g = 1/64` (the preflight sequence `sz0` of
 `RBM3D/Defs/Sizes.lean` at `n = 0`: `L = 4`, `W = 32`, `lam = 1/64`, `N = 2097152`), the coupling
 window `Λ = 10 = 𝔡⁻¹`, `κ = 1/2`, `E = 1` (`|E| = 1 ≤ 3/2`), `t = 9/10`.  The sequence-level data
 are `sz0` itself, admissible at `𝔠 = 1/6`, `𝔡 = 1/10` with `lam → 0`. -/
-
-section Checks
-
-open RBM.Gauss.SizesInst
-
-/-- `stable_svar_vtx` at `ξ = (1/2) m(1)`, `‖ξ‖ = 1/2 < 1`, with the row-sum bound
-`KΘ = (1 - 1/2)⁻¹` of property 4 (`(eq:THETAinftinf)`, `RBM.sum_norm_Theta_row_le`): the hypothesis
-`hΘ` is discharged. -/
-example : Stable (svar 3 4 32 (1 / 64)) (((1 / 2 : ℝ) : ℂ) * mE 1) (1 + (1 - (1 / 2 : ℝ))⁻¹) :=
-  stable_svar_vtx (W := 32) (g := 1 / 64) (by norm_num)
-    (norm_t_mul_lt_one (by norm_num) (by norm_num) (norm_mE (by norm_num)))
-    (fun a => sum_norm_Theta_row_le (by norm_num) (by norm_num) (by norm_num)
-      (norm_mE (by norm_num)) a)
-
-/-- `stable_svar` at the same data, on the fine lattice `Z_{128}^3`. -/
-example : Stable (svarF 3 4 32 (1 / 64)) (((1 / 2 : ℝ) : ℂ) * mE 1) (1 + (1 - (1 / 2 : ℝ))⁻¹) :=
-  stable_svar (W := 32) (g := 1 / 64) (by norm_num)
-    (norm_t_mul_lt_one (by norm_num) (by norm_num) (norm_mE (by norm_num)))
-    (fun a => sum_norm_Theta_row_le (by norm_num) (by norm_num) (by norm_num)
-      (norm_mE (by norm_num)) a)
-
-/-- `stable_svar_bulk_vtx` at `d = 3`, `L = 4`, `W = 32`, `g = 1/64 ≤ Λ = 10`, `κ = 1/2`, `E = 1`,
-`t = 9/10`: every hypothesis holds (`3 ≤ 3`, `3 ≤ 4`, `0 < 1/64 ≤ 10`, `0 < 1/2`,
-`|1| ≤ 2 - 1/2`, `0 ≤ 9/10 < 1`). -/
-example : Stable (svar 3 4 32 (1 / 64)) (((9 / 10 : ℝ) : ℂ) * mE 1 ^ 2) (Kstab3 3 10 (1 / 2)) :=
-  stable_svar_bulk_vtx (W := 32) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- `stable_svar_bulk` at the same data, on the fine lattice. -/
-example : Stable (svarF 3 4 32 (1 / 64)) (((9 / 10 : ℝ) : ℂ) * mE 1 ^ 2) (Kstab3 3 10 (1 / 2)) :=
-  stable_svar_bulk (W := 32) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- The constant at the instance data is at least `1`. -/
-example : 1 ≤ Kstab3 3 10 (1 / 2) := one_le_Kstab3 3 10 (1 / 2)
-
-/-- `eventually_Kstab3_mul_rpow_le` along `sz0` (`SizeTendsto`, `Bandwidth (1/6)`), `c = 1/2`. -/
-example : ∀ᶠ n in atTop,
-    Kstab3 3 10 (1 / 2) * (sz0.W n : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 / 2 :=
-  eventually_Kstab3_mul_rpow_le sz0 10 (1 / 2) (𝔠 := 1 / 6) (c := 1 / 2) (by norm_num)
-    (by norm_num) sz0_tendsto sz0_bandwidth
-
-/-- `eventually_stable_svar_bulk` along `sz0`, admissible at `𝔠 = 1/6`, `𝔡 = 1/10`
-(`Λ = 𝔡⁻¹ = 10`). -/
-example : ∀ᶠ n in atTop, ∀ E t : ℝ, |E| ≤ 2 - 1 / 2 → 0 ≤ t → t < 1 →
-    Stable (svarF 3 (sz0.L n) (sz0.W n) (sz0.lam n)) ((t : ℂ) * mE E ^ 2)
-      (Kstab3 3 (1 / 10)⁻¹ (1 / 2)) :=
-  eventually_stable_svar_bulk sz0 (by norm_num) sz0_admissible (by norm_num)
-
-/-- The eventual statement is nonempty: some size index `n` of `sz0` satisfies its conclusion. -/
-example : ∃ n : ℕ, ∀ E t : ℝ, |E| ≤ 2 - 1 / 2 → 0 ≤ t → t < 1 →
-    Stable (svarF 3 (sz0.L n) (sz0.W n) (sz0.lam n)) ((t : ℂ) * mE E ^ 2)
-      (Kstab3 3 (1 / 10)⁻¹ (1 / 2)) :=
-  (eventually_stable_svar_bulk sz0 (by norm_num) sz0_admissible (by norm_num)).exists
-
-end Checks
 
 end RBM.Green

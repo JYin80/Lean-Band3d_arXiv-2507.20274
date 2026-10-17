@@ -63,13 +63,6 @@ theorem GreenMinor_avg_mul_left (c : ℂ) (f : Fin (W ^ d) → ℂ) :
     GreenMinor_avg (fun o => c * f o) = c * GreenMinor_avg f := by
   unfold GreenMinor_avg; rw [← Finset.mul_sum]; ring
 
-theorem GreenMinor_avg_const [NeZero W] (c : ℂ) : GreenMinor_avg (fun _ : Fin (W ^ d) => c) = c := by
-  unfold GreenMinor_avg
-  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  have : ((W : ℝ) ^ d)⁻¹ * ((W ^ d : ℕ) : ℝ) = 1 := by rw [Nat.cast_pow]; exact GreenCore_w_mul
-  have h3 : (((W : ℝ) ^ d)⁻¹ : ℝ) * ((W ^ d : ℕ) : ℂ) = 1 := by exact_mod_cast this
-  rw [← mul_assoc, h3, one_mul]
-
 variable [NeZero L] [NeZero W]
 
 /-- `⟨M𝒦⟩_a = W^{-d} Σ_o Σ_{b'} M^{(B)}_{ab'} 𝒦_{(b',o),(a,o)}` (`GreenCore_K`). -/
@@ -78,31 +71,6 @@ def GreenMinor_avgK {d L W : ℕ} [NeZero L] [NeZero W] (G M X D : Matrix (Vtx d
   (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o : Fin (W ^ d), ∑ b' : Zd d L, Mb a b' * GreenCore_K G M X D t m (b', o) (a, o)
 
 variable {G X D M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ} {t : ℝ} {m s z : ℂ}
-
-/-- **S6, first half** (hypotheses of `GreenCore_E3`): `v̄_a - t Σ_b M^{(B)}_{ab} M^{(B)}_{ba} v̄_b = ⟨M𝒦⟩_a`. -/
-theorem GreenMinor_avgK_eq (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
-    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
-    (hMR : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
-    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hG0 : ∀ u, G u u ≠ 0) (a : Zd d L) :
-    GreenCore_vbar G M a - (t : ℂ) * ∑ b, Mb a b * Mb b a * GreenCore_vbar G M b = GreenMinor_avgK G M X D Mb t m a := by
-  have hM' : ∀ (b' a : Zd d L) (o : Fin (W ^ d)), M (b', o) (a, o) = Mb b' a := fun b' a o => by simp [hM]
-  have h1 : ∀ o : Fin (W ^ d), G (a, o) (a, o) - M (a, o) (a, o) =
-      (t : ℂ) * ∑ b, (Mb a b * Mb b a) * GreenCore_vbar G M b + ∑ b', Mb a b' * GreenCore_K G M X D t m (b', o) (a, o) := by
-    intro o
-    rw [GreenCore_E3 hGR hRG hMR hz hM hG0 (a, o) (a, o)]
-    congr 1
-    rw [Finset.mul_sum]
-    exact Finset.sum_congr rfl fun b _ => by simp only [hM']; ring
-  rw [show GreenCore_vbar G M a = (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o : Fin (W ^ d), (G (a, o) (a, o) - M (a, o) (a, o)) from rfl]
-  unfold GreenMinor_avgK
-  simp only [h1, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_add]
-  have : (((W : ℝ) ^ d)⁻¹ : ℝ) * (((W ^ d : ℕ) : ℂ) * ((t : ℂ) * ∑ b, (Mb a b * Mb b a) * GreenCore_vbar G M b)) =
-      (t : ℂ) * ∑ b, (Mb a b * Mb b a) * GreenCore_vbar G M b := by
-    have h3 : (((W : ℝ) ^ d)⁻¹ : ℝ) * ((W ^ d : ℕ) : ℂ) = 1 := by
-      have := GreenCore_w_mul (d := d) (W := W)
-      exact_mod_cast this
-    rw [← mul_assoc, h3, one_mul]
-  rw [this]; ring
 
 /-- **S6, second half** (only `hM`; the sum is over all `b'`, `𝔛_{uu} = 0` is not used):
 `⟨M𝒦⟩_a = Σ_{b'} M^{(B)}_{ab'} [t v̄_{b'} avg_o Δ - M^{(B)}_{b'a} avg_o 𝒜' - avg_o (𝒜' Δ) - avg_o 𝔛]`, `𝒜'_u = A_u + t v̄_{[u]}`. -/
@@ -326,10 +294,6 @@ def GreenMinor_lev (S : Finset (GreenMinor_Rows β o)) : Finset (Vtx d L W) :=
 theorem GreenMinor_lev_insert (k : GreenMinor_Rows β o) (S : Finset (GreenMinor_Rows β o)) :
     GreenMinor_lev (insert k S) = insert k.1 (GreenMinor_lev S) := by
   simp [GreenMinor_lev, Finset.map_insert]
-
-theorem GreenMinor_lev_union (S T : Finset (GreenMinor_Rows β o)) :
-    GreenMinor_lev (S ∪ T) = GreenMinor_lev S ∪ GreenMinor_lev T := by
-  simp [GreenMinor_lev, Finset.map_union]
 
 theorem GreenMinor_lev_card (S : Finset (GreenMinor_Rows β o)) : (GreenMinor_lev S).card = S.card := by
   simp [GreenMinor_lev]
@@ -877,85 +841,10 @@ S6 at the BA carrier (`d = 3`, `sz0` at `n = 0`: `L = 4`, `W = 32`; the flow `fl
 `τ = 1/20`, `p = 1`: the pin, `BAGiiGEX` (G6's) and `STInitialGT2gL` (the premise) stay hypotheses.  S4 on a real resolvent: see the last
 section. -/
 
-section CarrierInst
-open SizesInst FlowPinsInst
-
-private abbrev c_g₀ : ℝ := BAflowLam0 sz0 zSeq 0
-private abbrev c_E₀ : ℝ := BAflowEs sz0 zSeq 0
-private abbrev c_m₀ : ℂ := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0
-
 -- S6: the averaging identities at the carrier
-example (ω : sz0.SeqΩ) (a : Zd 3 (sz0.L 0)) :
-    GreenCore_vbar (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) a -
-        ((1 / 2 : ℝ) : ℂ) * ∑ b, BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀ a b * BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀ b a *
-          GreenCore_vbar (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) b =
-      GreenMinor_avgK (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) (GreenCore_Xc sz0 0 (1 / 2) ω)
-        (GreenCore_Dc sz0 zSeq 0) (BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀) (1 / 2) c_m₀ a ∧
-    GreenMinor_avgK (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) (GreenCore_Xc sz0 0 (1 / 2) ω)
-        (GreenCore_Dc sz0 zSeq 0) (BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀) (1 / 2) c_m₀ a =
-      ∑ b', BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀ a b' *
-        (((1 / 2 : ℝ) : ℂ) * GreenCore_vbar (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) b' *
-            GreenMinor_avg (fun o : Fin (sz0.W 0 ^ 3) => GreenCore_Gc sz0 zSeq 0 (1 / 2) ω (b', o) (a, o) - GreenCore_Mc sz0 zSeq 0 (b', o) (a, o))
-          - BAMB 3 (sz0.L 0) c_g₀ (c_E₀ : ℂ) c_m₀ b' a *
-            GreenMinor_avg (fun o : Fin (sz0.W 0 ^ 3) =>
-              GreenCore_Arow (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Xc sz0 0 (1 / 2) ω) (GreenCore_Dc sz0 zSeq 0) (1 / 2) c_m₀ (b', o) +
-                ((1 / 2 : ℝ) : ℂ) * GreenCore_vbar (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) b')
-          - GreenMinor_avg (fun o : Fin (sz0.W 0 ^ 3) =>
-              (GreenCore_Arow (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Xc sz0 0 (1 / 2) ω) (GreenCore_Dc sz0 zSeq 0) (1 / 2) c_m₀ (b', o) +
-                ((1 / 2 : ℝ) : ℂ) * GreenCore_vbar (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Mc sz0 zSeq 0) b') *
-              (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω (b', o) (a, o) - GreenCore_Mc sz0 zSeq 0 (b', o) (a, o)))
-          - GreenMinor_avg (fun o : Fin (sz0.W 0 ^ 3) =>
-              GreenCore_Xrow (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω) (GreenCore_Xc sz0 0 (1 / 2) ω) (b', o) (a, o))) := by
-  obtain ⟨hGR, hRG, -, hMR, hz, hM, hMd, hD, hG0⟩ :=
-    GreenCore_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 0 (t := 1 / 2) (by norm_num) (half_lt_t0 0).le ω
-      (m := c_m₀) (s := (c_E₀ : ℂ) + c_m₀) (zt := ztOf c_m₀ c_E₀ (1 / 2)) rfl rfl rfl
-  exact ⟨GreenMinor_avgK_eq hGR hRG hMR hz hM hG0 a, GreenMinor_avg_split hM a⟩
-
 -- the owed pins: the premise `BAGiiGEX` at `ε₀/2` is an instance of G6's owed `BAGbEXPii` (`∀ ε₀ > 0`, `BA/Step1Boot.lean:108`)
-example (hG : BAGbEXPii 3) : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
-  exact hG (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10 / 2) (by norm_num)
-
 -- `BAFAav` at `ε₀ = 1/10`; the entrywise law is the hypothesis `hii` at `ε₀/2 = 1/20`
-example (h : BAFAav 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) :
-    STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
-        (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) →
-      PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n))
-        (fun n a ω => ‖(((sz0.W n : ℝ) ^ 3)⁻¹ : ℝ) * ∑ o, ∑ b',
-          BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b' *
-            GreenCore_K (GreenCore_Gc sz0 zSeq n (1 / 2) ω) (GreenCore_Mc sz0 zSeq n) (GreenCore_Xc sz0 n (1 / 2) ω)
-              (GreenCore_Dc sz0 zSeq n) (1 / 2) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) (b', o) (a, o)‖)
-        (fun n _ _ => (((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) ^ 2) := by
-  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
-  have hii' : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
-    rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii
-  exact h (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hii' (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))
-    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
-    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
-
 -- `BAFamGain` at the same data, `τ = 1/20`, `p = 1` (`M = K = 2`): `∃ C ≥ 0` and, eventually in `n`, the two `famGain` statements for every `β ≠ α`
-example (h : BAFamGain 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) :
-    STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
-        (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) →
-      ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ β α : Zd 3 (sz0.L n), β ≠ α →
-        GreenMinor_famGain (sz0.withLam 0) n (Iblk 3 (sz0.L n) (sz0.W n) β) (GreenMinor_famA sz0 zSeq (fun _ => 1 / 2) n)
-          (C * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)))
-          (4 * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) (2 * 1) (2 * 1) ∧
-        GreenMinor_famGain (sz0.withLam 0) n (Iblk 3 (sz0.L n) (sz0.W n) β) (GreenMinor_famX sz0 zSeq (fun _ => 1 / 2) n α)
-          (C * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)))
-          (4 * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) (2 * 1) (2 * 1) := by
-  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
-  have hii' : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
-    rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii
-  intro hinit
-  exact h (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hii' (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))
-    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
-    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)) hinit (1 / 20) (by norm_num) (by norm_num) 1
-
-end CarrierInst
-
 /-! ## 5. S4 on a real resolvent (`d = 3`, `L = 3`, `W = 2`)
 
 The datum is that of `BA/GreenMinor2.lean` (`GreenMinorInst.hH`): `H = ε J_C` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a
@@ -965,39 +854,6 @@ protected row of `R_{0,0}`, `y = (e_0, 0)` of offset `0` in another block), `ε 
 `a, b ∈ {p, y}`, that enter `Y^X_{py}` (`Δ_q Δ_{ab} = G_{aq} G_{qb}/G_{qq}`). -/
 
 
-section RealResolvent
-open GreenMinorInst
-
 -- S4 at `u = p`, `l = [q]` on the real resolvent `G = (H - i)⁻¹`: the tower (R1), the good event (S2; `κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the
 -- two bounds; `Δ_{py} ≠ 0`
-example :
-    GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) ∧
-    GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 ∧
-    green hH Complex.I hp hy - hM hp hy ≠ 0 ∧
-    ‖iterDeltaFam [hq] (fun S => GreenMinor_YX (GreenMinor_Gs hH Complex.I S) hM hD hm hm hp hy) ∅‖ ≤
-        GreenMinor_cY 3 (1 / 2) (1 / 10) ‖hm‖ [hq].length * (2 * (1 / 100)) ^ ([hq].length + 1) ∧
-    ‖iterDeltaFam [hq] (fun S => GreenMinor_YA (GreenMinor_Gs hH Complex.I S) hM hD hm hm hp) ∅‖ ≤
-        GreenMinor_cY 3 (1 / 2) (1 / 10) ‖hm‖ [hq].length * (2 * (1 / 100)) ^ ([hq].length + 1) := by
-  have hT : GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) :=
-    GreenMinor_tower hH_herm (by simp)
-  have hgood : GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 :=
-    GreenMinor_good_of_event (Mb := hMb) (m := hm) (fun _ _ => rfl) (fun a => by simp [hMb]) (by norm_num)
-      (by simp [hm]; norm_num) (by norm_num) (by norm_num) (by norm_num) hT hGΔ 0 0
-  have hy1 : hy.1 ≠ 0 := by decide
-  have hMuy : ‖hM hp hy‖ ≤ 1 := by
-    rw [hMe]
-    simp [hpy]
-  have hΔpy : green hH Complex.I hp hy - hM hp hy ≠ 0 := by
-    rw [green_hH, hGex_sub]
-    have hp' : hp ∈ hC := by simp [hC]
-    have hy' : hy ∈ hC := by simp [hC]
-    simp [hp', hy', hcc_ne]
-  have hdiff := GreenMinor_diff (G := green hH Complex.I) (M := hM) (D := hD) (Mb := hMb)
-    (Gs := GreenMinor_Gs hH Complex.I) (s := hm) (m := hm) (κ := 1 / 2) (δ := 1 / 100) (g₀ := 1 / 10) (m₀ := 3) (β := 0) (o := 0)
-    (u := hp) (y := hy) (by norm_num) (by norm_num) (fun _ _ => rfl) (fun _ _ => rfl) (by norm_num) (by norm_num)
-    (by simp [hm]; norm_num) hMuy hT hgood rfl ⟨rfl, hy1⟩ [hq] (by simp) (by simp [GreenMinor_R, hq]) (by simp) (by norm_num)
-  exact ⟨hT, hgood, hΔpy, hdiff.1, hdiff.2⟩
-
-end RealResolvent
-
 end RBM.BA

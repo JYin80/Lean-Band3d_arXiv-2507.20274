@@ -94,12 +94,6 @@ def STNQConclPTgL'' {d : ℕ} {sz : Sizes d} (Cf : FlowFM sz) (μ : Measure sz.S
       (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * XLK n_ n (q.1 : ℝ) +
         STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (s n)) n_ p)
 
-/-- **Target 13, `STOeqNQgL''`** (= `T2491_OeqNQgL''`, binding text; band `STOeqNQ''`, `NQEndFlow.lean:124`; no proof here, note 2). -/
-def STOeqNQgL'' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
-    (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz)
-    (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
-  STIngRgL d STCaseI law Flow mk T0 (fun sz z s t => STNQConclgL'' (mk sz z) (law sz) s t)
-
 /-- **Target 13/14, `STOeqNQPTgL''`** (= `T2491_OeqNQPTgL''`, binding; band `STOeqNQPT''`, `NQEndFlow.lean:155`): the per-time R2* pin, case (i). -/
 def STOeqNQPTgL'' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz)
@@ -149,53 +143,6 @@ def STIterationsIIgL' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
   STIterRgL' d STCaseII law Flow mk T0 (fun sz s n => STAII sz s n)
 end Texts
 
-section TextBridges
-
-variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ)
-
-theorem bandFM_STXiBoot' : STXiBoot' sz E s t ↔ STXiBootgL' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
-theorem bandFM_STNQConcl'' : STNQConcl'' sz E s t ↔ STNQConclgL'' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
-theorem bandFM_STNQConclPT'' : STNQConclPT'' sz E s t ↔ STNQConclPTgL'' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
-
-end TextBridges
-
-section FamilyBridges
-
-theorem bandFM_STOeqNQ'' (d : ℕ) :
-    STOeqNQ'' d ↔ STOeqNQgL'' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STCaseI (fun sz E s t => STNQConcl'' sz E s t)
-
-theorem bandFM_STOeqNQPT'' (d : ℕ) :
-    STOeqNQPT'' d ↔ STOeqNQPTgL'' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STCaseI (fun sz E s t => STNQConclPT'' sz E s t)
-
-theorem bandFM_STOeqQt' (d : ℕ) :
-    STOeqQt' d ↔ STOeqQtgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STCaseI (fun sz E s t => STXiBoot' sz E s t)
-
-theorem bandFM_STOeqQtNZ' (d : ℕ) :
-    STOeqQtNZ' d ↔ STOeqQtNZgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STCaseII (fun sz E s t => STXiBoot' sz E s t)
-
-theorem bandFM_STIterR' (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) :
-    STIterR' d R Aof ↔ STIterRgL' d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz s n => Aof sz s n) := Iff.rfl
-
-theorem bandFM_STIterations' (d : ℕ) :
-    STIterations' d ↔ STIterationsgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
-
-theorem bandFM_STIterationsII' (d : ℕ) :
-    STIterationsII' d ↔ STIterationsIIgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
-
-end FamilyBridges
-
 /-! ## 2. Target 15 (D2, class (t)): the time modulus of `𝒦`
 
 Text fixed at the 1a-audit (= `T2491_KLip`, `T2491_KLipFam`): the conclusion of `stKloop_lip` (`NQEndFlowLift:581`, 250 lines, merged) with `STKloop`
@@ -216,23 +163,6 @@ def NQEndFlowGen_KLipFam (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 :
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
   3 ≤ d → ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → 0 < ε → Flow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, t n ≤ T0 sz z n) → ∀ k : ℕ, 2 ≤ k → NQEndFlowGen_KLip (mk sz z) t k
-
-/-- **D2, band discharge** (all `d ≥ 3`): `stKloop_lip` at `κ/2`, `gmax = 𝔡⁻¹` (`WO`), with `|E| < 2 - κ/2`, `t < 1` and `RangeCond (ε/2)` from
-`v3_premises_of_stFlow`, which give `(1 - t)⁻¹ ≤ N`. -/
-theorem nqEndFlowGen_kLip_band (d : ℕ) : NQEndFlowGen_KLipFam d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
-  intro hd sz κ ε 𝔠 𝔡 z hκ hε hflow t ht k hk
-  obtain ⟨hA, hE, ht1, hR⟩ := Green.v3_premises_of_stFlow sz hκ hε hflow ht
-  refine stKloop_lip sz hd (κ := κ / 2) (gmax := 𝔡⁻¹) (half_pos hκ) (inv_pos.2 hA.2.1) hA.2.2.1 (STflowE z) t
-    (Eventually.of_forall fun n => (hE n).le) (hA.2.2.2.2.mono fun n hn => ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos
-      (by exact_mod_cast sz.W_pos n) _) hn.1, hn.2⟩) ht1 ?_ k hk
-  filter_upwards [hR, (sz.tendsto_size hA.2.2.1).eventually_ge_atTop 1] with n hn hN1
-  have hN : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
-  have hp : 0 < ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) := Real.rpow_pos_of_pos (by linarith) _
-  calc (1 - t n)⁻¹ ≤ (((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2))⁻¹ := inv_anti₀ hp hn
-    _ = ((sz.size n : ℕ) : ℝ) ^ (-(-1 + ε / 2)) := (Real.rpow_neg (by linarith) _).symm
-    _ ≤ ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-    _ = _ := Real.rpow_one _
 
 end D2
 
@@ -778,110 +708,12 @@ rows 1-5 and 12 are the band discharges of `gridGoodNgL_of` (`Chain/GridGoodGen.
 (`κm = √κ/2`) and `‖mE‖ = 1`; row 7 is `rfl` and `hierDriftGen_SB_row`; row 8 `gridRepTailGen_ker_band`; row 9 the four `hierDriftGen_*_band` and the link
 `rfl`; row 10 `nqGoodGen_kerNAL_band` and `A = 1`; row 11 `v3_premises_of_stFlow`.  No hypothesis is left open: the pin is a theorem at every `d ≥ 3`. -/
 
-section BandReDerivation
-
-namespace NQEndFlowGenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- The energy of a flow is in the bulk: `|E(z)| ≤ |Re z| ≤ 2 - κ` (`abs_lemE_le`). -/
-private theorem flow_abs_le {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (ST_flow_im_pos sz hz n)).trans (hz.2 n).1
-
-/-- **The band re-derivation of `stOeqNQPT''_holds` at every `d ≥ 3`** through `stOeqNQPTgL''_of`: every row of the family-premise table is discharged at the
-band family; the generic pin `STOeqNQPTgL''` holds with no open hypothesis. -/
-theorem stOeqNQPTgL''_band (d : ℕ) (hd : 3 ≤ d) : STOeqNQPTgL'' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n)) :=
-  stOeqNQPTgL''_of d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz z => seqHflow sz) (fun _ z => STflowE z)
-    (fun sz _ => sz.lam) (fun sz _ => sz.lam) (fun _ _ _ => 0) (fun _ => 1)
-    ((bandFM_STSEforLn d).1 (stSEforLn_holds d)) (Step2EventsGen_bandFlow d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => ⟨Real.sqrt κ / 2, DecayGen_bandSpec sz hκ (flow_abs_le hz)⟩)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stepDecompGen_loopForm_band sz _ fun n => (flow_abs_le hz n).trans_lt (by linarith))
-    (fun sz κ ε 𝔠 𝔡 z _ _ => stepDecompGen_walkForm_band sz _)
-    (fun sz z => Step2EventsGen_bandLaw sz _) (fun sz z => bandStep34_LCompat sz _)
-    (fun sz z => DecayGen_bandWardPair sz _)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => bandFM_STKcalDecay hd sz hκ hz.1 (flow_abs_le hz))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz s t hs hst ht1 hU k hk σ =>
-      stEtermDecay hd sz hκ (flow_abs_le hz) hz.1 hs hst ht1 ((bandFM_STDecayLoopU sz _ s t).2 hU) k hk σ)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz n => (norm_mE (by linarith [flow_abs_le hz n])).le)
-    (fun sz z n => rfl) (fun sz z n a => hierDriftGen_SB_row sz n a)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz n => gridRepTailGen_ker_band sz _ n (by linarith [flow_abs_le hz n]))
-    (fun sz z n w k σ a => rfl)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall fun n s' t' K' =>
-      hierDriftGen_expand_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith)) s' t' K' n)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_kLoop_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_kTwo_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => Eventually.of_forall
-      (hierDriftGen_uStep_band sz _ (fun n => (flow_abs_le hz n).trans_lt (by linarith))))
-    (nqGoodGen_kerNAL_band d)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => ⟨le_rfl, fun n => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩⟩)
-    (fun sz κ ε 𝔠 𝔡 z hκ hε hz => ⟨ε / 2, half_pos hε, (Green.v3_premises_of_stFlow sz hκ hε hz (fun n => le_rfl)).2.2.2⟩)
-
-/-- `stOeqNQPTgL''_band` at `d = 3` (used by the instances of §6). -/
-theorem stOeqNQPTgL''_band3 : STOeqNQPTgL'' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n)) :=
-  stOeqNQPTgL''_band 3 le_rfl
-
-end NQEndFlowGenCheck
-
-/-- **Band re-derivation of `stOeqNQPT''_holds`** (`NQEndFlow:921`, the same statement `∀ d, STOeqNQPT'' d`): for `3 ≤ d` the merged band pin from the generic
-one (`stOeqNQPTgL''_band`) through `bandFM_STOeqNQPT''`; for `d < 3` the pin is vacuous (`STIngRgL` starts with `3 ≤ d →`). -/
-theorem stOeqNQPT''_holds_of_gen (d : ℕ) : STOeqNQPT'' d := by
-  by_cases hd : 3 ≤ d
-  · exact (bandFM_STOeqNQPT'' d).2 (NQEndFlowGenCheck.stOeqNQPTgL''_band d hd)
-  · exact fun h => absurd h hd
-
-end BandReDerivation
-
 /-! ## 6. Compiled nonempty instances (`d = 3`)
 
 Data of the merged band instances (`Induction/Step34PinsP.lean:170-215`, `Induction/Defs.lean:435`): `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`:
 `L = 4`, `W = 32`, `N = 2^21`), the flow `z0` (`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`), `s ≡ 0`, `t ≡ 1/16`
 (`t ≤ lemT z0`, `STCaseI`: `sz0_caseI`; `(con_st_ind)` for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`; and for D2 `(szB, zB)`, `t ≡ 15/16`.  What stays a hypothesis of an
 example is a stochastic premise that is another gate's pin (`STKboundgL`, `STKwardgL`, `STLKgL s`, `STStep2ConclgL`): they are the premises of `STIngRgL`. -/
-
-section Instances
-
-namespace NQEndFlowGenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- **Target 14 at the data**: the generic per-time pin `STOeqNQPTgL''` (no open hypothesis, `stOeqNQPTgL''_band3`) evaluated at `(sz0, z0)`, window
-`[0, 1/16]`, `C_d = 1`: given the four stochastic pins of `STIngRgL`, the per-time conclusion `STNQConclPTgL''` holds for the band carrier. -/
-example (hKb : STKboundgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0)) (hKw : STKwardgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0))
-    (hLK : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst)
-    (hStep2 : STStep2ConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst 1) :
-    STNQConclPTgL'' (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst := by
-  obtain ⟨𝔠d, h0, -, hC⟩ := stOeqNQPTgL''_band3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) 1 one_pos
-  exact hC (1 / 6) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI hKb hKw hLK (sz0_con 𝔠d h0) hStep2
-
-/-- **Target 14, band corollary at the data**: the merged pin `STOeqNQPT'' 3` (`stOeqNQPT''_holds_of_gen 3`) evaluated at `(sz0, z0)` by the merged `inst_ing`. -/
-example : InstIngConcl (fun sz E s t => STNQConclPT'' sz E s t) sz0 z0 sInst tInst 1 :=
-  inst_ing STCaseI (fun sz E s t => STNQConclPT'' sz E s t) (stOeqNQPT''_holds_of_gen 3) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con 1 one_pos
-
-/-- **Target 15 (D2) at the data**: the time modulus of `𝒦^{(2)}` at the band flow `(szB, zB)`, `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`, `t ≡ 15/16 ≤ lemT zB`, `d = 3`. -/
-example : NQEndFlowGen_KLip (bandFM szB (STflowE zB)) (fun _ => 15 / 16) 2 :=
-  nqEndFlowGen_kLip_band 3 le_rfl szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) (by norm_num) flow_zB
-    (fun _ => 15 / 16) (fun n => (by norm_num : (15 / 16 : ℝ) ≤ 31 / 32).trans (lemT_zB n)) 2 le_rfl
-
-/-- The same at `k = 3`, window `t ≡ 15/16`. -/
-example : NQEndFlowGen_KLip (bandFM szB (STflowE zB)) (fun _ => 15 / 16) 3 :=
-  nqEndFlowGen_kLip_band 3 le_rfl szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB (by norm_num) (by norm_num) flow_zB
-    (fun _ => 15 / 16) (fun n => (by norm_num : (15 / 16 : ℝ) ≤ 31 / 32).trans (lemT_zB n)) 3 (by norm_num)
-
-/-- **Target 13, the texts at the band** (`bandFM_STIngR`): the band pins are the generic ones; the two bridged pins that are theorems here. -/
-example : STOeqNQPT'' 3 ↔ STOeqNQPTgL'' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := bandFM_STOeqNQPT'' 3
-
-end NQEndFlowGenCheck
-
-end Instances
 
 end RBM.BA
 

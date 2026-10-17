@@ -51,15 +51,6 @@ def pvalW {E : Type} (P : PGraph E) (D : LData ι) (W : (P.E' ⊕ P.I' → ι) �
   open Classical in
   if h : ∃ ℓ' : P.E' → ι, ℓe = ℓ' ∘ P.ext then valW P.g D W h.choose else 0
 
-theorem valW_one {E I : Type} [Fintype I] [DecidableEq I] (Γ : LGraph E I) (D : LData ι) (ℓe : E → ι) :
-    valW Γ D (fun _ => 1) ℓe = Γ.val D ℓe := by
-  simp [valW, LGraph.val]
-
-theorem pvalW_one {E : Type} (P : PGraph E) (D : LData ι) (ℓe : E → ι) :
-    pvalW P D (fun _ => 1) ℓe = P.val D ℓe := by
-  unfold pvalW PGraph.val
-  simp only [valW_one]
-
 end Weighted
 
 /-- an output `Q` of a step from `P`, with its **provenance map** `π` (old vertex ↦ vertex of the output) -/
@@ -103,17 +94,6 @@ theorem ProvOut.Molecular.comp {P : PGraph (Fin 2)} {o : ProvOut P} {o' : ProvOu
 /-- a leaf of the recursion: the graph itself with the identity map -/
 theorem WExp.refl (m : ℂ) (P : PGraph (Fin 2)) : WExp m P [⟨P, id⟩] := by
   intro d sz n z u Sp M _ _ _ _ _ _ _ _ _ W ℓe; simp
-
-/-- **the recursion step** (`lwEngine_combine`, `LWEngine.lean:628`, with maps): if `P` expands into `outs` and each output
-expands into `outs' o`, then `P` expands into the composites, the maps composing. -/
-theorem WExp.comp {m : ℂ} {P : PGraph (Fin 2)} {outs : List (ProvOut P)} (h : WExp m P outs)
-    (outs' : ∀ o : ProvOut P, List (ProvOut o.Q)) (h' : ∀ o ∈ outs, WExp m o.Q (outs' o)) :
-    WExp m P (outs.flatMap fun o => (outs' o).map o.comp) := by
-  intro d sz n z u Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 W ℓe
-  rw [h Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 W ℓe, lvl1_sum_flatMap]
-  refine congrArg List.sum (List.map_congr_left fun o ho => ?_)
-  rw [h' o ho Sp M hG hz hu hm0 hzm hSp hSpT hM hM0 (fun ℓ => W (ℓ ∘ o.π)) ℓe, List.map_map]
-  rfl
 
 /-- **the weighted identity of the ticket**: `W = Π_k w_k(ℓ β^{(k)})` gives `E[Π_k f^{w_k}] = Σ_r E[Σ_{ℓ_i} Π_k w_k(ℓ(π_r β^{(k)})) term_r]` -/
 theorem WExp.prod {m : ℂ} {p : ℕ} {outs : List (ProvOut (fxyPowGraph p).pack)} (h : WExp m (fxyPowGraph p).pack outs)
@@ -160,10 +140,6 @@ def ProvOutX.Cover (p : ℕ) (o : ProvOutX (fxyPowGraph p).pack) : Prop :=
 def mkProv (m : ℂ) (t0 : ℕ × ℕ) (P : PGraph (Fin 2)) (r : (ℕ × ℕ) × PGraph (Fin 2))
     (π : P.E' ⊕ P.I' → r.2.E' ⊕ r.2.I') : ProvOut (lwEvX m (t0, P)) := ⟨lwEvX m (lwEngine_shift t0 r), π⟩
 
-def stepOuts (m : ℂ) (t0 : ℕ × ℕ) (P : PGraph (Fin 2)) (LX : List ((ℕ × ℕ) × PGraph (Fin 2)))
-    (π : ∀ r ∈ LX, P.E' ⊕ P.I' → r.2.E' ⊕ r.2.I') : List (ProvOut (lwEvX m (t0, P))) :=
-  LX.attach.map fun r => mkProv m t0 P r.1 (π r.1 r.2)
-
 /-- **`lw_localregularX` with provenance** (the statement of the engine row) -/
 def LWEngineProv : Prop :=
   ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ),
@@ -172,19 +148,6 @@ def LWEngineProv : Prop :=
         LWLocRegConcl p m c K0 d D ((outs.map (·.ev m)).map (·.Q)) ((errs.map (·.ev m)).map (·.Q)) ∧
         (∀ Q ∈ ((outs ++ errs).map (·.ev m)).map (·.Q), p ≤ Q.g.waved.countP (fun e => !e.col)) ∧
         WExp m (fxyPowGraph p).pack ((outs ++ errs).map (·.ev m))
-
-/-- the engine with provenance strengthens the merged `lw_localregularX` (`LWEngine.lean:771-775`) -/
-theorem lwEngineProv_imp_localregularX (h : LWEngineProv) : ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ),
-    ∃ outsX errsX : List ((ℕ × ℕ) × PGraph (Fin 2)), ∀ m : ℂ, m ≠ 0 →
-      LWLocRegConcl p m c K0 d D (outsX.map (lwEvX m)) (errsX.map (lwEvX m)) ∧
-      ∀ Q ∈ outsX.map (lwEvX m) ++ errsX.map (lwEvX m), p ≤ Q.g.waved.countP (fun e => !e.col) := by
-  intro p c hc K0 d D
-  obtain ⟨outs, errs, -, H⟩ := h p c hc K0 d D
-  refine ⟨outs.map fun o => (o.tag, o.Q), errs.map fun o => (o.tag, o.Q), fun m hm => ?_⟩
-  obtain ⟨h1, h2, -⟩ := H m hm
-  simp only [List.map_map, Function.comp_def, ProvOutX.ev] at h1 h2 ⊢
-  refine ⟨h1, fun Q hQ => h2 Q ?_⟩
-  simpa [List.map_append, List.map_map, Function.comp_def, ProvOutX.ev] using hQ
 
 /-- `f_{xy}` with the sum over `β` restricted to the blocks in `D` (`f^{>ℓ}`, `f^{≤ℓ}`, `7_8:1607-1611`); `D = univ` is `LWf` -/
 def LWfD {d : ℕ} (sz : Sizes d) (n : ℕ) (E t : ℝ) (ω : sz.SeqΩ) (D : Finset (Zd d (sz.L n)))
@@ -982,12 +945,6 @@ theorem lwProv_term_zero_dots {ι : Type*} [Fintype ι] [DecidableEq ι] (T : LG
     · exact List.prod_eq_zero (List.mem_map.2 ⟨_, h1, by simp [DEdge.val, hl]⟩)
   simp [LGraph.term, hprod]
 
-theorem lwProv_EW_zero (hG : GaussIBP sz) (hz : 0 < z.im) {I' : Type} [Fintype I'] [DecidableEq I'] (T : LGraph E I')
-    (hT : ∀ (D : LData (Idx d (sz.L n) (sz.W n))) ℓ, T.term D ℓ = 0) (W : (E ⊕ I' → Idx d (sz.L n) (sz.W n)) → ℝ)
-    (ℓe : E → Idx d (sz.L n) (sz.W n)) : lwProv_EW sz n z u M Sp T W ℓe = 0 := by
-  rw [lwProv_EW_eq hG hz]
-  exact Finset.sum_eq_zero fun ℓi _ => by simp [hT]
-
 theorem lwProv_valW_integrable (hG : GaussIBP sz) (hz : 0 < z.im) {I' : Type} [Fintype I'] [DecidableEq I']
     (T : LGraph E I') (W : (E ⊕ I' → Idx d (sz.L n) (sz.W n)) → ℝ) (ℓe : E → Idx d (sz.L n) (sz.W n)) :
     Integrable (fun ω => valW T (lwSampleData sz n z u M (lwS sz n u) Sp ω) W ℓe) (Sizes.seqP sz) :=
@@ -1211,13 +1168,6 @@ theorem lwProv_pvalW_evX_pack (m : ℂ) (v : ℕ × ℕ) (P : PGraph (Fin 2)) (Q
     pvalW (lwEvX m (v, Q.lvl1Comp P.ext P.ext_surj)) D W (ℓ' ∘ P.ext) = lwEngine_ev3 m v * pvalW Q D W ℓ' := by
   exact (lwProv_pvalW_evX m (v, Q.lvl1Comp P.ext P.ext_surj) D W (ℓ' ∘ P.ext)).trans
     (congrArg _ (lwProv_pvalW_comp Q P.ext P.ext_surj D W ℓ'))
-
-theorem lwProv_pvalW_comp_not {E E' : Type} (Q : PGraph E') (f : E → E') (hf : Function.Surjective f) (D : LData ι)
-    (W : (Q.E' ⊕ Q.I' → ι) → ℝ) {ℓe : E → ι} (h : ¬ ∃ ℓ' : E' → ι, ℓe = ℓ' ∘ f) :
-    pvalW (Q.lvl1Comp f hf) D W ℓe = 0 := by
-  refine lwProv_pvalW_of_not (Q.lvl1Comp f hf) D W ?_
-  rintro ⟨ℓ'', hℓ''⟩
-  exact h ⟨ℓ'' ∘ Q.ext, hℓ''⟩
 
 end Pack
 
@@ -1707,114 +1657,7 @@ end Engine
 
 /-! ## 8. Compiled instances -/
 
-namespace LWProvInst
-
-/-- the identity map is molecular (the induction start of `CoverBy.comp`) -/
-theorem ProvOut.molecular_id (P : PGraph (Fin 2)) : (⟨P, id⟩ : ProvOut P).Molecular := (lwProv_id_ok P).2
-
-/-- `valW_one`, `pvalW_one` at `fxyPowGraph 2`, the data of `lwEngine_inst_step1_identity` at the sample `ω = 0` -/
-example : pvalW (fxyPowGraph 2).pack (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-    (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp 0) (fun _ => 1) lwSymmInstL =
-    (fxyPowGraph 2).pack.val (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-      lwWxInstSp 0) lwSymmInstL := pvalW_one _ _ _
-
-/-- the leaf composed with itself: `WExp.refl`, `WExp.comp` at `fxyPowGraph 2` -/
-example (m : ℂ) : ∃ outs : List (ProvOut (fxyPowGraph 2).pack), WExp m (fxyPowGraph 2).pack outs :=
-  ⟨_, WExp.comp (WExp.refl m _) (fun o => [⟨o.Q, id⟩]) fun o _ => WExp.refl m o.Q⟩
-
-/-- `Molecular.comp`, `CoverBy.comp` at the identity maps of `fxyPowGraph 2`; the initial coverage is proved -/
-example : ((⟨_, id⟩ : ProvOut (fxyPowGraph 2).pack).comp ⟨_, id⟩).Molecular :=
-  (ProvOut.molecular_id _).comp (ProvOut.molecular_id _)
-example : CoverBy (P := (fxyPowGraph 2).pack) fun k : Fin 2 => Sum.inr (localReg_fxyBeta k) :=
-  CoverBy.comp (lwProv_fxyCover 2) (ProvOut.molecular_id _)
-
-/-- **`lw_localregularXP`** at `p = 2`, `c = 1/4`, `K0 = 1`, `d = 3`, `D = 10` (the only hypothesis `0 < c` is discharged), and its
-strengthened consequence `lw_localregularX` -/
-example := lw_localregularXP 2 (1 / 4) (by norm_num) 1 3 10
-example := lwEngineProv_imp_localregularX lw_localregularXP 2 (1 / 4) (by norm_num) 1 3 10
-
-/-- **`WExp.prod`** at the data of `lwEngine_inst_step1_identity` (`d = 3`, `L = 3`, `W = 1`, `m = i`; every hypothesis discharged,
-the expansion `WExp` from `lw_localregularXP`), `p = 2`, weights `w_k(x) = 1` at `x = 0` and `1/2` elsewhere -/
-example : ∃ outs : List (ProvOut (fxyPowGraph 2).pack), WExp (mE 0) (fxyPowGraph 2).pack outs ∧
-    ∫ ω, pvalW (fxyPowGraph 2).pack (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM (lwS lwWxInstSz 0 (1 / 2))
-        lwWxInstSp ω) (fun ℓ => ∏ k, (fun _ x => if x = 0 then (1 : ℝ) else 1 / 2) k (ℓ (Sum.inr (localReg_fxyBeta k))))
-        lwSymmInstL ∂(Sizes.seqP lwWxInstSz) =
-      (outs.map fun o => ∫ ω, pvalW o.Q (lwSampleData lwWxInstSz 0 (zt 0 (1 / 2)) (1 / 2) lwWxInstM
-        (lwS lwWxInstSz 0 (1 / 2)) lwWxInstSp ω) (fun ℓ => ∏ k, (fun _ x => if x = 0 then (1 : ℝ) else 1 / 2) k
-          (ℓ (o.π (Sum.inr (localReg_fxyBeta k))))) lwSymmInstL ∂(Sizes.seqP lwWxInstSz)).sum := by
-  obtain ⟨outs, errs, -, H⟩ := lw_localregularXP 2 (1 / 4) (by norm_num) 1 3 10
-  have h : WExp (mE 0) (fxyPowGraph 2).pack ((outs ++ errs).map (·.ev (mE 0))) := (H (mE 0) (lwWx_mE_ne 0 lwWx_inst_hE)).2.2
-  exact ⟨_, h, WExp.prod h lwWxInstSp lwWxInstM (gaussIBP lwWxInstSz) lwWx_inst_im (by norm_num)
-    (lwWx_mE_ne 0 lwWx_inst_hE) (lwWx_flow 0 (1 / 2) lwWx_inst_hE) lwWx_inst_hSp lwSymm_inst_hSpT lwWx_inst_hM
-    lwSymm_inst_hM0 (fun _ x => if x = 0 then 1 else 1 / 2) lwSymmInstL⟩
-
-/-- **the weighted bridge** at `p = 2`, `D = univ`: the merged value `|f_{xy}|²` of `fxyPowGraph 2`, at `lwWxInstSz`, `n = 0`,
-`E = 0`, `t = 1/2`, the sample `ω = 0` and `x = 0`, `y = e₀` -/
-example : (fxyPowGraph 2).pack.val (lwMoment_D lwWxInstSz 0 0 (1 / 2) 0) lwSymmInstL =
-    ((‖LWf lwWxInstSz 0 0 (1 / 2) 0 0 (Pi.single 0 1)‖ ^ 2 : ℝ) : ℂ) := by
-  have h := lwProv_bridge lwWxInstSz (p := 2) (by decide) 0 0 (1 / 2) 0 Finset.univ 0 (Pi.single 0 1)
-  rw [← pvalW_one]
-  have e1 : (fun ℓ : (fxyPowGraph 2).pack.E' ⊕ (fxyPowGraph 2).pack.I' → Idx 3 (lwWxInstSz.L 0) (lwWxInstSz.W 0) => (1 : ℝ)) =
-      fun ℓ => ∏ k : Fin 2, if STblk lwWxInstSz 0 (ℓ (Sum.inr (localReg_fxyBeta k))) ∈ (Finset.univ : Finset (Zd 3 (lwWxInstSz.L 0)))
-        then 1 else 0 := by
-    funext ℓ; simp
-  have e2 : LWfD lwWxInstSz 0 0 (1 / 2) 0 Finset.univ 0 (Pi.single 0 1) = LWf lwWxInstSz 0 0 (1 / 2) 0 0 (Pi.single 0 1) := by
-    simp [LWfD, LWf]
-  rw [e1, ← e2]
-  exact h
-
-/-- **the weighted bridge** at `p = 2` with the proper nonempty domain `D = {0}` (one block of the `27`), every sample `ω` -/
-example (ω : lwWxInstSz.SeqΩ) : pvalW (fxyPowGraph 2).pack (lwMoment_D lwWxInstSz 0 0 (1 / 2) ω)
-    (fun ℓ => ∏ k : Fin 2, if STblk lwWxInstSz 0 (ℓ (Sum.inr (localReg_fxyBeta k))) ∈ ({0} : Finset (Zd 3 (lwWxInstSz.L 0)))
-      then 1 else 0) ![0, Pi.single 0 1] =
-    ((‖LWfD lwWxInstSz 0 0 (1 / 2) ω {0} 0 (Pi.single 0 1)‖ ^ 2 : ℝ) : ℂ) :=
-  lwProv_bridge lwWxInstSz (p := 2) (by decide) 0 0 (1 / 2) ω {0} 0 (Pi.single 0 1)
-
-/-- `LWfD_union` for the disjoint nonempty pair `{0}`, `{1}` -/
-example (ω : lwWxInstSz.SeqΩ) : LWfD lwWxInstSz 0 0 (1 / 2) ω ({0} ∪ {1}) 0 (Pi.single 0 1) =
-    LWfD lwWxInstSz 0 0 (1 / 2) ω {0} 0 (Pi.single 0 1) + LWfD lwWxInstSz 0 0 (1 / 2) ω {1} 0 (Pi.single 0 1) :=
-  LWfD_union lwWxInstSz 0 0 (1 / 2) ω (Finset.disjoint_singleton.2 (by decide)) 0 (Pi.single 0 1)
-
-/-- the position-indexed step lemma (`lwProv_stepPos`) at the merged instance of `LocStepX.weight` on `p2Graph = fxyPowGraph 2`
-(`lwEngine_inst_stepX`); the normality of the input is the proved `fxyPowGraph_normal` -/
-example := lwProv_stepPos p2Graph.pack _ LWEngineInst.lwEngine_inst_stepX (fxyPowGraph_normal 2)
-
-end LWProvInst
-
-
 /-! ## 9. The pinned step lemma: the position-indexed provenance step (Amend 2) -/
-
-section Pin
-
-/-- **the position-indexed provenance step (Amend 2)**: the maps are carried by the
-outputs (`ProvOutX`), one per position of the list, so equal outputs at two positions may carry different maps -/
-def lwProv_LocStepXProvPos : Prop :=
-  ∀ (P : PGraph (Fin 2)) (LX : List ((ℕ × ℕ) × PGraph (Fin 2))), LocStepX P LX → P.g.Normal →
-    ∃ ps : List (ProvOutX P), ps.map (fun o => (o.tag, o.Q)) = LX ∧
-      (∀ o ∈ ps, o.ExtOK ∧ (⟨o.Q, o.π⟩ : ProvOut P).Molecular) ∧ ∀ (m : ℂ) (t0 : ℕ × ℕ),
-        WExp m (lwEvX m (t0, P)) (ps.map fun o => mkProv m t0 P (o.tag, o.Q) o.π)
-
-theorem lwProv_locStepXProvPos_holds : lwProv_LocStepXProvPos := fun P LX h hN => lwProv_stepPos P LX h hN
-
-/-- its instance: the merged `LocStepX.weight` step at `p2Graph = fxyPowGraph 2` (`lwEngine_inst_stepX`), normal by `fxyPowGraph_normal` -/
-example := lwProv_locStepXProvPos_holds p2Graph.pack _ LWEngineInst.lwEngine_inst_stepX (fxyPowGraph_normal 2)
-
-/-- a normal graph with a circled solid loop at the internal vertex `0` and an internal vertex `1` that no edge touches -/
-def lwProv_wildGraph : LGraph (Fin 2) (Fin 2) where
-  solid := [⟨true, true, .inr 0, .inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-
-/-- **remark (R-b analysis): the hypotheses `LocStepX P LX` and `P.g.Normal` of the position-indexed provenance step (Amend 2) do
-not force a waved edge at an internal vertex**: the `weight` step at the loop of `lwProv_wildGraph` is a `LocStepX` of a normal graph without waved edges (so
-the maps of two outputs cannot be compared through the waved edges of the input) -/
-example : lwProv_wildGraph.Normal ∧ lwProv_wildGraph.waved = [] ∧ ∃ LX, LocStepX lwProv_wildGraph.pack LX :=
-  ⟨by decide, rfl, _, LocStepX.weight lwProv_wildGraph.pack
-    ((⟨true, true, Sum.inr (0 : Fin 2), Sum.inr (0 : Fin 2)⟩ : SEdge (Fin 2 ⊕ Fin 2)), []) List.mem_cons_self
-    (Sum.inr (0 : Fin 2)) false false rfl⟩
-
-end Pin
 
 end RBM.Graph
 end

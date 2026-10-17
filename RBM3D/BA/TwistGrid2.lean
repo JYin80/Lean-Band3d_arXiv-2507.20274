@@ -61,10 +61,6 @@ def twAk (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (k : ℕ) (ω : Path�
 /-- `ξ_{j+1} = A_{j+1} - 𝔼[A_{j+1} | F_j]`. -/
 def twMartInc (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) : Zd d (sz.L n) → ℂ := fun a =>
   twAk sz lam0 E s t K n σ c₁ c₂ (j + 1) ω a - ((baStep2Mat sz lam0 E).Pp)[fun ω' => twAk sz lam0 E s t K n σ c₁ c₂ (j + 1) ω' a | filt (sz.withLam 0) j] ω
-/-- `P_j = 𝔼[A_{j+1} | F_j] - Ũ_{u_j,u_{j+1}} A_j`. -/
-def twPredInc (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) : Zd d (sz.L n) → ℂ := fun a =>
-  ((baStep2Mat sz lam0 E).Pp)[fun ω' => twAk sz lam0 E s t K n σ c₁ c₂ (j + 1) ω' a | filt (sz.withLam 0) j] ω -
-    (twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n (j + 1)) *ᵥ twAk sz lam0 E s t K n σ c₁ c₂ j ω) a
 /-- The drift (target 3), the QV (target 1) and the `Ũ`-weighted QV at the grid state `(u_k, H_k)`. -/
 def twDriftk (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) : ℂ :=
   twDriftM sz lam0 E n (gridTime s t K n k) ((baStep2Mat sz lam0 E).Hpath s t K n k ω) σ a c₁ c₂
@@ -81,87 +77,6 @@ def twRem (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) (k : ℕ) (ω : Pa
     twAk sz lam0 E s t K n σ c₁ c₂ j ω a - ((gridStep s t K n : ℝ) : ℂ) * twDriftk sz lam0 E s t K n σ a c₁ c₂ j ω)
 
 end Path
-
-section Duhamel
-variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
-
-/-- The one-step identity `A_{j+1} - Ũ_{u_j,u_{j+1}} A_j = P_j + ξ_{j+1}` (the conditional expectation cancels). -/
-theorem TwistGrid2_twAk_step (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) :
-    twAk sz lam0 E s t K n σ c₁ c₂ (j + 1) ω - twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n (j + 1)) *ᵥ twAk sz lam0 E s t K n σ c₁ c₂ j ω =
-      twPredInc sz lam0 E s t K n σ c₁ c₂ j ω + twMartInc sz lam0 E s t K n σ c₁ c₂ j ω := by
-  funext a
-  simp only [Pi.sub_apply, Pi.add_apply, twPredInc, twMartInc]
-  ring
-
-/-- **The stopped grid Duhamel identity, at one size index** (twin of `stoppedDuhamelN_at`, `Induction/GridDuhamelN.lean:310`), pathwise:
-`A_m = Ũ_{u₀,u_m} A₀ + Σ_{i<m} Ũ_{u_{i+1},u_m} (P_i + ξ_{i+1})` for `m ≤ K n`, from the semigroup law of `BAuKer`. -/
-theorem TwistGrid2_twAk_duhamel {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n))
-    (hu0 : ∀ k, k ≤ K n → 0 ≤ gridTime s t K n k) (hu1 : ∀ k, k ≤ K n → gridTime s t K n k < 1)
-    (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) {m : ℕ} (hm : m ≤ K n) (ω : PathΩ sz) :
-    twAk sz lam0 E s t K n σ c₁ c₂ m ω =
-      twU sz lam0 E n σ (gridTime s t K n 0) (gridTime s t K n m) *ᵥ twAk sz lam0 E s t K n σ c₁ c₂ 0 ω +
-        ∑ i ∈ Finset.range m, twU sz lam0 E n σ (gridTime s t K n (i + 1)) (gridTime s t K n m) *ᵥ
-          (twPredInc sz lam0 E s t K n σ c₁ c₂ i ω + twMartInc sz lam0 E s t K n σ c₁ c₂ i ω) := by
-  set uc : ℕ → ℝ := fun i => gridTime s t K n (min i m) with huc
-  have hc0 : ∀ i, 0 ≤ uc i := fun i => hu0 _ ((min_le_right i m).trans hm)
-  have hc1 : ∀ i, uc i < 1 := fun i => hu1 _ ((min_le_right i m).trans hm)
-  let U : ℕ → ℕ → (Zd d (sz.L n) → ℂ) →+ (Zd d (sz.L n) → ℂ) := fun i j =>
-    AddMonoidHom.mk' (fun x => twU sz lam0 E n σ (uc i) (uc j) *ᵥ x) (fun x y => Matrix.mulVec_add _ x y)
-  have hself : ∀ k, U k k = AddMonoidHom.id _ := by
-    intro k
-    apply AddMonoidHom.ext
-    intro x
-    simp only [U, AddMonoidHom.mk'_apply, AddMonoidHom.id_apply]
-    rw [show twU sz lam0 E n σ (uc k) (uc k) = 1 from BAuKer_self hr (hc0 k) (hc1 k) (σ 0) (σ 1), Matrix.one_mulVec]
-  have hcomp : ∀ i j k, i ≤ j → j ≤ k → (U j k).comp (U i j) = U i k := by
-    intro i j k _ _
-    apply AddMonoidHom.ext
-    intro x
-    simp only [U, AddMonoidHom.comp_apply, AddMonoidHom.mk'_apply]
-    rw [Matrix.mulVec_mulVec, show twU sz lam0 E n σ (uc j) (uc k) * twU sz lam0 E n σ (uc i) (uc j) = twU sz lam0 E n σ (uc i) (uc k) from
-      BAuKer_comp hr (hc0 j) (hc1 j) (hc0 k) (hc1 k) (σ 0) (σ 1)]
-  have htel := duhamel_telescope U hself hcomp (fun i => twAk sz lam0 E s t K n σ c₁ c₂ i ω) m
-  simp only [U, AddMonoidHom.mk'_apply, huc, Nat.zero_min, min_self] at htel
-  refine eq_add_of_sub_eq' (htel.trans (Finset.sum_congr rfl fun j hj => ?_))
-  have hj1 : j + 1 ≤ m := Finset.mem_range.mp hj
-  simp only [min_eq_left hj1, min_eq_left (Nat.le_of_succ_le hj1)]
-  rw [TwistGrid2_twAk_step]
-
-end Duhamel
-
-/-- **4 (a)** (twin of `StoppedDuhamelN`, `Induction/GridDuhamelN.lean:293`): pathwise, `A_{j∧τ} = Ũ_{u₀,u_{j∧τ}} A₀ + Σ_{i<j∧τ} Ũ_{u_{i+1},u_{j∧τ}} (P_i + ξ_{i+1})`. -/
-def BATwistDuhamel (d : ℕ) : Prop :=
-  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-    ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ K : ℕ → ℕ, (∀ n, K n ≠ 0) →
-      ∀ (n : ℕ) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (τ : PathΩ sz → ℕ) (j : ℕ) (ω : PathΩ sz), min j (τ ω) ≤ K n →
-        twAk sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ c₁ c₂ (min j (τ ω)) ω =
-          twU sz (BAflowLam0 sz z) (BAflowEs sz z) n σ (gridTime s t K n 0) (gridTime s t K n (min j (τ ω))) *ᵥ
-              twAk sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ c₁ c₂ 0 ω +
-            ∑ i ∈ Finset.range (min j (τ ω)), twU sz (BAflowLam0 sz z) (BAflowEs sz z) n σ (gridTime s t K n (i + 1)) (gridTime s t K n (min j (τ ω))) *ᵥ
-              (twPredInc sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ c₁ c₂ i ω + twMartInc sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ c₁ c₂ i ω)
-
-theorem BATwistDuhamel_holds (d : ℕ) : BATwistDuhamel d := by
-  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT K hK n σ c₁ c₂ τ j ω hjτ
-  have hr := BAflow_real κ ε 𝔠 𝔡 sz z hz n
-  have hT1 : BAflowT0 sz z n < 1 := (baStep2Data sz z).flowOK_T hκ hz n
-  have hΔ : 0 ≤ gridStep s t K n := div_nonneg (sub_nonneg.2 (hst n)) (Nat.cast_nonneg _)
-  have hmono : ∀ {i i' : ℕ}, i ≤ i' → gridTime s t K n i ≤ gridTime s t K n i' := by
-    intro i i' h
-    unfold gridTime
-    have : (i : ℝ) ≤ (i' : ℝ) := Nat.cast_le.2 h
-    nlinarith
-  have hu0 : ∀ k, k ≤ K n → 0 ≤ gridTime s t K n k := by
-    intro k _
-    have h := hmono (Nat.zero_le k)
-    have h0 : gridTime s t K n 0 = s n := by simp [gridTime]
-    rw [h0] at h
-    linarith [hs n]
-  have hu1 : ∀ k, k ≤ K n → gridTime s t K n k < 1 := by
-    intro k hk
-    have h := hmono hk
-    rw [gridTime_last s t K n (hK n)] at h
-    linarith [htT n]
-  exact TwistGrid2_twAk_duhamel sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n hr hu0 hu1 σ c₁ c₂ hjτ ω
 
 /-- **Clause (i) of 4 (b)**, pathwise: with the canonical `Mart_k = Σ_{j<k} ξ_{j+1}` and
 `Rem_k = Σ_{j<k} (𝔼[A_{j+1}|F_j] - A_j - Δ Drift_j)`, `A_k = A_0 + Δ Σ_{j<k} Drift_j + Rem_k + Mart_k` (the conditional expectation
@@ -284,62 +199,5 @@ theorem baTwistGridAssemble_holds : BATwistGridAssemble := by
 /-! ## Compiled nonempty instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `lam = 1/64`; flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`; `n = 0`;
 `σ = (false, true)`, `c₁ = 0`, `c₂ = (1,0,0)`; the window `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` by `t0_sz0`; the grid `K ≡ 4`, `Δ = 1/24`).  Every deterministic hypothesis is
 discharged; the three part pins of 4 (b) stay hypotheses (the successor rows TL2a2-TL2a4). -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
-
-/-- 4 (a) at the instance: a three-step stopped Duhamel sum (`τ ≡ 3`, `j = 3`, `K ≡ 4`). -/
-example (ω : PathΩ sz0) :
-    twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] (min 3 ((fun _ => 3 : PathΩ sz0 → ℕ) ω)) ω =
-      twU sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 ![false, true] (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 0)
-          (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (min 3 ((fun _ => 3 : PathΩ sz0 → ℕ) ω))) *ᵥ
-        twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] 0 ω +
-      ∑ i ∈ Finset.range (min 3 ((fun _ => 3 : PathΩ sz0 → ℕ) ω)),
-        twU sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 ![false, true] (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (i + 1))
-            (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (min 3 ((fun _ => 3 : PathΩ sz0 → ℕ) ω))) *ᵥ
-          (twPredInc sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] i ω +
-            twMartInc sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] i ω) :=
-  BATwistDuhamel_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) (fun _ => 4) (fun _ => by norm_num) 0 ![false, true] 0 ![1, 0, 0]
-    (fun _ => 3) 3 ω (by norm_num)
-
-/-- The step identity `A_{j+1} - Ũ A_j = P_j + ξ_{j+1}` and clause (i) at the instance (`k = 3`). -/
-example (ω : PathΩ sz0) :
-    twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] 3 ω 0 =
-      twAk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 ![1, 0, 0] 0 ω 0 +
-        ((gridStep (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 : ℝ) : ℂ) * ∑ j ∈ Finset.range 3,
-          twDriftk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 0 ![1, 0, 0] j ω +
-        twRem sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 0 ![1, 0, 0] 3 ω +
-        twMart sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 0 ![1, 0, 0] 3 ω :=
-  baTwistGrid_decomp sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 ![false, true] 0 0 ![1, 0, 0] 3 ω
-
-example :=
-  baTwistGrid_decomp_ae sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (![false, true], 0, 0, ![1, 0, 0])
-
-/-- Clause (i) is the first conjunct of `BATwistGridRem`: given the remainder bound (ii) (the successor row TL2a2, here a hypothesis) the pin follows. -/
-example (d : ℕ) (C₀ : ℝ) (h2 : ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-    ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ K : ℕ → ℕ,
-      ∀ᶠ n in atTop, ∀ (i : (Fin 2 → Bool) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n)),
-        ∀ᵐ ω ∂((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Pp), ∀ k, k ≤ K n →
-          ‖twRem sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n i.1 i.2.1 i.2.2.1 i.2.2.2 k ω‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C₀ * Real.sqrt (gridStep s t K n)) :
-    BATwistGridRem d C₀ := by
-  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT
-  exact ⟨0, le_rfl, fun K hK hKN => ⟨fun n i => baTwistGrid_decomp_ae sz _ _ s t K n i, h2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT K⟩⟩
-
-/-- `baTwistGridAssemble_holds` at `d = 3`, `C₀ = 11 ≥ 0`: the three part pins are hypotheses; the conclusion is the pin `BATwistGridMartAt 3 11`. -/
-example (hRem : BATwistGridRem 3 11) (hTail : BATwistGridTail 3) (hW : BATwistGridWTail 3) : BATwistGridMartAt 3 11 :=
-  baTwistGridAssemble_holds 3 11 (by norm_num) hRem hTail hW
-
-/-- The assembled pin applied at the BA datum `(sz0, zSeq, flow_sz0)`, any `D > 0`, the grid `K_n = ⌈N_n^{CK}⌉ + 1` (`≠ 0`, eventually `≥ N^{CK}`): the conclusion is
-`∃ Mart Rem, (i)-(iv)`. -/
-example (hRem : BATwistGridRem 3 11) (hTail : BATwistGridTail 3) (hW : BATwistGridWTail 3) {D : ℝ} (hD : 0 < D) : True := by
-  have H := baTwistGridAssemble_holds 3 11 (by norm_num) hRem hTail hW
-  obtain ⟨CK, hCK, H2⟩ := H (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) D hD
-  have := H2 (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
-    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _))
-  trivial
-
-end Inst
 
 end RBM.BA

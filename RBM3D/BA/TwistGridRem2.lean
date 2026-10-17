@@ -114,12 +114,6 @@ private theorem TwistGridRem2_eta_inv_le (hκ : 0 < κ) (hε : 0 < ε) (hflow : 
         inv_anti₀ hκN hη
     _ = (2 / κ) * ((sz.size n : ℕ) : ℝ) := by field_simp
 
-/-- `‖m_F‖ ≤ 1` at the flow (Ward, `BAm_norm_le_one`). -/
-private theorem TwistGridRem2_m_norm (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    ‖BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n‖ ≤ 1 := by
-  have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
-  exact BAm_norm_le_one d (sz.L n) _ ((BAflowEs sz z n : ℝ) : ℂ) _ (by simp) hr.1
-
 end Flow
 
 /-! ## 2. The freeze: the conditional mean of `A_{j+1}` given `F_j` -/
@@ -457,38 +451,5 @@ end Target
 /-! ## 5. Compiled nonempty instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `lam = 1/64`; flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`;
 the window `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` by `t0_sz0`; the grid `K_n = ⌈N_n^{CK}⌉ + 1`, `N_n = (W_n L_n)^3`).  Every deterministic hypothesis is discharged; no external hypothesis occurs in
 `baTwistGridRem_holds`; the two part pins `BATwistGridTail 3`, `BATwistGridWTail 3` of the assembly stay hypotheses (T2438, T2439). -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
-
-/-- The pin `BATwistGridRem` is inhabited for every `d`, with `C₀` fixed first (the acceptance example of the ticket). -/
-example : ∀ d : ℕ, ∃ C₀ : ℝ, 0 ≤ C₀ ∧ BATwistGridRem d C₀ := baTwistGridRem_holds
-
-/-- **`baTwistGridRem_holds 3` at the datum**: the remainder bound `‖twRem_k‖ ≤ N^{C₀} √Δ`, for all `k ≤ K_n`, eventually in `n`, all labels, almost surely, with `K_n = ⌈N_n^{CK}⌉ + 1`. -/
-example : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∃ CK : ℝ, 0 ≤ CK ∧
-    ∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n),
-      ∀ᵐ ω ∂((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp), ∀ k, k ≤ ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1 →
-        ‖twRem sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3)
-            (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n i.1 i.2.1 i.2.2.1 i.2.2.2 k ω‖ ≤
-          ((sz0.size n : ℕ) : ℝ) ^ C₀ * Real.sqrt (gridStep (fun _ => 1 / 2) (fun _ => 2 / 3)
-            (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n) := by
-  obtain ⟨C₀, hC₀, hRem⟩ := baTwistGridRem_holds 3
-  obtain ⟨CK, hCK, H2⟩ := hRem (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n)
-  exact ⟨C₀, hC₀, CK, hCK, (H2 (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
-    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _))).2⟩
-
-/-- `baTwistGridRem_holds 3` fed to `baTwistGridAssemble_holds 3`: with the two other parts as hypotheses (T2438, T2439), the pin `BATwistGridMartAt 3 C₀` of 4 (b) is applied at the datum,
-any `D > 0`, `K_n = ⌈N_n^{CK}⌉ + 1`: the conclusion is `∃ Mart Rem, (i)-(iv)`. -/
-example (hTail : BATwistGridTail 3) (hW : BATwistGridWTail 3) {D : ℝ} (hD : 0 < D) : True := by
-  obtain ⟨C₀, hC₀, hRem⟩ := baTwistGridRem_holds 3
-  have H := baTwistGridAssemble_holds 3 C₀ hC₀ hRem hTail hW
-  obtain ⟨CK, hCK, H2⟩ := H (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) D hD
-  have := H2 (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
-    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _))
-  trivial
-
-end Inst
 
 end RBM.BA

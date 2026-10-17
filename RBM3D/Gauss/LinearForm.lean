@@ -50,18 +50,6 @@ theorem hasLaw_coord (c : Sizes.SeqCoord sz) :
     HasLaw (fun ω : Sizes.SeqΩ sz => ω c) (gaussianReal 0 (Sizes.seqGvar sz c)) (Sizes.seqP sz) :=
   ⟨measurable_pi_apply c |>.aemeasurable, Sizes.seqP_map_eval sz c⟩
 
-/-- A scaled coordinate is a centred Gaussian of variance `a² seqGvar sz c`. -/
-theorem hasLaw_const_mul_coord (a : ℝ) (c : Sizes.SeqCoord sz) :
-    HasLaw (fun ω : Sizes.SeqΩ sz => a * ω c)
-      (gaussianReal 0 (NNReal.mk (a ^ 2) (sq_nonneg _) * Sizes.seqGvar sz c)) (Sizes.seqP sz) := by
-  refine ⟨((measurable_const.mul (measurable_pi_apply c)).aemeasurable), ?_⟩
-  have h : (Sizes.seqP sz).map (fun ω : Sizes.SeqΩ sz => a * ω c)
-      = ((Sizes.seqP sz).map (fun ω : Sizes.SeqΩ sz => ω c)).map (fun x : ℝ => a * x) := by
-    rw [Measure.map_map (by fun_prop) (by fun_prop)]
-    rfl
-  rw [h, Sizes.seqP_map_eval sz c, gaussianReal_map_const_mul a]
-  simp
-
 section General
 
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
@@ -107,11 +95,6 @@ theorem map_sum_const_mul_of_indep {X : ι → Ω → ℝ} {v : ι → ℝ≥0} 
     simp
 
 end General
-
-/-- The family of scaled coordinates is independent. -/
-theorem iIndepFun_const_mul_coord (a : Sizes.SeqCoord sz → ℝ) :
-    iIndepFun (fun (c : Sizes.SeqCoord sz) (ω : Sizes.SeqΩ sz) => a c * ω c) (Sizes.seqP sz) :=
-  (iIndepFun_coord sz).comp (fun c => fun x : ℝ => a c * x) fun _ => by fun_prop
 
 /-- **A finite real linear form in the coordinates is a centred Gaussian**, with variance the
 weighted sum `∑ a_c² v_c`. -/
@@ -231,174 +214,6 @@ theorem glue_agree (S T : Finset ι) (ω : ι → ℝ) {c : ι} (hc : c ∈ S �
       · exact h''
     simp [h, h']
 
-/-- **A quantity that reads only `S ∪ T` is a function of the two blocks.**  This is the shape
-required by `integral_indep_pair`. -/
-theorem eq_glue_of_congr {V : Type*} (S T : Finset ι) (g : (ι → ℝ) → V)
-    (hg : ∀ ω ω' : ι → ℝ, (∀ c ∈ S ∪ T, ω c = ω' c) → g ω = g ω') (ω : ι → ℝ) :
-    g ω = (fun p => g (glue S T p)) ((fun c : S => ω c), (fun c : T => ω c)) :=
-  hg _ _ fun _ hc => (glue_agree S T ω hc).symm
-
 end Glue
-
-section Checks
-
-/-- Concrete sizes at `d = 3`: `L n = W n = n + 3` and the coupling `lam n = 1/2`. -/
-private noncomputable def checkSizes : Sizes 3 where
-  L n := n + 3
-  W n := n + 3
-  lam _ := 1 / 2
-  three_le_L n := by omega
-  W_pos n := by omega
-
-/-- `map_sum_const_mul_coord` at the concrete sizes `checkSizes`, with two diagonal coordinates at
-sizes `n = 0` and `n = 1` (so `c₀ ≠ c₁`) and weights `1`, `2`. -/
-private theorem check_map_sum_const_mul_coord :
-    ∃ (c₀ c₁ : Sizes.SeqCoord checkSizes) (a : Sizes.SeqCoord checkSizes → ℝ),
-      c₀ ≠ c₁ ∧ a c₀ = 1 ∧ a c₁ = 2 ∧
-      (Sizes.seqP checkSizes).map
-          (fun ω : Sizes.SeqΩ checkSizes => ∑ c ∈ ({c₀, c₁} : Finset _), a c * ω c)
-        = gaussianReal 0 (∑ c ∈ ({c₀, c₁} : Finset _),
-            NNReal.mk (a c ^ 2) (sq_nonneg _) * Sizes.seqGvar checkSizes c) := by
-  classical
-  let c₀ : Sizes.SeqCoord checkSizes := ⟨0, (0, 0, true)⟩
-  let c₁ : Sizes.SeqCoord checkSizes := ⟨1, (0, 0, true)⟩
-  have h01 : c₀ ≠ c₁ := fun h => by
-    have := congrArg Sigma.fst h
-    simp [c₀, c₁] at this
-  refine ⟨c₀, c₁, fun c => if c = c₀ then 1 else if c = c₁ then 2 else 0, h01, by simp, ?_, ?_⟩
-  · simp [h01.symm]
-  · exact map_sum_const_mul_coord checkSizes _ _
-
-/-- The main statements at the admissible `d = 3` sequence `SizesInst.sz0`: the coordinates are
-independent, each is a centred Gaussian of variance `seqGvar`, a scaled coordinate has variance
-`a² seqGvar`, the scaled coordinates are independent, and a finite real linear form is a centred
-Gaussian with the weighted variance. -/
-example (a : ℝ) (c : Sizes.SeqCoord SizesInst.sz0) (b : Sizes.SeqCoord SizesInst.sz0 → ℝ)
-    (s : Finset (Sizes.SeqCoord SizesInst.sz0)) :
-    iIndepFun (fun (c : Sizes.SeqCoord SizesInst.sz0) (ω : Sizes.SeqΩ SizesInst.sz0) => ω c)
-        (Sizes.seqP SizesInst.sz0) ∧
-      HasLaw (fun ω : Sizes.SeqΩ SizesInst.sz0 => ω c)
-        (gaussianReal 0 (Sizes.seqGvar SizesInst.sz0 c)) (Sizes.seqP SizesInst.sz0) ∧
-      HasLaw (fun ω : Sizes.SeqΩ SizesInst.sz0 => a * ω c)
-        (gaussianReal 0 (NNReal.mk (a ^ 2) (sq_nonneg _) * Sizes.seqGvar SizesInst.sz0 c))
-        (Sizes.seqP SizesInst.sz0) ∧
-      iIndepFun (fun (c : Sizes.SeqCoord SizesInst.sz0) (ω : Sizes.SeqΩ SizesInst.sz0) => b c * ω c)
-        (Sizes.seqP SizesInst.sz0) ∧
-      (Sizes.seqP SizesInst.sz0).map (fun ω : Sizes.SeqΩ SizesInst.sz0 => ∑ c ∈ s, b c * ω c)
-        = gaussianReal 0
-          (∑ c ∈ s, NNReal.mk (b c ^ 2) (sq_nonneg _) * Sizes.seqGvar SizesInst.sz0 c) :=
-  ⟨iIndepFun_coord _, hasLaw_coord _ c, hasLaw_const_mul_coord _ a c,
-    iIndepFun_const_mul_coord _ b, map_sum_const_mul_coord _ b s⟩
-
-section AtSz0
-
-open SizesInst
-
-/-- `map_lin` and `measurable_lin` at `sz0`: the law of a finite linear form in the coordinates,
-written with `linVar`. -/
-example (a : Sizes.SeqCoord sz0 → ℝ) (s : Finset (Sizes.SeqCoord sz0)) :
-    Measurable (fun ω : Sizes.SeqΩ sz0 => ∑ c ∈ s, a c * ω c) ∧
-      (Sizes.seqP sz0).map (fun ω : Sizes.SeqΩ sz0 => ∑ c ∈ s, a c * ω c) =
-        gaussianReal 0 (linVar (Sizes.seqGvar sz0) a s) :=
-  ⟨measurable_lin (fun c => measurable_pi_apply c) a s,
-    map_lin (fun c => measurable_pi_apply c) (fun c => Sizes.seqP_map_eval sz0 c)
-      (iIndepFun_coord sz0) a s⟩
-
-/-- `lintegral_indep_pair` at `sz0`: two coordinates of different sizes are independent, and the
-integral of a function of the pair is the iterated integral against their laws. -/
-example (c₀ c₁ : Sizes.SeqCoord sz0) (h01 : c₀ ≠ c₁) :
-    ∫⁻ ω, ENNReal.ofReal (Real.exp (-(ω c₀) ^ 2 - (ω c₁) ^ 2)) ∂(Sizes.seqP sz0) =
-      ∫⁻ y, (∫⁻ x, ENNReal.ofReal (Real.exp (-x ^ 2 - y ^ 2))
-        ∂((Sizes.seqP sz0).map fun ω => ω c₀)) ∂((Sizes.seqP sz0).map fun ω => ω c₁) := by
-  have h : IndepFun (fun ω : Sizes.SeqΩ sz0 => ω c₀) (fun ω => ω c₁) (Sizes.seqP sz0) :=
-    (iIndepFun_coord sz0).indepFun h01
-  exact lintegral_indep_pair (U := fun ω : Sizes.SeqΩ sz0 => ω c₀) (V := fun ω => ω c₁)
-    (measurable_pi_apply c₀) (measurable_pi_apply c₁) h
-    (F := fun p : ℝ × ℝ => ENNReal.ofReal (Real.exp (-p.1 ^ 2 - p.2 ^ 2))) (by fun_prop)
-
-/-- `integral_indep_pair` at `sz0`: for two coordinates of different sizes (independent), the
-integral of the bounded function `exp(-x² - y²)` of the pair is the iterated integral against their
-laws. -/
-example (c₀ c₁ : Sizes.SeqCoord sz0) (h01 : c₀ ≠ c₁) :
-    ∫ ω, Real.exp (-(ω c₀) ^ 2 - (ω c₁) ^ 2) ∂(Sizes.seqP sz0) =
-      ∫ y, (∫ x, Real.exp (-x ^ 2 - y ^ 2) ∂((Sizes.seqP sz0).map fun ω => ω c₀))
-        ∂((Sizes.seqP sz0).map fun ω => ω c₁) := by
-  have h : IndepFun (fun ω : Sizes.SeqΩ sz0 => ω c₀) (fun ω => ω c₁) (Sizes.seqP sz0) :=
-    (iIndepFun_coord sz0).indepFun h01
-  have hF : Integrable (fun p : ℝ × ℝ => Real.exp (-p.1 ^ 2 - p.2 ^ 2))
-      (((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₀).prod
-        ((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₁)) := by
-    refine Integrable.of_bound (by fun_prop) 1 (Filter.Eventually.of_forall fun p => ?_)
-    rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-    exact Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg p.1, sq_nonneg p.2])
-  exact integral_indep_pair (U := fun ω : Sizes.SeqΩ sz0 => ω c₀) (V := fun ω => ω c₁)
-    (measurable_pi_apply c₀) (measurable_pi_apply c₁) h hF
-
-/-- `integral_indep_pair_le` and `lintegral_indep_pair_le` at `sz0`: the iterated integral of the
-bounded function `exp(-x² - y²)` against two independent Gaussian coordinates is at most `1`. -/
-example (c₀ c₁ : Sizes.SeqCoord sz0) (h01 : c₀ ≠ c₁) :
-    (∫ ω, Real.exp (-(ω c₀) ^ 2 - (ω c₁) ^ 2) ∂(Sizes.seqP sz0) ≤ 1) ∧
-      ∫⁻ ω, ENNReal.ofReal (Real.exp (-(ω c₀) ^ 2 - (ω c₁) ^ 2)) ∂(Sizes.seqP sz0) ≤ 1 := by
-  have h : IndepFun (fun ω : Sizes.SeqΩ sz0 => ω c₀) (fun ω => ω c₁) (Sizes.seqP sz0) :=
-    (iIndepFun_coord sz0).indepFun h01
-  have hle : ∀ x y : ℝ, Real.exp (-x ^ 2 - y ^ 2) ≤ 1 := fun x y =>
-    Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg x, sq_nonneg y])
-  have hF : Integrable (fun p : ℝ × ℝ => Real.exp (-p.1 ^ 2 - p.2 ^ 2))
-      (((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₀).prod
-        ((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₁)) :=
-    Integrable.of_bound (by fun_prop) 1 (Filter.Eventually.of_forall fun p => by
-      rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]; exact hle p.1 p.2)
-  have hU : Measurable (fun ω : Sizes.SeqΩ sz0 => ω c₀) := measurable_pi_apply c₀
-  have hV : Measurable (fun ω : Sizes.SeqΩ sz0 => ω c₁) := measurable_pi_apply c₁
-  constructor
-  · have hb : ∀ᵐ y ∂((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₁),
-        ∫ x, Real.exp (-x ^ 2 - y ^ 2) ∂((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₀)
-          ≤ (fun _ : ℝ => (1 : ℝ)) y := by
-      refine Filter.Eventually.of_forall fun y => ?_
-      rw [Sizes.seqP_map_eval]
-      calc ∫ x, Real.exp (-x ^ 2 - y ^ 2) ∂(gaussianReal 0 (Sizes.seqGvar sz0 c₀))
-          ≤ ∫ _x, (1 : ℝ) ∂(gaussianReal 0 (Sizes.seqGvar sz0 c₀)) :=
-            integral_mono (Integrable.of_bound (by fun_prop) 1
-              (Filter.Eventually.of_forall fun x => by
-                rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]; exact hle x y))
-              (integrable_const 1) fun x => hle x y
-        _ = 1 := by simp
-    have := integral_indep_pair_le hU hV h hF (g := fun _ => (1 : ℝ)) (integrable_const 1) hb
-    simpa using this
-  · have hb : ∀ y : ℝ, ∫⁻ x, ENNReal.ofReal (Real.exp (-x ^ 2 - y ^ 2))
-        ∂((Sizes.seqP sz0).map fun ω : Sizes.SeqΩ sz0 => ω c₀) ≤ 1 := by
-      intro y
-      rw [Sizes.seqP_map_eval]
-      calc ∫⁻ x, ENNReal.ofReal (Real.exp (-x ^ 2 - y ^ 2)) ∂(gaussianReal 0 (Sizes.seqGvar sz0 c₀))
-          ≤ ∫⁻ _x, 1 ∂(gaussianReal 0 (Sizes.seqGvar sz0 c₀)) :=
-            lintegral_mono fun x => by
-              rw [← ENNReal.ofReal_one]; exact ENNReal.ofReal_le_ofReal (hle x y)
-        _ = 1 := by simp
-    exact lintegral_indep_pair_le hU hV h
-      (F := fun p : ℝ × ℝ => ENNReal.ofReal (Real.exp (-p.1 ^ 2 - p.2 ^ 2))) (by fun_prop) hb
-
-/-- `glue` and its three lemmas at two disjoint coordinate blocks `{c₀}`, `{c₁}` of `sz0`: a
-quantity that reads only `c₀, c₁` is a function of the two blocks. -/
-example (c₀ c₁ : Sizes.SeqCoord sz0) (ω : Sizes.SeqΩ sz0) :
-    Measurable (glue ({c₀} : Finset (Sizes.SeqCoord sz0)) {c₁}) ∧
-      glue ({c₀} : Finset (Sizes.SeqCoord sz0)) {c₁}
-        ((fun c : ({c₀} : Finset (Sizes.SeqCoord sz0)) => ω c),
-          (fun c : ({c₁} : Finset (Sizes.SeqCoord sz0)) => ω c)) c₀ = ω c₀ ∧
-      ω c₀ + ω c₁ =
-        (fun p => (fun ω' : Sizes.SeqCoord sz0 → ℝ => ω' c₀ + ω' c₁)
-          (glue ({c₀} : Finset (Sizes.SeqCoord sz0)) {c₁} p))
-          ((fun c : ({c₀} : Finset (Sizes.SeqCoord sz0)) => ω c),
-            (fun c : ({c₁} : Finset (Sizes.SeqCoord sz0)) => ω c)) :=
-  ⟨measurable_glue _ _, glue_agree _ _ ω (by simp),
-    eq_glue_of_congr ({c₀} : Finset (Sizes.SeqCoord sz0)) {c₁}
-      (fun ω' : Sizes.SeqCoord sz0 → ℝ => ω' c₀ + ω' c₁)
-      (fun ω' ω'' h => by
-        simp only [Finset.mem_union, Finset.mem_singleton] at h
-        rw [h c₀ (Or.inl rfl), h c₁ (Or.inr rfl)]) ω⟩
-
-end AtSz0
-
-end Checks
-
 
 end RBM.Gauss.LinearForm

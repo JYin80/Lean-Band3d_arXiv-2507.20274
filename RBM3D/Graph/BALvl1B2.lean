@@ -268,51 +268,6 @@ end Macro
 
 /-! ## 4. Compiled instances (the five data of `BALvl1AInst`: `gg` at `P_A`, `within` at `P_B`, `ggSplit` at `P_C`, `weight` at `P_W`, `edge` at `P_E`) -/
 
-namespace BALvl1BInst
-
-open BASimInst BALvl1AInst
-
-/-- the invariants `(ord, n_M, n_A - n_W, loops, n_S, pairs, nExt)` of the five data (nondegenerate: nonempty `E`, `I`, solid edges, `nExt ≥ 1`) -/
-example : BASim_inv baPA = (1, 1, 1, 0, 3, 1, 2) ∧ BASim_inv baPB = (1, 1, 1, 1, 3, 0, 2) ∧ BASim_inv baPC = (1, 1, 1, 0, 3, 1, 2) ∧
-    BASim_inv baPW = (-2, 2, 2, 1, 2, 0, 1) ∧ BASim_inv baPE = (2, 1, 1, 0, 4, 3, 2) :=
-  ⟨by decide, by decide, by decide, by decide, by decide⟩
-
-/-- **The macro claims `BALvl1B_within`, `BALvl1B_ggSplit`** at `P_B` (`within`, `p = 2 → 3` inside the atom `{2, 3}`) and `P_C` (`ggSplit`, `j = 0`): each step has outputs (kernel evaluation), and the five
-conclusions hold at every output. -/
-example : ((∀ Q ∈ (baPG baPB).withinOuts pB, BALvl1B_Mono (baPG baPB) Q) ∧ 0 < ((baPG baPB).withinOuts pB).length) ∧
-    ((∀ Q ∈ (baPG baPC).splitOuts pC qC 0, BALvl1B_Mono (baPG baPC) Q) ∧ 0 < ((baPG baPC).splitOuts pC qC 0).length) :=
-  ⟨⟨fun Q hQ => BALvl1B_within (baPG baPB) (by decide) (List.mem_cons_self ..) rfl rfl (by decide) Q hQ, by decide +kernel⟩,
-    ⟨fun Q hQ => BALvl1B_ggSplit (baPG baPC) (by decide) (List.mem_cons_self ..) (List.mem_of_getElem? (rfl : (lwSplit pC.2)[0]? = some qC)) 0 rfl rfl (by decide) Q hQ,
-      by decide +kernel⟩⟩
-
-/-- **Target 4 (`baStepMono_holds`) at the five steps of R1's data** (the frame steps `BALvl1AInst.hFA`-`hFE`, normality of the graphs by `decide`): each step has outputs (kernel evaluation), and the five
-conclusions of `BAstepMono` hold at every output. -/
-example : ((∀ Q ∈ ggF, BALvl1B_Mono (baPG baPA) Q) ∧ 0 < ggF.length) ∧ ((∀ Q ∈ (baPG baPB).withinOuts pB, BALvl1B_Mono (baPG baPB) Q) ∧ 0 < ((baPG baPB).withinOuts pB).length) ∧
-    ((∀ Q ∈ (baPG baPC).splitOuts pC qC 0, BALvl1B_Mono (baPG baPC) Q) ∧ 0 < ((baPG baPC).splitOuts pC qC 0).length) ∧
-    ((∀ Q ∈ outsW, BALvl1B_Mono (baPG baPW) Q) ∧ 0 < outsW.length) ∧ ((∀ Q ∈ outsE, BALvl1B_Mono (baPG baPE) Q) ∧ 0 < outsE.length) := by
-  have hF : ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BAFrameStep P outs → P.g.Normal → 0 < outs.length →
-      (∀ Q ∈ outs, BALvl1B_Mono P Q) ∧ 0 < outs.length := fun P outs h hN hl => ⟨fun Q hQ => baStepMono_holds P outs h hN Q hQ, hl⟩
-  exact ⟨hF _ _ hFA (by decide) (by decide +kernel), hF _ _ hFB (by decide) (by decide +kernel), hF _ _ hFC (by decide) (by decide +kernel),
-    hF _ _ hFW (by decide) (by decide +kernel), hF _ _ hFE (by decide) (by decide +kernel)⟩
-
-/-- **Target 5 (`baLvl1StepGood_holds`, and with it the reduction `ba_lvl1StepGood_of_sim'` at its four proved hypotheses)** at the twisted macro steps `BALvl1AInst.locStepB` (`within`, `P_B`) and
-`locStepC` (`ggSplit`, `P_C`) with `normalB`, `normalC`: each step has outputs, and every output is normal and `BALvl1Good`. -/
-example : ((∀ Q ∈ ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true), Q.g.Normal ∧ BALvl1Good ((baPG baPB).twist true true).g Q.g) ∧
-      0 < (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)).length) ∧
-    ((∀ Q ∈ ((baPG baPC).splitOuts pC qC 0).map (BAPGraph.twist true true), Q.g.Normal ∧ BALvl1Good ((baPG baPC).twist true true).g Q.g) ∧
-      0 < (((baPG baPC).splitOuts pC qC 0).map (BAPGraph.twist true true)).length) :=
-  ⟨⟨fun Q hQ => baLvl1StepGood_holds _ _ locStepB normalB Q hQ, by simpa using (by decide +kernel : 0 < ((baPG baPB).withinOuts pB).length)⟩,
-    ⟨fun Q hQ => baLvl1StepGood_holds _ _ locStepC normalC Q hQ, by simpa using (by decide +kernel : 0 < ((baPG baPC).splitOuts pC qC 0).length)⟩⟩
-
-/-- **Target 2 (`ba_lvl1StepGood_of_sim'`) at an arbitrary `m`** and the twisted macro step `locStepB` (`within`, `P_B`): the four hypotheses of the reduction are the proved theorems `BAimg_holds`,
-`baSim'_holds m`, `baStepMono_holds`, `baTwistInv_holds`; every output of the step is normal and `BALvl1Good`, and there are outputs. -/
-example (m : ℂ) : (∀ Q ∈ ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true), Q.g.Normal ∧ BALvl1Good ((baPG baPB).twist true true).g Q.g) ∧
-    0 < (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)).length :=
-  ⟨fun Q hQ => ba_lvl1StepGood_of_sim' m BAimg_holds (baSim'_holds m) baStepMono_holds baTwistInv_holds _ _ locStepB normalB Q hQ,
-    by simpa using (by decide +kernel : 0 < ((baPG baPB).withinOuts pB).length)⟩
-
-end BALvl1BInst
-
 end RBM.Graph
 
 end

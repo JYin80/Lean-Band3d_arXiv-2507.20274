@@ -249,73 +249,6 @@ private theorem altEnd_gridTime_lt_one {s v : ℕ → ℝ} {K : ℕ → ℕ} {n 
     (hK : K n ≠ 0) (hv1 : v n < 1) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i < 1 :=
   (altEnd_gridTime_le hsv hK hi).trans_lt hv1
 
-/-- **Target C1a, `gridDriftQN_envelope`** (RBM2D `gridDriftQN_envelope`, `AltEndCompose.lean:315` at `c9a24cf`; the
-pattern of `gridDriftN_envelope`, `GridEnvelopeN.lean:111`): under the owed pin `STKbound E` (premise), eventually in
-`n`, a.e., for every grid step `j < K n` and label, the `𝒬`-remainder `rGridQN` (tensors of `m + 2` indices, mollifier
-at `m + 1`) is at most `qErrQN` at the envelope `N^{τ_K} η_{u_{j+1}}^{-(m+2)}` of `𝒦` on `[0, u_{j+1}]`
-(`exists_norm_Kcal_le_win`, with `gridDriftQN` at `m ↦ m + 1` per `j`). -/
-theorem gridDriftQN_envelope {d : ℕ} (sz : Sizes d) (κ : ℝ) (hκ : 0 < κ) (m : ℕ) (hm : 1 ≤ m)
-    (τK : ℝ) (hτK : 0 < τK) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (hsize : sz.SizeTendsto)
-    (hKb : sz.STKbound E) (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n)
-    (hv1 : ∀ n, v n < 1) (hK0 : ∀ n, K n ≠ 0) (hlam : ∀ᶠ n : ℕ in atTop, 0 < sz.lam n)
-    (σ : Fin (m + 1 + 1) → Bool) :
-    ∀ᶠ n : ℕ in atTop, ∀ᵐ ω ∂(pathP sz), ∀ j, j < K n → ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n),
-      ‖rGridQN sz E s v K n (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) σ j ω a‖ ≤
-        qErrQN sz E s v K n (m + 1) ((1 + 40 * ((d * (m + 1) : ℕ) : ℝ)) * 6 ^ (d * (m + 1)))
-          (1000 * (1 + ((d * (m + 1) : ℕ) : ℝ)) ^ 2)
-          (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)) j := by
-  classical
-  have hE2 : ∀ n, |E n| < 2 := fun n => by have := hE n; linarith
-  have hv1' : ∀ n j, j < K n → gridTime s v K n (j + 1) < 1 := fun n j hj =>
-    altEnd_gridTime_lt_one (hsv n) (hK0 n) (hv1 n) (show j + 1 ≤ K n by omega)
-  -- the deterministic envelope statement at the grid step `j`
-  let P : ℕ → ℕ → Prop := fun n j => ∀ w ∈ Set.Icc (0 : ℝ) (gridTime s v K n (j + 1)),
-    ∀ J : LoopIdx (Zd d (sz.L n)), J.WF → 2 ≤ J.length → J.length ≤ m + 1 + 1 →
-      ‖KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) w J‖ ≤
-        ((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)
-  have hP : ∀ᶠ n in atTop, ∀ j, j < K n → P n j := by
-    by_contra hcon
-    have hfreq := Filter.not_eventually.1 hcon
-    let bad : ℕ → Prop := fun n => ∃ j, j < K n ∧ ¬ P n j
-    have hbad : ∀ n, ¬ (∀ j, j < K n → P n j) → bad n := by
-      intro n hn
-      by_contra hb
-      exact hn fun j hj => by
-        by_contra hc
-        exact hb ⟨j, hj, hc⟩
-    let w₀ : ℕ → ℝ := fun n =>
-      if h : bad n then gridTime s v K n (Classical.choose h + 1) else 0
-    have hvmem : ∀ n, 0 ≤ w₀ n ∧ w₀ n < 1 := by
-      intro n
-      by_cases h : bad n
-      · have e : w₀ n = gridTime s v K n (Classical.choose h + 1) := by simp [w₀, h]
-        rw [e]
-        exact ⟨altEnd_gridTime_nonneg (hs0 n) (hsv n) _, hv1' n _ (Classical.choose_spec h).1⟩
-      · have e : w₀ n = 0 := by simp [w₀, h]
-        rw [e]
-        exact ⟨le_rfl, one_pos⟩
-    have hwin := exists_norm_Kcal_le_win sz hsize E hKb hE2 w₀ (fun n => (hvmem n).1)
-      (fun n => (hvmem n).2) (m + 1 + 1) τK hτK
-    obtain ⟨n, hn1, hn2⟩ := (hfreq.and_eventually hwin).exists
-    have hbn : bad n := hbad n hn1
-    obtain ⟨hjlt, hnP⟩ := Classical.choose_spec hbn
-    have e : w₀ n = gridTime s v K n (Classical.choose hbn + 1) := by simp [w₀, hbn]
-    apply hnP
-    intro w hw J hJ h2 hJk
-    have hb := hn2 w (by rw [e]; exact hw) J hJ h2 hJk
-    rw [e] at hb
-    exact hb
-  filter_upwards [hP, hlam] with n hn hlamn
-  refine ae_all_iff.2 fun j => ?_
-  by_cases hj : j < K n
-  · have hη : 0 < etaT (E n) (gridTime s v K n (j + 1)) := etaT_pos (hE2 n) (hv1' n j hj)
-    have hBk : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1) :=
-      mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (pow_nonneg (inv_nonneg.2 hη.le) _)
-    have h := gridDriftQN sz E s v K n j (hE2 n) (hs0 n) (hsv n) (hv1 n) (hK0 n) hj hlamn (m := m + 1)
-      (by omega) σ _ hBk (hn j hj)
-    exact h.mono fun ω hω _ a => hω a
-  · exact Eventually.of_forall fun ω h => absurd h hj
-
 /-- **`gridDriftQN_envelope'`** (T2313, S3-18b2a): the primed successor of `gridDriftQN_envelope` (`m ≥ 1` dropped).  The
 hypothesis `hm : 1 ≤ m` of the original is not used in its body (the call to `gridDriftQN` is at the mollifier index `m + 1 ≥ 1`,
 `(by omega)`), so the statement is the same with `m : ℕ` arbitrary (tensors of `m + 2 ≥ 2` indices) and the proof is a copy.
@@ -838,23 +771,6 @@ theorem alt_hDclsGridQN :
     hE hlam hlamΛ hW hLK hs0 hsv hv1 hKv hdW hDD (fun ω' j' hj' => (mem_of_lt_altExitTauN hj').1.1)
     hAcr hDcr
 
-/-- **The crude sup at length `k` from the exit family** (preflight finding F1; deterministic): for `H` Hermitian
-(component 1 of `GoodSetN`), a bound `‖𝒦^{(k)}_{u,σ,a}‖ ≤ M_K` and `η_u^{-k} + M_K ≤ W^{C₀}`, `‖(𝓛-𝒦)^{(k)}_{u,σ}(H)‖ ≤ W^{C₀}`
-in the sup norm (`STmaxLKM_crudeN`, `NQGood1.lean:927`, `crudeLKM_of_level`): the form of the `hcrude`, `hAcr` premises
-of C4b, C4c. -/
-theorem altEnd_crudeSup {d : ℕ} (sz : Sizes d) (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 : 0 ≤ u) (hu1 : u < 1)
-    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {k : ℕ}
-    (hk : 1 ≤ k) {MK C₀ : ℝ}
-    (hK : ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), ‖sz.STKloop n E u σ a‖ ≤ MK)
-    (hη : (etaT E u)⁻¹ ^ k + MK ≤ ((sz.W n : ℕ) : ℝ) ^ C₀) (σ : Fin k → Bool) :
-    ‖fun b : Fin k → Zd d (sz.L n) => sz.STLKM n E u H σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀ := by
-  have hmax := STmaxLKM_crudeN sz n hE hH hu0 hu1 (n' := k) (m := k) hk le_rfl hK
-  refine crudeLKM_of_level d sz n E u H k σ _ C₀ (fun b => ?_) hη
-  refine le_trans ?_ hmax
-  exact Finset.le_sup' (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
-      ‖loopFine d (sz.L n) (sz.W n) H (zt E u) p.1 p.2 - STKloop sz n E u p.1 p.2‖)
-      (Finset.mem_univ (σ, b))
-
 /-- **The crude sup of the drift tensor from the exit family** (preflight finding F1; deterministic):
 `GoodLinN` (component 2) gives `‖driftTensorN‖ ≤ dDriftLinN` (`driftTensorN_norm_le_of_goodLin`), so a bound
 `dDriftLinN ≤ W^{C₀}` gives the `hDcr` premise of C4c. -/
@@ -994,33 +910,6 @@ theorem altEnd_unQ {d : ℕ} (hd : 3 ≤ d) (m : ℕ) (sz : Sizes d) (n : ℕ)
   rw [e]
   exact (norm_add_le _ _).trans (add_le_add le_rfl hB45.1)
 
-/-- **Target C5e, `altEnd_yMomentsMax`** (RBM2D `AltEndCompose` `yMomentsMax`; copy of the private `nqEnd_yMomentsMax`,
-`NQEndLin.lean:1028`, over `yMomentsQUnifN`, `QProxy.lean:1468`): one `C_P` for all `σ : Fin (m + 2) → Bool`, chosen
-before the grid `K`, such that eventually the `Y` moments of `yVecQN` (mollifier `QopAlgebra_mollifier … (m+1)`)
-hold with `v_j = Δ² P`, `w_j = Δ⁴ P²` for every measurable stopping family.  The premise `∀ n, 0 < sz.lam n` is that of the
-merged `yMomentsQUnifN` (`∀ n, STMollifierProps … (ϑ n)`; paper-delta candidate `T2294d`). -/
-theorem altEnd_yMomentsMax {d : ℕ} (sz : Sizes d) {κ τR : ℝ} {E s v : ℕ → ℝ} (hκ : 0 < κ)
-    (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
-    (hsize : sz.SizeTendsto) (hrange : sz.RangeCond τR v) (hlam : ∀ n, 0 < sz.lam n) (m : ℕ) :
-    ∃ C_P : ℝ, 0 ≤ C_P ∧ ∀ K : ℕ → ℕ, (∀ n, K n ≠ 0) → ∀ σ : Fin (m + 1 + 1) → Bool,
-      ∀ᶠ n : ℕ in atTop, ∃ P : ℝ, 0 ≤ P ∧ P ≤ ((sz.size n : ℕ) : ℝ) ^ C_P ∧
-        ∀ τ : PathΩ sz → ℕ, (∀ j, MeasurableSet[filt sz j] {ω | j < τ ω}) →
-          YMomentBoundsN sz (E n) σ (gridTime s v K n) τ (K n)
-            (fun j ω => yVecQN sz E s v K n j (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) σ ω)
-            (fun _ => gridStep s v K n ^ 2 * P) (fun _ => gridStep s v K n ^ 4 * P ^ 2) := by
-  have hC0 : (0 : ℝ) < (1 + 40 * ((d * (m + 1) : ℕ) : ℝ)) * 6 ^ (d * (m + 1)) := by positivity
-  choose CP hCP0 hCPev using fun σ : Fin (m + 1 + 1) → Bool =>
-    yMomentsQUnifN sz κ τR E s v hκ hE hs0 hsv hv1 hsize hrange (m + 1)
-      ((1 + 40 * ((d * (m + 1) : ℕ) : ℝ)) * 6 ^ (d * (m + 1))) (1 / 2)
-      (fun n => QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) hC0 (by norm_num)
-      (fun n => QopAlgebra_mollifier_props d (sz.L n) (m + 1) (sz.three_le_L n) (hlam n)) σ
-  refine ⟨Finset.univ.sup' Finset.univ_nonempty CP,
-    (hCP0 (fun _ => true)).trans (Finset.le_sup' CP (Finset.mem_univ _)), fun K hK0 σ => ?_⟩
-  filter_upwards [hCPev σ K hK0] with n hn
-  obtain ⟨P, hP0, hPle, hτ⟩ := hn
-  exact ⟨P, hP0, hPle.trans (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast sz.one_le_size n)
-    (Finset.le_sup' CP (Finset.mem_univ σ))), hτ⟩
-
 end C5
 /-! ## 0g. The vocabulary over a carrier -/
 
@@ -1044,13 +933,6 @@ noncomputable def altExitTauNg (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ �
         altYSetNg Cm n (gridTime s v K n j) (k - 1) (Yl n))
 
 end VocabG
-
-theorem altYSetNg_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (u : ℝ) (l : ℕ) (Y : ℝ) :
-    altYSetNg (bandStep2Mat sz E) n u l Y = altYSetN sz n (E n) u l Y := rfl
-
-theorem altExitTauNg_band {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ) (Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl : ℕ → ℝ) (τ' D' : ℝ)
-    (n : ℕ) :
-    altExitTauNg (bandStep2Mat sz E) s v K k Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl τ' D' n = altExitTauN sz E s v K k Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl τ' D' n := rfl
 
 /-! ## 1g. Measurability and the exit family over a carrier -/
 

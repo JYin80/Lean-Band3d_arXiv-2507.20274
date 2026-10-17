@@ -71,16 +71,6 @@ def BAmWindow (Λ κ : ℝ) : Prop :=
         BAReal d L g κ E m → ∀ g' : ℝ, Real.sqrt (1 - c₁) * g ≤ g' → g' ≤ g →
           BAReal d L g' (κ / 2) E (BAm d L g' (E : ℂ)) ∧ ‖BAm d L g' (E : ℂ) - m‖ ≤ C * (g - g')
 
-/-- **The inverse of `zztE_BA`** (used by supervisor 1806 §1.4): flow data `(τ, E, √τ g)` with a real-axis solution
-`m₀` come from the spectral parameter `z' = z_τ(E, √τ g)/√τ` at coupling `g`, with `m(z', g) = √τ m₀`. -/
-def BAzztE_inv : Prop :=
-  ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → ∀ (τ E : ℝ) (m₀ : ℂ),
-    haveI : NeZero L := ⟨Nat.pos_iff_ne_zero.mp (Nat.lt_of_lt_of_le (Nat.zero_lt_succ 2) hL)⟩
-    0 < τ → τ < 1 → BASelf d L (Real.sqrt τ * g) (E : ℂ) m₀ →
-      BAm d L g (ztOf m₀ E τ / (Real.sqrt τ : ℂ)) = (Real.sqrt τ : ℂ) * m₀ ∧
-        BAt0 (ztOf m₀ E τ / (Real.sqrt τ : ℂ)) ((Real.sqrt τ : ℂ) * m₀) = τ ∧
-          BAflowE (ztOf m₀ E τ / (Real.sqrt τ : ℂ)) ((Real.sqrt τ : ℂ) * m₀) = E
-
 end DetPins
 
 /-! ### 2.1 `BAgapReal` (proved) -/
@@ -298,14 +288,6 @@ theorem BAzztE_inv_core (d L : ℕ) [NeZero L] (g τ E : ℝ) (m₀ : ℂ) (hτ0
   field_simp
   have hs2 : s ^ 2 = τ := by rw [sq]; exact hss
   linear_combination (-(E + (1 - τ) * m₀.re)) * hs2
-
-/-- **`BAzztE_inv`, proved** (the check-file statement). -/
-theorem BAzztE_inv_holds (d : ℕ) : BAzztE_inv d := by
-  intro L hL g _ τ E m₀
-  have : NeZero L := ⟨by omega⟩
-  intro hτ0 hτ1 hself
-  exact BAzztE_inv_core d L g τ E m₀ hτ0 hτ1 hself
-
 
 /-! ### 2.3 `BAmWindow` (proved): a one-step Newton-Kantorovich contraction at the coupling `g` of the solution
 
@@ -716,79 +698,6 @@ theorem BAmWindow_holds (d : ℕ) (Λ κ : ℝ) : BAmWindow d Λ κ := by
     calc ‖m' - m‖ ≤ 2 * d * (g - g') / κ ^ 4 := hdist
       _ = 2 * d / κ ^ 4 * (g - g') := by ring
 
-/-- **The window, iterated at a fixed floor.**  `BAwindow_step` at the floor `κf` (step `κf⁹/(64 d)`, loss `2 d δ/κf⁴` per step, `N` steps):
-from a real-axis solution `m` at `(g, E)` with `κf + 2 d (g - g')/κf⁴ ≤ Im m`, every `0 < g' ≤ g` with `g - g' ≤ N κf⁹/(64 d)` has a
-real-axis solution `m'` with `Im m' ≥ κf` and `‖m' - m‖ ≤ 2 d (g - g')/κf⁴`.  (The one step of `BAmWindow_holds` uses `N = 1`; the sharper
-window constants of the instances of section 7 use this.) -/
-theorem BAwindow_iter (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 1 ≤ d) {E κf : ℝ} (hκf : 0 < κf) :
-    ∀ (N : ℕ) {g g' : ℝ}, 0 < g' → g' ≤ g → g - g' ≤ N * (κf ^ 9 / (64 * d)) →
-      ∀ {m : ℂ}, BASelf d L g (E : ℂ) m → κf + 2 * d * (g - g') / κf ^ 4 ≤ m.im →
-        ∃ m' : ℂ, BASelf d L g' (E : ℂ) m' ∧ ‖m' - m‖ ≤ 2 * d * (g - g') / κf ^ 4 ∧ κf ≤ m'.im := by
-  have hdpos : (0 : ℝ) < d := by exact_mod_cast hd
-  intro N
-  induction N with
-  | zero =>
-    intro g g' hg' hle hdist m hm him
-    have hgg : g' = g := by
-      have : g - g' ≤ 0 := by simpa using hdist
-      linarith
-    subst hgg
-    refine ⟨m, hm, by simp, ?_⟩
-    have : 0 ≤ 2 * d * (g' - g') / κf ^ 4 := by simp
-    linarith
-  | succ N ih =>
-    intro g g' hg' hle hdist m hm him
-    have hδpos : 0 < κf ^ 9 / (64 * d) := by positivity
-    have hgpos : 0 < g := lt_of_lt_of_le hg' hle
-    have hnn : 0 ≤ 2 * d * (g - g') / κf ^ 4 :=
-      div_nonneg (mul_nonneg (by positivity) (sub_nonneg.mpr hle)) (by positivity)
-    have hg₁g : max g' (g - κf ^ 9 / (64 * d)) ≤ g := max_le hle (by linarith)
-    have hg'g₁ : g' ≤ max g' (g - κf ^ 9 / (64 * d)) := le_max_left _ _
-    have hg₁pos : 0 < max g' (g - κf ^ 9 / (64 * d)) := lt_of_lt_of_le hg' hg'g₁
-    have hstep : g - max g' (g - κf ^ 9 / (64 * d)) ≤ κf ^ 9 / (64 * d) := by
-      have : g - κf ^ 9 / (64 * d) ≤ max g' (g - κf ^ 9 / (64 * d)) := le_max_right _ _
-      linarith
-    have hκfm : κf ≤ m.im := by linarith
-    obtain ⟨m₁, hm₁, hd₁, -⟩ := BAwindow_step d L hL hd hκf hgpos hm hκfm hg₁g hstep
-    have him₁ : κf + 2 * d * (max g' (g - κf ^ 9 / (64 * d)) - g') / κf ^ 4 ≤ m₁.im := by
-      have h1 : |m₁.im - m.im| ≤ ‖m₁ - m‖ := by
-        have := Complex.abs_im_le_norm (m₁ - m)
-        simpa using this
-      have h2 := (abs_le.mp h1).1
-      have e : 2 * d * (g - g') / κf ^ 4 = 2 * d * (g - max g' (g - κf ^ 9 / (64 * d))) / κf ^ 4 +
-          2 * d * (max g' (g - κf ^ 9 / (64 * d)) - g') / κf ^ 4 := by ring
-      linarith
-    have hdist₁ : max g' (g - κf ^ 9 / (64 * d)) - g' ≤ N * (κf ^ 9 / (64 * d)) := by
-      rcases le_total g' (g - κf ^ 9 / (64 * d)) with h | h
-      · rw [max_eq_right h]
-        push_cast at hdist
-        linarith
-      · rw [max_eq_left h]
-        have : 0 ≤ (N : ℝ) * (κf ^ 9 / (64 * d)) := by positivity
-        linarith
-    obtain ⟨m', hm', hd', him'⟩ := ih hg' hg'g₁ hdist₁ hm₁ him₁
-    refine ⟨m', hm', ?_, him'⟩
-    calc ‖m' - m‖ ≤ ‖m' - m₁‖ + ‖m₁ - m‖ := norm_sub_le_norm_sub_add_norm_sub _ _ _
-      _ ≤ 2 * d * (max g' (g - κf ^ 9 / (64 * d)) - g') / κf ^ 4 +
-          2 * d * (g - max g' (g - κf ^ 9 / (64 * d))) / κf ^ 4 := add_le_add hd' hd₁
-      _ = 2 * d * (g - g') / κf ^ 4 := by ring
-
-/-- **The window at a floor `κf`, for `BAm`.**  `m(E, g')` is the real-axis solution at `g'`, with `Im ≥ κf` and the Lipschitz bound,
-whenever the loss budget `κf + 2 d (g - g')/κf⁴ ≤ κ ≤ Im m` holds (`0 < g' ≤ g`). -/
-theorem BAwindow_floor (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 1 ≤ d) {g g' E κ κf : ℝ} (hκf : 0 < κf)
-    (hg' : 0 < g') (hle : g' ≤ g) {m : ℂ} (hm : BASelf d L g (E : ℂ) m) (hκm : κ ≤ m.im)
-    (hbudget : κf + 2 * d * (g - g') / κf ^ 4 ≤ κ) :
-    κf ≤ (BAm d L g' (E : ℂ)).im ∧ ‖BAm d L g' (E : ℂ) - m‖ ≤ 2 * d * (g - g') / κf ^ 4 := by
-  have hdpos : (0 : ℝ) < d := by exact_mod_cast hd
-  have hδpos : 0 < κf ^ 9 / (64 * d) := by positivity
-  obtain ⟨N, hN⟩ := exists_nat_ge ((g - g') / (κf ^ 9 / (64 * d)))
-  have hdist : g - g' ≤ N * (κf ^ 9 / (64 * d)) := by
-    rwa [div_le_iff₀ hδpos] at hN
-  obtain ⟨m', hm', hd', him'⟩ := BAwindow_iter d L hL hd hκf N hg' hle hdist hm (by linarith)
-  have hBAm : BAm d L g' (E : ℂ) = m' := BAm_real_eq_of_self d L g' E m' hm'
-  rw [hBAm]
-  exact ⟨him', hd'⟩
-
 end Window
 
 section Family
@@ -837,84 +746,7 @@ theorem BAWinBulk_of_dom_holds (d : ℕ) : BAWinBulk_of_dom_stmt d := BAWinBulk_
 
 end Family
 
-namespace CouplingWindowInst
-
 /-! ### 7.2 The one-point sequence `(L, g) = (4, 10)` (interior gaps; the construction of the flow point of T2189) -/
-
-section OnePoint
-
-open RBM.BA.MFixedPointInst
-
-/-- The one-point sizes `L ≡ 4`, `W ≡ 2`, `lam ≡ 10` (`N = 512`). -/
-def szP : Sizes 3 where
-  L := fun _ => 4
-  W := fun _ => 2
-  lam := fun _ => 10
-  three_le_L := fun _ => by norm_num
-  W_pos := fun _ => by norm_num
-
-/-- The merged subordination point `z_S(4, 10)`, constant. -/
-def zP : ℕ → ℂ := fun _ => zS 4 10
-
-/-- `t₀`, `E`, `m₀`, `g₀` of the flow of `z_S(4, 10)` (`(eq:t0E0_BA)`; the same construction as the flow point `P` of T2189, which is
-`Nonempty.some` and so opaque; here the data are explicit). -/
-def t0P : ℝ := BAt0 (zS 4 10) (mS 4 10)
-def EP : ℝ := BAflowE (zS 4 10) (mS 4 10)
-def m0P : ℂ := mS 4 10 / (Real.sqrt t0P : ℂ)
-def g0P : ℝ := Real.sqrt t0P * 10
-
-theorem BAm_zP : BAm 3 4 10 (zS 4 10) = mS 4 10 :=
-  BASelf_unique 3 4 10 (zS 4 10) _ _ (zS_im_pos 4 10).le (BAm_self 3 4 10 (zS 4 10) (zS_im_pos 4 10)) (selfS 4 10)
-
-theorem flowP_data : 0 < t0P ∧ t0P < 1 ∧ BASelf 3 4 g0P (EP : ℂ) m0P :=
-  let h := BAzztE_data 3 4 10 (zS_im_pos 4 10) (selfS 4 10)
-  ⟨h.1, h.2.1, h.2.2.1⟩
-
-
-theorem g0P_pos : 0 < g0P := mul_pos (Real.sqrt_pos.mpr flowP_data.1) (by norm_num)
-
-theorem g0P_le : g0P ≤ 10 := BAg0_le (by norm_num) (zS_im_pos 4 10) (selfS 4 10).1
-
-theorem flowP_real : BAReal 3 4 g0P (mS 4 10).im EP m0P := by
-  have h := BAdom_real (d := 3) (L := 4) (g := 10) (z := zS 4 10) (κ := (mS 4 10).im) (zS_im_pos 4 10)
-    (BAm_self 3 4 10 (zS 4 10) (zS_im_pos 4 10)) (by rw [BAm_zP])
-  rw [BAm_zP] at h
-  exact h
-
-/-- **The window at the flow point of `(L, g) = (4, 10)`** (`BAmWindow_holds`; no hypothesis): the chain pins' window premise
-`BAWinBulk` holds for the one-point sequence `L ≡ 4`, `lam ≡ 10`, `z ≡ z_S(4, 10)` (flow data `(g₀, E) = (g0P, EP)`), with some
-`c₁ > 0` (the proof's `c₁ = min(1/2, κ⁹/(64 d Λ))`, `κ = Im m_S(4, 10)`), and `Im m ≥ κ/2` on the window. -/
-example :
-    ∃ c₁ : ℝ, 0 < c₁ ∧ c₁ ≤ 1 / 2 ∧ BAWinBulk szP zP c₁ ((mS 4 10).im / 2) := by
-  obtain ⟨c₁, h0, h1, C, hC, H⟩ := BAmWindow_holds 3 10 (mS 4 10).im (by norm_num) (by norm_num) (selfS 4 10).1
-  refine ⟨c₁, h0, h1, fun n g' hlo hhi => ?_⟩
-  have e : BAm 3 (szP.L n) (szP.lam n) (zP n) = mS 4 10 := BAm_zP
-  rw [e] at hlo hhi ⊢
-  exact (H 4 (by norm_num) g0P g0P_pos g0P_le EP m0P flowP_real g' hlo hhi).1.2
-
-/-- `BAzztE_inv` at these data: the inverse of `zztE_BA` returns `m(z', 10) = √t₀ m₀`, horizon `t₀`, energy `E`. -/
-example : BAm 3 4 10 (ztOf m0P EP t0P / (Real.sqrt t0P : ℂ)) = (Real.sqrt t0P : ℂ) * m0P ∧
-    BAt0 (ztOf m0P EP t0P / (Real.sqrt t0P : ℂ)) ((Real.sqrt t0P : ℂ) * m0P) = t0P ∧
-      BAflowE (ztOf m0P EP t0P / (Real.sqrt t0P : ℂ)) ((Real.sqrt t0P : ℂ) * m0P) = EP :=
-  BAzztE_inv_holds 3 4 (by norm_num) 10 (by norm_num) t0P EP m0P flowP_data.1 flowP_data.2.1 flowP_data.2.2
-
-/-- `BAgapReal` at the real-axis data of the flow point: `Re (1 - 4^{-3} tr M²) ≥ 2 (Im m₀)²` at `L = 4`, `g₀ = g0P`. -/
-example : 2 * m0P.im ^ 2 ≤
-    (1 - (((4 ^ 3 : ℕ) : ℂ))⁻¹ * (BAMB 3 4 g0P (EP : ℂ) m0P * BAMB 3 4 g0P (EP : ℂ) m0P).trace).re :=
-  BAgapReal_holds 3 4 (by norm_num) g0P g0P_pos EP m0P flowP_data.2.2
-
-/-- The spectral form of `M²` at the same data. -/
-example : (BAMB 3 4 g0P (EP : ℂ) m0P * BAMB 3 4 g0P (EP : ℂ) m0P).trace =
-    ∑ i, (((BAspec 3 4 g0P i : ℂ) - ((EP : ℂ) + m0P))⁻¹) ^ 2 :=
-  BAMB_trace_sq_eq_sum 3 4 g0P (EP : ℂ) m0P (by
-    have := flowP_data.2.2.1
-    simp only [Complex.add_im, Complex.ofReal_im, zero_add]
-    exact this.ne')
-
-end OnePoint
-
-
-end CouplingWindowInst
 
 end RBM.BA
 

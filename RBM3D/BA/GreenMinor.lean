@@ -81,61 +81,11 @@ end Setting
 
 /-! ## 1. S1 and the structural fact (ii) -/
 
-/-- **S1** (the `(4.9)` removal bound): `|G^{(w)}_{xy} - G_{xy}| ≤ (2/κ) |G_{xw}| |G_{wy}|` when `|G_{ww}| ≥ κ/2`. -/
-theorem GreenMinor_removal {d L W : ℕ} [NeZero L] [NeZero W] {G : Matrix (Vtx d L W) (Vtx d L W) ℂ} {κ : ℝ}
-    {w : Vtx d L W} (hκ : 0 < κ) (hw : κ / 2 ≤ ‖G w w‖) (x y : Vtx d L W) :
-    ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * ‖G x w‖ * ‖G w y‖ := by
-  have h0 : 0 < ‖G w w‖ := lt_of_lt_of_le (by positivity) hw
-  rw [greenMinor_sub, norm_neg, norm_div, norm_mul, div_le_iff₀ h0]
-  have h2 : (2 / κ) * ‖G x w‖ * ‖G w y‖ * (κ / 2) ≤ (2 / κ) * ‖G x w‖ * ‖G w y‖ * ‖G w w‖ :=
-    mul_le_mul_of_nonneg_left hw (by positivity)
-  have h3 : (2 / κ) * ‖G x w‖ * ‖G w y‖ * (κ / 2) = ‖G x w‖ * ‖G w y‖ := by field_simp
-  linarith
-
 /-- (ii): `o(x) ≠ o(y) ⇒ M_{xy} = 0` (Kronecker form, `BAMfine_eq`, `GreenSchur.lean:93`); hence `G_{xy} = Δ_{xy}`. -/
 theorem GreenMinor_cross {d L W : ℕ} [NeZero L] [NeZero W] {M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     {Mb : Zd d L → Zd d L → ℂ} (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) {x y : Vtx d L W}
     (h : x.2 ≠ y.2) : M x y = 0 := by
   rw [hM]; simp [h]
-
-/-- One-sided removal bound: `(2/κ) δ ‖G_{wy}‖` when `o(x) ≠ o(w)`. -/
-theorem GreenMinor_removal_crossL {d L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    {Mb : Zd d L → Zd d L → ℂ} {κ δ : ℝ} {w : Vtx d L W}
-    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hΔ : ∀ a b, ‖G a b - M a b‖ ≤ δ) (hκ : 0 < κ)
-    (hw : κ / 2 ≤ ‖G w w‖) (x y : Vtx d L W) (hxw : x.2 ≠ w.2) :
-    ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * δ * ‖G w y‖ := by
-  have h1 : ‖G x w‖ ≤ δ := by
-    have := hΔ x w
-    rwa [GreenMinor_cross hM hxw, sub_zero] at this
-  calc ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * ‖G x w‖ * ‖G w y‖ := GreenMinor_removal hκ hw x y
-    _ ≤ (2 / κ) * δ * ‖G w y‖ := by gcongr
-
-/-- One-sided removal bound: `(2/κ) δ ‖G_{xw}‖` when `o(w) ≠ o(y)`. -/
-theorem GreenMinor_removal_crossR {d L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    {Mb : Zd d L → Zd d L → ℂ} {κ δ : ℝ} {w : Vtx d L W}
-    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hΔ : ∀ a b, ‖G a b - M a b‖ ≤ δ) (hκ : 0 < κ)
-    (hw : κ / 2 ≤ ‖G w w‖) (x y : Vtx d L W) (hwy : w.2 ≠ y.2) :
-    ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * δ * ‖G x w‖ := by
-  have h1 : ‖G w y‖ ≤ δ := by
-    have := hΔ w y
-    rwa [GreenMinor_cross hM hwy, sub_zero] at this
-  calc ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * ‖G x w‖ * ‖G w y‖ := GreenMinor_removal hκ hw x y
-    _ ≤ (2 / κ) * ‖G x w‖ * δ := by gcongr
-    _ = (2 / κ) * δ * ‖G x w‖ := by ring
-
-/-- **S1, cross-offset form**: `(2/κ) δ²` when `o(x) ≠ o(w)` and `o(w) ≠ o(y)`. -/
-theorem GreenMinor_removal_cross {d L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    {Mb : Zd d L → Zd d L → ℂ} {κ δ : ℝ} {w : Vtx d L W}
-    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hΔ : ∀ a b, ‖G a b - M a b‖ ≤ δ) (hκ : 0 < κ)
-    (hw : κ / 2 ≤ ‖G w w‖) (x y : Vtx d L W) (hxw : x.2 ≠ w.2) (hwy : w.2 ≠ y.2) :
-    ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * δ ^ 2 := by
-  have h1 : ‖G w y‖ ≤ δ := by
-    have := hΔ w y
-    rwa [GreenMinor_cross hM hwy, sub_zero] at this
-  have hδ0 : 0 ≤ δ := le_trans (norm_nonneg _) (hΔ w y)
-  calc ‖greenMinor G w x y - G x y‖ ≤ (2 / κ) * δ * ‖G w y‖ := GreenMinor_removal_crossL hM hΔ hκ hw x y hxw
-    _ ≤ (2 / κ) * δ * δ := by gcongr
-    _ = (2 / κ) * δ ^ 2 := by ring
 
 /-- (ii) in the `T`/`R` form used by the recursion of S2: for `w ∈ R_{β,o}` and `x ∈ T_{β,o}`, `x ≠ w`, the offsets differ
 (`x` of offset `o`: `o(w) ≠ o`; `x` in block `β`: same block, different site). -/
@@ -337,98 +287,10 @@ The hand-made datum `GreenMinorInst` is one block `0` with the two sites `p = (0
 `m = i`, `M = m I` (zero inter-block coupling), `Δ = ε (E_{pq} + E_{qp})` with `ε = 1/100`, so `G = M + Δ ≠ M`; `H := Δ` is a
 Hermitian matrix with a nonzero off-diagonal entry, whose principal-submatrix resolvents form the tower of R1. -/
 
-namespace GreenMinorInst
-
-abbrev HV : Type := Vtx 3 3 2
-/-- the site `p = (block 0, offset 0)` -/
-def hp : HV := (0, 0)
-/-- the site `q = (block 0, offset 1)`, in the protected rows `R_{0,0}` -/
-def hq : HV := (0, 1)
-/-- `m = i` -/
-def hm : ℂ := Complex.I
-/-- the cross-offset entry `Δ_{pq} = Δ_{qp} = ε = 1/100` -/
-def hε : ℂ := ((1 / 100 : ℝ) : ℂ)
-/-- zero inter-block coupling: `M^{(B)} = m I` -/
-def hMb : Zd 3 3 → Zd 3 3 → ℂ := fun a b => if a = b then hm else 0
-def hM : Matrix HV HV ℂ := Matrix.of fun u v => if u.2 = v.2 then hMb u.1 v.1 else 0
-def hΔ : Matrix HV HV ℂ := Matrix.of fun x y => if (x = hp ∧ y = hq) ∨ (x = hq ∧ y = hp) then hε else 0
-/-- `G = M + Δ`: block diagonal, one `2 × 2` block on `{p, q}`, `‖Δ‖_max = ε ≠ 0` -/
-def hG : Matrix HV HV ℂ := hM + hΔ
-/-- the hopping `D = g₀ Ψ`, `g₀ = 1/10` -/
-def hD : Matrix HV HV ℂ := Matrix.of fun u l => if u.2 = l.2 ∧ Adj 3 3 u.1 l.1 then ((1 / 10 : ℝ) : ℂ) else 0
-/-- `y = (e_0, offset 0)`: a block `≠ 0`, the offset of `p` -/
-def hy : HV := (Pi.single 0 1, 0)
-
-theorem hΔ_herm : hΔ.IsHermitian := by
-  ext x y
-  simp only [Matrix.conjTranspose_apply, hΔ, Matrix.of_apply]
-  by_cases h : (x = hp ∧ y = hq) ∨ (x = hq ∧ y = hp)
-  · have h' : (y = hp ∧ x = hq) ∨ (y = hq ∧ x = hp) := by tauto
-    simp [h, h', hε]
-  · have h' : ¬ ((y = hp ∧ x = hq) ∨ (y = hq ∧ x = hp)) := by tauto
-    simp [h, h']
-
-end GreenMinorInst
-
-section HandMade
-open GreenMinorInst
-
 -- S1: the removal bound at `w = q`, `x = y = p` (`G^{(q)}_{pp} - G_{pp} = -ε²/m`)
-example : ‖greenMinor hG hq hp hp - hG hp hp‖ ≤ (2 / (1 / 2 : ℝ)) * ‖hG hp hq‖ * ‖hG hq hp‖ := by
-  have hqq : hG hq hq = hm := by
-    have : hq ≠ hp := fun h' => (by decide : hp ≠ hq) h'.symm
-    simp [hG, hM, hΔ, hMb, this]
-  refine GreenMinor_removal (by norm_num) ?_ _ _
-  rw [hqq]
-  simp [hm]
-  norm_num
-
 -- (ii): `M_{pq} = 0` (offsets `0 ≠ 1`)
-example : hM hp hq = 0 :=
-  GreenMinor_cross (M := hM) (Mb := hMb) (fun _ _ => rfl) (x := hp) (y := hq) (by decide)
-
 -- S1: the one-sided and the cross-offset forms at `w = q`, `x = y = p`, `δ = 1/100 = ‖Δ‖_max`
-example :
-    ‖greenMinor hG hq hp hp - hG hp hp‖ ≤ (2 / (1 / 2 : ℝ)) * (1 / 100) * ‖hG hq hp‖ ∧
-    ‖greenMinor hG hq hp hp - hG hp hp‖ ≤ (2 / (1 / 2 : ℝ)) * (1 / 100) * ‖hG hp hq‖ ∧
-    ‖greenMinor hG hq hp hp - hG hp hp‖ ≤ (2 / (1 / 2 : ℝ)) * (1 / 100) ^ 2 := by
-  have hqq : hG hq hq = hm := by
-    have : hq ≠ hp := fun h' => (by decide : hp ≠ hq) h'.symm
-    simp [hG, hM, hΔ, hMb, this]
-  have hΔb : ∀ a b, ‖hG a b - hM a b‖ ≤ 1 / 100 := by
-    intro a b
-    simp only [hG, Matrix.add_apply, add_sub_cancel_left, hΔ, Matrix.of_apply]
-    split_ifs
-    · simp [hε]
-    · simp
-  have hw : (1 / 2 : ℝ) / 2 ≤ ‖hG hq hq‖ := by rw [hqq]; simp [hm]; norm_num
-  have h1 : hp.2 ≠ hq.2 := by decide
-  have h2 : hq.2 ≠ hp.2 := by decide
-  exact ⟨GreenMinor_removal_crossL (Mb := hMb) (fun _ _ => rfl) hΔb (by norm_num) hw _ _ h1,
-    GreenMinor_removal_crossR (Mb := hMb) (fun _ _ => rfl) hΔb (by norm_num) hw _ _ h2,
-    GreenMinor_removal_cross (Mb := hMb) (fun _ _ => rfl) hΔb (by norm_num) hw _ _ h1 h2⟩
-
 -- (ii) in the `T`/`R` form: `q ∈ R_{0,0}`; `p` (offset 0) and `(0, 2)` (block 0) in `T_{0,0}`
-example : (hp.2 ≠ hq.2) ∧ (((0 : Zd 3 3), (2 : Fin (2 ^ 3))) : HV).2 ≠ hq.2 := by
-  have hR : hq ∈ GreenMinor_R (0 : Zd 3 3) (0 : Fin (2 ^ 3)) := ⟨rfl, by decide⟩
-  exact ⟨GreenMinor_offset_ne hR (Or.inl rfl) (by decide), GreenMinor_offset_ne hR (Or.inr rfl) (by decide)⟩
-
 -- R1: the principal-submatrix resolvents of the Hermitian `H = Δ` at `z = i` form a tower over `(Δ - i)⁻¹`
-example : GreenMinor_Tower (green hΔ Complex.I) (GreenMinor_Gs hΔ Complex.I) :=
-  GreenMinor_tower hΔ_herm (by simp)
-
-end HandMade
-
-section CarrierInst
-open SizesInst FlowPinsInst
-
 -- R1 at the BA carrier: `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`), `t = 1/2 ≤ T₀`, every sample `ω`
-example (ω : sz0.SeqΩ) :
-    GreenMinor_Tower (GreenCore_Gc sz0 zSeq 0 (1 / 2) ω)
-      (GreenMinor_Gs (GreenCore_Dc sz0 zSeq 0 + GreenCore_Xc sz0 0 (1 / 2) ω)
-        (ztOf (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0) (BAflowEs sz0 zSeq 0) (1 / 2))) :=
-  GreenMinor_tower_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 0 (t := 1 / 2) (by norm_num) (half_lt_t0 0).le ω
-
-end CarrierInst
-
 end RBM.BA

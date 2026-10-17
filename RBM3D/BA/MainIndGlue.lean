@@ -42,14 +42,6 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 /-! ## 1. Smaller regime, two stages, chains of stages -/
 
-/-- **A smaller regime** (twin of `STMainIndR_mono`, `MainIndRegimes:105`): `R' ⊆ R` and `BAMainIndFamTL d R` give `BAMainIndFamTL d R'`. -/
-theorem baMainIndFamTL_mono (d : ℕ) (R R' : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (hRR : ∀ (sz : Sizes d) (s t : ℕ → ℝ), R' sz s t → R sz s t) (h : BAMainIndFamTL d R) : BAMainIndFamTL d R' := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c, hc, hc', H⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-  exact ⟨c, hc, hc', fun 𝔠 sz z hf hlam c₁ hc₁ hc₁' hwin s t hs0 hsT hst htT hR' hyp hcon =>
-    H 𝔠 sz z hf hlam c₁ hc₁ hc₁' hwin s t hs0 hsT hst htT (hRR sz s t hR') hyp hcon⟩
-
 /-- **Two stages** `[s, m]`, `[m, t]` (twin of `ST_mainIndR_seq`, `MainIndRegimes:289`; probe `BA_mainInd_compose`, `t/T2205:2462`, with TL2):
 the seven conclusions of stage 1 at `m`, for every member of `Fam(m)`, give the six hypotheses of stage 2
 (`STLocalMaxgL_of_STLocalEntrygL`); `(con_st_ind)` passes to both pieces (`st_conStInd_sub`) and to the smaller exponent
@@ -328,109 +320,15 @@ Data: `κ = 1/4`, `(ε, 𝔠, 𝔡) = (1/10, 1/6, 1/10)`, `c₁ = 1/3`, `s ≡ 1
 the six family conjuncts on `Fam(1/10)` are the hypotheses (their producers are other gates); the sizes, the flow, the window, the
 times, the regime, the pattern and the constants are discharged. -/
 
-section Inst
-
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.Step1FamInst
-
-open private MainIndOutBA_flow MainIndOutBA_win MainIndOutBA_mem from RBM3D.BA.MainIndOutBA
-
-/-- `lam_n² ≤ 1/2` along `sz0`, every `n` (`lam_n = (2 (n+1))⁻⁶ ≤ 1/64`). -/
-private theorem MainIndGlue_lam_sq (n : ℕ) : sz0.lam n ^ 2 ≤ 1 / 2 := by
-  have hx : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hlam : sz0.lam n ≤ 1 / 64 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-    rw [one_div]
-    exact inv_anti₀ (by norm_num) (by nlinarith [pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hx 6])
-  have hlam0 : 0 ≤ sz0.lam n := by change 0 ≤ ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹; positivity
-  nlinarith [pow_le_pow_left₀ hlam0 hlam 2]
-
-/-- Regime (iii) at `sz0` for every constant `s` and `t ≤ 1/2`. -/
-private theorem MainIndGlue_reg (s t : ℝ) (ht : t ≤ 1 / 2) : STReg5III sz0 (fun _ => s) (fun _ => t) := fun n => by
-  have := MainIndGlue_lam_sq n
-  change sz0.lam n ^ 2 ≤ 1 - t
-  linarith
-
 -- The six hypotheses at `s ≡ 1/10` on `Fam(1/10)`, as the hypothesis of the instances.
-set_option quotPrecheck false in
-local notation "Hyp6" =>
-  ∀ z' : ℕ → ℂ, BAFamZ sz0 zSeq (1 / 3) (fun _ => 1 / 10) z' →
-    (let C := baFMz sz0 z'; let μ := Sizes.seqP (sz0.withLam 0); let s : ℕ → ℝ := fun _ => 1 / 10
-      STLKgL C μ s ∧ STDecaygL C μ s ∧ STDecayStronggL C μ s ∧ STLocalMaxgL C μ s ∧ STExp2gL C μ s ∧ BATwistLoopLaw C μ s)
-
 -- The seven conclusions at `t ≡ 1/2` at the non-main member.
-set_option quotPrecheck false in
-local notation "Concl7" =>
-  (let C := baFMz sz0 (BAzSrc sz0 zSeq (fun _ => 2 / 3) (fun _ => 17 / 25)); let μ := Sizes.seqP (sz0.withLam 0)
-    let t : ℕ → ℝ := fun _ => 1 / 2
-    STLKgL C μ t ∧ STLmaxgL C μ t ∧ STDecaygL C μ t ∧ STExp2gL C μ t ∧ STLocalEntrygL C μ t ∧ STDecayStronggL C μ t ∧ BATwistLoopLaw C μ t)
-
 -- the regime-(iii) split of `[1/10, 1/2]` at `3/10` (target 2, hypothesis-free)
-example : STRegSeq STReg5III STReg5III sz0 (fun _ => 1 / 10) (fun _ => 1 / 2) :=
-  ⟨fun _ => 3 / 10, fun _ => by norm_num, fun _ => by norm_num, MainIndGlue_reg _ _ (by norm_num), MainIndGlue_reg _ _ (by norm_num)⟩
-
 -- the stage pattern of `[1/10, 1/2]` along `sz0` is `(0, 0)` at every `n` (one class, regime (iii); hypothesis-free)
-example : ∀ n, STPattern sz0 (fun _ => 1 / 10) (fun _ => 1 / 2) n = (0, 0) := fun n => by
-  have hl := MainIndGlue_lam_sq n
-  have hS : STStageS sz0 (fun _ => (1 / 10 : ℝ)) n = 0 := by
-    have h1 : (1 / 10 : ℝ) < STCutK sz0 1 n := by
-      change (1 / 10 : ℝ) < 1 - sz0.lam n ^ 2
-      linarith
-    simp only [STStageS, h1, ↓reduceIte]
-  have hT : STStageT sz0 (fun _ => (1 / 2 : ℝ)) n = 0 := by
-    have h1 : (1 / 2 : ℝ) ≤ STCutK sz0 1 n := by
-      change (1 / 2 : ℝ) ≤ 1 - sz0.lam n ^ 2
-      linarith
-    simp only [STStageT, h1, ↓reduceIte]
-  exact Prod.ext (Fin.ext hS) (Fin.ext hT)
-
 -- target 5 along `φ = (2 ·)`: the member `mem0 ∘ φ` of `Fam(1/2)` along `sz0.comp φ`, extended by the main flow (hypothesis-free)
-example : BAFamZ sz0 zSeq (1 / 3) (fun _ => 1 / 2)
-    (Function.extend (fun j : ℕ => 2 * j) (fun j => BAzSrc sz0 zSeq (fun _ => 2 / 3) (fun _ => 17 / 25) (2 * j)) zSeq) :=
-  MainIndGlue_extendMember sz0 zSeq (1 / 3) (fun _ => 1 / 2) (fun j => 2 * j) (fun a b h => by simpa using h) _
-    (fun j => MainIndOutBA_mem (1 / 2) (by norm_num) (2 * j))
-
 -- target 1: `STAny ⊇ STReg5III`; the step at `STReg5III` from the step at `STAny`, applied at the data
-example (h : BAMainIndFamTL 3 STAny) (hyp : Hyp6) :
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ Concl7 := by
-  obtain ⟨𝔠d, h𝔠, -, H⟩ := baMainIndFamTL_mono 3 STAny STReg5III (fun _ _ _ _ => trivial) h le_rfl (1 / 4) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨𝔠d, h𝔠, H (1 / 6) sz0 zSeq MainIndOutBA_flow sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) MainIndOutBA_win
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (by norm_num : (1 / 10 : ℝ) ≤ 1 / 2).trans (half_lt_t0 n).le)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (MainIndGlue_reg _ _ le_rfl) hyp
-    (Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) h𝔠) _ (MainIndOutBA_mem (1 / 2) (by norm_num))⟩
-
 -- target 2 at `R₁ = R₂ = STReg5III`, cut at `m ≡ 3/10`, applied at the data
-example (h : BAMainIndFamTL 3 STReg5III) (hyp : Hyp6) : ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ Concl7 := by
-  obtain ⟨𝔠d, h𝔠, -, H⟩ := baMainIndFamTL_seq 3 STReg5III STReg5III h h le_rfl (1 / 4) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨𝔠d, h𝔠, H (1 / 6) sz0 zSeq MainIndOutBA_flow sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) MainIndOutBA_win
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (by norm_num : (1 / 10 : ℝ) ≤ 1 / 2).trans (half_lt_t0 n).le)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le)
-    ⟨fun _ => 3 / 10, fun _ => by norm_num, fun _ => by norm_num, MainIndGlue_reg _ _ (by norm_num), MainIndGlue_reg _ _ (by norm_num)⟩ hyp
-    (Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) h𝔠) _ (MainIndOutBA_mem (1 / 2) (by norm_num))⟩
-
 -- target 3 at `(i, m) = (0, 0)` (`STRegChain 0 0 = STReg5III`), applied at the data
-example (h₃ : BAMainIndFamTL 3 STReg5III) (h₁ : BAMainIndFamTL 3 STReg5I) (h₂ : BAMainIndFamTL 3 STReg5II)
-    (h₄ : BAMainIndFamTL 3 STReg5IV) (hyp : Hyp6) : ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ Concl7 := by
-  obtain ⟨𝔠d, h𝔠, -, H⟩ := baMainIndFamTL_chain 3 h₃ h₁ h₂ h₄ 0 0 (by norm_num) le_rfl (1 / 4) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨𝔠d, h𝔠, H (1 / 6) sz0 zSeq MainIndOutBA_flow sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) MainIndOutBA_win
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (by norm_num : (1 / 10 : ℝ) ≤ 1 / 2).trans (half_lt_t0 n).le)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (MainIndGlue_reg (1 / 10) (1 / 2) le_rfl) hyp
-    (Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) h𝔠) _ (MainIndOutBA_mem (1 / 2) (by norm_num))⟩
-
 -- target 4 (`T2512_InstOfRegimes`): the four regime steps and the six conjuncts on `Fam(1/10)` are the hypotheses
-example (h₃ : BAMainIndFamTL 3 STReg5III) (h₁ : BAMainIndFamTL 3 STReg5I) (h₂ : BAMainIndFamTL 3 STReg5II)
-    (h₄ : BAMainIndFamTL 3 STReg5IV) (hyp : Hyp6) : Concl7 := by
-  obtain ⟨𝔠d, h𝔠, -, H⟩ := baMainIndFamTL_of_regimes 3 h₃ h₁ h₂ h₄ le_rfl (1 / 4) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num)
-  exact H (1 / 6) sz0 zSeq MainIndOutBA_flow sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) MainIndOutBA_win
-    (fun _ => 1 / 10) (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (by norm_num : (1 / 10 : ℝ) ≤ 1 / 2).trans (half_lt_t0 n).le)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) trivial hyp
-    (Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) h𝔠) _ (MainIndOutBA_mem (1 / 2) (by norm_num))
-
-end Inst
-
 end RBM.BA
 
 end

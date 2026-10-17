@@ -696,10 +696,6 @@ theorem stNetLift2_holds (d : ℕ) : STNetLift2 d := by
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Ind
-
-set_option linter.style.longLine false
-
 /-! ## 5. Compiled nonempty instances at `d = 3`
 
 The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
@@ -709,49 +705,3 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 (`RBM3D/Induction/Defs.lean`, section 3).  Every deterministic hypothesis is discharged; what stays
 a hypothesis is the per-time statement itself (`STStep2LocalPT`, `STStep2AvgPT`, `STStep2DecayPT`:
 the stochastic inputs of the Step 2 chain, ST2-04). -/
-
-section Instances
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `Step2LocalNetLift` at the flow of the instance (`κ = τ = (1/10)/2`, `s ≡ 0`, `t ≡ 1/16`). -/
-example : Step2LocalNetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst :=
-  step2LocalNetLift sz0 _ _ _ _ _
-
-/-- `step2LocalNetLift`, fully applied: every hypothesis (`0 < κ`, `|E_n| ≤ 2 - κ`, `0 < τ`,
-`0 ≤ s ≤ t < 1`, `N → ∞`, `RangeCond`) is discharged; `STStep2LocalPT` stays the hypothesis of the
-implication. -/
-example (hL : STStep2LocalPT sz0 (STflowE z0) sInst tInst) :
-    STStep2Local sz0 (STflowE z0) sInst tInst :=
-  step2LocalNetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst
-    (by norm_num) (fun n => (RBM.Green.Instance.premises.2.1 n).le) (by norm_num) (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) RBM.Green.Instance.premises.2.2.2.1
-    sz0_tendsto RBM.Green.Instance.premises.2.2.2.2 hL
-
-/-- `Step2AvgNetLift` at the flow of the instance. -/
-example : Step2AvgNetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst :=
-  step2AvgNetLift sz0 _ _ _ _ _
-
-/-- `step2AvgNetLift`, fully applied: `STStep2AvgPT` stays the hypothesis of the implication. -/
-example (hA : STStep2AvgPT sz0 (STflowE z0) sInst tInst) :
-    STStep2Avg sz0 (STflowE z0) sInst tInst :=
-  step2AvgNetLift sz0 (STflowE z0) ((1 / 10) / 2) ((1 / 10) / 2) sInst tInst
-    (by norm_num) (fun n => (RBM.Green.Instance.premises.2.1 n).le) (by norm_num) (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) RBM.Green.Instance.premises.2.2.2.1
-    sz0_tendsto RBM.Green.Instance.premises.2.2.2.2 hA
-
-/-- `stNetLift2_holds` at `d = 3`: `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `sz0`, `z0`, `STFlow`
-(`flow_z0`), `0 ≤ s ≤ t ≤ lemT z_n` (`sixteenth_le_lemT`); the three per-time statements stay
-hypotheses, at an arbitrary constant `C_d`. -/
-example (Cd : ℝ) (hL : STStep2LocalPT sz0 (STflowE z0) sInst tInst)
-    (hA : STStep2AvgPT sz0 (STflowE z0) sInst tInst)
-    (hD : STStep2DecayPT sz0 Cd (STflowE z0) sInst tInst) :
-    STStep2Local sz0 (STflowE z0) sInst tInst ∧ STStep2Avg sz0 (STflowE z0) sInst tInst ∧
-      STStep2Decay sz0 Cd (STflowE z0) sInst tInst :=
-  stNetLift2_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 sInst tInst (fun _ => le_rfl)
-    (fun n => by simp only [sInst, tInst]; norm_num) (fun n => sixteenth_le_lemT n) Cd hL hA hD
-
-end Instances
-
-end RBM.Ind

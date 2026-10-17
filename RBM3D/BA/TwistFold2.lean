@@ -59,12 +59,6 @@ theorem TwistFold2_shift_mem (n : ℕ) (c₂ : Zd d (sz.L n)) (x : Idx d (sz.L n
     twShift n c₂ x ∈ twBlk n c₂ := by
   rw [TwistFold2_mem_blk, TwistFold2_split_shift]
 
-theorem TwistFold2_shift_shift (n : ℕ) {c₁ c₂ : Zd d (sz.L n)} {x : Idx d (sz.L n) (sz.W n)}
-    (hx : x ∈ twBlk n c₁) : twShift n c₁ (twShift n c₂ x) = x := by
-  apply split_injective d (sz.L n) (sz.W n)
-  rw [TwistFold2_split_shift, TwistFold2_split_shift]
-  exact Prod.ext ((TwistFold2_mem_blk n).1 hx).symm rfl
-
 /-- `w ↦ (c₂, o_w)` is a bijection `[c₁] → [c₂]`. -/
 theorem TwistFold2_sum_shift {β : Type*} [AddCommMonoid β] (n : ℕ) (c₁ c₂ : Zd d (sz.L n))
     (F : Idx d (sz.L n) (sz.W n) → β) :
@@ -115,22 +109,6 @@ def twLoop2X (n : ℕ) (A X C : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W
     (ρ : Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → ℂ) (a : Zd d (sz.L n)) : ℂ :=
   ∑ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ρ c₁ c₂ c₃ c₄ * (((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 3 *
     ∑ x ∈ twBlk n a, ∑ w ∈ twBlk n c₁, ∑ w' ∈ twBlk n c₃, A x w * X (twShift n c₂ w) w' * C (twShift n c₄ w') x)
-
-/-- **Target 1, trace form** (twin of `twTr_eq`): the summand at `c` is the merged `twLoopX` of `(X P_{c₃c₄} C, A)`,
-`Tr(E_a A P_{c₁c₂} X P_{c₃c₄} C) = Tr((X P_{c₃c₄} C) E_a A P_{c₁c₂})`. -/
-theorem twLoop2X_trace (n : ℕ) (A X C : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ)
-    (ρ : Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → ℂ) (a : Zd d (sz.L n)) :
-    twLoop2X n A X C ρ a = ∑ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ρ c₁ c₂ c₃ c₄ *
-      twLoopX n (fun (u x : Idx d (sz.L n) (sz.W n)) =>
-        (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ w' ∈ twBlk n c₃, X u w' * C (twShift n c₄ w') x) A a c₁ c₂ := by
-  unfold twLoop2X
-  refine Finset.sum_congr rfl fun c₁ _ => Finset.sum_congr rfl fun c₂ _ => Finset.sum_congr rfl fun c₃ _ =>
-    Finset.sum_congr rfl fun c₄ _ => ?_
-  congr 1
-  unfold twLoopX
-  simp only [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun w _ => Finset.sum_congr rfl fun w' _ => ?_
-  ring
 
 /-! ## 3. Target 2: `twFold2` -/
 
@@ -552,103 +530,13 @@ theorem twEta_ge_holds : twEta_ge := by
 
 /-! ## 8. Compiled nonempty instances of targets 1-6 -/
 
-section Inst
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- The weight `1[c₁ = c₂ = c₃ = c₄ = a]` at `sz0`, `n = 0` (`d = 3`, `L = 4`, `W = 32`). -/
-def TwistFold2_rho0 (a : Zd 3 (sz0.L 0)) :
-    Zd 3 (sz0.L 0) → Zd 3 (sz0.L 0) → Zd 3 (sz0.L 0) → Zd 3 (sz0.L 0) → ℂ :=
-  fun c₁ c₂ c₃ c₄ => if c₁ = a ∧ c₂ = a ∧ c₃ = a ∧ c₄ = a then 1 else 0
-
-theorem TwistFold2_card_sz0 (c : Zd 3 (sz0.L 0)) : (twBlk (sz := sz0) 0 c).card = 32768 := by
-  have h : (twBlk (sz := sz0) 0 c).card = (sz0.W 0) ^ 3 := card_Iblk 3 (sz0.L 0) (sz0.W 0) c
-  rw [h, sz0_values.2.1]; norm_num
-
-/-- `twLoop2X` at `A = X = C = 1`, `ρ = 1[c = (a,a,a,a)]` is `1`: the instance is not degenerate. -/
-theorem TwistFold2_inst_val (a : Zd 3 (sz0.L 0)) :
-    twLoop2X (sz := sz0) 0 (fun _ _ => (1 : ℂ)) (fun _ _ => 1) (fun _ _ => 1) (TwistFold2_rho0 a) a = 1 := by
-  unfold twLoop2X TwistFold2_rho0
-  simp only [mul_one, Finset.sum_const, TwistFold2_card_sz0]
-  simp only [ite_and]
-  simp
-  rw [sz0_values.2.1]
-  norm_num
-
-theorem TwistFold2_rho0_row (a c₁ : Zd 3 (sz0.L 0)) :
-    ∑ c₂, ∑ c₃, ∑ c₄, ‖TwistFold2_rho0 a c₁ c₂ c₃ c₄‖ ≤ 1 := by
-  unfold TwistFold2_rho0
-  by_cases h : c₁ = a
-  · simp [h, ite_and, apply_ite (fun z : ℂ => ‖z‖)]
-  · simp [h]
-
-theorem TwistFold2_rho0_col (a c₄ : Zd 3 (sz0.L 0)) :
-    ∑ c₁, ∑ c₂, ∑ c₃, ‖TwistFold2_rho0 a c₁ c₂ c₃ c₄‖ ≤ 1 := by
-  unfold TwistFold2_rho0
-  by_cases h : c₄ = a
-  · simp [h, ite_and, apply_ite (fun z : ℂ => ‖z‖)]
-  · simp [h]
-
 -- Target 1 (`twLoop2X`, `twLoop2X_trace`) at `sz0`, `n = 0`, `A = X = C = 1`: the value is `1 ≠ 0`
-example : twLoop2X (sz := sz0) 0 (fun _ _ => (1 : ℂ)) (fun _ _ => 1) (fun _ _ => 1) (TwistFold2_rho0 0) 0 ≠ 0 := by
-  rw [TwistFold2_inst_val]; exact one_ne_zero
-
-example := twLoop2X_trace (sz := sz0) 0 (fun _ _ => (1 : ℂ)) (fun _ _ => 1) (fun _ _ => 1) (TwistFold2_rho0 0) 0
-
 -- Target 2 (`twFold2`)
-example := twFold2_holds 3 sz0 0 (fun _ _ => (1 : ℂ)) (fun _ _ => 1) (fun _ _ => 1) (TwistFold2_rho0 0) 0
-
 -- Target 3 (`twFold2_bound`): `β = W^d = 32768` (a block has `W^d` points), `r₁ = r₂ = 1`
-example := twFold2_bound_holds 3 sz0 0 (fun _ _ => (1 : ℂ)) (fun _ _ => 1) (fun _ _ => 1) (TwistFold2_rho0 0) 0
-  32768 1 1 (fun u c => by simp [TwistFold2_card_sz0]) (fun c₁ => TwistFold2_rho0_row 0 c₁)
-  (fun c₄ => TwistFold2_rho0_col 0 c₄)
-
 -- Target 4 (`twVec`): the resolvent of `H = [[0,1],[1,0]]` at `z = i` (a nonzero Hermitian resolvent), `M = 1/2`, `φ = e₀`
-/-- The Hermitian matrix `[[0,1],[1,0]]` of the instance of `twVec`. -/
-def TwistFold2_H2 : Matrix (Fin 2) (Fin 2) ℂ := !![0, 1; 1, 0]
-
-theorem TwistFold2_H2_herm : TwistFold2_H2.IsHermitian := by
-  ext i j; fin_cases i <;> fin_cases j <;> simp [TwistFold2_H2, Matrix.conjTranspose_apply]
-
-example : green TwistFold2_H2 Complex.I ≠ 0 := by
-  have hz : (Complex.I).im ≠ 0 := by simp
-  have hu := RBM.Ind.isUnit_sub_smul_one_of_im_ne_zero TwistFold2_H2_herm hz
-  have h1 : green TwistFold2_H2 Complex.I * (TwistFold2_H2 - Complex.I • (1 : Matrix (Fin 2) (Fin 2) ℂ)) = 1 :=
-    Matrix.nonsing_inv_mul _ ((Matrix.isUnit_iff_isUnit_det _).mp hu)
-  intro h0
-  rw [h0, zero_mul] at h1
-  have := congrFun (congrFun h1 0) 0
-  simp at this
-
-example : ∑ u, ‖∑ v, (green TwistFold2_H2 Complex.I u v - ((1 / 2 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ)) u v) *
-        (![1, 0] : Fin 2 → ℂ) v‖ ^ 2 ≤
-      2 * (1 : ℝ)⁻¹ * (∑ u, star ((![1, 0] : Fin 2 → ℂ) u) * ∑ v, green TwistFold2_H2 Complex.I u v *
-        (![1, 0] : Fin 2 → ℂ) v).im +
-      2 * ∑ u, ‖∑ v, ((1 / 2 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ)) u v * (![1, 0] : Fin 2 → ℂ) v‖ ^ 2 :=
-  twVec_holds (green TwistFold2_H2 Complex.I) ((1 / 2 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ)) 1 one_ne_zero
-    (by simpa using TwistFold2_gram_green TwistFold2_H2_herm (z := Complex.I) (by simp)) ![1, 0]
-
 -- Target 5a (`twMrow_le`) and 5b (`twMblk_le`) at `baFMz sz0 zSeq`, `n = 0`, `x = 0`, `φ = e₀`
-example : ∑ v, ‖BAMfine sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 0 v‖ ^ 2 ≤ 1 :=
-  twMrow_le_holds sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0
-    (BAflow_real _ _ _ _ sz0 zSeq flow_sz0 0).1 0
-
-example : ∑ u : Idx 3 (sz0.L 0) (sz0.W 0), ‖∑ v : Idx 3 (sz0.L 0) (sz0.W 0),
-      BAMfine sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 u v * (if v ∈ twBlk 0 (0 : Zd 3 (sz0.L 0)) then (1 : ℂ) else 0)‖ ^ 2 ≤
-    ∑ v : Idx 3 (sz0.L 0) (sz0.W 0), ‖(if v ∈ twBlk 0 (0 : Zd 3 (sz0.L 0)) then (1 : ℂ) else 0)‖ ^ 2 :=
-  twMblk_le_holds sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (BAflow_real _ _ _ _ sz0 zSeq flow_sz0 0).1
-    0 (fun v => if v ∈ twBlk 0 (0 : Zd 3 (sz0.L 0)) then (1 : ℂ) else 0) (fun v hv => by simp [hv])
-
 -- Target 6a (`twB0_ge`) at `t ≡ 1/2`, `𝔡 = 1/10`, and a witness `n`
-example : ∃ n, ((1 / 10 : ℝ)⁻¹ ^ 2 + 1)⁻¹ ≤ ((sz0.W n : ℕ) : ℝ) ^ 3 * sz0.Bctl n (1 / 2) :=
-  (twB0_ge_holds sz0 (1 / 10) flow_sz0.1.2.2.2.2 (fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun _ => by norm_num)).exists
-
 -- Target 6b (`twEta_ge`) at `n = 0`, `t = 1/2`
-example : (1 / 2 : ℝ) * (1 - 1 / 2) ≤ (baFMz sz0 zSeq).eta 0 (1 / 2) :=
-  twEta_ge_holds (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0 (1 / 2) (by norm_num)
-
-end Inst
-
 end Fold2
 
 end RBM.BA

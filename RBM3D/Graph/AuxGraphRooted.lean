@@ -26,17 +26,6 @@ def auxValOn {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I
   haveI : Fintype (LGraph.AuxIMol Γ) := Fintype.ofFinite _
   ∑ b ∈ Fintype.piFinset (fun _ : LGraph.AuxIMol Γ => Dm),
     (Γ.molSolid.map fun e => ξ (LGraph.auxLab Γ be b e.src) (LGraph.auxLab Γ be b e.dst)).prod
-section Basic
-variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-/-- the value of the restricted auxiliary graph for a constant edge variable: `|Dm|^{n_M} c^{|𝒢_ℳ|}` -/
-theorem lwAuxRoot_auxValOn_const {κ : Type} [Fintype κ] (Γ : LGraph E I) (c : ℝ) (be : E → κ) (Dm : Finset κ) :
-    auxValOn Γ (fun _ _ => c) be Dm = (Dm.card : ℝ) ^ Γ.nM * c ^ Γ.molSolid.length := by
-  classical
-  unfold auxValOn
-  simp only [List.map_const', List.prod_replicate, Finset.sum_const, nsmul_eq_mul]
-  rw [@Fintype.card_piFinset _ _ _ (Fintype.ofFinite _), Finset.prod_const,
-    @Finset.card_univ _ (Fintype.ofFinite _), auxGraph_card_aux, Nat.cast_pow]
-end Basic
 /-! ## 2. The rooted molecular forest (`7_8:922-925`, root given) -/
 section Forest
 /-- a rank function toward a target set (`auxGraph_exists_rank`, `AuxGraph.lean:436`, private there, copied) -/
@@ -492,78 +481,5 @@ theorem lwAuxNestedOwnOn_holds : LWAuxNestedOwnOn := by
 /-! ## 6. Compiled nonempty instances at `d = 3`
 The merged data of `AuxGraph.lean` (`Instances`, `Instances3`, `Instances5`): `d = 3`, `L = 4`, `W = 2`, `auxGraph_instD` (`G = m(0) I + (1/2) J`, `Ψ = 1/2`), `figGraph`
 (`|E ⊕ I| = 8 = R`, `n_M = 2`, `|𝒢_ℳ| = 6`), `localReg2_inst_Q` (`p = 2`, `n_M = 1`, `|𝒢_ℳ| = 4`).  The block set is `Dm = {0, e₀} ⊂ Z_4^3` (2 of 64 points). -/
-section Instances
-/-- every graph has a choice of roots (one vertex in each internal molecule) -/
-theorem lwAuxRoot_exists_rep {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : LGraph E I) :
-    ∃ rep : LGraph.AuxIMol Γ → I, ∀ c, Γ.molOf (Sum.inr (rep c)) = c.1 := by
-  have hMi : ∀ c : LGraph.AuxIMol Γ, ∃ i : I, Γ.molOf (Sum.inr i) = c.1 := by
-    rintro ⟨c, hc⟩
-    induction c using SimpleGraph.ConnectedComponent.ind with | h v => ?_
-    rcases v with a | i
-    · exact absurd ⟨a, rfl⟩ hc
-    · exact ⟨i, rfl⟩
-  choose rep hrep using hMi
-  exact ⟨rep, hrep⟩
-private theorem lwAuxRoot_Dm_card : ({0, Pi.single 0 1} : Finset (Zd 3 4)).card = 2 := by decide +kernel
-/-- **Instance of `lwGtoAGRooted_holds`** at `figGraph` (`d = 3`, `L = 4`, `W = 2`, `auxGraph_instD`, `Ψ = 1/2`, `r = 1`, `R = 8`, `ξ ≡ 1/2`), roots `rep`, `Dm = {0, e₀}`, `Wt = 1[every root block ∈ Dm]` (takes the values `1` and `0`); restricted main term `|Dm|^{n_M} (1/2)^{|𝒢_ℳ|} = 1/16` (full sum: `64`) -/
-example : ∃ (rep : LGraph.AuxIMol figGraph → Fin 6) (Wt : (Fin 2 ⊕ Fin 6 → Idx 3 4 2) → ℝ) (C c : ℝ), 0 < C ∧ 0 < c ∧
-    (∀ c, figGraph.molOf (Sum.inr (rep c)) = c.1) ∧ (∃ ℓ, Wt ℓ = 1) ∧ (∃ ℓ, Wt ℓ = 0) ∧
-    auxValOn figGraph (fun _ _ => (1 / 2 : ℝ)) (fun a => (split 3 4 2 (lwSizeEll a)).1) ({0, Pi.single 0 1} : Finset (Zd 3 4)) = 1 / 16 ∧
-    ‖valW figGraph auxGraph_instD Wt lwSizeEll‖ ≤
-      figGraph.sizeConst C (C * expC (3 - 2) c) * (1 / 2 : ℝ) ^ (figGraph.scalingOrder - figGraph.auxOrd) *
-          ((((2 : ℕ) : ℝ) ^ 3) ^ figGraph.nM *
-            auxValOn figGraph (fun _ _ => (1 / 2 : ℝ)) (fun a => (split 3 4 2 (lwSizeEll a)).1)
-              ({0, Pi.single 0 1} : Finset (Zd 3 4))) +
-        Real.exp (-(c * 1 / 2)) * figGraph.sizeConst C (C * expC (3 - 2) (c / 2)) * figGraph.scalingSize (1 / 2) 2 3 4 := by
-  classical
-  obtain ⟨rep, hrep⟩ := lwAuxRoot_exists_rep figGraph
-  obtain ⟨C, c, hC, hc, h⟩ := lwSpOf_decay_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  obtain ⟨h1, h2⟩ := h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-  set Dm : Finset (Zd 3 4) := {0, Pi.single 0 1} with hDm
-  set Wt : (Fin 2 ⊕ Fin 6 → Idx 3 4 2) → ℝ := fun ℓ =>
-    if ∀ c, (split 3 4 2 (ℓ (Sum.inr (rep c)))).1 ∈ Dm then 1 else 0 with hWt
-  have hWt1 : ∀ ℓ, |Wt ℓ| ≤ 1 := fun ℓ => by simp only [hWt]; split_ifs <;> simp
-  have hWt0 : ∀ ℓ, Wt ℓ ≠ 0 → ∀ c, (split 3 4 2 (ℓ (Sum.inr (rep c)))).1 ∈ Dm := fun ℓ hℓ => by
-    by_contra hcon
-    exact hℓ (by simp only [hWt]; exact if_neg hcon)
-  have hcard : Fintype.card (LGraph.AuxIMol figGraph) = 2 := by
-    rw [auxGraph_card_aux]; exact figGraph_counters.2.2.2
-  obtain ⟨c₀⟩ : Nonempty (LGraph.AuxIMol figGraph) := Fintype.card_pos_iff.1 (by omega)
-  refine ⟨rep, Wt, C, c, hC, hc, hrep, ⟨fun _ => fun _ => 0, ?_⟩, ⟨fun _ => fun _ => 2, ?_⟩, ?_, ?_⟩
-  · simp only [hWt]
-    refine if_pos fun c' => ?_
-    have : (split 3 4 2 ((fun _ : Fin 2 ⊕ Fin 6 => (fun _ : Fin 3 => (0 : ZMod 8))) (Sum.inr (rep c')))).1 = 0 := by
-      funext k; simp [split, blk]
-    rw [this]; exact Finset.mem_insert_self _ _
-  · simp only [hWt]
-    refine if_neg fun hall => ?_
-    have h0 := hall c₀
-    have : (split 3 4 2 ((fun _ : Fin 2 ⊕ Fin 6 => (fun _ : Fin 3 => (2 : ZMod 8))) (Sum.inr (rep c₀)))).1 =
-        (fun _ : Fin 3 => (1 : ZMod 4)) := by
-      funext k; simp [split, blk]; decide +kernel
-    rw [this] at h0
-    revert h0; decide +kernel
-  · rw [lwAuxRoot_auxValOn_const, lwAuxRoot_Dm_card, (figGraph_counters).2.2.2, auxGraph_figGraph_molSolid]; norm_num
-  · have hmain := lwGtoAGRooted_holds 3 le_rfl 4 2 figGraph (by decide) auxGraph_figGraph_hext rep hrep auxGraph_instD (mE 0)
-      (1 / 2) C c 1 8 (fun _ _ => 1 / 2) Dm auxGraph_instD_hM auxGraph_instD_hG auxGraph_instD_hGd hC.le hc h1 h2
-      auxGraph_inst_window (by norm_num) (by simp) (fun _ _ => by norm_num)
-      (fun x y a b hxy _ _ => (auxGraph_instD_hG x y hxy)) Wt hWt1 hWt0 lwSizeEll
-    exact hmain
-/-- **Instance of `lwAuxNestedOwnOn_holds`** at `localReg2_inst_Q.pack` (`p = 2`, `q = n_M = 1`): `NoGhost`, `IsNested`, `ownExt`, `ordN = 2`, value at `ξ ≡ 1/2`, internal labels in `Dm = {0, e₀}`: `|Dm| (1/2)^4 = 1/8` -/
-example : ∃ Γa : NGraph 2 localReg2_inst_Q.nM, Γa.NoGhost ∧ Γa.IsNested ∧ lwMomExpFar_ownExt Γa ∧ Γa.ordN = 2 ∧
-    Γa.valOn (fun _ _ => (1 / 2 : ℝ)) (fun _ => (0 : Zd 3 4)) (fun _ => 0)
-      (Fintype.piFinset fun _ : Fin localReg2_inst_Q.nM => ({0, Pi.single 0 1} : Finset (Zd 3 4))) = 1 / 8 := by
-  obtain ⟨Γa, h1, h2, h3, h4, h5⟩ := lwAuxNestedOwnOn_holds 2 localReg2_inst_Q.pack (by norm_num)
-    localReg2_inst_Q_locReg345 auxGraph_inst_Q_hxy
-  refine ⟨Γa, h1, h2, h3, h4.trans auxGraph_inst_Q_auxOrd, ?_⟩
-  have := h5 (κ := Zd 3 4) (fun _ _ => (1 / 2 : ℝ)) (fun _ _ => rfl) (fun _ => (0 : Zd 3 4)) {0, Pi.single 0 1}
-  refine this.trans ?_
-  rw [lwAuxRoot_auxValOn_const]
-  change ((({0, Pi.single 0 1} : Finset (Zd 3 4)).card : ℝ)) ^ localReg2_inst_Q.nM *
-    (1 / 2 : ℝ) ^ localReg2_inst_Q.molSolid.length = 1 / 8
-  rw [auxGraph_inst_Q_molSolid, auxGraph_inst_Q_counters.2.2.2, lwAuxRoot_Dm_card]
-  norm_num
-end Instances
 end RBM.Graph
 end

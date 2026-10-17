@@ -488,14 +488,14 @@ private theorem KTreeRep_φ_start (hF : KLIsTSP F) (hJ : J ∈ F) (s : BAslot (K
   · set z := (KTreeRep_eIn hF J).symm y with hz
     have hy := KTreeRep_eIn_symm hF y
     obtain ⟨h1, h2, h3⟩ := KTreeRep_inChord hF z
-    simp only [KTreeRep_φ, BAslotStart_out, ← hz]
+    simp only [KTreeRep_φ, ← hz]
     refine ⟨?_, h1.1, le_trans (le_of_lt h3) h1.2⟩
     have := congrArg Prod.fst hy
     exact this.symm
   · set z := (KTreeRep_eIn hF J).symm y with hz
     have hy := KTreeRep_eIn_symm hF y
     obtain ⟨h1, h2, h3⟩ := KTreeRep_inChord hF z
-    simp only [KTreeRep_φ, BAslotStart_in, ← hz]
+    simp only [KTreeRep_φ, ← hz]
     refine ⟨?_, le_trans h1.1 (le_of_lt h3), h1.2⟩
     have := congrArg Prod.snd hy
     exact this.symm
@@ -807,7 +807,7 @@ private theorem KTreeRep_ψ_start (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F)
   · set z := (KTreeRep_eOut hF hn hJ).symm y with hz
     have hy := KTreeRep_eOut_symm hF hn hJ y
     have hE := KTreeRep_outChord hF hn hJ z
-    simp only [KTreeRep_ψ, BAslotStart_out, ← hz]
+    simp only [KTreeRep_ψ, ← hz]
     refine ⟨?_, ?_⟩
     · have := congrArg Prod.fst hy
       exact this.symm
@@ -817,7 +817,7 @@ private theorem KTreeRep_ψ_start (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F)
   · set z := (KTreeRep_eOut hF hn hJ).symm y with hz
     have hy := KTreeRep_eOut_symm hF hn hJ y
     have hE := KTreeRep_outChord hF hn hJ z
-    simp only [KTreeRep_ψ, BAslotStart_in, ← hz]
+    simp only [KTreeRep_ψ, ← hz]
     refine ⟨?_, ?_⟩
     · have := congrArg Prod.snd hy
       exact this.symm
@@ -1722,42 +1722,5 @@ Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`
 `0 < P.g0 ≤ 10`), `W = 2` (`W^d = 8`), `Λ = 10`, `κ = Im m₀ > 0`, `t = 1/2`, `n = 4` (`TSP 4 = {∅, {(0,2)}, {(1,3)}}`: the two
 diagonals `(0,2)`, `(1,3)`, each in one tree; the cut at `J = (0,2)` has an inner and an outer triangle), the charges
 `σ = (+,+,-,+)`, four distinct labels.  Every deterministic hypothesis is discharged; nothing is assumed. -/
-
-namespace KTreeRepInst
-
-open RBM.BA.MFixedPointInst
-
-private theorem KTreeRep_isTSP_F02 :
-    KLIsTSP ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) :=
-  KLisTSP_of_mem_TSP (by rw [TSP_four]; simp)
-
-/-- **The chord-`J` term of one tree** (the new mathematics), at `F = {(0,2)}`, `J = (0,2)`: the cactus with the chord weight
-`Θ·Θ` is `Σ_x Γ_{F_out}(σ_out, a_out^x) Γ_{F_in}(σ_in, a_in^x)`, both pieces triangles. -/
-example := KTreeRep_cut (d := 3) (L := 4) (F := {((0 : Fin 4), (2 : Fin 4))}) (J := ((0 : Fin 4), (2 : Fin 4)))
-  KTreeRep_isTSP_F02 (by norm_num) (Finset.mem_singleton_self _) (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (1 / 2)
-  ![true, true, false, true] ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]]
-
-/-- **Target 2** (`baChordPairs`) at the data, with the spliced family `BAKcac` (`W = 2`): `n = 4`, the chord part over the
-trees `{(0,2)}`, `{(1,3)}` is the sum over the diagonals `(0,2)`, `(1,3)` of the pair summands of `treeEqRhsS`. -/
-example :=
-  baChordPairs 3 4 2 P.g0 P.m0.im P.E P.m0 P.real (BAKcac 3 4 2 P.g0 P.E P.m0) BAKcac_spliced 4 (by norm_num)
-    ![true, true, false, true] ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]] (1 / 2) (by norm_num) (by norm_num)
-
-/-- **Target 3** (`baKcac_isKLoopS`) at the data: the spliced family solves `IsKLoopS` on `[0,1)`. -/
-example : IsKLoopS 3 4 2 (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ) (PropSpin P.m0)
-    (BAMLoop 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0))) (Set.Ico (0 : ℝ) 1) (BAKcac 3 4 2 P.g0 P.E P.m0) :=
-  baKcac_isKLoopS P.real
-
-/-- **Target 4** (`baKsolve`) at the data (`Λ = 10`, `κ = Im m₀`, `W = 2`). -/
-example := baKsolve 3 10 P.m0.im (by norm_num) P.real.1.1 4 (by norm_num) 2 P.g0 P.g0_pos P.g0_le P.E P.m0 P.real
-
-/-- **Target 5** (`baTreeRep`) at the data, `t = 1/2`, `n = 4`: the solution `BAKsol` of the `K`-loop equation at the loop
-`((+,+,-,+), (a₀, …, a₃))` is `W^{-3d} Σ_{F ∈ TSP 4} Γ_M(F)`, three trees. -/
-example :=
-  baTreeRep 3 10 P.m0.im (by norm_num) P.real.1.1 4 (by norm_num) 2 P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2)
-    ⟨by norm_num, by norm_num⟩ 4 (by norm_num) ![true, true, false, true]
-    ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]]
-
-end KTreeRepInst
 
 end RBM.BA

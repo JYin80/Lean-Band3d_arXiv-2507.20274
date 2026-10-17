@@ -219,11 +219,6 @@ private theorem cltMom1_sum_shell (hd : 1 ≤ d) (F : ℕ → ℝ) (hF : ∀ k, 
   exact mul_le_mul_of_nonneg_right (cltMom1_card_shell_real hd k) (hF k)
 
 
-/-- Translation of the summation variable. -/
-private theorem cltMom1_sum_sub {M : Type*} [AddCommMonoid M] (f : Zd d L → M) (x : Zd d L) :
-    ∑ b : Zd d L, f (b - x) = ∑ b : Zd d L, f b :=
-  Fintype.sum_equiv (Equiv.subRight x) _ _ (fun _ => rfl)
-
 /-- Reflection and translation of the summation variable. -/
 private theorem cltMom1_sum_sub_left {M : Type*} [AddCommMonoid M] (f : Zd d L → M) (x : Zd d L) :
     ∑ b : Zd d L, f (x - b) = ∑ b : Zd d L, f b :=
@@ -835,50 +830,6 @@ theorem cltMom1_clusterSum_le_of_bound {n : ℕ} (z : (Fin 2 → Zd d L) → ℝ
         simp
     _ ≤ (n : ℝ) ^ n * Bnd := mul_le_mul_of_nonneg_right (cltMom1_card_cluster_le n) hBnd0
 
-theorem cltMom1_clusterSum_nonneg {n : ℕ} (z : (Fin 2 → Zd d L) → ℝ) (hz0 : ∀ β, 0 ≤ z β) (R : ℝ) :
-    0 ≤ CltMom1.clusterSum n z R := by
-  unfold CltMom1.clusterSum
-  exact Finset.sum_nonneg fun φ _ => Finset.prod_nonneg fun s _ => Finset.sum_nonneg fun β _ =>
-    mul_nonneg (hz0 β) (pow_nonneg (Finset.sum_nonneg fun β' _ => hz0 β') _)
-
-
-open Classical in
-/-- **Target 1 (clusters).**  Let `b : Fin (2p) → (Fin 2 → Zd d L)` be `2p` two-label indices satisfying the pairing
-condition at radius `R ≥ 0` (`(eq:pairingcond)`, `3_5:2223`).  Then there is a retraction `φ` of `Fin (2p)` (the cluster
-decomposition `⊔_{i=1}^r A_i`, `A_i = {k : φ k = k_i}`, the representatives being the fixed points) such that every
-cluster has at least `2` elements, there are `r ≤ p` clusters, every member's first label lies within `2R ≤ 2pR` of its
-representative's first label, and the number of cluster structures is at most `(2p)^{2p}`.  Construction: a maximal
-`2R`-separated set of indices with nearest-point assignment (the construction of RBM2D `cltm_exists_cluster` with
-separation `2R` instead of `3R`), not the components of `|b₁^{(k)} - b₁^{(l)}| ≤ R` used in the paper (`3_5:2225`);
-paper-delta candidate `T2165a`.  The equivalence "not paired ⇔ some label isolated as in `STCltIsoConcl`" is
-`cltMom1_not_paired_iff` / `cltMom1_iso_hyp_iff`. -/
-theorem cltMom1_clusters {p : ℕ} (hp : 1 ≤ p) {R : ℝ} (hR : 0 ≤ R)
-    (b : Fin (2 * p) → (Fin 2 → Zd d L)) (hb : CltMom1.Paired R b) :
-    ∃ φ : Fin (2 * p) → Fin (2 * p), CltMom1.Cluster φ ∧
-      (∀ s, φ s = s → 2 ≤ (Finset.univ.filter fun k => φ k = s).card) ∧
-      (CltMom1.free φ).card ≤ p ∧
-      (∀ k, ((zdistInf d L ((b (φ k)) 0 - (b k) 0) : ℕ) : ℝ) ≤ 2 * R) ∧
-      (∀ k, ((zdistInf d L ((b (φ k)) 0 - (b k) 0) : ℕ) : ℝ) ≤ 2 * (p : ℝ) * R) ∧
-      ((((Finset.univ : Finset (Fin (2 * p) → Fin (2 * p))).filter
-          (fun φ => CltMom1.Cluster φ)).card : ℝ) ≤ ((2 * p : ℕ) : ℝ) ^ (2 * p)) := by
-  classical
-  obtain ⟨φ, hφ, hd⟩ := cltMom1_exists_cluster b R hb
-  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hp
-  refine ⟨φ, hφ, ?_, ?_, hd, fun k => (hd k).trans ?_, cltMom1_card_cluster_le (2 * p)⟩
-  · intro s hs
-    obtain ⟨k, hk, hks⟩ := hφ.2 s hs
-    have hsub : ({s, k} : Finset (Fin (2 * p))) ⊆ Finset.univ.filter fun k => φ k = s := by
-      intro x hx
-      rcases Finset.mem_insert.1 hx with rfl | hx
-      · simp [hs]
-      · rw [Finset.mem_singleton.1 hx]; simp [hks]
-    calc 2 = ({s, k} : Finset (Fin (2 * p))).card := by
-          rw [Finset.card_pair (Ne.symm hk)]
-      _ ≤ _ := Finset.card_le_card hsub
-  · have := cltMom1_two_mul_free_le hφ
-    omega
-  · nlinarith
-
 /-- **Not paired `⇔` some label is isolated** (the hypothesis shape of `STCltIsoConcl`, `Step5Pins.lean:420-421`):
 `¬ Paired R b ↔ ∃ i, ∀ j ≠ i, R ≤ |b₁^{(i)} - b₁^{(j)}|_∞`. -/
 theorem cltMom1_not_paired_iff {n : ℕ} (R : ℝ) (b : Fin n → (Fin 2 → Zd d L)) :
@@ -887,17 +838,6 @@ theorem cltMom1_not_paired_iff {n : ℕ} (R : ℝ) (b : Fin n → (Fin 2 → Zd 
   unfold CltMom1.Paired
   push Not
   rfl
-
-/-- The isolation hypothesis of `STCltIsoConcl` (`Step5Pins.lean:420-421`, text copied) is exactly the complement of
-the pairing condition at `R = 10 (log W)³ ℓ_s`: the sum over all configurations splits, without a translation
-lemma, into the paired part (this file) and the isolated part (`stCltIso_holds`). -/
-theorem cltMom1_iso_hyp_iff (sz : Sizes d) (n p : ℕ) (s : ℝ)
-    (b : Fin (2 * p) → (Fin 2 → Zd d (sz.L n))) :
-    (∃ i, ∀ j, j ≠ i → 10 * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) s ≤
-        ((zdistInf d (sz.L n) ((b i) 0 - (b j) 0) : ℕ) : ℝ)) ↔
-      ¬ CltMom1.Paired (10 * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) s) b :=
-  (cltMom1_not_paired_iff _ _).symm
-
 
 end Clusters
 
@@ -1162,11 +1102,6 @@ theorem cltMom1_scale_one_le {lw ℓ : ℝ} (hlw : 1 ≤ lw) (hℓ : 1 ≤ ℓ) 
   have : 1 ≤ lw ^ 3 := one_le_pow₀ hlw
   nlinarith
 
-/-- `ℓ ≤ ρ = lw⁴ ℓ`. -/
-theorem cltMom1_scale_ell_le {lw ℓ : ℝ} (hlw : 1 ≤ lw) (hℓ : 0 ≤ ℓ) : ℓ ≤ lw ^ 4 * ℓ := by
-  have : 1 ≤ lw ^ 4 := one_le_pow₀ hlw
-  nlinarith
-
 end Scales
 
 /-! ## 6. The per-cluster sum (target 4) -/
@@ -1240,58 +1175,6 @@ private theorem cltMom1_ball_G_sum (hd : 3 ≤ d) {w R : ℝ} (hw : 0 ≤ w) (hR
   rw [← Finset.sum_mul]
   exact mul_le_mul_of_nonneg_right (cltMom1_ball_count (β 0) hR) hY0
 
-/-- **Target 4: the per-cluster sum** (`3_5:2233`, second step of `(eq:2p_product_pair)`).  For a representative with first
-label `x`, a cluster with `m = |A| - 1` further indices (first labels within `R_b` of `x`, windows `|b₁ - b₂| ≤ w`) and the
-representative's own second label, `∑_{b₂^{rep}} ∑_{(b^{(k)})_{k∈A∖rep}} G_w(x - b₂^{rep}) ∏_k 1[|b₁^{(k)} - x| ≤ R_b] G_w(b₁^{(k)} - b₂^{(k)})
-≤ Y_w ((2R_b+1)^d Y_w)^m`, `Y_w = cs 2^{d-2} (w+1)²`. -/
-theorem cltMom1_cluster_sum (hd : 3 ≤ d) {w Rb : ℝ} (hw : 0 ≤ w) (hRb : 0 ≤ Rb) (m : ℕ) (x : Zd d L) :
-    ∑ b₂ : Zd d L, ∑ β : Fin m → (Fin 2 → Zd d L),
-      CltMom1.G d L w (x - b₂) * ∏ k : Fin m,
-        (if ((zdistInf d L ((β k) 0 - x) : ℕ) : ℝ) ≤ Rb then
-          CltMom1.G d L w ((β k) 0 - (β k) 1) else 0) ≤
-      CltMom1.Yw d w * ((2 * Rb + 1) ^ d * CltMom1.Yw d w) ^ m := by
-  classical
-  have hY0 := CltMom1.Yw_nonneg (d := d) (by omega) w
-  set f : (Fin 2 → Zd d L) → ℝ := fun v =>
-    if ((zdistInf d L (v 0 - x) : ℕ) : ℝ) ≤ Rb then CltMom1.G d L w (v 0 - v 1) else 0 with hf
-  have hf0 : ∀ v, 0 ≤ f v := fun v => by simp only [hf]; split_ifs <;> [exact CltMom1.G_nonneg _ _; exact le_rfl]
-  have hprod : ∀ b₂ : Zd d L, ∑ β : Fin m → (Fin 2 → Zd d L),
-      CltMom1.G d L w (x - b₂) * ∏ k : Fin m,
-        (if ((zdistInf d L ((β k) 0 - x) : ℕ) : ℝ) ≤ Rb then
-          CltMom1.G d L w ((β k) 0 - (β k) 1) else 0) =
-      CltMom1.G d L w (x - b₂) * (∑ v, f v) ^ m := by
-    intro b₂
-    rw [← Finset.mul_sum]
-    congr 1
-    have := Finset.prod_univ_sum (fun _ : Fin m => (Finset.univ : Finset (Fin 2 → Zd d L))) (fun _ v => f v)
-    rw [Fintype.piFinset_univ] at this
-    simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin] at this
-    exact this.symm
-  simp only [hprod]
-  rw [← Finset.sum_mul]
-  have hS : ∑ v, f v ≤ (2 * Rb + 1) ^ d * CltMom1.Yw d w := by
-    have : ∑ v, f v = ∑ u₀ : Zd d L, ∑ u₁ : Zd d L, (if ((zdistInf d L (u₀ - x) : ℕ) : ℝ) ≤ Rb then
-        CltMom1.G d L w (u₀ - u₁) else 0) := cltMom1_sum_pair (fun u₀ u₁ =>
-          if ((zdistInf d L (u₀ - x) : ℕ) : ℝ) ≤ Rb then CltMom1.G d L w (u₀ - u₁) else 0)
-    rw [this]
-    have h2 : ∀ u₀ : Zd d L, ∑ u₁ : Zd d L, (if ((zdistInf d L (u₀ - x) : ℕ) : ℝ) ≤ Rb then
-          CltMom1.G d L w (u₀ - u₁) else 0) ≤
-        (if ((zdistInf d L (x - u₀) : ℕ) : ℝ) ≤ Rb then (1 : ℝ) else 0) * CltMom1.Yw d w := by
-      intro u₀
-      rw [cltMom1_zdistInf_sub_comm x u₀]
-      by_cases h : ((zdistInf d L (u₀ - x) : ℕ) : ℝ) ≤ Rb
-      · simp only [h, ↓reduceIte, one_mul]
-        exact cltMom1_G_sum_sub_le hd hw u₀
-      · simp [h]
-    refine (Finset.sum_le_sum fun u₀ _ => h2 u₀).trans ?_
-    rw [← Finset.sum_mul]
-    exact mul_le_mul_of_nonneg_right (cltMom1_ball_count x hRb) hY0
-  have hS0 : 0 ≤ ∑ v, f v := Finset.sum_nonneg fun v _ => hf0 v
-  have hG : ∑ b₂ : Zd d L, CltMom1.G d L w (x - b₂) ≤ CltMom1.Yw d w := cltMom1_G_sum_sub_le hd hw x
-  calc (∑ b₂ : Zd d L, CltMom1.G d L w (x - b₂)) * (∑ v, f v) ^ m
-      ≤ CltMom1.Yw d w * ((2 * Rb + 1) ^ d * CltMom1.Yw d w) ^ m := by
-        apply mul_le_mul hG (pow_le_pow_left₀ hS0 hS m) (by positivity) hY0
-
 /-- `Y_w ≤ d 4^d w²` for `w ≥ 1` (`cs 2^{d-2} (w+1)² ≤ cs 2^{d-2} 4 w²`, `cs 2^d = d 4^d`). -/
 theorem CltMom1.Yw_le (hd : 3 ≤ d) {w : ℝ} (hw : 1 ≤ w) : CltMom1.Yw d w ≤ (d : ℝ) * 4 ^ d * w ^ 2 := by
   obtain ⟨e, rfl⟩ : ∃ e, d = e + 3 := ⟨d - 3, by omega⟩
@@ -1334,19 +1217,6 @@ theorem cltMom1_Yw_bound (hd : 3 ≤ d) {w : ℝ} (hw : 1 ≤ w) (m : ℕ) :
                   (41 ^ d * ((d : ℝ) * 4 ^ d)) * (w ^ d * w ^ 2) by ring, mul_pow, mul_pow]
               ring
           _ = _ := by rw [this]
-
-/-- **Target 4, the explicit constant**: for `w ≥ 1`, the cluster radius `R_b = 20 w = 2R`
-(`R = 10 w`, `w = (log W)³ ℓ_s`), a cluster with `m = |A| - 1` further indices contributes at most
-`(41^d)^m (d 4^d)^{m+1} w^{(d+2) m + 2}`: this is the factor `(ℓ_s^{d+2})^{|A|-1} ℓ_s²` of `(eq:2p_product_pair)`
-(`3_5:2233`) with `ℓ_s` replaced by the window `w = (log W)³ ℓ_s`. -/
-theorem cltMom1_cluster_sum_C4 (hd : 3 ≤ d) {w : ℝ} (hw : 1 ≤ w) (m : ℕ) (x : Zd d L) :
-    ∑ b₂ : Zd d L, ∑ β : Fin m → (Fin 2 → Zd d L),
-      CltMom1.G d L w (x - b₂) * ∏ k : Fin m,
-        (if ((zdistInf d L ((β k) 0 - x) : ℕ) : ℝ) ≤ 20 * w then
-          CltMom1.G d L w ((β k) 0 - (β k) 1) else 0) ≤
-      (41 ^ d) ^ m * ((d : ℝ) * 4 ^ d) ^ (m + 1) * w ^ ((d + 2) * m + 2) :=
-  (cltMom1_cluster_sum hd (by linarith : (0 : ℝ) ≤ w) (by linarith : (0 : ℝ) ≤ 20 * w) m x).trans
-    (cltMom1_Yw_bound hd hw m)
 
 /-- **The per-cluster term** `∑_β z_β (∑_{β' ∈ ball R_b β} z_{β'})^k` of `cltMom1_clusterSum_le_of_bound`
 (`k = |A| - 1` further indices) in terms of a weight `u` at the representative's first label and the window profile
@@ -1616,41 +1486,6 @@ theorem cltMom1_simplecalculus (hd : 3 ≤ d) {q : ℕ} (hq : 2 ≤ q) {ρ lam :
         rw [e]
         ring
 
-/-- **Target 5, the ticket-literal form**: with `λ = ℓ` and the far cutoff `ρ ≥ ℓ ≥ 1`
-(`ρ = (log W)⁴ ℓ_s`, `ℓ ≤ ρ` for `log W ≥ 1`), the sum of `(eq:simplecalculus)` is at most
-`C(d,q) (|a₁-a₂|^{d-2}+1)^{-q} ℓ^d / (ℓ^{d-2})^q`. -/
-theorem cltMom1_simplecalculus_ell (hd : 3 ≤ d) {q : ℕ} (hq : 2 ≤ q) {ρ ℓ : ℝ} (hℓ : 1 ≤ ℓ)
-    (hℓρ : ℓ ≤ ρ) (a₁ a₂ : Zd d L) :
-    ∑ b ∈ Finset.univ.filter (fun b : Zd d L =>
-        ρ < ((zdistInf d L (a₁ - b) : ℕ) : ℝ) ∧ ρ < ((zdistInf d L (a₂ - b) : ℕ) : ℝ)),
-      (1 / (((zdistInf d L (a₁ - b) : ℕ) : ℝ) ^ (d - 2) + 1)) ^ q *
-        (ℓ / (((zdistInf d L (a₂ - b) : ℕ) : ℝ) ^ (d - 1) + 1)) ^ q ≤
-      (2 * CltMom1.cs d * (3 * 2 ^ (2 * d - 3)) ^ q) *
-        (1 / (((zdistInf d L (a₁ - a₂) : ℕ) : ℝ) ^ (d - 2) + 1)) ^ q * (ℓ ^ d / (ℓ ^ (d - 2)) ^ q) := by
-  have hρ : 0 < ρ := by linarith
-  have hℓ0 : 0 < ℓ := by linarith
-  have hcs := CltMom1.cs_pos (d := d) (by omega)
-  refine (cltMom1_simplecalculus hd hq hρ hℓ0.le a₁ a₂).trans ?_
-  refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-  obtain ⟨E, hE⟩ : ∃ E : ℕ, (d - 1) * q = d + E := by
-    refine ⟨(d - 1) * q - d, ?_⟩
-    have : d ≤ (d - 1) * q := by
-      calc d ≤ (d - 1) * 2 := by omega
-        _ ≤ (d - 1) * q := Nat.mul_le_mul_left _ hq
-    omega
-  have hexp : (d - 1) * q - d = E := by omega
-  rw [hexp]
-  rw [div_le_div_iff₀ (by positivity) (by positivity)]
-  -- `ℓ^q (ℓ^{d-2})^q ≤ ℓ^d ρ^E`, i.e. `ℓ^{(d-1)q} = ℓ^{d+E} ≤ ℓ^d ρ^E`
-  have h1 : ℓ ^ q * (ℓ ^ (d - 2)) ^ q = ℓ ^ d * ℓ ^ E := by
-    rw [← pow_mul, ← pow_add, ← pow_add]
-    congr 1
-    have : q + (d - 2) * q = (d - 1) * q := by
-      rw [show d - 1 = (d - 2) + 1 by omega]; ring
-    omega
-  rw [h1]
-  exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hℓ0.le hℓρ E) (by positivity)
-
 end SimpleCalculus
 
 /-! ## 8. The exponent count (target 6) and the assembly -/
@@ -1658,11 +1493,6 @@ end SimpleCalculus
 section ExponentCount
 
 variable {d L : ℕ} [NeZero L]
-
-/-- **Target 6a: the exponent identity of `(eq:2p_product_pair)`**: for a cluster with `k = |A|` indices the exponents
-of `ℓ_s` are `d - (d-2)k` (the sum `(eq:simplecalculus)`), `(d+2)(k-1)` and `2` (target 4), total `4k`, for all `d, k`. -/
-theorem cltMom1_exponent_identity (d k : ℕ) :
-    (d : ℤ) - ((d : ℤ) - 2) * k + ((d : ℤ) + 2) * ((k : ℤ) - 1) + 2 = 4 * k := by ring
 
 /-- **Target 6b: the exponents in natural numbers.**  For a cluster with `m + 1 = |A|` indices, `m ≥ 1`, `d ≥ 3`: with
 `E = (d-1)(m+1) - d` (the power of `ρ` in `(eq:simplecalculus)`; `E ≥ d - 2 ≥ 1` is `(d-1)(m+1) > d`) the power of the window
@@ -1704,57 +1534,6 @@ theorem cltMom1_exponent_count {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) {lw ℓ
         mul_le_mul_of_nonneg_right hrat (by positivity)
     _ = ℓ ^ (4 * (m + 1)) * lw ^ (12 * (m + 1)) := by
         rw [one_mul, mul_pow, ← pow_mul, show 3 * (4 * (m + 1)) = 12 * (m + 1) by ring]; ring
-
-/-- **Target 6c, exact form**: for `m + 1 = |A|` indices, `d ≥ 3`, `lw, ℓ > 0`,
-`w^{(m+1)} w^{(d+2)m+2} / ρ^{(d-1)(m+1)-d} = ℓ^{4|A|} · lw^{d + (13-d)|A|}`, `w = lw³ ℓ`, `ρ = lw⁴ ℓ` (exponent of `lw` an integer,
-`3((d+3)|A| - d) - 4((d-1)|A| - d)`; it is `≤ 12|A|`, which is `cltMom1_exponent_count`). -/
-theorem cltMom1_exponent_count_eq {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) {lw ℓ : ℝ} (hlw : 0 < lw) (hℓ : 0 < ℓ) :
-    (lw ^ 3 * ℓ) ^ ((m + 1) + ((d + 2) * m + 2)) / (lw ^ 4 * ℓ) ^ ((d - 1) * (m + 1) - d) =
-      ℓ ^ (4 * (m + 1)) * lw ^ ((d : ℤ) + (13 - (d : ℤ)) * ((m : ℤ) + 1)) := by
-  obtain ⟨E, hE, hE1, -, hN⟩ := cltMom1_exponent_nat hd hm
-  rw [hE, hN]
-  have hEz : ((d : ℤ) - 1) * ((m : ℤ) + 1) = d + E := by
-    have := congrArg (Nat.cast : ℕ → ℤ) hE1
-    push_cast [Nat.cast_sub (show 1 ≤ d by omega)] at this
-    exact this
-  have key : lw ^ ((d : ℤ) + (13 - (d : ℤ)) * ((m : ℤ) + 1)) = lw ^ (12 * (m + 1)) / lw ^ E := by
-    rw [← zpow_natCast, ← zpow_natCast, ← zpow_sub₀ hlw.ne']
-    congr 1
-    push_cast
-    linarith [hEz]
-  rw [key]
-  field_simp
-  ring
-
-/-- The exact product over the clusters of the factors of `cltMom1_exponent_count_eq`:
-`∏_{s ∈ free φ} ℓ^{4|A_s|} lw^{d + (13-d)|A_s|} = ℓ^{4n} lw^{d r + (13-d) n}` (`n = 2p`, `r = #free φ`): the `ℓ_s`-power is
-`8p` (the paper's `(ℓ_s⁴)^{2p}`), the `log W`-power `d r + (13-d) 2p` (hidden in the paper's `≺`; `≤ 24 p`). -/
-theorem cltMom1_prod_exponent_exact {n : ℕ} {φ : Fin n → Fin n} (hφ : CltMom1.Cluster φ) (d : ℕ)
-    {lw ℓ : ℝ} (hlw : 0 < lw) :
-    ∏ s ∈ CltMom1.free φ, (ℓ ^ (4 * (CltMom1.assigned φ s + 1)) *
-        lw ^ ((d : ℤ) + (13 - (d : ℤ)) * ((CltMom1.assigned φ s : ℤ) + 1))) =
-      ℓ ^ (4 * n) * lw ^ ((d : ℤ) * (CltMom1.free φ).card + (13 - (d : ℤ)) * n) := by
-  have hz : ∀ (s : Finset (Fin n)) (z : Fin n → ℤ), ∏ i ∈ s, lw ^ z i = lw ^ (∑ i ∈ s, z i) := by
-    intro s z
-    classical
-    induction s using Finset.induction_on with
-    | empty => simp
-    | insert i s hi ih => rw [Finset.prod_insert hi, Finset.sum_insert hi, ih, zpow_add₀ hlw.ne']
-  rw [Finset.prod_mul_distrib, hz, Finset.prod_pow_eq_pow_sum]
-  have hsum := cltMom1_sum_assigned hφ
-  have hs1 : ∑ s ∈ CltMom1.free φ, 4 * (CltMom1.assigned φ s + 1) = 4 * n := by
-    rw [← Finset.mul_sum, Finset.sum_add_distrib]
-    simp only [Finset.sum_const, smul_eq_mul, mul_one]
-    omega
-  have hs2 : ∑ s ∈ CltMom1.free φ, ((d : ℤ) + (13 - (d : ℤ)) * ((CltMom1.assigned φ s : ℤ) + 1)) =
-      (d : ℤ) * (CltMom1.free φ).card + (13 - (d : ℤ)) * n := by
-    rw [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_add_distrib]
-    simp only [Finset.sum_const, mul_one, nsmul_eq_mul]
-    have : ((∑ s ∈ CltMom1.free φ, CltMom1.assigned φ s : ℕ) : ℤ) + ((CltMom1.free φ).card : ℤ) = n := by
-      exact_mod_cast hsum
-    push_cast at this
-    linear_combination (13 - (d : ℤ)) * this
-  rw [hs1, hs2]
 
 /-- The product over the clusters: `∏_{s ∈ free φ} c X^{|A_s|} = c^r X^{n}`, `|A_s| = assigned φ s + 1`,
 `∑_s |A_s| = n` (the clusters partition the `n` indices). -/
@@ -1943,12 +1722,6 @@ end ExponentCount
 
 section Instances
 
-/-- The data of the instances: `d = 3`, `L = 83`, `p = 1`, window `w = 1`, far cutoff `ρ = 40`, pairing radius `R = 10 w = 10`,
-`a₁ = 0`, `a₂ = (0,0,1)` (`|a₁ - a₂|_∞ = 1`), two indices `b^{(0)} = ((41,41,41),(41,41,42))`,
-`b^{(1)} = ((36,41,41),(36,41,40))`: first labels at distance `5 < R`, both far (`|b₁ - a_i|_∞ = 41 > 40`) and in the
-window (`|b₁ - b₂|_∞ = 1`). -/
-private def cltMom1_a₂ : Zd 3 83 := ![0, 0, 1]
-
 private def cltMom1_b : Fin (2 * 1) → (Fin 2 → Zd 3 83) :=
   ![![![41, 41, 41], ![41, 41, 42]], ![![36, 41, 41], ![36, 41, 40]]]
 
@@ -1974,158 +1747,6 @@ theorem cltMom1_b_paired : CltMom1.Paired (10 : ℝ) cltMom1_b := by
   · refine ⟨0, by decide, ?_⟩
     simp only [Fin.mk_one, h1]
     norm_num
-
-/-- **Instance of target 1** (`p = 1`, `R = 10`): the paired configuration `cltMom1_b` has a cluster decomposition
-(one cluster `{0,1}`, `r = 1 ≤ p`, members within `2R = 20`, at most `2² = 4` structures). -/
-example := cltMom1_clusters (d := 3) (L := 83) (p := 1) le_rfl (R := 10) (by norm_num) cltMom1_b cltMom1_b_paired
-
-/-- Target 1, the isolation side: a configuration with first labels `(0,0,0)` and `(41,41,41)` (distance `41 ≥ R`) is
-not paired, by `cltMom1_not_paired_iff`. -/
-example : ¬ CltMom1.Paired (10 : ℝ)
-    (![![![0, 0, 0], ![0, 0, 0]], ![![41, 41, 41], ![41, 41, 41]]] : Fin (2 * 1) → (Fin 2 → Zd 3 83)) := by
-  rw [cltMom1_not_paired_iff]
-  refine ⟨0, fun j hj => ?_⟩
-  fin_cases j
-  · exact absurd rfl hj
-  · have : zdistInf 3 83 (((![![![0, 0, 0], ![0, 0, 0]], ![![41, 41, 41], ![41, 41, 41]]] :
-        Fin (2 * 1) → (Fin 2 → Zd 3 83)) 0) 0 - ((![![![0, 0, 0], ![0, 0, 0]], ![![41, 41, 41], ![41, 41, 41]]] :
-        Fin (2 * 1) → (Fin 2 → Zd 3 83)) 1) 0) = 41 := by decide
-    simp only [Fin.mk_one, this]
-    norm_num
-
-/-- The common (non-stochastic) data of target 2: `ξ = t m(σ₁) m(σ₂)` at `t = 9/10`, `m = i`, `σ = (+,-)` (`m₁ m₂ = 1`),
-`g = 1/2 ≤ Λ = 1`, regime (i): `g²/L² = 1/27556 ≤ 1 - t = 1/10`. -/
-private abbrev cltMom1_xi : ℂ := (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I false))
-
-/-- **Instance of target 2a** (weight at `a₁ = 0`, `b₁ = (41,41,41)`). -/
-example : ∃ C : ℝ, 0 < C ∧ (1 / 2 : ℝ) ^ 2 * ‖Theta 3 83 (1 / 2 : ℝ) cltMom1_xi (0 : Zd 3 83) ![41, 41, 41]‖ ≤
-    C * (1 + 2 ^ (3 - 1)) / (((zdistInf 3 83 ((0 : Zd 3 83) - ![41, 41, 41]) : ℕ) : ℝ) ^ (3 - 2) + 1) := by
-  obtain ⟨C, hC, H⟩ := cltMom1_weight_a1 3 1 le_rfl one_pos
-  exact ⟨C, hC, H 83 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10) (by norm_num) (by norm_num)
-    (by norm_num) Complex.I (by simp) true false 0 ![41, 41, 41]⟩
-
-/-- **Instance of target 2b** (weight at `a₂`, `b₁ = (36,41,41)`, `b₂ = (36,41,40)`, `w = 1`, `ρ = 40`). -/
-example : ∃ C : ℝ, 0 < C ∧ (1 / 2 : ℝ) ^ 2 * ‖Theta 3 83 (1 / 2 : ℝ) cltMom1_xi (![36, 41, 40] : Zd 3 83) cltMom1_a₂ -
-      Theta 3 83 (1 / 2 : ℝ) cltMom1_xi (![36, 41, 41] : Zd 3 83) cltMom1_a₂‖ ≤
-    C * (3 : ℕ) * 1 / (((zdistInf 3 83 (cltMom1_a₂ - ![36, 41, 41]) : ℕ) : ℝ) ^ (3 - 1) + 1) := by
-  obtain ⟨C, hC, H⟩ := cltMom1_weight_a2 3 1 (1 / 2) le_rfl one_pos (by norm_num)
-  have hfar : (40 : ℝ) < ((zdistInf 3 83 (cltMom1_a₂ - ![36, 41, 41]) : ℕ) : ℝ) := by
-    have : zdistInf 3 83 (cltMom1_a₂ - ![36, 41, 41]) = 41 := by decide
-    rw [this]; norm_num
-  have hwin : ((zdistInf 3 83 ((![36, 41, 41] : Zd 3 83) - ![36, 41, 40]) : ℕ) : ℝ) ≤ 1 := by
-    have : zdistInf 3 83 ((![36, 41, 41] : Zd 3 83) - ![36, 41, 40]) = 1 := by decide
-    rw [this]; norm_num
-  exact ⟨C, hC, H 83 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10) (by norm_num) (by norm_num)
-    Complex.I (by simp) (by norm_num) true false cltMom1_a₂ ![36, 41, 41] ![36, 41, 40] 1 40 (by norm_num) hfar hwin⟩
-
-/-- **Instance of target 3** (comparability): `b = (41,41,41)`, `b' = (36,41,41)` (`|b - b'|_∞ = 5 ≤ r = 20 = 2R`, `R = 10`),
-`2 r = 40 ≤ ρ = 40 < 41 = |a_i - b|_∞`, `λ = 1`. -/
-example := cltMom1_comparable_weights (d := 3) (L := 83) (r := 20) (ρ := 40) (lam := 1) (by norm_num) (by norm_num)
-  (by norm_num) (0 : Zd 3 83) cltMom1_a₂ ![41, 41, 41] ![36, 41, 41]
-  (by
-    have : zdistInf 3 83 ((0 : Zd 3 83) - ![41, 41, 41]) = 41 := by decide
-    rw [this]; norm_num)
-  (by
-    have : zdistInf 3 83 (cltMom1_a₂ - ![41, 41, 41]) = 41 := by decide
-    rw [this]; norm_num)
-  (by
-    have : zdistInf 3 83 ((![41, 41, 41] : Zd 3 83) - ![36, 41, 41]) = 5 := by decide
-    rw [this]; norm_num)
-  (by norm_num)
-
-/-- **Instance of target 4** (`m = |A| - 1 = 1`, `w = 1`, representative first label `x = 0`). -/
-example := cltMom1_cluster_sum_C4 (d := 3) (L := 83) (by norm_num) (w := 1) le_rfl 1 (0 : Zd 3 83)
-
-/-- **Instance of target 5** (`q = k = 2`, `ρ = 40`, `λ = 1`, `a₁ = 0`, `a₂ = (0,0,1)`). -/
-example := cltMom1_simplecalculus (d := 3) (L := 83) (by norm_num) (q := 2) le_rfl (ρ := 40) (lam := 1)
-  (by norm_num) (by norm_num) (0 : Zd 3 83) cltMom1_a₂
-
-/-- **Instance of target 5, ticket-literal form** (`q = k = 2`, `ρ = 40`, `ℓ = 1`, `a₁ = 0`, `a₂ = (0,0,1)`). -/
-example := cltMom1_simplecalculus_ell (d := 3) (L := 83) (by norm_num) (q := 2) le_rfl (ρ := 40) (ℓ := 1)
-  le_rfl (by norm_num) (0 : Zd 3 83) cltMom1_a₂
-
-/-- The far set of target 5's instance is nonempty (`b = (41,41,41)`). -/
-example : (Finset.univ.filter (fun b : Zd 3 83 =>
-    (40 : ℝ) < ((zdistInf 3 83 ((0 : Zd 3 83) - b) : ℕ) : ℝ) ∧
-      (40 : ℝ) < ((zdistInf 3 83 (cltMom1_a₂ - b) : ℕ) : ℝ))).Nonempty := by
-  classical
-  refine ⟨![41, 41, 41], ?_⟩
-  rw [Finset.mem_filter]
-  refine ⟨by simp, ?_, ?_⟩
-  · have : zdistInf 3 83 ((0 : Zd 3 83) - ![41, 41, 41]) = 41 := by decide
-    rw [this]; norm_num
-  · have : zdistInf 3 83 (cltMom1_a₂ - ![41, 41, 41]) = 41 := by decide
-    rw [this]; norm_num
-
-/-- **Instance of target 6**: `d = 3`, a cluster with `m + 1 = 2` indices, `lw = 41 ≥ 40`, `ℓ = 1`: the identity, the natural-number
-form (`E = (d-1)(m+1) - d = 1`) and the scale count. -/
-example := cltMom1_exponent_identity 3 2
-
-example := cltMom1_exponent_nat (d := 3) (m := 1) (by norm_num) le_rfl
-
-example := cltMom1_exponent_count (d := 3) (m := 1) (by norm_num) le_rfl (lw := 41) (ℓ := 1) (by norm_num) one_pos
-
-/-- Instances of the exact forms of target 6 (`d = 3`, `lw = 41`, `ℓ = 1`; the cluster of `cltMom1_cluster_inst`). -/
-example := cltMom1_exponent_count_eq (d := 3) (m := 1) (by norm_num) le_rfl (lw := 41) (ℓ := 1) (by norm_num) one_pos
-
-example := cltMom1_prod_exponent_exact cltMom1_cluster_inst 3 (lw := 41) (ℓ := 1) (by norm_num)
-
-example := cltMom1_scale_comparable (lw := 41) (ℓ := 1) (p := 1) (by norm_num) zero_le_one
-
-example := cltMom1_scale_bd1 (d := 3) (lw := 41) (ℓ := 1) (by norm_num) zero_le_one
-
-
-/-- **The assembly instance** (`lw = ℓ = 1`, `M = 1`, `p = 1`, `w = ρ = 1`): `z` is the point mass at the first index
-`b^{(0)} = ((41,41,41),(41,41,42))` of the paired configuration, with value `c = u(b₁) G_w(b₁ - b₂) > 0`, so `z β > 0` only
-at `β = b^{(0)}` and `hzu` holds with equality there. -/
-private noncomputable def cltMom1_c : ℝ :=
-  CltMom1.uw (0 : Zd 3 83) cltMom1_a₂ (1 ^ 4 * 1) (1 ^ 3 * 1) 1 (cltMom1_b 0 0) *
-    CltMom1.G 3 83 (1 ^ 3 * 1) (cltMom1_b 0 0 - cltMom1_b 0 1)
-
-private theorem cltMom1_c_pos : 0 < cltMom1_c := by
-  have hA : zdistInf 3 83 ((0 : Zd 3 83) - cltMom1_b 0 0) = 41 := by decide
-  have hB : zdistInf 3 83 (cltMom1_a₂ - cltMom1_b 0 0) = 41 := by decide
-  have hG : zdistInf 3 83 (cltMom1_b 0 0 - cltMom1_b 0 1) = 1 := by decide
-  unfold cltMom1_c CltMom1.uw CltMom1.G
-  rw [hA, hB, hG]
-  norm_num
-
-open Classical in
-private noncomputable def cltMom1_z : (Fin 2 → Zd 3 83) → ℝ :=
-  fun β => if β = cltMom1_b 0 then cltMom1_c else 0
-
-private theorem cltMom1_z_nonneg (β : Fin 2 → Zd 3 83) : 0 ≤ cltMom1_z β := by
-  classical
-  unfold cltMom1_z
-  split_ifs
-  · exact cltMom1_c_pos.le
-  · exact le_rfl
-
-private theorem cltMom1_z_hzu (β β' : Fin 2 → Zd 3 83) (hβ : 0 < cltMom1_z β)
-    (_ : ((zdistInf 3 83 (β 0 - β' 0) : ℕ) : ℝ) ≤ 20 * (1 ^ 3 * 1)) :
-    cltMom1_z β' ≤ CltMom1.uw (0 : Zd 3 83) cltMom1_a₂ (1 ^ 4 * 1) (1 ^ 3 * 1) 1 (β 0) *
-      CltMom1.G 3 83 (1 ^ 3 * 1) (β' 0 - β' 1) := by
-  classical
-  have hβb : β = cltMom1_b 0 := by
-    by_contra h
-    simp [cltMom1_z, h] at hβ
-  have hnn : 0 ≤ CltMom1.uw (0 : Zd 3 83) cltMom1_a₂ (1 ^ 4 * 1) (1 ^ 3 * 1) 1 (β 0) *
-      CltMom1.G 3 83 (1 ^ 3 * 1) (β' 0 - β' 1) :=
-    mul_nonneg (CltMom1.uw_nonneg (by norm_num) (by norm_num) _) (CltMom1.G_nonneg _ _)
-  by_cases hβ' : β' = cltMom1_b 0
-  · subst hβb
-    simp only [cltMom1_z, hβ', ↓reduceIte, cltMom1_c]
-    exact le_rfl
-  · simp only [cltMom1_z, hβ', ↓reduceIte]
-    exact hnn
-
-/-- **Instance of the assembly** `cltMom1_clusterSum_le` (`d = 3`, `L = 83`, `p = 1`). -/
-example := cltMom1_clusterSum_le (d := 3) (L := 83) (by norm_num) 1 (lw := 1) (ℓ := 1) (Mz := 1) le_rfl le_rfl
-  zero_le_one (0 : Zd 3 83) cltMom1_a₂ (z := cltMom1_z) cltMom1_z_nonneg cltMom1_z_hzu
-
-/-- **Instance of the paired moment bound** `cltMom1_paired_moment_le` (same data). -/
-example := cltMom1_paired_moment_le (d := 3) (L := 83) (by norm_num) 1 (lw := 1) (ℓ := 1) (Mz := 1) le_rfl le_rfl
-  zero_le_one (0 : Zd 3 83) cltMom1_a₂ (z := cltMom1_z) cltMom1_z_nonneg cltMom1_z_hzu
 
 end Instances
 

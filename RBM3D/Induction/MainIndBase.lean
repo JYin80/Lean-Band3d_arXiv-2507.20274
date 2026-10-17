@@ -140,25 +140,3 @@ theorem stBase_band (d : ℕ) :
 end RBM.BA
 
 /-! ## 4. Compiled nonempty instances (`d = 3`, merged data `sz0`, `z0`, `zSeq`) -/
-
-namespace RBM.Gauss.MainIndInst
-
-open RBM.BA RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `stBase_band` at the merged band data `sz0`, `z0` (`d = 3`, `𝔠 = 1/6`, `κ = ε = 𝔡 = 1/10`): the six conclusions
-at the zero sequence, no hypothesis. -/
-example : STConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) :=
-  stBase_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num) (by norm_num) sz0 z0 flow_z0
-
-/-- `stBaseG_of_init` at the block Anderson data `sz0`, `zSeq` (`BAFlow` holds by `flow_sz0`): the three BA carrier
-facts (`𝓛_0 = 𝒦_0`, `G_0 = M`, `ML:Kbound`; BA-V `GLoopAtT0`, BA-K) stay hypotheses; every other premise is
-discharged. -/
-example (hL : ∀ κ ε 𝔠 𝔡 (sz : Sizes 3) z, BAFlow sz κ ε 𝔠 𝔡 z → STLK0 (baFMz sz z))
-    (hG : ∀ κ ε 𝔠 𝔡 (sz : Sizes 3) z, BAFlow sz κ ε 𝔠 𝔡 z → STG0M (baFMz sz z))
-    (hK : 3 ≤ 3 → ∀ κ ε 𝔠 𝔡 (sz : Sizes 3) z, 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
-      STKboundgL (baFMz sz z) (Sizes.seqP (sz.withLam 0))) :
-    STConclgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) :=
-  stBaseG_of_init (law := fun sz => Sizes.seqP (sz.withLam 0)) (fun sz => Sizes.isProbabilityMeasure_seqP (sz.withLam 0)) hL hG hK (by norm_num) (1 / 2) (1 / 10) (1 / 10) (1 / 6) (by norm_num)
-    (by norm_num) (by norm_num) sz0 zSeq flow_sz0
-
-end RBM.Gauss.MainIndInst

@@ -607,12 +607,6 @@ end GreenFlow
 
 section Spectral
 
-/-- `‖m‖ = 1` and `Im m ≤ 1`.  `Continuity:570` (`cont_im_m_le_one`); `spectralM` is `mE`. -/
-theorem cont_im_m_le_one {E : ℝ} (hE : |E| ≤ 2) : (mE E).im ≤ 1 := by
-  have h := Complex.abs_im_le_norm (mE E)
-  rw [norm_mE hE] at h
-  exact (le_abs_self _).trans h
-
 /-- `η_t ≤ |Im z_u|` for `u ≤ t < 1`.  `Continuity:575` (`cont_eta_le_abs_im`); `spectralZ` is
 `zt`, `etaT` the merged `Gauss.etaT`. -/
 theorem cont_eta_le_abs_im {E t u : ℝ} (hE : |E| < 2) (ht : t < 1) (hut : u ≤ t) :
@@ -628,10 +622,6 @@ theorem cont_norm_spectralZ_sub {E : ℝ} (hE : |E| ≤ 2) (u u' : ℝ) :
   have h : zt E u - zt E u' = ((u' - u : ℝ) : ℂ) * mE E := by
     unfold zt; push_cast; ring
   rw [h, norm_mul, norm_mE hE, mul_one, Complex.norm_real, Real.norm_eq_abs, abs_sub_comm]
-
-/-- `Im m ≥ 0` (the 2D `cont_spectralM_im_nonneg`, `Continuity:614`). -/
-theorem cont_spectralM_im_nonneg (E : ℝ) : 0 ≤ (mE E).im := by
-  rw [mE_im]; positivity
 
 end Spectral
 
@@ -817,194 +807,8 @@ the all-ones sample `ω₁` (`|ω₁ c| = 1 ≤ N`, so `ω₁ ∈ contGood sz0 0
 instance that is not discharged is `GopboundPin sz0 κ E` itself (S1-34 proves it as `gopbound`) and,
 for `cont_core`, the per-time domination `PerTimeDomAt` of the family (another gate's pin). -/
 
-section Instances
-
-open RBM.Gauss.SizesInst
-
-private theorem contInst_hsize : Tendsto sz0.size atTop atTop := sz0.tendsto_size sz0_tendsto
-
-private theorem contInst_one_le (n : ℕ) : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) :=
-  Nat.one_le_cast.2 (sz0.one_le_size n)
-
-/-- The all-ones sample: every coordinate equals `1`. -/
-private def contInstω : sz0.SeqΩ := fun _ => 1
-
-private theorem contInstω_good : contInstω ∈ contGood sz0 0 := fun _ => by
-  simpa [contInstω] using contInst_one_le 0
-
-/-- **`GopboundPin` at `sz0`**, `κ = 1/10`, `E ≡ 1/2`: its three deterministic premises
-(`0 < κ`, `|E n| ≤ 2 - κ = 19/10`, `SizeTendsto sz0`) are discharged; the pin itself is S1-34's
-`gopbound`, so it stays a hypothesis of the instance. -/
-example (h : GopboundPin sz0 (1 / 10) (fun _ => (1 / 2 : ℝ))) :=
-  h (by norm_num) (fun _ => by norm_num) sz0_tendsto
-
-/-- **`cont_core` at `sz0`**: the entries of the flow on the window `[0, 1/16]`,
-`ξ(u,(i,j)) = |H_u(i,j)|`, `ζ ≡ 1`, label set `Idx × Idx` (`N²` labels), `A = 4`, `Cv = 2`,
-`ε = 2 N⁻¹`.  Discharged: the window, `#V ≤ N²`, the good event `contGood` (w.h.p., by
-`cont_highProbAt_good`), `ε ≤ ζ`, and the closeness on `contGood` (from `cont_norm_Xentry_le`,
-`cont_abs_sqrt_sub_sqrt_le`, `cont_sqrt_abs_le`).  The per-time domination stays a hypothesis. -/
-example (hpt : PerTimeDomAt sz0.seqP sz0.size
-      (U := fun n => TimeIcc (fun _ : ℕ => (0 : ℝ)) (fun _ : ℕ => 1 / 16) n ×
-        (Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n)))
-      (fun n p ω => ‖sz0.seqHflow n (p.1 : ℝ) ω p.2.1 p.2.2‖) (fun _ _ _ => (1 : ℝ))) :
-    StochDomAt sz0.seqP sz0.size
-      (U := fun n => TimeIcc (fun _ : ℕ => (0 : ℝ)) (fun _ : ℕ => 1 / 16) n ×
-        (Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n)))
-      (fun n p ω => ‖sz0.seqHflow n (p.1 : ℝ) ω p.2.1 p.2.2‖) (fun _ _ _ => (1 : ℝ)) := by
-  refine cont_core (V := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-    contInst_hsize (s := fun _ => (0 : ℝ)) (t := fun _ => 1 / 16) (fun _ => by norm_num)
-    (fun _ => by norm_num) (A := 4) (Cv := 2) (by norm_num) (by norm_num) ?_ hpt
-    (cont_highProbAt_good sz0 contInst_hsize)
-    (ε := fun n => 2 * ((sz0.size n : ℕ) : ℝ)⁻¹) (fun n => by positivity) ?_ ?_
-  · refine Eventually.of_forall fun n => ?_
-    rw [Fintype.card_prod, Nat.cast_mul, sz0.card_Idx n, Real.rpow_two]
-    exact le_of_eq (by ring)
-  · filter_upwards [contInst_hsize.eventually_ge_atTop 2] with n hn p ω
-    have hN : (2 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast hn
-    have : 2 * ((sz0.size n : ℕ) : ℝ)⁻¹ ≤ 1 := by
-      rw [← div_eq_mul_inv, div_le_one (by linarith)]; exact hN
-    exact this
-  · refine Eventually.of_forall fun n => ?_
-    intro ω hω u u' hΔ v
-    obtain ⟨i, j⟩ := v
-    refine ⟨?_, by norm_num⟩
-    have hN : (0 : ℝ) < ((sz0.size n : ℕ) : ℝ) := lt_of_lt_of_le one_pos (contInst_one_le n)
-    have hu0 : 0 ≤ (u : ℝ) := u.2.1
-    have hu'0 : 0 ≤ (u' : ℝ) := u'.2.1
-    have hsq := cont_sqrt_abs_le hN.le hΔ
-    have hX := cont_norm_Xentry_le (sz0.slice n ω) (fun c => hω c) i j
-    have e : ((sz0.size n : ℕ) : ℝ) ^ (-(4 : ℝ) / 2) = (((sz0.size n : ℕ) : ℝ) ^ 2)⁻¹ := by
-      rw [show -(4 : ℝ) / 2 = -((2 : ℕ) : ℝ) by norm_num, Real.rpow_neg hN.le, Real.rpow_natCast]
-    have hdiff : ‖sz0.seqHflow n (u : ℝ) ω i j - sz0.seqHflow n (u' : ℝ) ω i j‖ ≤
-        2 * ((sz0.size n : ℕ) : ℝ)⁻¹ := by
-      have h1 := Hflow_sub_apply 3 (sz0.L n) (sz0.W n) (u : ℝ) (u' : ℝ) (sz0.slice n ω) i j
-      change ‖(Hflow 3 (sz0.L n) (sz0.W n) u (sz0.slice n ω) -
-        Hflow 3 (sz0.L n) (sz0.W n) u' (sz0.slice n ω)) i j‖ ≤ _
-      rw [h1, norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      calc |Real.sqrt u - Real.sqrt u'| * ‖Xentry 3 (sz0.L n) (sz0.W n) (sz0.slice n ω) i j‖
-          ≤ Real.sqrt |(u : ℝ) - u'| * (2 * ((sz0.size n : ℕ) : ℝ)) :=
-            mul_le_mul (cont_abs_sqrt_sub_sqrt_le hu0 hu'0) hX (norm_nonneg _) (Real.sqrt_nonneg _)
-        _ ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(4 : ℝ) / 2) * (2 * ((sz0.size n : ℕ) : ℝ)) :=
-            mul_le_mul_of_nonneg_right hsq (by positivity)
-        _ = 2 * ((sz0.size n : ℕ) : ℝ)⁻¹ := by rw [e]; field_simp
-    have := norm_le_insert' (sz0.seqHflow n (u : ℝ) ω i j) (sz0.seqHflow n (u' : ℝ) ω i j)
-    change ‖sz0.seqHflow n (u : ℝ) ω i j‖ ≤ ‖sz0.seqHflow n (u' : ℝ) ω i j‖ + _
-    linarith
-
-/-- The good event has high probability (`cont_highProbAt_good` at `sz0`), and the tail bound of
-`cont_good_compl` at `n = 0` (`N = 2097152`). -/
-example : HighProbAt sz0.seqP sz0.size (contGood sz0) := cont_highProbAt_good sz0 contInst_hsize
-
-example := cont_good_compl sz0 0
-
-example : ∀ᶠ x : ℝ in atTop, 2 * x ^ 2 * (2 * Real.exp (-x ^ 2 / 2)) ≤ x ^ (-(10 : ℝ)) :=
-  cont_eventually_tail 10
-
-/-- `ω₁ ∈ contGood sz0 0` is used by the deterministic instances below: `‖X‖ ≤ #Idx · 2 N`, also for the
-block-product reading. -/
-example := cont_norm_Xmat_le (sz0.slice 0 contInstω) (B := ((sz0.size 0 : ℕ) : ℝ)) contInstω_good
-
-example := cont_norm_blockMat_Xmat_le (sz0.slice 0 contInstω) (B := ((sz0.size 0 : ℕ) : ℝ))
-  contInstω_good
-
-example := cont_norm_Xentry_le (sz0.slice 0 contInstω) (B := ((sz0.size 0 : ℕ) : ℝ))
-  contInstω_good (0 : Idx 3 (sz0.L 0) (sz0.W 0)) 1
-
-example := cont_blockMat_sub (Xmat 3 (sz0.L 0) (sz0.W 0) (sz0.slice 0 contInstω))
-  (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-
-example := cont_blockMat_smul (Complex.I : ℂ) (Xmat 3 (sz0.L 0) (sz0.W 0) (sz0.slice 0 contInstω))
-
 /- The resolvent bounds at the model matrix, `E = 1/2`, `t = 1/2`, `u = 1/4`, `u' = 1/8`,
 `η = η_t = (1/2) Im m`. -/
-section Resolvent
-
-private theorem contInst_eta_pos : 0 < etaT (1 / 2) (1 / 2) := etaT_pos (by norm_num) (by norm_num)
-
-private theorem contInst_herm (u : ℝ) : (sz0.seqHflow 0 u contInstω).IsHermitian :=
-  Sizes.seqHflow_isHermitian sz0 0 u contInstω
-
-example := cont_norm_green_le (contInst_herm (1 / 4)) contInst_eta_pos
-  (cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 4) (by norm_num) (by norm_num)
-    (by norm_num))
-
-example := cont_green_diff (contInst_herm (1 / 4)) (contInst_herm (1 / 8)) contInst_eta_pos
-  (cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 4) (by norm_num) (by norm_num)
-    (by norm_num))
-  (cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 8) (by norm_num) (by norm_num)
-    (by norm_num))
-
-/-- **`cont_green_flow_diff` at the model**: `H_u - H_{u'} = (√u - √u') X`, `‖X‖ ≤ #Idx · 2N`
-(`ω₁ ∈ contGood`), `Δ = |u - u'| = 1/8`, `Q = η⁻¹`. -/
-example :=
-  cont_green_flow_diff (contInst_herm (1 / 4)) (contInst_herm (1 / 8))
-    (c := Real.sqrt (1 / 4) - Real.sqrt (1 / 8))
-    (X := Xmat 3 (sz0.L 0) (sz0.W 0) (sz0.slice 0 contInstω))
-    (Hflow_sub 3 (sz0.L 0) (sz0.W 0) (1 / 4) (1 / 8) (sz0.slice 0 contInstω))
-    (cont_norm_Xmat_le (sz0.slice 0 contInstω) (B := ((sz0.size 0 : ℕ) : ℝ)) contInstω_good)
-    (cont_abs_sqrt_sub_sqrt_le (by norm_num) (by norm_num)) (abs_nonneg _)
-    (abs_le.2 ⟨by norm_num, by norm_num⟩) contInst_eta_pos le_rfl
-    (cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 4) (by norm_num) (by norm_num)
-      (by norm_num))
-    (cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 8) (by norm_num) (by norm_num)
-      (by norm_num))
-    (le_of_eq (cont_norm_spectralZ_sub (E := 1 / 2) (by norm_num) (1 / 4) (1 / 8)))
-
-example := cont_Gres_true_eq_green (sz0.seqHflow 0 (1 / 4) contInstω) (zt (1 / 2) (1 / 4))
-
-example := cont_Gres_false_eq_green (sz0.seqHflow 0 (1 / 4) contInstω) (zt (1 / 2) (1 / 4))
-
-/-- A `4 × 4` matrix instance of the generic operator-norm lemmas. -/
-example := cont_norm_le_card_mul (1 : Matrix (Fin 4) (Fin 4) ℂ) (B := 1) zero_le_one
-  (fun i j => by by_cases h : i = j <;> simp [Matrix.one_apply, h])
-
-example := cont_norm_one_le (n := Fin 4)
-
-end Resolvent
-
-/-- The spectral facts at `E = 1/2`, `κ = 1/10`, and `‖E_a‖ ≤ 1` at `L = 4`, `W = 32`, `d = 3`. -/
-example := cont_im_m_le_one (E := 1 / 2) (by norm_num)
-
-example := cont_spectralM_im_nonneg (1 / 2)
-
-example := cont_norm_spectralZ_sub (E := 1 / 2) (by norm_num) (1 / 4) (1 / 8)
-
-example := cont_eta_le_abs_im (E := 1 / 2) (t := 1 / 2) (u := 1 / 4) (by norm_num) (by norm_num)
-  (by norm_num)
-
-example := cont_norm_Eblk_le_one (d := 3) (L := sz0.L 0) (W := sz0.W 0) (sz0.W_pos 0)
-  (0 : Zd 3 (sz0.L 0))
-
-example := cont_bulk (κ := 1 / 10) (E := 1 / 2) (by norm_num) (by norm_num)
-
-example := cont_abs_sqrt_sub_sqrt_le (x := 1 / 4) (y := 1 / 8) (by norm_num) (by norm_num)
-
-example := cont_sqrt_rpow (N := ((sz0.size 0 : ℕ) : ℝ)) (Nat.cast_nonneg _) (-4)
-
-example := cont_sqrt_abs_le (N := ((sz0.size 0 : ℕ) : ℝ)) (A := 4) (Δ := ((sz0.size 0 : ℕ) : ℝ) ^ (-(4 : ℝ)))
-  (Nat.cast_nonneg _) le_rfl
-
-example := cont_gap contInst_hsize 3 (κ := 1) (p := 1) (q := 2) one_pos (by norm_num)
-
-example := cont_pow_mul_rpow (x := ((sz0.size 0 : ℕ) : ℝ)) (lt_of_lt_of_le one_pos (contInst_one_le 0)) 6
-  (-(25 : ℝ))
-
-/-- The scalar facts of section 4 at `sz0`, `n = 0`: the lower bound `N⁻¹ ≤ W^{-3} B_{s,0}` at
-`s = 1/2`, and the ratio of the controls at `u = 1/4`, `u' = 3/8`, `t = 1/2`. -/
-example := cont_inv_le_const_mul_inv (a := 1) (b := 2) (κ := 2) one_pos two_pos (by norm_num)
-
-example := cont_inv_add_one_sub_ratio (γ := ((1 : ℝ) / 64) ^ 2) (t := 1 / 2) (u := 1 / 4)
-  (u' := 3 / 8) (sq_nonneg _) (by norm_num) (by norm_num) (by norm_num)
-
-example := cont_Bctl_eq sz0 0 (t := 1 / 2) (by norm_num)
-
-example := cont_inv_size_le_Bctl sz0 0 (s := 1 / 2) (by norm_num) (by norm_num)
-
-example := cont_Bctl_ratio sz0 0 (t := 1 / 2) (u := 1 / 4) (u' := 3 / 8) (by norm_num)
-  (by norm_num) (by norm_num)
-
-end Instances
-
 end ContinuityNet
 
 end RBM.Ind

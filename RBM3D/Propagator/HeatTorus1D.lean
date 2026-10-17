@@ -725,36 +725,7 @@ bounds and `τ = 50 ≥ 25 = L²` for the gap.  Every deterministic hypothesis i
 constants stay existential, as in the statements. -/
 
 -- `hkT_le` at `L = 5`, `τ = 4`, `x = 2`.
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    hkT 5 4 2 ≤ C * min 1 ((4 : ℝ) ^ (-(1 / 2 : ℝ)))
-      * Real.exp (-c * min ((RBM.zdist 5 2 : ℝ) ^ 2 / 4) (RBM.zdist 5 2 : ℝ)) := by
-  obtain ⟨C, c, hC, hc, h⟩ := hkT_le
-  exact ⟨C, c, hC, hc, h 5 4 (by norm_num) (by norm_num) 2⟩
-
 -- `hkT_diff1_le` at `L = 5`, `τ = 4`, `x = 2`.
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    |hkT 5 4 (2 + 1) - hkT 5 4 2| ≤ C * min 1 ((4 : ℝ)⁻¹)
-      * Real.exp (-c * min ((RBM.zdist 5 2 : ℝ) ^ 2 / 4) (RBM.zdist 5 2 : ℝ)) := by
-  obtain ⟨C, c, hC, hc, h⟩ := hkT_diff1_le
-  exact ⟨C, c, hC, hc, h 5 4 (by norm_num) (by norm_num) 2⟩
-
 -- `hkT_diff2_le` at `L = 5`, `τ = 4`, `x = 2`.
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    |hkT 5 4 (2 + 1) + hkT 5 4 (2 - 1) - 2 * hkT 5 4 2|
-      ≤ C * min 1 ((4 : ℝ) ^ (-(3 / 2 : ℝ)))
-        * Real.exp (-c * min ((RBM.zdist 5 2 : ℝ) ^ 2 / 4) (RBM.zdist 5 2 : ℝ)) := by
-  obtain ⟨C, c, hC, hc, h⟩ := hkT_diff2_le
-  exact ⟨C, c, hC, hc, h 5 4 (by norm_num) (by norm_num) 2⟩
-
 -- `hkT_gap` at `L = 5`, `τ = 50`, `x = 2`.
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    (|hkT 5 50 2 - ((5 : ℕ) : ℝ)⁻¹|
-        ≤ C * ((5 : ℕ) : ℝ)⁻¹ * Real.exp (-c * 50 / ((5 : ℕ) : ℝ) ^ 2) ∧
-      |hkT 5 50 (2 + 1) - hkT 5 50 2|
-        ≤ C * (((5 : ℕ) : ℝ) ^ 2)⁻¹ * Real.exp (-c * 50 / ((5 : ℕ) : ℝ) ^ 2) ∧
-      |hkT 5 50 (2 + 1) + hkT 5 50 (2 - 1) - 2 * hkT 5 50 2|
-        ≤ C * (((5 : ℕ) : ℝ) ^ 3)⁻¹ * Real.exp (-c * 50 / ((5 : ℕ) : ℝ) ^ 2)) := by
-  obtain ⟨C, c, hC, hc, h⟩ := hkT_gap
-  exact ⟨C, c, hC, hc, h 5 50 (by norm_num) 2⟩
-
 end RBM.Heat

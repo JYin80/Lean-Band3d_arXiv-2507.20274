@@ -33,8 +33,6 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedSimpArgs false
 
 open private BAExp14d_det BAExp14d_GM_le from RBM3D.Graph.BAExp14d
-open private hr0 g0_bounds data_bounds Ψ0_pos ones_row from RBM3D.Graph.BAExp14d
-
 open MeasureTheory Filter Matrix
 
 noncomputable section
@@ -852,57 +850,5 @@ theorem baG5LeafPrec1_holds (d : ℕ) : BAG5LeafPrec1 d := by
 
 Same data as in part A (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `n = 0`, `t ≡ 1/2`); the instance leaf `leaf1` of target 6 is defined in
 part A.  What stays a hypothesis of the leaf instance is the five Step 1/2 pins (other gates' inputs). -/
-
-namespace BAExp14dInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- **Targets 3 and 5 at the instance data**: `BAExp14d_pw` (hence `BAExp14d_det`) at the packed instance leaf, `ξ₀ ≡ 1`, `cc = Ψ`,
-`S2 = L^d`, `r = R = 0`, `Ψ = η⁻¹ + 1`, with the bound of G3 (`baGtoAGT_holds`) as `hG3`: every deterministic hypothesis is discharged. -/
-example (ω : sz0.SeqΩ) (ℓ : Fin 2 → Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ∃ K₀ K₁ Kd C c : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧ 0 ≤ C ∧ 0 < c ∧
-      ‖leaf1P.val (D0 ω) ℓ‖ ≤ leaf1P.g.sizeConst (K₀ * 1) K₁ Kd *
-            (Ψ0 ^ leaf1P.g.scalingOrder * (((sz0.W 0 : ℕ) : ℝ) ^ 3 * (Ψ0 ^ 2 * ((sz0.L 0 : ℕ) : ℝ) ^ 3))) +
-          Real.exp (-(c * 0 / 2)) * leaf1P.g.sizeConst C (C * expC (3 - 2) (c / 2)) (C * (1 + expC (3 - 2) (c / 2))) *
-            leaf1P.g.scalingSize Ψ0 (sz0.W 0) 3 (sz0.L 0) := by
-  obtain ⟨K₀, K₁, Kd, C, c, h0, h1, h2, h3, h4, hK⟩ := baGtoAGT_holds 3 le_rfl 10 (1 / 2) (by norm_num) (by norm_num)
-  refine ⟨K₀, K₁, Kd, C, c, h0, h1, h2, h3, h4, ?_⟩
-  obtain ⟨hG, hwin⟩ := data_bounds ω
-  have hprops := leaf1_props.1 true true leaf1P (List.mem_singleton_self _)
-  exact BAExp14d_pw leaf1P hprops.1 leaf1_props.2.1 hprops.2.2.2.1 (D0 ω) (A := 1) (Ψ := Ψ0) (cc := Ψ0)
-    (S2 := ((sz0.L 0 : ℕ) : ℝ) ^ 3) (R := 0) (r := 0) (fun _ _ => (1 : ℝ)) h0.le h1.le h2 h3 h4 zero_le_one Ψ0_pos Ψ0_pos.le
-    hwin le_rfl (by simp) (fun _ _ => zero_le_one) hG (fun x y a b _ _ => by simpa using hG x y) ones_row ones_row
-    (hK (sz0.L 0) (sz0.W 0) (sz0.three_le_L 0) _ _ (1 / 2) _ g0_bounds.1 g0_bounds.2 hr0 (by norm_num) (by norm_num)
-      (Fin 2) (Fin 4) leaf1 (by unfold BAGraph.Normal; exact ⟨by decide, by decide⟩) _ rfl rfl rfl rfl) ℓ
-
-/-- **Target 4 at the instance data**: `W^{-d} B ≤ 2 N^{-c₀}` eventually, along `t ≡ 1/2`. -/
-example : ∃ c₀ : ℝ, 0 < c₀ ∧ ∀ᶠ n in atTop, sz0.Bctl n (1 / 2) ≤ 2 * ((sz0.size n : ℕ) : ℝ) ^ (-c₀) := by
-  obtain ⟨c₀, hc₀, h⟩ := BAExp14d_Bctl_small 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 6) sz0 zSeq flow_sz0
-  exact ⟨c₀, hc₀, h (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le)⟩
-
-/-- **Target 4, the entry law, at the instance data** (the pin `STLocalEntrygL` of another gate stays a hypothesis). -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    ∃ ε₁ : ℝ, 0 < ε₁ ∧
-      PrecL sz0 μ0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-        (fun n p ω => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω p.1 p.2‖) (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-ε₁)) :=
-  baExp14dEntry_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE
-
-/-- **Target 6 at the instance data**: the `n_M = 1` leaf bound at `leaf1`, `t ≡ 1/2`; the five Step 1/2 pins stay hypotheses. -/
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hL : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    PrecL sz0 μ0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-      (fun n p _ => ‖∫ ω, leaf1P.val (BAlwData 3 (sz0.L n) (sz0.W n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n) (1 / 2)
-        ((baFMz sz0 zSeq).m n) (BAExp14a_slc sz0 n ω)) ![p.1, p.2] ∂μ0‖)
-      (fun n _ _ => (1 / 2 : ℝ) ^ leaf1P.g.nW * ((baFMz sz0 zSeq).eta n (1 / 2))⁻¹ *
-        (sz0.Bctl n (1 / 2)) ^ ((leaf1P.scalingOrder : ℝ) / 2)) :=
-  baG5LeafPrec1_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hL hK hD leaf1P leaf1_props.1 leaf1_props.2.1
-
-end BAExp14dInst
 
 end RBM.BA

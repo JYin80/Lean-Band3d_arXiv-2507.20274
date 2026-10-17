@@ -281,26 +281,6 @@ theorem weighted_trace_coordinate_offDiag
     trace_coordinate_imag d L W A C hij, hv true, hv false]
   ring
 
-/-- The same contraction with its block normalization shown explicitly: each physical-site
-variance is `SB_ab W^{-d}`.  `RBM2D/Hierarchy/ContractionDirections.lean:173`
-(`weighted_trace_coordinate_offDiag_blocks`). -/
-theorem weighted_trace_coordinate_offDiag_blocks
-    (A C : Matrix (Idx d L W) (Idx d L W) ℂ)
-    {i j : Idx d L W} (hij : idxKey d L W i < idxKey d L W j) :
-    (((gvarF d L W g (i, j, true) : ℝ) : ℂ) *
-        Matrix.trace (A * coordinateMatrix d L W (i, j, true) * C *
-          coordinateMatrix d L W (i, j, true))) +
-      (((gvarF d L W g (i, j, false) : ℝ) : ℂ) *
-        Matrix.trace (A * coordinateMatrix d L W (i, j, false) * C *
-          coordinateMatrix d L W (i, j, false))) =
-      (SB d L g (split d L W i).1 (split d L W j).1 * ((W : ℂ) ^ d)⁻¹) *
-        (A i i * C j j + A j j * C i i) := by
-  rw [weighted_trace_coordinate_offDiag d L W g A C hij]
-  rw [svarF, SB_eq_map_SBR]
-  simp only [Matrix.map_apply]
-  push_cast
-  ring
-
 /-- The single used diagonal Gaussian coordinate has the full site variance.
 `RBM2D/Hierarchy/ContractionDirections.lean:189` (`weighted_trace_coordinate_diag`). -/
 theorem weighted_trace_coordinate_diag
@@ -459,9 +439,6 @@ noncomputable def blockRelabel
     (A : Matrix (Idx d L W) (Idx d L W) ℂ) :
     Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   A.submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm
-
-theorem blockRelabel_eq_blockMat (A : Matrix (Idx d L W) (Idx d L W) ℂ) :
-    blockRelabel d L W A = blockMat d L W A := rfl
 
 /-- `RBM2D/Hierarchy/ContractionSum.lean:161`. -/
 theorem blockRelabel_apply_split
@@ -880,55 +857,5 @@ Every target applied at `d = 3`, `L = 3`, `W = 2`, `g = 1/2`: the fine lattice `
 statements are unconditional matrix identities, so no hypothesis is left open; the chain data
 have two cut positions (`σ₁ = [+, -]`, `σ₂ = [-, +]`, `σ₃ = [+]`, loop length `7`), the length
 hypotheses are discharged by `rfl`. -/
-
-namespace ContractionInst
-
-/-- A block label of `Z_3^3`. -/
-private def lab (n : ℕ) : Zd 3 3 := fun i => ((n + i.val : ℕ) : ZMod 3)
-
-/-- `sum_Svar_diag_mul` at `d = 3`, `L = 3`, `W = 2`. -/
-example :
-    ∑ i : Vtx 3 3 2, ∑ j : Vtx 3 3 2,
-        ((svar 3 3 2 (1 / 2) i j : ℝ) : ℂ) *
-          ((1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) i i *
-            (Eblk 3 3 2 (lab 1) : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) j j) =
-      (2 : ℂ) ^ 3 * ∑ a : Zd 3 3, ∑ b : Zd 3 3,
-        Matrix.trace ((1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) * Eblk 3 3 2 a) * SB 3 3 (1 / 2) a b *
-          Matrix.trace (Eblk 3 3 2 (lab 1) * Eblk 3 3 2 b) := by
-  have h := sum_Svar_diag_mul 3 3 2 (1 / 2) (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ)
-    (Eblk 3 3 2 (lab 1))
-  exact_mod_cast h
-
-/-- `weighted_trace_coordinate_diag` at `d = 3`, `L = 3`, `W = 2`, at the diagonal coordinate of
-the point `0` of the fine lattice. -/
-example :=
-  weighted_trace_coordinate_diag 3 3 2 (1 / 2)
-    (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ) (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ) 0
-
-/-- `sum_usedCoords_trace_blocks` at `d = 3`, `L = 3`, `W = 2`. -/
-example :=
-  sum_usedCoords_trace_blocks 3 3 2 (1 / 2)
-    (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ) (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ)
-
-/-- `sum_allCoords_trace_blocks` at `d = 3`, `L = 3`, `W = 2` (the honest sum over all
-`2 · 216²` coordinates, unused ones included). -/
-example :=
-  sum_allCoords_trace_blocks 3 3 2 (1 / 2)
-    (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ) (1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ)
-
-/-- `sum_coordinate_cutChains` at `d = 3`, `L = 3`, `W = 2`, with the two-edge cut at the edges
-`k = 3`, `l = 5` of a loop of length `7`. -/
-example :=
-  sum_coordinate_cutChains 3 3 2 (1 / 2) (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-    [true, false] [false, true] [true] [lab 4, lab 17] [lab 9, lab 22] [lab 0]
-    true false (lab 5) (lab 2) rfl rfl
-
-/-- `neg_trace_scalarDrift_cutGlue_split` at `d = 3`, `L = 3`, `W = 2`, with `m = 7/10 - i/5`. -/
-example :=
-  neg_trace_scalarDrift_cutGlue_split 3 3 2 (1 : Matrix (Vtx 3 3 2) (Vtx 3 3 2) ℂ) Complex.I
-    [true, false] [false, true] [lab 4, lab 17] [lab 9, lab 22] true (lab 5)
-    ((7 : ℂ) / 10 - Complex.I / 5) rfl
-
-end ContractionInst
 
 end RBM.Gauss

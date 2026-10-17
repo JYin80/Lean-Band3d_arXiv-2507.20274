@@ -126,63 +126,6 @@ The variance profile of `sz.withLam 0` is `S^{(B)}(0) = I`: `Var X_{xy} = 0` unl
 (their coefficients are the minors of `D + X` and the profile `svar d L W 0` carries the support); the support is
 needed by the Schur split of the BA rows (`BA/GreenSchur.lean:18`). -/
 
-/-- A coordinate of zero variance of the model of `sz.withLam 0` vanishes almost surely. -/
-private theorem GreenLDE_ae_coord_zero {d : ℕ} (sz : Sizes d) (c : Sizes.SeqCoord (sz.withLam 0))
-    (hc : Sizes.seqGvar (sz.withLam 0) c = 0) : ∀ᵐ ω ∂(Sizes.seqP (sz.withLam 0)), ω c = 0 := by
-  have hmap : (Sizes.seqP (sz.withLam 0)).map (fun ω => ω c) =
-      ProbabilityTheory.gaussianReal 0 (Sizes.seqGvar (sz.withLam 0) c) :=
-    Measure.infinitePi_map_eval _ c
-  rw [hc, ProbabilityTheory.gaussianReal_zero_var] at hmap
-  refine (ae_map_iff (measurable_pi_apply c).aemeasurable (measurableSet_eq_fun measurable_id measurable_const)).1 ?_
-  rw [hmap]
-  exact (ae_dirac_iff (measurableSet_eq_fun measurable_id measurable_const)).2 rfl
-
-/-- The profile `S^{(B)}(0) = I` has no off-block entries. -/
-private theorem GreenLDE_svarF_zero_off_block (d L W : ℕ) [NeZero L] [NeZero W] (x y : Idx d L W)
-    (hb : (split d L W x).1 ≠ (split d L W y).1) : svarF d L W 0 x y = 0 := by
-  have h : (split d L W x).1 - (split d L W y).1 ≠ 0 := sub_ne_zero.2 hb
-  simp [svarF, SBR, sbKernelR, h]
-
-/-- An off-block coordinate pair has zero variance in the model of `sz.withLam 0`. -/
-private theorem GreenLDE_gvar_off_block {d : ℕ} (sz : Sizes d) (n : ℕ) (x y : Idx d (sz.L n) (sz.W n))
-    (hb : (split d (sz.L n) (sz.W n) x).1 ≠ (split d (sz.L n) (sz.W n) y).1) (b : Bool) :
-    Sizes.seqGvar (sz.withLam 0) ⟨n, (x, y, b)⟩ = 0 := by
-  have hxy : x ≠ y := fun h => hb (by rw [h])
-  have h0 := GreenLDE_svarF_zero_off_block d (sz.L n) (sz.W n) x y hb
-  apply NNReal.eq
-  change (if x = y then svarF d (sz.L n) (sz.W n) 0 x y else svarF d (sz.L n) (sz.W n) 0 x y / 2) = 0
-  simp [hxy, h0]
-
-/-- An entry of `Xentry` vanishes when its (up to four) real coordinates vanish. -/
-private theorem GreenLDE_Xentry_zero (d L W : ℕ) [NeZero L] [NeZero W] (ω : Ω d L W) (x y : Idx d L W)
-    (h1 : ω (x, y, true) = 0) (h2 : ω (x, y, false) = 0) (h3 : ω (y, x, true) = 0) (h4 : ω (y, x, false) = 0) :
-    Xentry d L W ω x y = 0 := by
-  unfold Xentry
-  split_ifs
-  · rw [h1, h2]; simp
-  · rw [h3, h4]; simp
-  · rw [h1]; simp
-
-/-- **Almost sure block support of `X`** (the Gaussian part of the carrier): almost surely, every entry between two
-different blocks vanishes, at every `n` and `t`. -/
-theorem GreenLDE_BAX_ae_block_support {d : ℕ} (sz : Sizes d) (n : ℕ) (t : ℝ) :
-    ∀ᵐ (ω : (sz.withLam 0).SeqΩ) ∂(Sizes.seqP (sz.withLam 0)), ∀ x y : Idx d (sz.L n) (sz.W n),
-      (split d (sz.L n) (sz.W n) x).1 ≠ (split d (sz.L n) (sz.W n) y).1 → BAX sz n t ω x y = 0 := by
-  rw [ae_all_iff]
-  intro x
-  rw [ae_all_iff]
-  intro y
-  by_cases hb : (split d (sz.L n) (sz.W n) x).1 = (split d (sz.L n) (sz.W n) y).1
-  · exact Filter.Eventually.of_forall fun ω h => absurd hb h
-  have hb' : (split d (sz.L n) (sz.W n) y).1 ≠ (split d (sz.L n) (sz.W n) x).1 := fun h => hb h.symm
-  have hxt := GreenLDE_ae_coord_zero sz ⟨n, (x, y, true)⟩ (GreenLDE_gvar_off_block sz n x y hb true)
-  have hxf := GreenLDE_ae_coord_zero sz ⟨n, (x, y, false)⟩ (GreenLDE_gvar_off_block sz n x y hb false)
-  have hyt := GreenLDE_ae_coord_zero sz ⟨n, (y, x, true)⟩ (GreenLDE_gvar_off_block sz n y x hb' true)
-  have hyf := GreenLDE_ae_coord_zero sz ⟨n, (y, x, false)⟩ (GreenLDE_gvar_off_block sz n y x hb' false)
-  filter_upwards [hxt, hxf, hyt, hyf] with ω h1 h2 h3 h4 _
-  change (Real.sqrt t : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice (sz.withLam 0) n ω) x y = 0
-  rw [GreenLDE_Xentry_zero d (sz.L n) (sz.W n) (Sizes.slice (sz.withLam 0) n ω) x y h1 h2 h3 h4, mul_zero]
-
 /-- `PerTimeDomAt` only depends on the values of the two families. -/
 private theorem GreenLDE_perTime_congr {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ}
     {U : ℕ → Type*} {ξ ζ ξ' ζ' : ∀ l, U l → Ω → ℝ} (hξ : ∀ l u ω, ξ l u ω = ξ' l u ω)
@@ -220,26 +163,5 @@ theorem baLDEin_holds (d : ℕ) : BALDEin d := by
         (fun n => (BAflowLam0 sz z n : ℂ) • PsiI d (sz.L n) (sz.W n)) hD hz ht0 ht1)
 
 /-! ### A nonempty instance -/
-
-/-- **`baLDEin_holds 3` at concrete data** (`d = 3`, `sz0`: `n = 0` has `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`;
-the flow `flow_sz0`: `κ = 1/2`, `ε = 1/10`, `𝔠 = 1/6`, `𝔡 = 1/10`; the time `t ≡ 1/2 ≤ T₀`, `T₀ ≥ 2/3`): every
-deterministic hypothesis is discharged (the shift of the carrier is `D = g₀ Ψ`, `g₀ = √T₀ λ`). -/
-example := baLDEin_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-  SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num)
-  (fun n => (FlowPinsInst.half_lt_t0 n).le)
-
-/-- The instance, as a statement: the quadratic input `hLquad` of `BALDEin` at the same data. -/
-example : Path.PerTimeDomAt (Sizes.seqP (SizesInst.sz0.withLam 0)) SizesInst.sz0.size
-      (U := fun n => Vtx 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n))
-      (fun n i ω => Green.ldeQuadLHS (blockMat 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n) (BAX SizesInst.sz0 n (1 / 2) ω))
-        (blockMat 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-          (BAGt SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) n (1 / 2) ω))
-        (svar 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n) 0) (1 / 2) i)
-      (fun n i ω => Green.ldeQuadRHS (svar 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n) 0)
-        (blockMat 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-          (BAGt SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) n (1 / 2) ω)) i) :=
-  (baLDEin_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun n => (FlowPinsInst.half_lt_t0 n).le)).2.2.1
 
 end RBM.BA

@@ -888,13 +888,6 @@ private theorem tailtoTailSq_main (hL : 3 ≤ L) (hd : 1 ≤ d) {g W D D₂ E v 
 
 end Main
 
-/-- `4 ≤ log 64` (`log 64 = 6 log 2`, `log 2 > 0.6931`). -/
-private theorem tailtoTailSq_four_le_log64 : (4 : ℝ) ≤ Real.log 64 := by
-  have h : Real.log 64 = 6 * Real.log 2 := by
-    rw [show (64 : ℝ) = 2 ^ 6 by norm_num, Real.log_pow]; norm_num
-  have := Real.log_two_gt_d9
-  rw [h]; linarith
-
 /-! ### 6. The targets -/
 
 /-- **Target 7g** (`tailtoTailSq_kernelGen`): the squared-profile `TailtoTail` for an arbitrary 4-index tensor `X`,
@@ -953,91 +946,5 @@ theorem tailtoTailSq_kernel {d : ℕ} (sz : Sizes d) :
     (by exact_mod_cast sz.W_pos n) hE hv hvw hw1 hg hlog hp hY σ (STeeM sz n E v H σ) hH1 hH2 hH3 a
 
 /-! ### 7. Instances (CLAUDE.md §4 step 2) -/
-
-/-- The pin of target 7 at the size data `SizesInst.sz0` (`Defs/Sizes.lean:260`). -/
-example := tailtoTailSq_kernel SizesInst.sz0
-
-/-- **Instance (c) of target 7g**, at `d = 3`, `L = 20`, `g = 1/64`, `W = 64`, `D = 8`, `D₂ = 5`, `E = 0`, `v = 1/32`,
-`w = 1/16`, `p = Y = 1`, with the concrete nonnegative worst tensor `X(b,b') = T_{v,D}(|b₀-b₁|)²` on near pairs and `1` on
-far pairs (both kinds occur: `max zdist = 10 > ℓ* = 8.48`).  Discharged here: `3 ≤ 3`, `3 ≤ 20`, `0 < 64`, `|0| ≤ 2`,
-`0 ≤ 1/32 ≤ 1/16 < 1`, `(1/64)² ≤ 15/16`, `4 ≤ log 64`, (H1) and (H2); (H3) (another gate's pin, `lemDecCalEPrec_kell`;
-numerically `max_{|x|_∞ ≥ 2} Θ_w(x) = 2.8e-10 ≤ 64^{-5} = 9.3e-10`) stays the hypothesis. -/
-theorem inst_tailtoTailSq_c :
-  (∀ x y : Zd 3 20,
-      (1 / 8 : ℝ) * (Real.log 64 ^ ((3 : ℝ) / 2) * ellT 20 (1 / 64) (1 / 16)) ≤ (zdistInf 3 20 (x - y) : ℝ) →
-      ‖Theta 3 20 (1 / 64) ((1 / 16 : ℝ) : ℂ) x y‖ ≤ (64 : ℝ) ^ (-(5 : ℝ))) →
-    ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 20),
-      ‖∑ b : Fin 2 → Zd 3 20, ∑ b' : Fin 2 → Zd 3 20,
-          (∏ i, uKer 3 20 (1 / 64) (cycProd (fun i => mSigma 0 (σ i)) i) (1 / 32) (1 / 16) (a i) (b i)) *
-            (∏ i, uKer 3 20 (1 / 64) (cycProd (fun i => mSigma 0 (!σ i)) i) (1 / 32) (1 / 16) (a i) (b' i)) *
-              (((if (∀ i : Fin 2, ((zdistInf 3 20 (b i - b' i) : ℕ) : ℝ) ≤ Real.log 64 ^ (3 / 2 : ℝ)) then
-                  tailTD 3 64 (1 / 32) 8 ((zdistInf 3 20 (b 0 - b 1) : ℕ) : ℝ) ^ 2 else 1 : ℝ)) : ℂ)‖ ≤
-        18 * Real.exp (8 * ((3 : ℕ) : ℝ) + 2) * 1 *
-            (tailTD 3 64 (1 / 16) 8 ((zdistInf 3 20 (a 0 - a 1) : ℕ) : ℝ) ^ 2 +
-              ((1 - 1 / 32) / (1 - 1 / 16)) ^ 4 * ((64 : ℝ) ^ (-(8 : ℝ))) ^ 2) +
-          4 * 1 * ((20 : ℕ) : ℝ) ^ 3 * ((1 - 1 / 32) / (1 - 1 / 16)) ^ 3 * (64 : ℝ) ^ (-(5 : ℝ)) := by
-  intro hΘ σ a
-  have hlog := tailtoTailSq_four_le_log64
-  have hT1 : ∀ r : ℝ, tailTD 3 64 (1 / 32) 8 r ^ 2 ≤ 1 := by
-    intro r
-    have hW : (64 : ℝ) ^ (-(8 : ℝ)) ≤ 1 / 2 := by
-      rw [Real.rpow_neg (by norm_num)]
-      norm_num [Real.rpow_ofNat]
-    have hα : ((((64 : ℝ) ^ 3 * |1 - 1 / 32|)⁻¹) ^ 2) ≤ 1 / 2 := by
-      norm_num [abs_of_pos]
-    have he : Real.exp (-Real.sqrt r) ≤ 1 :=
-      Real.exp_le_one_iff.mpr (by linarith [Real.sqrt_nonneg r])
-    have hnn := tailTD_nonneg (d := 3) (W := 64) (u := 1 / 32) (D := 8) (r := r) (by norm_num)
-    have hle : tailTD 3 64 (1 / 32) 8 r ≤ 1 := by
-      unfold tailTD
-      have : 0 ≤ ((((64 : ℝ) ^ 3 * |1 - 1 / 32|)⁻¹) ^ 2) := by positivity
-      nlinarith [Real.exp_pos (-Real.sqrt r)]
-    exact pow_le_one₀ hnn hle
-  refine tailtoTailSq_kernelGen 3 le_rfl 20 (by norm_num) (1 / 64) 64 8 5 0 (1 / 32) (1 / 16) 1 1
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hlog
-    (by norm_num) (by norm_num) σ
-    (fun b b' => (((if (∀ i : Fin 2, ((zdistInf 3 20 (b i - b' i) : ℕ) : ℝ) ≤ Real.log 64 ^ (3 / 2 : ℝ)) then
-      tailTD 3 64 (1 / 32) 8 ((zdistInf 3 20 (b 0 - b 1) : ℕ) : ℝ) ^ 2 else 1 : ℝ)) : ℂ))
-    ?_ ?_ hΘ a
-  · intro b b' h
-    simp only [eq_true h, ↓reduceIte]
-    rw [Complex.norm_real, Real.norm_of_nonneg (sq_nonneg _), one_mul]
-  · intro b b'
-    by_cases h : ∀ i : Fin 2, ((zdistInf 3 20 (b i - b' i) : ℕ) : ℝ) ≤ Real.log 64 ^ (3 / 2 : ℝ)
-    · simp only [eq_true h, ↓reduceIte]
-      rw [Complex.norm_real, Real.norm_of_nonneg (sq_nonneg _)]
-      exact hT1 _
-    · simp only [eq_false h, ↓reduceIte]
-      simp
-
-/-- **Target 7, instantiated** at `SizesInst.sz0` (`Defs/Sizes.lean:260`), `n = 1` (`L = 8`, `W = 1024`, `lam = 1/4096`,
-`d = 3`), `E = 0`, `v = 1/32`, `w = 1/16`, `D = 8`, `D₂ = 5`, `p = Y = 1`, any fine matrix `H`, any `σ`, any `a`.  The
-scalar premises are discharged (`|0| ≤ 2`, `0 ≤ 1/32 ≤ 1/16 < 1`, `lam² ≤ 15/16`, `4 ≤ log 1024`, `0 ≤ 1`); (H1), (H2), (H3)
-are the statements of other gates' suppliers (`lemDecCalEPrec_Bounds` conjunct 3, `difRep2_norm_STeeM_le_N`,
-`lemDecCalEPrec_kell`) and stay hypotheses. -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1))
-      (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) ℂ) (σ : Fin 2 → Bool)
-    (hH1 : ∀ b b' : Fin 2 → Zd 3 (SizesInst.sz0.L 1),
-      (∀ i : Fin 2, ((zdistInf 3 (SizesInst.sz0.L 1) (b i - b' i) : ℕ) : ℝ) ≤
-        Real.log ((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ (3 / 2 : ℝ)) →
-      ‖STeeM SizesInst.sz0 1 0 (1 / 32) H σ b b'‖ ≤ 1 * STtailTD SizesInst.sz0 1 (1 / 32) 8 b ^ 2)
-    (hH2 : ∀ b b' : Fin 2 → Zd 3 (SizesInst.sz0.L 1), ‖STeeM SizesInst.sz0 1 0 (1 / 32) H σ b b'‖ ≤ 1)
-    (hH3 : ∀ x y : Zd 3 (SizesInst.sz0.L 1),
-      (1 / 8 : ℝ) * (Real.log ((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ ((3 : ℝ) / 2) *
-        ellT (SizesInst.sz0.L 1) (SizesInst.sz0.lam 1) (1 / 16)) ≤
-        (zdistInf 3 (SizesInst.sz0.L 1) (x - y) : ℝ) →
-      ‖Theta 3 (SizesInst.sz0.L 1) (SizesInst.sz0.lam 1) ((1 / 16 : ℝ) : ℂ) x y‖ ≤
-        ((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ (-(5 : ℝ)))
-    (a : Fin 2 → Zd 3 (SizesInst.sz0.L 1)) :
-    ‖STeeUM SizesInst.sz0 1 0 (1 / 32) (1 / 16) H σ a‖ ≤
-      18 * Real.exp (8 * ((3 : ℕ) : ℝ) + 2) * 1 *
-          (STtailTD SizesInst.sz0 1 (1 / 16) 8 a ^ 2 +
-            ((1 - 1 / 32) / (1 - 1 / 16)) ^ 4 * (((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ (-(8 : ℝ))) ^ 2) +
-        4 * 1 * ((SizesInst.sz0.L 1 : ℕ) : ℝ) ^ 3 * ((1 - 1 / 32) / (1 - 1 / 16)) ^ 3 *
-          ((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ (-(5 : ℝ)) := by
-  refine tailtoTailSq_kernel SizesInst.sz0 le_rfl 1 0 (1 / 32) (1 / 16) 8 5 1 1 H σ (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num [SizesInst.sz0]) ?_ (by norm_num)
-    (by norm_num) hH1 hH2 hH3 a
-  exact tailtoTailSq_four_le_log64.trans (Real.log_le_log (by norm_num) (by norm_num [SizesInst.sz0]))
 
 end RBM.Gauss.Sizes

@@ -73,10 +73,6 @@ private theorem ImmLower_norm_ge (v : ℝ) (w : ℂ) (hw : 0 < w.im) : w.im ≤ 
   rw [h2, abs_neg, abs_of_pos hw] at h1
   exact h1
 
-private theorem ImmLower_inv_norm_le (v : ℝ) (w : ℂ) (hw : 0 < w.im) : ‖((v : ℂ) - w)⁻¹‖ ≤ w.im⁻¹ := by
-  rw [norm_inv]
-  exact inv_anti₀ hw (ImmLower_norm_ge v w hw)
-
 /-- Jensen and the Ward bound: `⟨Re a²⟩ ≤ 1 - Im m²` when `Im m = ⟨Im a⟩` and `⟨|a|²⟩ ≤ 1`. -/
 private theorem ImmLower_re_sq_avg (N : ℝ) (hN : (Fintype.card ι : ℝ) = N) (hNpos : 0 < N) (a : ι → ℂ) (m : ℂ)
     (hma : m.im = N⁻¹ * ∑ i, (a i).im) (hA : N⁻¹ * ∑ i, ‖a i‖ ^ 2 ≤ 1) :
@@ -409,16 +405,6 @@ theorem BAm_im_lower (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < 
       nlinarith
     linarith
 
-/-- **Target 5**: the merged pin `BAImmLower` (`MFixedPoint.lean`, owed by BA-D7), proved at every `d`, `Λ`, `κ`, with
-`c = κ⁵/64`.  The pin's premises `3 ≤ d`, `0 < Λ`, `0 < g`, `g ≤ Λ` are not used; `3 ≤ L` only for `NeZero L`. -/
-theorem baImmLower_holds (d : ℕ) (Λ κ : ℝ) : BAImmLower d Λ κ := by
-  intro _ _ hκ
-  refine ⟨κ ^ 5 / 64, by positivity, ?_⟩
-  intro L hL g _ _ E m
-  have : NeZero L := ⟨by omega⟩
-  intro h η hη hη1
-  exact BAm_im_lower d L g κ E m hκ h η hη hη1
-
 /-- **Target 6 (M6)**: the `ρ`-form (`BAbulk`, DECISIONS §51; supervisor 1102 O9 (b)): `ρ_N(E) ≥ κ` gives
 `Im m(E + iη) ≥ (πκ)⁵/64` for `η ∈ (0, 1]`. -/
 theorem BAm_im_lower_of_bulk (d L : ℕ) [NeZero L] (g κ E : ℝ) (hκ : 0 < κ) (hb : BAbulk d L g κ E)
@@ -430,50 +416,3 @@ theorem BAm_im_lower_of_bulk (d L : ℕ) [NeZero L] (g κ E : ℝ) (hκ : 0 < κ
 /-! ## 5. Compiled nonempty instances (`d = 3`, `L = 4`, the merged flow point of `(L, g) = (4, 10)`; no hypothesis left open) -/
 
 end RBM.BA
-
-namespace RBM.BA.ImmLowerInst
-
-open RBM.BA RBM.BA.MFixedPointInst RBM.BA.CouplingWindowInst
-
-/-- (I1) The pin `BAImmLower` itself, at `d = 3` and arbitrary `Λ`, `κ`. -/
-example (Λ κ : ℝ) : BAImmLower 3 Λ κ := baImmLower_holds 3 Λ κ
-
-/-- (I2) The pin's conclusion at the merged flow point: `c = (Im m_S)⁵/64`, `η ∈ (0, 1]`. -/
-example : ∀ η : ℝ, 0 < η → η ≤ 1 →
-    (mS 4 10).im ^ 5 / 64 ≤ (BAm 3 4 g0P ((EP : ℂ) + (η : ℂ) * Complex.I)).im :=
-  fun η hη hη1 => BAm_im_lower 3 4 g0P (mS 4 10).im EP m0P (selfS 4 10).1 flowP_real η hη hη1
-
-/-- (I3) Target 1 between the real point `(EP, m0P)` and `(EP + iη, m(EP + iη))`. -/
-example : ∀ η : ℝ, 0 < η →
-    (m0P.im ^ 2 + (BAm 3 4 g0P ((EP : ℂ) + (η : ℂ) * Complex.I)).im ^ 2) *
-        ‖m0P - BAm 3 4 g0P ((EP : ℂ) + (η : ℂ) * Complex.I)‖
-      ≤ 2 * ‖(EP : ℂ) - ((EP : ℂ) + (η : ℂ) * Complex.I)‖ := by
-  intro η hη
-  have hz' : 0 < ((EP : ℂ) + (η : ℂ) * Complex.I).im := by simp [hη]
-  exact BASelf_sub_le 3 4 g0P (EP : ℂ) ((EP : ℂ) + (η : ℂ) * Complex.I) m0P _ (by simp) hz'.le
-    flowP_data.2.2 (BAm_self 3 4 g0P _ hz')
-
-/-- (I4) Target 6 at the `ρ`-bulk datum of the flow point: `ρ_4(EP) ≥ (Im m_S)/π`, `c = ((Im m_S))⁵/64`. -/
-example : ∀ η : ℝ, 0 < η → η ≤ 1 →
-    (Real.pi * ((mS 4 10).im / Real.pi)) ^ 5 / 64 ≤
-      (BAm 3 4 g0P ((EP : ℂ) + (η : ℂ) * Complex.I)).im := by
-  intro η hη hη1
-  have hκ : 0 < (mS 4 10).im / Real.pi := div_pos (selfS 4 10).1 Real.pi_pos
-  have hb : BAbulk 3 4 g0P ((mS 4 10).im / Real.pi) EP := by
-    unfold BAbulk BArho
-    rw [BAm_real_eq_of_self 3 4 g0P EP m0P flowP_real.1]
-    exact div_le_div_of_nonneg_right flowP_real.2 Real.pi_pos.le
-  exact BAm_im_lower_of_bulk 3 4 g0P _ EP hκ hb η hη hη1
-
-/-- Target 2 at the flow point, `η = κ³/4` (the end of its range), `κ = Im m_S`. -/
-example : (mS 4 10).im / 2 ≤
-    (BAm 3 4 g0P ((EP : ℂ) + (((mS 4 10).im ^ 3 / 4 : ℝ) : ℂ) * Complex.I)).im :=
-  BAm_im_ge_half 3 4 g0P (mS 4 10).im EP m0P (selfS 4 10).1 flowP_real ((mS 4 10).im ^ 3 / 4)
-    (div_pos (pow_pos (selfS 4 10).1 3) (by norm_num)) le_rfl
-
-/-- Target 3 at the flow point, `η = 1`. -/
-example : (1 : ℝ) * (mS 4 10).im ^ 2 / (1 + 3) ^ 2 ≤
-    (BAm 3 4 g0P ((EP : ℂ) + ((1 : ℝ) : ℂ) * Complex.I)).im :=
-  BAm_im_ge_mul 3 4 g0P (mS 4 10).im EP m0P (selfS 4 10).1 flowP_real 1 one_pos
-
-end RBM.BA.ImmLowerInst

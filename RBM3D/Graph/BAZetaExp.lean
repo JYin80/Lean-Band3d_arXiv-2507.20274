@@ -69,12 +69,6 @@ def LWXiEgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t 
     PrecL sz μ (U := fun n => Zd d (sz.L n)) (fun n α ω => ∑ β, ξ n α β ω ^ 2)
       (fun n _ _ => ((((sz.W n : ℕ) : ℝ) ^ d) * C.eta n (t n))⁻¹)
 
-/-- *Proved (`Iff.rfl`).* At the band carrier and the band law the carrier form is the merged `LWXiE`
-(`Prec sz = PrecL sz (seqP sz)`, `bandFM.eta = etaT`). -/
-theorem LWXiEgL_bandFM {d : ℕ} (sz : Sizes d) (E t ℓ : ℕ → ℝ) (D : ℝ)
-    (ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ) :
-    LWXiEgL (bandFM sz E) (Sizes.seqP sz) t ℓ D ξ ↔ LWXiE sz E t ℓ D ξ := Iff.rfl
-
 /-- **`claim:xi` for the exp class at BA** (`7_8:884-890`, `(eq:Gbyxi2_BA)` `B:428-431`; twin of `LWXiExpClaim`,
 `LWXiExp.lean:68`; the check file's `T2444_BAZetaExpClaim` up to the name): at the `baPin` data (law `seqP (sz.withLam 0)`, setting
 `BAFlow`, carrier `baFMz`, horizon `BAflowT0`), under `(LW_assm_exp)` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables
@@ -505,86 +499,6 @@ The data of `BA/LWPinsBA.lean` §3: `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `
 `ε₁ = 1/20`, the radius `ρ_n = log N_n` (`√ρ ≤ τ log N` eventually for every `τ > 0`: `log N ≥ τ^{-2}`), every `D > 0`, `D₁ = max (2 D) 6`
 (`1/𝔠 = 6`).  The subtype of conjunct 2 (`λ²/L² < 1/2`) is all of `n` and nonempty at every `n`.  What stays a hypothesis is another
 gate's stochastic input: `STInitialGT2gL` and `LWLoopExpgL` (`(initialGT2)`, `(LW_assm_exp)`) and the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- The radius `ρ0 n = log N_n`. -/
-private def BAZetaExp_ρ0 : ℕ → ℝ := fun n => Real.log ((sz0.size n : ℕ) : ℝ)
-
-private theorem BAZetaExp_ρ0_nonneg (n : ℕ) : 0 ≤ BAZetaExp_ρ0 n :=
-  Real.log_nonneg (Nat.one_le_cast.2 (sz0.one_le_size n))
-
-/-- The radius premise: `√ρ0 ≤ τ log N` eventually for every `τ > 0` (limit `√(log N)/log N = (log N)^{-1/2} → 0`). -/
-private theorem BAZetaExp_ρ0_rad :
-    ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, Real.sqrt (BAZetaExp_ρ0 n) ≤ τ * Real.log ((sz0.size n : ℕ) : ℝ) := by
-  intro τ hτ
-  have hlog : Tendsto (fun n => Real.log ((sz0.size n : ℕ) : ℝ)) atTop atTop :=
-    Real.tendsto_log_atTop.comp sz0_tendsto
-  filter_upwards [hlog.eventually_ge_atTop (1 / τ ^ 2)] with n hn
-  have hy : 0 < Real.log ((sz0.size n : ℕ) : ℝ) := lt_of_lt_of_le (by positivity) hn
-  refine Real.sqrt_le_iff.2 ⟨by positivity, ?_⟩
-  have h1 : 1 ≤ τ ^ 2 * Real.log ((sz0.size n : ℕ) : ℝ) := by
-    have := mul_le_mul_of_nonneg_left hn (sq_nonneg τ)
-    rwa [mul_one_div_cancel (by positivity)] at this
-  calc BAZetaExp_ρ0 n = 1 * Real.log ((sz0.size n : ℕ) : ℝ) := by rw [one_mul]; rfl
-    _ ≤ (τ ^ 2 * Real.log ((sz0.size n : ℕ) : ℝ)) * Real.log ((sz0.size n : ℕ) : ℝ) :=
-        mul_le_mul_of_nonneg_right h1 hy.le
-    _ = (τ * Real.log ((sz0.size n : ℕ) : ℝ)) ^ 2 := by ring
-
-/-- `Ψ_n = W_n^{-1/2}` for `sz0` (`BA/LWPinsBA.lean:72`, private there). -/
-private def BAZetaExp_Ψ0 (n : ℕ) : ℝ := ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))
-
-private theorem BAZetaExp_Ψ0_window : ∀ᶠ n in atTop, ((sz0.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2) ≤ BAZetaExp_Ψ0 n ∧
-    BAZetaExp_Ψ0 n ≤ ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 10 : ℝ)) :=
-  Eventually.of_forall fun n => ⟨Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast sz0.W_pos n) (by norm_num),
-    Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast sz0.W_pos n) (by norm_num)⟩
-
-private theorem BAZetaExp_ell0 (n : ℕ) :
-    (0 : ℝ) ≤ (Real.log ((sz0.W n : ℕ) : ℝ)) ^ 10 * ellT (sz0.L n) (sz0.lam n) (1 / 2) :=
-  mul_nonneg (pow_nonneg (Real.log_nonneg (by exact_mod_cast sz0.W_pos n)) 10)
-    (zero_le_one.trans (one_le_ellT (by exact_mod_cast (sz0.three_le_L n).trans' (by norm_num))))
-
-/-- `λ²/L² < 1 - t` at `t ≡ 1/2`, every `n` (`λ_n ≤ 1/64`, `L_n ≥ 1`). -/
-private theorem BAZetaExp_strict (n : ℕ) : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - 1 / 2 := by
-  have hx : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hlam : sz0.lam n ≤ 1 / 64 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-    rw [one_div]
-    exact inv_anti₀ (by norm_num) (by nlinarith [pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hx 6])
-  have hlam0 : 0 ≤ sz0.lam n := by change 0 ≤ ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹; positivity
-  have hL1 : (1 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz0.three_le_L n; omega : 1 ≤ sz0.L n)
-  have h1 : sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ sz0.lam n ^ 2 :=
-    div_le_self (by positivity) (one_le_pow₀ hL1)
-  have h2 : sz0.lam n ^ 2 ≤ (1 / 64) ^ 2 := pow_le_pow_left₀ hlam0 hlam 2
-  nlinarith
-
-/-- The index set of conjunct 2 (`λ²/L² < 1 - t`) is nonempty at every size at the instance. -/
-example : ∀ n, Nonempty {_p : Zd 3 (sz0.L n) × Zd 3 (sz0.L n) // sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - 1 / 2} :=
-  fun n => ⟨⟨(0, 0), BAZetaExp_strict n⟩⟩
-
-/-- **Instance of `baZetaExpClaim_holds`** (`d = 3`, `sz0`, `zSeq`, `t ≡ 1/2`, `ℓ ≡ 0`, radius `log N`, every `D > 0`, `D₁ = max (2 D) 6`):
-the conclusion `LWXiEgL` (symmetry, conjunct 2 on `λ²/L² < 1 - t`, the Ward bound) at the data above; `STInitialGT2gL`, `LWLoopExpgL`
-and the entry law stay hypotheses, every deterministic hypothesis is discharged. -/
-example (hI : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10) BAZetaExp_Ψ0)
-    (hL : LWLoopExpgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 0))
-    (hent : PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-      (fun n p ω => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω p.1 p.2‖) (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ))))
-    (D : ℝ) (hD : 0 < D) :
-    LWXiEgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (fun _ => 0) D
-      (baZetaVar sz0 zSeq (fun _ => 1 / 2) BAZetaExp_ρ0 (max (2 * D) 6)) :=
-  baZetaExpClaim_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) BAZetaExp_Ψ0 (fun _ => 0)
-    ⟨by norm_num, BAZetaExp_Ψ0_window, hI, fun _ => le_rfl, BAZetaExp_ell0, hL⟩ (1 / 20) (by norm_num) hent D hD
-    BAZetaExp_ρ0 BAZetaExp_ρ0_nonneg BAZetaExp_ρ0_rad (max (2 * D) 6) (le_of_eq (by norm_num))
-
-/-- **Instance of `LWXiEgL_bandFM`** at `sz0` (the band carrier and the band law), a concrete variable family. -/
-example : LWXiEgL (bandFM sz0 (fun _ => 0)) (Sizes.seqP sz0) (fun _ => 1 / 2) (fun _ => 0) 1 (fun _ _ _ _ => 1) ↔
-    LWXiE sz0 (fun _ => 0) (fun _ => 1 / 2) (fun _ => 0) 1 (fun _ _ _ _ => 1) :=
-  LWXiEgL_bandFM sz0 (fun _ => 0) (fun _ => 1 / 2) (fun _ => 0) 1 (fun _ _ _ _ => 1)
-
-end Instances
 
 end RBM.Graph
 

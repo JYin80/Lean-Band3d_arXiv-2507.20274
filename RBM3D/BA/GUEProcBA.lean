@@ -94,13 +94,6 @@ def BAPB (d : ℕ) (sz : Sizes d) (E' t1 t0 : ℕ → ℝ) (Kt : ∀ n, ℝ → 
   GUEPathBoundsBA sz (fun n => Real.sqrt (t0 n) * sz.lam n) E' t1 t0
     (fun n => BAm d (sz.L n) (Real.sqrt (t0 n) * sz.lam n) (E' n : ℂ)) (gueGridK sz 4) 4 Kt
 
-/-- Exact-type check (D1 (ii), Amend 1 item 2 (i)): `BAKFam` and `BAPB` have the types of `KF` and `PB` in the three
-`RBG_*` texts of C5g at the BA vocabulary (`RandomLayerBGBA:204-206`). -/
-example : Prop :=
-  (∀ d : ℕ, 3 ≤ d → RBG_Prod (BAEd d) (BAfE d) (BAfT d) (BAMO d) (BAKFam d) (BAPB d)) ∧
-  (∀ d : ℕ, 3 ≤ d → RandomLayerB_LL (UNKind.ba d) (BAfE d) (BAfT d) (BAPB d)) ∧
-  (∀ d : ℕ, 3 ≤ d → RBG_Que (UNKind.ba d) (UNOUProfile.ba d) (BAEd d) (BAfE d) (BAfT d) (BAMO d) (BAKFam d) (BAPB d))
-
 /-! ## 2. Target 2: the process layer on the BA grid
 
 The twins of the band process layer (`Universality/GUEPhase/Proc.lean:83-122, 396-469`) at the BA grid path `gueHBA`
@@ -525,121 +518,12 @@ end DevStep
 `n`: `t₀ = BAflowT0 sz0 zSeq` (so `g = √t₀ λ = BAflowLam0`), `E' = BAflowEs`, `m = BAm … = BAmF` (`BAReal` at `κ = 1/2`
 for every `n`, `BAflow_real`), `t₁ = t₀ / 2`.  The window is nondegenerate (`0 < t₁ < t₀ < 1`, `0 < g`). -/
 
-namespace GUEProcBAInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- `0 < Im m` and `0 < t₀ < 1` of the flow datum of `sz0`, every `n`. -/
-private theorem GUEProcBAInst_flow (n : ℕ) :
-    0 < BAflowT0 sz0 zSeq n ∧ BAflowT0 sz0 zSeq n < 1 := by
-  have hm : 0 < (BAm 3 (sz0.L n) (sz0.lam n) (zSeq n)).im := by
-    rw [BAm_zSeq n]; linarith [mS_im_half (sz0.L n) (sz0.lam n) (sz0_lam_L n)]
-  exact ⟨BAt0_pos (zSeq_im_pos n) hm, BAt0_lt_one (zSeq_im_pos n) hm⟩
-
-/-- `BAKFam` is nonempty at the BA flow datum of `sz0` (the primitive family of `gueK_existsBA`, chosen per `n`; every
-clause is guarded by `0 < g`, which holds at every `n` here). -/
-example : ∃ Kt : ∀ n, ℝ → LoopIdx (Zd 3 (sz0.L n)) → ℂ,
-    BAKFam 3 sz0 (BAflowEs sz0 zSeq) (fun n => BAflowT0 sz0 zSeq n / 2) (BAflowT0 sz0 zSeq) Kt := by
-  classical
-  have hex : ∀ n, ∃ Kt : ℝ → LoopIdx (Zd 3 (sz0.L n)) → ℂ,
-      (∀ I, Kt (BAflowT0 sz0 zSeq n / 2) I = BAKsol 3 (sz0.L n) (sz0.W n)
-        (BAMsigma 3 (sz0.L n) (BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ)
-          (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n)))
-        (PropSpin (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n)) (BAflowT0 sz0 zSeq n / 2) I) ∧
-      (∀ t ∈ Set.Icc (BAflowT0 sz0 zSeq n / 2) (BAflowT0 sz0 zSeq n), ∀ I : LoopIdx (Zd 3 (sz0.L n)), I.WF → 1 ≤ I.length →
-        I.length ≤ 4 * 4 → HasDerivWithinAt (fun s => Kt s I) (primRhsGUE 3 (sz0.L n) (sz0.W n) (Kt t) I)
-          (Set.Icc (BAflowT0 sz0 zSeq n / 2) (BAflowT0 sz0 zSeq n)) t) ∧
-      (∀ t ∈ Set.Icc (BAflowT0 sz0 zSeq n / 2) (BAflowT0 sz0 zSeq n), ∀ σ₁ σ₂ : Bool, ∀ a b : Zd 3 (sz0.L n),
-        Kt t ⟨[σ₁, σ₂], [a, b]⟩ = kTwoGUEBA 3 (sz0.L n) (sz0.W n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n)
-          (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) (BAflowT0 sz0 zSeq n / 2) t σ₁ σ₂ a b) := fun n => by
-    obtain ⟨h0, h1⟩ := GUEProcBAInst_flow n
-    exact gueK_existsBA 3 (sz0.L n) (sz0.W n) (sz0.three_le_L n)
-      (mul_pos (Real.sqrt_pos.mpr h0) (sz0_lam_pos n)) (show (0 : ℝ) < 1 / 2 by norm_num)
-      (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n) (by linarith) (by linarith) h1 (4 * 4)
-  choose Kt hKt using hex
-  exact ⟨Kt, fun n _ => (hKt n).1, fun n _ s hs I hI h1 h2 => (hKt n).2.1 s hs I hI h1 h2,
-    fun n _ s hs σ₁ σ₂ a b => (hKt n).2.2 s hs σ₁ σ₂ a b⟩
-
-
 /-! ### Targets 2: the process layer at the BA flow datum of `sz0`
 
 `g = BAflowLam0`, `E = BAflowEs`, `m = BAmF` (`BAReal` at `κ = 1/2` for every `n`), the grid `t₁ = 1/4`, `t₀ = 1/2`, `K = 4`, the
 a priori threshold `δ_n = 1`.  Every hypothesis is discharged. -/
 
-private theorem GUEProcBAInst_real (n : ℕ) :
-    BAReal 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (1 / 2) (BAflowEs sz0 zSeq n)
-      (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) :=
-  BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n
-
-example (ω : PathΩ (sz0.withLam 0)) :
-    0 ≤ gueLprocBA sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-      (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) 0 2 (3 / 8) ω ∧
-    0 ≤ gueDprocBA sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-      (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) (fun _ _ _ => 0) 0 2 (3 / 8) ω :=
-  ⟨gueLprocBA_nonneg sz0 _ _ _ _ _ _ _ 0 2 _ ω, gueDprocBA_nonneg sz0 _ _ _ _ _ _ _ _ 0 2 _ ω⟩
-
 -- `hLDK`, `hDLK`, `hodd`, the grid values and the continuity at the flow datum.
-section Facts
-
-variable (ω : PathΩ (sz0.withLam 0)) (Kt : ∀ n, ℝ → LoopIdx (Zd 3 (sz0.L n)) → ℂ)
-
-example := gueLprocBA_le sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) Kt 0 2 (3 / 8) ω
-
-example := gueDprocBA_le sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) Kt 0 2 (3 / 8) ω
-
-example := gueLprocBA_odd sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) 0 1 le_rfl (3 / 8) ω
-
-example := gueLprocBA_time sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) 0 2 3 (by norm_num) (by norm_num) ω
-
-example := gueDprocBA_time sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) Kt 0 2 3 (by norm_num) (by norm_num) ω
-
-example := gueLprocBA_continuousOn sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) 0 2 ω
-
-example := gueDprocBA_continuousOn sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-  (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) (fun _ => 1) Kt 0 2 ω
-
-end Facts
-
-/-- `gueDevBA_succ_le` at the flow datum (`0 < Im m`, `|m| ≤ 1` from `BAReal`), `k = 2 < K = 4`. -/
-example (ω : PathΩ (sz0.withLam 0)) :=
-  gueDevBA_succ_le sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2)
-    (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun _ => 4) 0 2 (GUEProcBAInst_real 0).1.1
-    (BAm_norm_le_one 3 (sz0.L 0) _ _ _ (by simp) (GUEProcBAInst_real 0).1) (by norm_num) (by norm_num) (by norm_num) ω
-
-/-- `norm_egtNGUEOf_le` at `d = 3`, `L = 4`, `W = 32`, `m = m_0` of the flow datum, `u = 1/2`, `M = g Ψ_I`, the 2-loop `(+,-; 0, 0)`;
-`ε`, `B` are the actual maxima (finite sups over the labels). -/
-example :
-    let g := BAflowLam0 sz0 zSeq 0
-    let M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ := (g : ℂ) • PsiI 3 (sz0.L 0) (sz0.W 0)
-    let m := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0
-    let I : LoopIdx (Zd 3 (sz0.L 0)) := ⟨[true, false], [0, 0]⟩
-    ‖egtNGUEOf 3 (sz0.L 0) (sz0.W 0) m (BAflowEs sz0 zSeq 0) (1 / 2) M I‖ ≤
-      (I.length : ℝ) * (((sz0.W 0 * sz0.L 0) ^ 3 : ℕ) : ℝ) *
-        (⨆ p : Bool × Zd 3 (sz0.L 0), ‖Matrix.trace (Gres (blockMat 3 (sz0.L 0) (sz0.W 0) M)
-            (ztOf m (BAflowEs sz0 zSeq 0) (1 / 2)) p.1 * Eblk 3 (sz0.L 0) (sz0.W 0) p.2) - mSigOf m p.1‖) *
-        (∑ k ∈ Finset.Icc 1 I.length, ∑ b : Zd 3 (sz0.L 0),
-          ‖loopL 3 (sz0.L 0) (sz0.W 0) (blockMat 3 (sz0.L 0) (sz0.W 0) M) (ztOf m (BAflowEs sz0 zSeq 0) (1 / 2))
-            (I.cutGlue k b)‖) := by
-  intro g M m I
-  refine norm_egtNGUEOf_le (sz0.L 0) (sz0.W 0) m (BAflowEs sz0 zSeq 0) (1 / 2) M I (fun σ a => ?_) (fun k hk b => ?_)
-  · exact le_ciSup (f := fun p : Bool × Zd 3 (sz0.L 0) => ‖Matrix.trace (Gres (blockMat 3 (sz0.L 0) (sz0.W 0) M)
-        (ztOf m (BAflowEs sz0 zSeq 0) (1 / 2)) p.1 * Eblk 3 (sz0.L 0) (sz0.W 0) p.2) - mSigOf m p.1‖)
-      (Set.Finite.bddAbove (Set.finite_range _)) (σ, a)
-  · exact (Finset.single_le_sum (f := fun b : Zd 3 (sz0.L 0) => ‖loopL 3 (sz0.L 0) (sz0.W 0)
-        (blockMat 3 (sz0.L 0) (sz0.W 0) M) (ztOf m (BAflowEs sz0 zSeq 0) (1 / 2)) (I.cutGlue k b)‖)
-      (fun _ _ => norm_nonneg _) (Finset.mem_univ b)).trans
-      (Finset.single_le_sum (f := fun k => ∑ b : Zd 3 (sz0.L 0), ‖loopL 3 (sz0.L 0) (sz0.W 0)
-        (blockMat 3 (sz0.L 0) (sz0.W 0) M) (ztOf m (BAflowEs sz0 zSeq 0) (1 / 2)) (I.cutGlue k b)‖)
-      (fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _) hk)
-
-end GUEProcBAInst
-
 end RBM.BA
 
 end

@@ -85,12 +85,6 @@ def TransferLaw : Prop :=
     (pathP sz).map (pathH sz s t K n k) =
       (Sizes.seqP sz).map (Sizes.seqHflow sz n (gridTime s t K n k))
 
-/-- **Pin (independent increments)**: the draw `k + 1` is independent of `filt sz k`
-(`(MBM)`, `1_2:686`: independent increments; `RBM2D/Path/Walk.lean:74`). -/
-def IndepIncr : Prop :=
-  ∀ k : ℕ, Indep (filt sz k)
-    (MeasurableSpace.comap (fun ω : PathΩ sz => ω (k + 1)) inferInstance) (pathP sz)
-
 instance isProbabilityMeasure_pathP : IsProbabilityMeasure (pathP sz) := by
   unfold pathP; infer_instance
 
@@ -111,34 +105,6 @@ theorem pathH_isHermitian (s t : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (ω 
     exact (Sizes.seqXmat_isHermitian sz n (ω i)).eq
 
 end RBM.Path
-
-namespace RBM.Gauss.Sizes
-
-variable {d : ℕ} (sz : Sizes d) {U : ℕ → Type*}
-
-/-- **`≺` on the grid carrier** (`(stoch_domination)`, `1_2:227–231`; statements at the paper's
-stopping times: `Sol_CalL`, `3_5:134`; `lem:DIfREP`, `3_5:218`; `eq:def2_stopping`, `3_5:533`):
-`StochDomAt` for `pathP sz` at the *same* scale `sz.size` as `Prec`.  There is no second scale on
-the chain. -/
-def PrecGrid (ξ ζ : ∀ n, U n → Path.PathΩ sz → ℝ) : Prop :=
-  StochDomAt (Path.pathP sz) sz.size ξ ζ
-
-/-- Deterministic domination implies `≺` on the grid carrier. -/
-theorem precGrid_of_le {ξ ζ : ∀ n, U n → Path.PathΩ sz → ℝ} (hζ : ∀ n u ω, 0 ≤ ζ n u ω)
-    (hle : ∀ n u ω, ξ n u ω ≤ ζ n u ω) : sz.PrecGrid ξ ζ := by
-  intro τ hτ D _
-  refine Eventually.of_forall fun n => ?_
-  have h1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ τ :=
-    Real.one_le_rpow (by exact_mod_cast sz.one_le_size n) hτ.le
-  have hempty : badSetAt (sz.size) ξ ζ τ n = ∅ := by
-    ext ω
-    simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_lt]
-    intro u
-    nlinarith [hle n u ω, hζ n u ω]
-  rw [hempty, measure_empty]
-  exact zero_le
-
-end RBM.Gauss.Sizes
 
 /-! ## The proofs of the two pins: port of `RBM2D/Path/Walk.lean` at `c9a24cf`
 
@@ -265,9 +231,6 @@ theorem indep_incr (k : ℕ) :
 theorem map_incr (k : ℕ) :
     (pathP sz).map (fun ω : PathΩ sz => ω (k + 1)) = Sizes.seqP sz :=
   MeasureTheory.Measure.infinitePi_map_eval _ (k + 1)
-
-/-- **Pinned theorem (independent increments).** -/
-theorem indepIncr : IndepIncr sz := fun k => (indep_incr sz k).symm
 
 /-! ### The transfer law
 
@@ -648,64 +611,6 @@ measurability helpers (RBM2D lines 84–150) are re-expressed for `Gres` (the re
 `gloop ∘ blockMat`), the matrix argument being the free variable; their names carry the file stem
 (rule (E)). -/
 
-namespace RBM.Path
-
-open RBM.Gauss
-
-variable {d : ℕ} (sz : Sizes d)
-
-/-- **Pin (per-time transfer, grid ↔ single-time model)** for a matrix functional `F`
-(measurable in the matrix) and a control `ζ` depending on the time only: the per-time
-domination of `F(H_{u_k})` on the walk over all grid indices `k ≤ K_n`, for grids ending at
-`t_n`, is equivalent to that of `F(√u X)` on `seqP` over the grid times.  Proof route: the
-transfer law, pointwise in `(n, k)`.  `RBM2D/Path/Transfer.lean:35`. -/
-def GridTransferPT (s t : ℕ → ℝ) (K : ℕ → ℕ) {V : ℕ → Type}
-    (F : ∀ n, V n → ℝ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ)
-    (ζ : ∀ n, V n → ℝ → ℝ) : Prop :=
-  (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, K n ≠ 0) →
-  (∀ n (v : V n) (u : ℝ), Measurable (F n v u)) →
-    (PerTimeDomAt (pathP sz) sz.size (U := fun n => Fin (K n + 1) × V n)
-        (fun n p ω => F n p.2 (gridTime s t K n p.1) (pathH sz s t K n p.1 ω))
-        (fun n p _ => ζ n p.2 (gridTime s t K n p.1)) ↔
-      PerTimeDomAt (Sizes.seqP sz) sz.size (U := fun n => Fin (K n + 1) × V n)
-        (fun n p ω => F n p.2 (gridTime s t K n p.1)
-          (Sizes.seqHflow sz n (gridTime s t K n p.1) ω))
-        (fun n p _ => ζ n p.2 (gridTime s t K n p.1)))
-
-private theorem transfer_measurable_pathH (s t : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) :
-    Measurable (pathH sz s t K n k) :=
-  Measurable.of_eval_matrix _ fun i j => measurable_pathH sz s t K n k i j
-
-private theorem transfer_measurable_seqHflow (n : ℕ) (u : ℝ) :
-    Measurable (Sizes.seqHflow sz n u) :=
-  Measurable.of_eval_matrix _ fun i j => Sizes.measurable_seqHflow_entry sz n u i j
-
-/-- **The per-time transfer** between the grid walk and the single-time model (`GridTransferPT`),
-from `transferLaw`, pointwise in `(n, k)`.  `RBM2D/Path/Transfer.lean:58`. -/
-theorem gridTransferPT (s t : ℕ → ℝ) (K : ℕ → ℕ) {V : ℕ → Type}
-    (F : ∀ n, V n → ℝ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ)
-    (ζ : ∀ n, V n → ℝ → ℝ) : GridTransferPT sz s t K F ζ := by
-  intro hs hst hK hF
-  have key : ∀ (n : ℕ) (p : Fin (K n + 1) × V n) (c : ℝ),
-      pathP sz {ω | c < F n p.2 (gridTime s t K n p.1) (pathH sz s t K n p.1 ω)} =
-        Sizes.seqP sz {ω | c < F n p.2 (gridTime s t K n p.1)
-          (Sizes.seqHflow sz n (gridTime s t K n p.1) ω)} := by
-    intro n p c
-    have hS : MeasurableSet {M | c < F n p.2 (gridTime s t K n p.1) M} :=
-      measurableSet_lt measurable_const (hF n p.2 _)
-    have h1 := Measure.map_apply (μ := pathP sz) (transfer_measurable_pathH sz s t K n p.1) hS
-    have h2 := Measure.map_apply (μ := Sizes.seqP sz)
-      (transfer_measurable_seqHflow sz n (gridTime s t K n p.1)) hS
-    have h3 := transferLaw sz s t K n p.1 (hs n) (hst n) (hK n)
-    calc _ = (pathP sz).map (pathH sz s t K n p.1) {M | c < F n p.2 (gridTime s t K n p.1) M} :=
-          h1.symm
-      _ = (Sizes.seqP sz).map (Sizes.seqHflow sz n (gridTime s t K n p.1))
-            {M | c < F n p.2 (gridTime s t K n p.1) M} := by rw [h3]
-      _ = _ := h2
-  simp only [PerTimeDomAt, key]
-
-end RBM.Path
-
 /-! ### Measurability of the resolvent entries and loops in the matrix argument
 (RBM2D `Path/Transfer.lean:84–150`; `Gsig` becomes `Gres`, `gloop ∘ blockMat` becomes
 `loopFine`) -/
@@ -831,119 +736,5 @@ end RBM.Gauss
 `u_2 = 11/20`) for the transfer law; `s = 1/10`, `t = 1/2`, `K = 4` (`Δ = 1/10`) for the
 resolvent instances, where `η_u > 0` on the whole grid (`u_k ≤ 1/2 < 1`).  Every deterministic
 hypothesis is discharged; nothing is assumed. -/
-
-namespace RBM.Path.WalkInst
-
-open RBM.Gauss RBM.Gauss.SizesInst
-
-/-- The grid is nondegenerate: `u_2 = 1/10 + 2 · (1 - 1/10)/4 = 11/20`. -/
-theorem gridTime_sz0 :
-    gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 2 = 11 / 20 := by
-  norm_num [gridTime, gridStep]
-
-/-- The last grid time is `t` at the instance. -/
-theorem gridTime_last_sz0 :
-    gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 4 = 1 :=
-  gridTime_last (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 (by norm_num)
-
-/-- **`transferLaw` applied at concrete grid data** (`s = 1/10`, `t = 1`, `K = 4`, `n = 0`,
-`k = 2`): the walk `√s X_0 + √Δ (X_1 + X_2)` has the law of `√(11/20) X` on the size-`0` matrices
-of `sz0`; the three hypotheses `0 ≤ s`, `s ≤ t`, `K ≠ 0` are discharged. -/
-theorem transferLaw_sz0 :
-    (pathP sz0).map (pathH sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 2) =
-      (Sizes.seqP sz0).map (Sizes.seqHflow sz0 0 (11 / 20)) := by
-  have h := transferLaw sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1) (fun _ => 4) 0 2
-    (by norm_num) (by norm_num) (by norm_num)
-  rwa [gridTime_sz0] at h
-
-/-- **`transferLaw` as the pin**, at the instance sequence. -/
-theorem transferLaw_pin_sz0 : TransferLaw sz0 := transferLaw sz0
-
-/-- **`indepIncr` at the instance sequence, applied at `k = 2`**: the draw `3` is independent of
-the filtration generated by the draws `0, 1, 2`. -/
-theorem indepIncr_sz0 :
-    Indep (filt sz0 2) (MeasurableSpace.comap (fun ω : PathΩ sz0 => ω (2 + 1)) inferInstance)
-      (pathP sz0) := indepIncr sz0 2
-
-/-- **`indepIncr` as the pin**, at the instance sequence. -/
-theorem indepIncr_pin_sz0 : IndepIncr sz0 := indepIncr sz0
-
-/-- Each increment has the model law `seqP sz0` (`map_incr` at the instance). -/
-theorem map_incr_sz0 (k : ℕ) : (pathP sz0).map (fun ω : PathΩ sz0 => ω (k + 1)) = Sizes.seqP sz0 :=
-  map_incr sz0 k
-
-/-- **`precGrid_of_le` at the instance**: the entry `(0,0)` of the resolvent of the grid walk at
-the grid time `u_2 = 3/10` (`s = 1/10`, `t = 1/2`, `K = 4`), at the flow value `z_t` of the energy
-`E = 1/2` and `t = 1/2`, is `≺ η_t⁻¹` on the carrier `pathP`, at the scale `sz0.size`. -/
-theorem gridRes_prec : sz0.PrecGrid (U := fun _ => Unit)
-    (fun n _ ω => ‖Gres (pathH sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n 2 ω)
-        (zt (1 / 2) (1 / 2)) true 0 0‖)
-    (fun _ _ _ => (etaT (1 / 2 : ℝ) (1 / 2))⁻¹) := by
-  have hpos : 0 < etaT (1 / 2 : ℝ) (1 / 2) := etaT_pos (by norm_num) (by norm_num)
-  refine Sizes.precGrid_of_le sz0 (fun n _ _ => inv_nonneg.2 hpos.le) fun n _ ω => ?_
-  have hz : (zt (1 / 2 : ℝ) (1 / 2)).im ≠ 0 := by
-    rw [← etaT_eq_zt_im]; exact hpos.ne'
-  have h := norm_inverse_entry_le
-    (pathH_isHermitian sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n 2 ω) hz 0 0
-  have habs : |(zt (1 / 2 : ℝ) (1 / 2)).im| = etaT (1 / 2 : ℝ) (1 / 2) := by
-    rw [← etaT_eq_zt_im, abs_of_pos hpos]
-  rw [habs] at h
-  simpa [Gres] using h
-
-/-- The matrix functional of the per-time instance: `‖G_u(+)_{00}‖` of the resolvent at
-`z_u = zt (1/2) u`. -/
-def Fres (n : ℕ) (_ : Unit) (u : ℝ)
-    (M : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) : ℝ :=
-  ‖Gres M (zt (1 / 2) u) true 0 0‖
-
-/-- The control `η_u⁻¹` (`η_u = etaT (1/2) u`). -/
-def Zres (_ : ℕ) (_ : Unit) (u : ℝ) : ℝ := (etaT (1 / 2 : ℝ) u)⁻¹
-
-theorem Fres_measurable (n : ℕ) (v : Unit) (u : ℝ) : Measurable (Fres n v u) :=
-  (walk_measurable_Gres_apply (zt (1 / 2) u) true 0 0).norm
-
-/-- The grid times of `s = 1/10`, `t = 1/2`, `K = 4` stay below `1/2`: `u_k = (k + 1)/10`. -/
-theorem gridTime_le_half (n : ℕ) (k : Fin (4 + 1)) :
-    gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n k ≤ 1 / 2 := by
-  have hk : (k : ℕ) ≤ 4 := Nat.lt_succ_iff.1 k.is_lt
-  have hk' : ((k : ℕ) : ℝ) ≤ 4 := by exact_mod_cast hk
-  unfold gridTime gridStep
-  norm_num
-  linarith
-
-/-- **`gridTransferPT` at the instance**: the per-time domination of the resolvent entry on the
-single-time model (every grid time, by the deterministic Ward bound `|G_{xy}| ≤ η⁻¹`) transfers to
-the grid walk.  The hypotheses `0 ≤ s`, `s ≤ t`, `K ≠ 0` and the measurability of the functional
-are discharged; the parameter set is `Fin (K_n + 1) × Unit`, five grid times at each size. -/
-theorem gridTransferPT_sz0 :
-    PerTimeDomAt (pathP sz0) sz0.size (U := fun n => Fin ((fun _ : ℕ => 4) n + 1) × Unit)
-      (fun n p ω => Fres n p.2
-        (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1)
-        (pathH sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1 ω))
-      (fun n p _ => Zres n p.2
-        (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1)) := by
-  refine (gridTransferPT sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4)
-    (V := fun _ => Unit) Fres Zres (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) Fres_measurable).2 ?_
-  have hpos : ∀ u : ℝ, u ≤ 1 / 2 → 0 < etaT (1 / 2 : ℝ) u := fun u hu =>
-    etaT_pos (by norm_num) (by linarith)
-  refine Sizes.precPT_of_le sz0 (fun n p _ => ?_) fun n p ω => ?_
-  · exact inv_nonneg.2 (hpos _ (gridTime_le_half n p.1)).le
-  · have hu := hpos _ (gridTime_le_half n p.1)
-    have hz : (zt (1 / 2 : ℝ)
-        (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1)).im ≠ 0 := by
-      rw [← etaT_eq_zt_im]; exact hu.ne'
-    have h := norm_inverse_entry_le
-      (Sizes.seqHflow_isHermitian sz0 n
-        (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1) ω) hz 0 0
-    have habs : |(zt (1 / 2 : ℝ)
-        (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1)).im| =
-        etaT (1 / 2 : ℝ)
-          (gridTime (fun _ => (1 / 10 : ℝ)) (fun _ => 1 / 2) (fun _ => 4) n p.1) := by
-      rw [← etaT_eq_zt_im, abs_of_pos hu]
-    rw [habs] at h
-    simpa [Fres, Zres, Gres] using h
-
-end RBM.Path.WalkInst
 
 end

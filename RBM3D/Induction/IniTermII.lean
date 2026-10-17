@@ -74,13 +74,6 @@ private theorem iniTermII_PD_nonneg (x : Zd d L) : 0 ≤ iniTermII_PD d L x := b
 private theorem iniTermII_PI_nonneg (x : Zd d L) : 0 ≤ iniTermII_PI d L x := by
   unfold iniTermII_PI; positivity
 
-private theorem iniTermII_PI_pos (x : Zd d L) : 0 < iniTermII_PI d L x := by
-  unfold iniTermII_PI; positivity
-
-private theorem iniTermII_PI_le_one (x : Zd d L) : iniTermII_PI d L x ≤ 1 := by
-  unfold iniTermII_PI
-  exact inv_le_one_of_one_le₀ (one_le_pow₀ (by have : (0:ℝ) ≤ ((zdistInf d L x : ℕ) : ℝ) := Nat.cast_nonneg _; linarith))
-
 private theorem iniTermII_PD_le_PI (x : Zd d L) : iniTermII_PD d L x ≤ iniTermII_PI d L x := by
   unfold iniTermII_PD iniTermII_PI
   have h : ((zdistInf d L x : ℕ) : ℝ) ≤ ((zdistD d L x : ℕ) : ℝ) := by
@@ -123,10 +116,6 @@ private theorem iniTermII_zdistD_sub_comm (a b : Zd d L) :
 private theorem iniTermII_PD_sub_comm (a b : Zd d L) :
     iniTermII_PD d L (a - b) = iniTermII_PD d L (b - a) := by
   unfold iniTermII_PD; rw [iniTermII_zdistD_sub_comm]
-
-private theorem iniTermII_PI_sub_comm (a b : Zd d L) :
-    iniTermII_PI d L (a - b) = iniTermII_PI d L (b - a) := by
-  unfold iniTermII_PI; rw [iniTermII_zdistInf_sub_comm]
 
 private theorem iniTermII_zdistInf_add_le (x y : Zd d L) :
     zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
@@ -1734,71 +1723,3 @@ end RBM.Gauss.Sizes
 * `iniTermII_concl_inst`: target 3 at `(szB, zB, 15/16, 31/32)` (the merged data of `inst_iniTermII`); the stochastic premise `STDecay`
   at `s` stays a hypothesis (another gate's pin);
 * `inst_iniTermII_proved`: `inst_iniTermII (stIniTermII_holds 3)` (`Step5Pins.lean:980`) with the pin proved. -/
-
-namespace RBM.Gauss.Step5Inst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.Step34Inst Filter
-
-private theorem iniTermII_inst_im : (1 / 2 : ℝ) ≤ (mE 1).im := by
-  rw [mE_im]
-  have h : (1 : ℝ) ≤ Real.sqrt 3 := Real.one_le_sqrt.mpr (by norm_num)
-  have h3 : (4 : ℝ) - 1 ^ 2 = 3 := by norm_num
-  rw [h3]
-  linarith
-
-/-- **Target 2 (`σ₁ ≠ σ₂`), instantiated**: `d = 3`, `L = 4`, `g = 1`, `W = 2`, `D = 2`, `E = 1`, `s = 15/16`, `u = 31/32`,
-`σ = (+,-)`, the nonzero tensor `X_b = W^{-d} 𝒯_s(|b₁-b₂|) + W^{-D}`. -/
-theorem iniTermII_core_inst : ∃ C : ℝ, 0 < C ∧ ∀ a : Fin 2 → Zd 3 4,
-    ‖zeroModeSet 3 4 {0} (RBM.Ind.Ugen 3 4 1 1 ![true, false] (15 / 16) (31 / 32)
-      (fun b => (((1 : ℝ) * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (15 / 16) (zdistInf 3 4 (b 0 - b 1) : ℕ)
-        + (2 : ℝ) ^ (-(2 : ℝ)) : ℝ) : ℂ))) a‖ ≤
-      C * 1 * (1 * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (31 / 32) (zdistInf 3 4 (a 0 - a 1) : ℕ) +
-        (1 - 15 / 16) / (1 - 31 / 32) * (2 : ℝ) ^ (-(2 : ℝ))) := by
-  obtain ⟨C, hC, H⟩ := iniTermII_core 3 1 (1 / 2) (by norm_num) one_pos (by norm_num)
-  refine ⟨C, hC, fun a => ?_⟩
-  refine H 4 (by norm_num) 1 2 2 1 (15 / 16) (31 / 32) 1 1 one_pos le_rfl two_pos (by norm_num)
-    iniTermII_inst_im (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    ![true, false] (by simp) _ ?_ a
-  intro b
-  have h0 : 0 ≤ (1 : ℝ) * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (15 / 16) (zdistInf 3 4 (b 0 - b 1) : ℕ)
-      + (2 : ℝ) ^ (-(2 : ℝ)) := by
-    have := tailT_nonneg (d := 3) (L := 4) (g := 1) (t := 15 / 16) (Nat.cast_nonneg (zdistInf 3 4 (b 0 - b 1)))
-    positivity
-  rw [Complex.norm_real, Real.norm_of_nonneg h0]
-  exact le_of_eq (by ring)
-
-/-- **Target 2 (`σ₁ = σ₂`), instantiated** at the same data with `σ = (+,+)`. -/
-theorem iniTermII_core_same_inst : ∃ C : ℝ, 0 < C ∧ ∀ a : Fin 2 → Zd 3 4,
-    ‖RBM.Ind.Ugen 3 4 1 1 ![true, true] (15 / 16) (31 / 32)
-      (fun b => (((1 : ℝ) * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (15 / 16) (zdistInf 3 4 (b 0 - b 1) : ℕ)
-        + (2 : ℝ) ^ (-(2 : ℝ)) : ℝ) : ℂ)) a‖ ≤
-      C * 1 * (1 * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (31 / 32) (zdistInf 3 4 (a 0 - a 1) : ℕ) +
-        (2 : ℝ) ^ (-(2 : ℝ))) := by
-  obtain ⟨C, hC, H⟩ := iniTermII_core_same 3 1 (1 / 2) (by norm_num) one_pos (by norm_num)
-  refine ⟨C, hC, fun a => ?_⟩
-  refine H 4 (by norm_num) 1 2 2 1 (15 / 16) (31 / 32) 1 1 one_pos le_rfl two_pos (by norm_num)
-    iniTermII_inst_im (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    ![true, true] (by simp) _ ?_ a
-  intro b
-  have h0 : 0 ≤ (1 : ℝ) * ((2 : ℝ) ^ 3)⁻¹ * tailT 3 4 1 (15 / 16) (zdistInf 3 4 (b 0 - b 1) : ℕ)
-      + (2 : ℝ) ^ (-(2 : ℝ)) := by
-    have := tailT_nonneg (d := 3) (L := 4) (g := 1) (t := 15 / 16) (Nat.cast_nonneg (zdistInf 3 4 (b 0 - b 1)))
-    positivity
-  rw [Complex.norm_real, Real.norm_of_nonneg h0]
-  exact le_of_eq (by ring)
-
-/-- **Target 3, instantiated** at `(szB, zB, 15/16, 31/32)` (`L = 4`, `W_n = n + 4`, `ilambda = 1`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`;
-`1/64 ≤ 1-t = 1/32 ≤ 1-s = 1/16 ≤ 1/16`); the premise `STDecay` at `s` is another gate's pin. -/
-theorem iniTermII_concl_inst (hDec : STDecay szB (STflowE zB) (fun _ => 15 / 16)) :
-    STIniTermConcl szB {0} STSigMixed (STflowE zB) (fun _ => 15 / 16) (fun _ => 31 / 32) ∧
-      STIniTermConcl szB ∅ STSigSame (STflowE zB) (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  iniTermII_concl (d := 3) (by norm_num) szB (κ := 1 / 10) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num)
-    flow_zB (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_reg5II hDec
-
-/-- **Target 1, instantiated**: the instance `inst_iniTermII` of `Step5Pins.lean:980` with the pin proved. -/
-theorem inst_iniTermII_proved (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIng5Concl (fun sz E s t => STIniTermConcl sz {0} STSigMixed E s t ∧ STIniTermConcl sz ∅ STSigSame E s t)
-      szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_iniTermII (stIniTermII_holds 3) Cd hCd
-
-end RBM.Gauss.Step5Inst

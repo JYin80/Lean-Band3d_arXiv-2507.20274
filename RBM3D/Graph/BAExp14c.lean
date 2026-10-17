@@ -797,25 +797,6 @@ theorem baFoldLeafT_congr : ∀ q q' : BAPGraph (Fin 2),
   rw [← h1 d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω a b]
   simp only [h]
 
-/-- **Target 4, the class refines L4d2b's** (`T2464_foldT_weaken`): the weight `t ρ` has the `ℓ¹` bounds of `ρ` (`0 ≤ t < 1`). -/
-theorem baFoldLeafT_fold : ∀ q : BAPGraph (Fin 2), BAFoldLeafT q → BAFoldLeaf q := by
-  rintro q ⟨σ, e, ρ, h1, h2⟩
-  refine ⟨σ, e, fun d sz z n t a b c₁ c₂ c₃ c₄ => (t : ℂ) * ρ d sz z n t a b c₁ c₂ c₃ c₄, h1, ?_⟩
-  intro d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hf
-  obtain ⟨Cρ, hC⟩ := h2 d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hf
-  refine ⟨Cρ, ?_⟩
-  filter_upwards [hC] with n hn t ht0 ht a b
-  obtain ⟨ht1, -⟩ := BAS3Close_data sz hf n ht0 ht
-  obtain ⟨hr, hc⟩ := hn t ht0 ht a b
-  have hnorm : ∀ c₁ c₂ c₃ c₄, ‖(t : ℂ) * ρ d sz z n t a b c₁ c₂ c₃ c₄‖ ≤ ‖ρ d sz z n t a b c₁ c₂ c₃ c₄‖ := by
-    intro c₁ c₂ c₃ c₄
-    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
-    exact mul_le_of_le_one_left (norm_nonneg _) ht1.le
-  exact ⟨fun c₁ => (Finset.sum_le_sum fun c₂ _ => Finset.sum_le_sum fun c₃ _ => Finset.sum_le_sum fun c₄ _ =>
-      hnorm c₁ c₂ c₃ c₄).trans (hr c₁),
-    fun c₄ => (Finset.sum_le_sum fun c₁ _ => Finset.sum_le_sum fun c₂ _ => Finset.sum_le_sum fun c₃ _ =>
-      hnorm c₁ c₂ c₃ c₄).trans (hc c₄)⟩
-
 /-- The generic reduction of L4d2b (`BAS3Close_fold_gen`) with one factor `t` kept outside the weight: the weight `BAS3Close_rho (2 + qq)`
 is `t · BAS3Close_rho (1 + qq)`. -/
 private theorem BAExp14c_foldT_gen (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : ℕ) (Zk Nk : BAS3Close_Kern)

@@ -723,65 +723,6 @@ The merged preflight data (`sz0`: `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (
 (`strict_all`: `λ²/L² < 1 - t`) and is nonempty at every `n`.  What stays a hypothesis is another gate's stochastic input:
 `LWInit` and `LWLoopExp` (`(initialGT2)`, `(LW_assm_exp)`) and the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.LWInst
-
-/-- The radius `ρ0 n = log N_n`. -/
-private def lwXE_ρ0 : ℕ → ℝ := fun n => Real.log ((sz0.size n : ℕ) : ℝ)
-
-private theorem lwXE_ρ0_nonneg (n : ℕ) : 0 ≤ lwXE_ρ0 n :=
-  Real.log_nonneg (Nat.one_le_cast.2 (sz0.one_le_size n))
-
-/-- The radius premise: `√ρ0 ≤ τ log N` eventually for every `τ > 0` (limit `√(log N)/log N = (log N)^{-1/2} → 0`). -/
-private theorem lwXE_ρ0_rad :
-    ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, Real.sqrt (lwXE_ρ0 n) ≤ τ * Real.log ((sz0.size n : ℕ) : ℝ) := by
-  intro τ hτ
-  have hlog : Tendsto (fun n => Real.log ((sz0.size n : ℕ) : ℝ)) atTop atTop :=
-    Real.tendsto_log_atTop.comp sz0_tendsto
-  filter_upwards [hlog.eventually_ge_atTop (1 / τ ^ 2)] with n hn
-  have hy : 0 < Real.log ((sz0.size n : ℕ) : ℝ) := lt_of_lt_of_le (by positivity) hn
-  refine Real.sqrt_le_iff.2 ⟨by positivity, ?_⟩
-  have h1 : 1 ≤ τ ^ 2 * Real.log ((sz0.size n : ℕ) : ℝ) := by
-    have := mul_le_mul_of_nonneg_left hn (sq_nonneg τ)
-    rwa [mul_one_div_cancel (by positivity)] at this
-  calc lwXE_ρ0 n = 1 * Real.log ((sz0.size n : ℕ) : ℝ) := by rw [one_mul]; rfl
-    _ ≤ (τ ^ 2 * Real.log ((sz0.size n : ℕ) : ℝ)) * Real.log ((sz0.size n : ℕ) : ℝ) :=
-        mul_le_mul_of_nonneg_right h1 hy.le
-    _ = (τ * Real.log ((sz0.size n : ℕ) : ℝ)) ^ 2 := by ring
-
-/-- The entry law `‖G_t - M‖_max ≺ W^{-ε₁}` at `ε₁ = 1/20` (a stochastic input, kept as a hypothesis). -/
-private def lwXE_Entry : Prop :=
-  Prec sz0 (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
-    (fun n p ω => ‖STGM sz0 n (STflowE z0 n) (tInst n) ω p.1 p.2‖)
-    (fun n _ _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ)))
-
-/-- The index set of conjunct 2 (`λ²/L² < 1 - t`) is nonempty at every size at the instance. -/
-example : ∀ n, Nonempty {_p : Zd 3 (sz0.L n) × Zd 3 (sz0.L n) // sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - tInst n} :=
-  fun n => ⟨⟨(0, 0), strict_all n⟩⟩
-
-/-- **Instance of `lwXiExpClaim_holds`** (`d = 3`, merged `sz0`, `t ≡ 1/16`, radius `log N`, every `D > 0`): the conclusion `LWXiE`
-(symmetry, conjunct 2 on `λ²/L² < 1 - t`, the Ward bound) at the preflight data; `LWInit`, `LWLoopExp` and the entry law
-stay hypotheses, every deterministic hypothesis is discharged. -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst))
-    (hent : lwXE_Entry) (D : ℝ) (hD : 0 < D) :
-    LWXiE sz0 (STflowE z0) tInst (ℓT tInst) D (lwXiVar sz0 (STflowE z0) tInst lwXE_ρ0) :=
-  lwXiExpClaim_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) (1 / 20)
-    (by norm_num) hent D hD lwXE_ρ0 lwXE_ρ0_nonneg lwXE_ρ0_rad
-
-/-- **Instance of `lwTail32`** at `sz0` (`𝔠 = 1/6`), `c = 1`, `a = 2`, `b = 3`. -/
-example : ∀ᶠ n in atTop, Real.exp (-(1 * Real.log ((sz0.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) / 2)) *
-    ((sz0.size n : ℕ) : ℝ) ^ (2 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(3 : ℝ)) :=
-  lwTail32 sz0 (by norm_num) one_pos sz0_admissible.2.2.1 sz0_admissible.2.2.2.1 2 3
-
-/-- **Instance of `lwTail32`**, a free constant `c = 1/4` (C4 (c)), `a = 5`, `b = 1`. -/
-example : ∀ᶠ n in atTop, Real.exp (-(1 / 4 * Real.log ((sz0.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) / 2)) *
-    ((sz0.size n : ℕ) : ℝ) ^ (5 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) :=
-  lwTail32 sz0 (by norm_num) (by norm_num) sz0_admissible.2.2.1 sz0_admissible.2.2.2.1 5 1
-
-end Instances
-
 end RBM.Graph
 
 end

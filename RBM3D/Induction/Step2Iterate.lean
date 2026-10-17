@@ -1482,40 +1482,6 @@ end Step2
 
 end RBM.Gauss.Sizes
 
-namespace RBM.Gauss.Sizes
-
-/-- **The probe's form of `STStep2`**: the same statement as the merged `STStep2` with the conclusion
-`STStep2Local ∧ STStep2Avg ∧ STStep2Decay` (the three parts, single-charge averaged law). -/
-def STStep2Parts (d : ℕ) : Prop :=
-  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ lemT (z n)) → (∀ n, s n < t n) →
-          (∀ n, t n ≤ lemT (z n)) →
-          STLK sz (STflowE z) s → STDecay sz (STflowE z) s → STConStInd sz 𝔠d s t →
-          STStep1Loop sz (STflowE z) s t → STStep1Weak sz (STflowE z) s t →
-            STStep2Local sz (STflowE z) s t ∧ STStep2Avg sz (STflowE z) s t ∧
-              STStep2Decay sz Cd (STflowE z) s t
-
-/-- **`STStep2Parts` gives `STStep2`** (the form consumed by Steps 3-4): the same statement with the conclusion
-`STStep2Concl` (the merged bundle of T2049). -/
-theorem ST_step2_concl {d : ℕ} (h : STStep2Parts d) :
-    3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-      ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-        ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-          ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ lemT (z n)) → (∀ n, s n < t n) →
-            (∀ n, t n ≤ lemT (z n)) →
-            STLK sz (STflowE z) s → STDecay sz (STflowE z) s → STConStInd sz 𝔠d s t →
-            STStep1Loop sz (STflowE z) s t → STStep1Weak sz (STflowE z) s t →
-              STStep2Concl sz (STflowE z) s t Cd := by
-  intro hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨Cd, hCd, 𝔠d, h0, h1, hall⟩ := h hd κ ε 𝔡 hκ hε h𝔡
-  refine ⟨Cd, hCd, 𝔠d, h0, h1, fun 𝔠 sz z hflow s t hs hsl hst htT hLK hDec hCon hS1L hS1W => ?_⟩
-  obtain ⟨hL, hA, hD⟩ := hall 𝔠 sz z hflow s t hs hsl hst htT hLK hDec hCon hS1L hS1W
-  exact ST_concl_of_step2 sz hL hA hD
-
-end RBM.Gauss.Sizes
-
 /-! ## 12.2 The general-`n` loop dynamics shared by Steps 2-4: `Sol_CalL` and `lem:DIfREP` on the grid
 
 The paper states `Sol_CalL` (`(int_K-L_ST)`, `3_5:134`) and `lem:DIfREP` (`(aaswtghh)`, `(alu9_STime)`,
@@ -1539,24 +1505,11 @@ section MatrixN
 
 variable {d : ℕ} (sz : Sizes d)
 
-theorem STLIM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) :
-    STLIM sz n E τ (sz.seqHflow n τ ω) I = STLI sz n E τ ω I := rfl
-
-theorem STLKIM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) :
-    STLKIM sz n E τ (sz.seqHflow n τ ω) I = STLKI sz n E τ ω I := rfl
-
-theorem STksimLKM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (l : ℕ) (I : LoopIdx (Zd d (sz.L n))) :
-    STksimLKM sz n E τ (sz.seqHflow n τ ω) l I = STksimLK sz n E τ ω l I := rfl
-
 theorem STelklkM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) :
     STelklkM sz n E τ (sz.seqHflow n τ ω) I = STelklk sz n E τ ω I := rfl
 
 theorem STegtM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) :
     STegtM sz n E τ (sz.seqHflow n τ ω) I = STegt sz n E τ ω I := rfl
-
-theorem STeeM_seqHflow (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin m → Bool)
-    (a a' : Fin m → Zd d (sz.L n)) :
-    STeeM sz n E τ (sz.seqHflow n τ ω) σ a a' = STee sz n E τ ω σ a a' := rfl
 
 end MatrixN
 
@@ -1773,14 +1726,6 @@ namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- `ST_step2_of_pins` with `STK2decay`, `STNetLift2`, `STScaleExists` discharged
-(`stK2decay_holds`, `stNetLift2_holds`, `stScaleExists_holds`); the remaining pins are
-`STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridMart`, `STOptL2`, `STLocalAvgOfL2`. -/
-theorem ST_step2_of_pins' {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d)
-    (hMart : STGridMart d) (hOpt : STOptL2 d) (hClos : STLocalAvgOfL2 d) : STStep2 d :=
-  ST_step2_of_pins hNew hLWT hEMe hMart (stK2decay_holds d) (stNetLift2_holds d)
-    (stScaleExists_holds d) hOpt hClos
-
 /-- `ST_step2_of_pinsN` with `STK2decay`, `STNetLift2`, `STScaleExists` discharged; the remaining
 pins are `STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridRepN`, `STOptL2`, `STLocalAvgOfL2`. -/
 theorem ST_step2_of_pinsN' {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d)
@@ -1858,204 +1803,3 @@ the deterministic hypotheses are discharged: `SizeTendsto`, `Bandwidth`, `STFlow
 `STConStInd`, the size data `cB W^{-3} ≤ B ≤ N^{-c}` (`ST_Bdata_holds`), the deterministic `𝒦^{(2)}` bound
 (`ST_K2e_of_flow`), the closure arithmetic `hq` (`ST_hq_of_data`), the scale family (`stScaleExists_holds`).
 What stays a hypothesis of an example is a pin or a stochastic premise of the statement. -/
-
-namespace RBM.Gauss.Step2IterateInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.Step2DefsInst RBM.Path Filter
-
-theorem hs0 : ∀ n, 0 ≤ sInst n := fun _ => le_rfl
-
-theorem hst : ∀ n, sInst n ≤ tInst n := fun n => by simp only [sInst, tInst]; norm_num
-
-theorem tInst_nonneg : ∀ n, 0 ≤ tInst n := fun n => by simp only [tInst]; norm_num
-
-theorem ht1 : ∀ n, tInst n < 1 := fun n => by simp only [tInst]; norm_num
-
-theorem htT : ∀ n, tInst n ≤ lemT (z0 n) := fun n => sixteenth_le_lemT n
-
-/-- **`ST_Bdata_holds`, instantiated**: `cB W^{-3} ≤ W^{-3} B_{u,0} ≤ N^{-c}` for `u ∈ [0, 1/16]`,
-`d = 3`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, the data `(sz0, z0)`. -/
-theorem bdata_sz0 :
-    ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ tInst n →
-      cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n u ∧
-        sz0.Bctl n u ≤ ((sz0.size n : ℕ) : ℝ) ^ (-c) := by
-  obtain ⟨cB, hcB, hall⟩ := ST_Bdata_holds (by norm_num : 0 < 3) (1 / 10) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨c, hc, hall'⟩ := hall (1 / 6)
-  exact ⟨cB, c, hcB, hc, hall' sz0 z0 flow_z0 tInst tInst_nonneg htT⟩
-
-noncomputable def bdata_cB : ℝ := bdata_sz0.choose
-noncomputable def bdata_c : ℝ := bdata_sz0.choose_spec.choose
-
-theorem bdata_spec : 0 < bdata_cB ∧ 0 < bdata_c ∧ ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ tInst n →
-    bdata_cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n u ∧
-      sz0.Bctl n u ≤ ((sz0.size n : ℕ) : ℝ) ^ (-bdata_c) :=
-  bdata_sz0.choose_spec.choose_spec
-
-/-- The deterministic `𝒦^{(2)}` bound at the data. -/
-theorem k2_sz0 : ∃ C_K : ℝ, 0 < C_K ∧ ∀ᶠ n in atTop, ∀ u D (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd 3 (sz0.L n)), sInst n ≤ u → u ≤ tInst n → 0 ≤ D →
-    ‖STKloop sz0 n (STflowE z0 n) u σ a‖ ≤
-      C_K * STprof sz0 n u D ((sz0.L n : ℕ) : ℝ) (a 0) (a 1) :=
-  ST_K2e_of_flow (by norm_num) (by norm_num) (by norm_num) flow_z0 hs0 ht1
-
-noncomputable def CK0 : ℝ := k2_sz0.choose
-theorem CK0_pos : 0 < CK0 := k2_sz0.choose_spec.1
-theorem hK2_sz0 : ∀ᶠ n in atTop, ∀ u D (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd 3 (sz0.L n)), sInst n ≤ u → u ≤ tInst n → 0 ≤ D →
-    ‖STKloop sz0 n (STflowE z0 n) u σ a‖ ≤
-      CK0 * STprof sz0 n u D ((sz0.L n : ℕ) : ℝ) (a 0) (a 1) :=
-  k2_sz0.choose_spec.2
-
-/-- The closure arithmetic `r^{C_d} b^{1/5} ≤ b^{1/6} ≤ 1` at `C_d = 3·1 + 1`, `𝔠_d = 1/240`. -/
-theorem hq_sz0 : ∀ᶠ n in atTop, ∀ u, sInst n ≤ u → u ≤ tInst n →
-    ((1 - sInst n) / (1 - u)) ^ (3 * (1 : ℝ) + 1) * (sz0.Bctl n u) ^ (1 / 5 : ℝ) ≤
-        (sz0.Bctl n u) ^ (1 / 6 : ℝ) ∧
-      0 ≤ ((1 - sInst n) / (1 - u)) ^ (3 * (1 : ℝ) + 1) * (sz0.Bctl n u) ^ (1 / 5 : ℝ) ∧
-      (sz0.Bctl n u) ^ (1 / 6 : ℝ) ≤ 1 :=
-  ST_hq_of_data sz0 sz0_tendsto hs0 hst ht1 (C := 1) (𝔠d := 1 / 240) one_pos (by norm_num)
-    (by norm_num) bdata_spec.2.2 bdata_spec.2.1 (conStInd_inst (by norm_num))
-
-/-- The scale family at the data (`stScaleExists_holds`). -/
-theorem scale_sz0 : ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz0 sInst tInst Kseq :=
-  stScaleExists_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 6) sz0 z0 flow_z0 sInst tInst hs0 hst htT
-
-noncomputable def Kseq0 : ℕ → ℕ → ℝ → ℝ := scale_sz0.choose
-theorem Kseq0_adm : STScaleAdm sz0 sInst tInst Kseq0 := scale_sz0.choose_spec
-
-/-- `ST_Bdata_holds` at the data. -/
-example : ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ tInst n →
-    cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n u ∧
-      sz0.Bctl n u ≤ ((sz0.size n : ℕ) : ℝ) ^ (-c) := bdata_sz0
-
-/-- `ST_selfImprove_section` at `(sz0, z0, s ≡ 0, t ≡ 1/16)`, the scale `Kseq0 0`, the time section
-`tt ≡ 1/32`, `D = 1`, `C = 1`, `δ₀ = 1/10`, `C₀ = 1`, `𝔠_d = 1/240`.  The pins `STLWT`, `STEMn2Exp`,
-`STNewKLKAt`, `STGridMartAt` and the stochastic premises `STDecay`, `STStep1Weak`, `STScaleInv` stay
-hypotheses; the rest is discharged. -/
-example (hLWT : STLWT 3) (hEMe : STEMn2Exp 3)
-    (hnew : STNewKLKAt 3 (1 / 10) (1 / 10) 1 (1 / 10)) (hmart : STGridMartAt 3 1)
-    (hDec : STDecay sz0 (STflowE z0) sInst) (hS1W : STStep1Weak sz0 (STflowE z0) sInst tInst)
-    (hinv : STScaleInv sz0 (STflowE z0) sInst tInst (Kseq0 0)) :=
-  ST_selfImprove_section sz0 hLWT hEMe (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    flow_z0 hs0 htT (C := 1) (δ₀ := 1 / 10) (C₀ := 1) (𝔠d := 1 / 240) one_pos (by norm_num)
-    (by norm_num) hnew hmart (by norm_num) (by norm_num) hDec (conStInd_inst (by norm_num)) hS1W
-    bdata_spec.1 bdata_spec.2.1 bdata_spec.2.2 (Kseq0 0) (Kseq0_adm.2.1 0) hinv
-    (fun n => ⟨1 / 32, by simp only [sInst, tInst, Set.mem_Icc]; norm_num⟩) 1 one_pos
-
-/-- `ST_iterate` at the data: `C_d = 4`; the one-step pin `hSelf` and the base `hbase` stay hypotheses. -/
-example (hSelf : ∀ Kf : ℕ → ℝ → ℝ, STScaleOk sz0 sInst tInst Kf →
-      STScaleInv sz0 (STflowE z0) sInst tInst Kf →
-      STSelfImp sz0 (3 * 1 + 1) (STflowE z0) sInst tInst Kf)
-    (hbase : STScaleInv sz0 (STflowE z0) sInst tInst (Kseq0 0)) :
-    ∀ m, STScaleInv sz0 (STflowE z0) sInst tInst (Kseq0 m) ∧
-      STSelfImp sz0 (3 * 1 + 1) (STflowE z0) sInst tInst (Kseq0 m) :=
-  ST_iterate sz0 sz0_tendsto hst CK0_pos hSelf hK2_sz0 hq_sz0 Kseq0 Kseq0_adm hbase
-
-/-- `ST_decay_pt` at the data (`(Eq:Gdecay_w)` per time, `C_d = 4`). -/
-example (hSelf : ∀ Kf : ℕ → ℝ → ℝ, STScaleOk sz0 sInst tInst Kf →
-      STScaleInv sz0 (STflowE z0) sInst tInst Kf →
-      STSelfImp sz0 (3 * 1 + 1) (STflowE z0) sInst tInst Kf)
-    (hbase : STScaleInv sz0 (STflowE z0) sInst tInst (Kseq0 0)) :
-    STStep2DecayPT sz0 (3 * 1 + 1) (STflowE z0) sInst tInst :=
-  ST_decay_pt sz0 sz0_tendsto hst CK0_pos hSelf hK2_sz0 hq_sz0 Kseq0 Kseq0_adm hbase
-
-/-- `ST_L2_decay_pt` at the data (`(eq:L2_decay)` per time); `(Eq:Gdecay_w)` per time stays a
-hypothesis. -/
-example (hdec : STStep2DecayPT sz0 (3 * 1 + 1) (STflowE z0) sInst tInst) :
-    STL2decayPT sz0 (STflowE z0) sInst tInst :=
-  ST_L2_decay_pt sz0 sz0_tendsto hst hs0 ht1 CK0_pos (𝔠 := 1 / 6) (by norm_num) sz0_bandwidth
-    hdec hK2_sz0 hq_sz0
-
-/-- `ST_base_inv` at the data: the base of the iteration from `(eq:opt_L2)` (the pin `STOptL2`'s
-conclusion stays a hypothesis). -/
-example (hOpt : PrecPT sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 2 → Bool) ×
-        (Fin 2 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖Lloop sz0 n (STflowE z0 n) (p.1 : ℝ) p.2.1 p.2.2 ω -
-        STKloop sz0 n (STflowE z0 n) (p.1 : ℝ) p.2.1 p.2.2‖)
-      (fun n p _ => sz0.Bctl n (p.1 : ℝ))) :
-    STScaleInv sz0 (STflowE z0) sInst tInst (fun n u => 0) :=
-  ST_base_inv sz0 sz0_tendsto hst CK0_pos hK2_sz0 hOpt
-
-/-- `ST_avgU_of_avg` at the data. -/
-example (h : STStep2Avg sz0 (STflowE z0) sInst tInst) : STAvgU sz0 (STflowE z0) sInst tInst :=
-  ST_avgU_of_avg sz0 h
-
-/-- `ST_concl_of_step2` at the data. -/
-example {Cd : ℝ} (hL : STStep2Local sz0 (STflowE z0) sInst tInst)
-    (hA : STStep2Avg sz0 (STflowE z0) sInst tInst) (hD : STStep2Decay sz0 Cd (STflowE z0) sInst tInst) :
-    STStep2Concl sz0 (STflowE z0) sInst tInst Cd :=
-  ST_concl_of_step2 sz0 hL hA hD
-
-/-- **`ST_step2_of_pins` at the data** (`STStep2 3` at `(sz0, z0, 0, 1/16)`): the nine pins stay
-hypotheses. -/
-example (hNew : STNewKLK 3) (hLWT : STLWT 3) (hEMe : STEMn2Exp 3) (hMart : STGridMart 3)
-    (hK2 : STK2decay 3) (hNet : STNetLift2 3) (hScale : STScaleExists 3) (hOpt : STOptL2 3)
-    (hClos : STLocalAvgOfL2 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_of_pins hNew hLWT hEMe hMart hK2 hNet hScale hOpt hClos)
-
-/-- **`ST_step2_of_pins'` at the data**: only the six remaining pins are hypotheses. -/
-example (hNew : STNewKLK 3) (hLWT : STLWT 3) (hEMe : STEMn2Exp 3) (hMart : STGridMart 3)
-    (hOpt : STOptL2 3) (hClos : STLocalAvgOfL2 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_of_pins' hNew hLWT hEMe hMart hOpt hClos)
-
-/-- **`ST_step2_of_pinsLW'` at the data** (`d = 3`; `LWtermExp` instead of `STLWT`). -/
-example (hNew : STNewKLK 3) (hLW : LWtermExp 3) (hEMe : STEMn2Exp 3) (hRep : STGridRepN 3)
-    (hOpt : STOptL2 3) (hClos : STLocalAvgOfL2 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_of_pinsLW' (by norm_num) hNew hLW hEMe hRep hOpt hClos)
-
-/-- **`ST_step2_of_pinsN` at the data**: the general-`n` grid pin `STGridRepN`. -/
-example (hNew : STNewKLK 3) (hLWT : STLWT 3) (hEMe : STEMn2Exp 3) (hRep : STGridRepN 3)
-    (hK2 : STK2decay 3) (hNet : STNetLift2 3) (hScale : STScaleExists 3) (hOpt : STOptL2 3)
-    (hClos : STLocalAvgOfL2 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_of_pinsN hNew hLWT hEMe hRep hK2 hNet hScale hOpt hClos)
-
-/-- **`ST_step2_concl` at the data**: the probe form `STStep2Parts` gives the bundle. -/
-example (h : STStep2Parts 3) :
-    ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      (STLK sz0 (STflowE z0) sInst → STDecay sz0 (STflowE z0) sInst →
-        STStep1Loop sz0 (STflowE z0) sInst tInst → STStep1Weak sz0 (STflowE z0) sInst tInst →
-        STStep2Concl sz0 (STflowE z0) sInst tInst Cd) :=
-  inst_step2 (ST_step2_concl h)
-
-/-- **`ST_gridMart_of_repN` at the data** (loop length `m = 2` of `STGridRepN 3`, `s ≡ 0`,
-`t ≡ 1/16`, `D = 1`): the grid exponent `C_K`, the grid `K_n = ⌈N^{C_K}⌉`, and the decomposition
-`A_k = A_0 + Δ Σ Drift_j + Rem_k + Mart_k` a.e. for the grid walk. -/
-example (hRep : STGridRepN 3) :
-    ∃ C₀ CK : ℝ, 0 ≤ C₀ ∧ 0 ≤ CK ∧ ∃ K : ℕ → ℕ, (∀ n, K n ≠ 0) ∧
-      (∀ᶠ n in atTop, ((sz0.size n : ℕ) : ℝ) ^ CK ≤ K n) ∧
-      ∃ Mart Rem : ∀ n, ((Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n))) → ℕ → PathΩ sz0 → ℂ,
-        ∀ n i, ∀ᵐ ω ∂(pathP sz0), ∀ k, k ≤ K n →
-          STgA sz0 sInst tInst K n (STflowE z0 n) i.1 i.2 k ω =
-            STgA sz0 sInst tInst K n (STflowE z0 n) i.1 i.2 0 ω +
-              ((gridStep sInst tInst K n : ℝ) : ℂ) *
-                ∑ j ∈ Finset.range k, STgDrift sz0 sInst tInst K n (STflowE z0 n) i.1 i.2 j ω +
-              Rem n i k ω + Mart n i k ω := by
-  obtain ⟨C₀, hC₀, hAt⟩ := ST_gridMart_of_repN hRep
-  obtain ⟨CK, hCK, hK⟩ := hAt (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    (1 / 6) sz0 z0 flow_z0 sInst tInst hs0 hst htT 1 one_pos
-  have hK0 : ∀ n, ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ ≠ 0 := fun n =>
-    (Nat.ceil_pos.2 (Real.rpow_pos_of_pos (lt_of_lt_of_le one_pos (one_le_size_sz0 n)) _)).ne'
-  obtain ⟨Mart, Rem, hid, -, -⟩ := hK (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊) hK0
-    (Eventually.of_forall fun n => Nat.le_ceil _)
-  exact ⟨C₀, CK, hC₀, hCK, fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊, hK0,
-    Eventually.of_forall fun n => Nat.le_ceil _, Mart, Rem, hid⟩
-
-end RBM.Gauss.Step2IterateInst

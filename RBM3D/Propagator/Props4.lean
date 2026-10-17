@@ -257,25 +257,6 @@ theorem Theta0_apply_eq (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1) (a b : Zd
   rw [two_mul, pow_add]
   field_simp
 
-/-- **The rows of `Θ̊` sum to zero.**  Removing the zero mode removes exactly the row
-sum: `Σ_b Θ̊_{ab} = (1-ξ)⁻¹ - L^d · L^{-d}(1-ξ)⁻¹ = 0`. -/
-theorem sum_Theta0_row (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1) (a : Zd d L) :
-    ∑ b : Zd d L, Theta0 d L g ξ a b = 0 := by
-  have hL0 : (L : ℂ) ≠ 0 := by
-    have hpos : L ≠ 0 := by omega
-    exact_mod_cast hpos
-  have hLd : ((L : ℂ)) ^ d ≠ 0 := pow_ne_zero _ hL0
-  rw [Finset.sum_congr rfl fun b _ => Theta0_apply_eq hL hξ a b, Finset.sum_sub_distrib,
-    sum_Theta_row_of_three_le hL hξ a, Finset.sum_const, Finset.card_univ, card_Zd,
-    nsmul_eq_mul, Nat.cast_pow]
-  rw [mul_inv_cancel_left₀ hLd, sub_self]
-
-/-- **The row sum of `Θ` is translation invariant**, hence every first difference
-`Θ(a, · + r) - Θ(a, ·)` sums to zero as well. -/
-theorem sum_Theta_shift {ξ : ℂ} (a r : Zd d L) :
-    ∑ b : Zd d L, Theta d L g ξ a (b + r) = ∑ b : Zd d L, Theta d L g ξ a b :=
-  Fintype.sum_equiv (Equiv.addRight r) _ _ fun _ => rfl
-
 end Property4
 
 end RBM

@@ -770,27 +770,6 @@ theorem KLselfW_reflect {n : ℕ} [NeZero n] (F : Finset (Fin n × Fin n))
   · refine Finset.prod_congr rfl fun e _ => ?_
     exact (hE _ _ _).symm
 
-/-- **The symmetry `g(s) = g(-s)`** (`3-4_properties-k-g.tex:95` of `[YY_25]`'s RBM2D port) for every
-`σ`: `Σ^{(∅)}(t, σ, d₁ + s) = Σ^{(∅)}(t, σ, d₁ - s)` when `s₀ = 0`.  Port of
-`RBM2D/Loop/Kcal.lean:759-777` (`SigmaPi_empty_symm`), with the factor `∏ m` inside `KLSigmaPi`. -/
-theorem KLSigmaPi_empty_symm (hL : 3 ≤ L) {E : ℝ} (hE : |E| < 2) {t : ℝ}
-    (ht : t ∈ Set.Ico (0 : ℝ) 1) {n : ℕ} [NeZero n] (σ : Fin n → Bool) (d₁ : Zd d L)
-    (s : Fin n → Zd d L) (_ : s 0 = 0) :
-    KLSigmaPi d L g (mSigma E) t σ ∅ (fun i => d₁ + s i)
-      = KLSigmaPi d L g (mSigma E) t σ ∅ (fun i => d₁ - s i) := by
-  have hE2 : |E| ≤ 2 := hE.le
-  have hx : (fun i => d₁ - s i) = fun i => (d₁ + d₁) - (d₁ + s i) :=
-    funext fun i => by abel
-  rw [hx]
-  unfold KLSigmaPi
-  congr 1
-  refine Finset.sum_congr rfl fun F _ => ?_
-  refine (KLselfW_reflect d L F _ (d₁ + d₁) (fun e p q => ?_) (fun i => d₁ + s i)).symm
-  have hξ : ‖(t : ℂ) * (mSigma E (σ e.1.1) * mSigma E (σ e.1.2))‖ < 1 :=
-    norm_mul_mSigma_lt_one hE2 ht.1 ht.2 _ _
-  simp only [Matrix.sub_apply, Matrix.one_apply, sub_right_inj, thetaEdge,
-    KLTheta_reflect d L g hL hξ]
-
 end SigmaSymm
 
 /-! ## 7. Kernel-generic successors of `treeEqRhs`, `MLoop`, `IsKLoop` (gate BA)
@@ -812,17 +791,6 @@ noncomputable def treeEqRhsS (S : Matrix (Zd d L) (Zd d L) ℂ) (K : LoopIdx (Zd
     ∑ a : Zd d L, ∑ b : Zd d L,
       K (I.cutGlueL k l a) * S a b * K (I.cutGlueR k l b)
 
-/-- The initial data of the random band matrix model with a free label profile `R`:
-`W^{-(k-1)d} ∏ m(σ_i) · R(σ, a)`.  `MLoop` is the case `R = 1(a₁ = … = a_k)`
-(`KLMLoop_eq_MLoopM`). -/
-noncomputable def MLoopM (m : Bool → ℂ) (R : List Bool → List (Zd d L) → ℂ)
-    (I : LoopIdx (Zd d L)) : ℂ :=
-  (((W : ℂ) ^ d)⁻¹) ^ (I.length - 1) * (I.σ.map m).prod * R I.σ I.a
-
-/-- The label profile `1(a₁ = … = a_k)` of the model `MLoop`. -/
-def KLallEq : List Bool → List (Zd d L) → ℂ :=
-  fun _ a => if ∀ x ∈ a, ∀ y ∈ a, x = y then 1 else 0
-
 /-- `IsKLoop` for an arbitrary kernel `S` and arbitrary initial data `M` (a value on every
 loop index), the one-loop value `m` as before. -/
 def IsKLoopS (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ)
@@ -832,145 +800,8 @@ def IsKLoopS (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx 
   (∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K 0 I = M I) ∧
   (∀ t ∈ T, ∀ (s : Bool) (a : Zd d L), K t ⟨[s], [a]⟩ = m s)
 
-variable (g : ℝ)
-
-/-- `treeEqRhs` is `treeEqRhsS` at the kernel `S^{(B)}`. -/
-theorem treeEqRhs_eq_treeEqRhsS (K : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L)) :
-    treeEqRhs d L W g K I = treeEqRhsS d L W (SB d L g) K I := rfl
-
-/-- `MLoop` is `MLoopM` at the profile `1(a₁ = … = a_k)`. -/
-theorem KLMLoop_eq_MLoopM (m : Bool → ℂ) :
-    MLoop d L W m = MLoopM d L W m (KLallEq d L) := rfl
-
-/-- `IsKLoop` is `IsKLoopS` at the kernel `S^{(B)}` and the initial data `MLoop`. -/
-theorem IsKLoop_iff_IsKLoopS (m : Bool → ℂ) (T : Set ℝ) (K : ℝ → LoopIdx (Zd d L) → ℂ) :
-    IsKLoop d L W g m T K ↔ IsKLoopS d L W (SB d L g) m (MLoopM d L W m (KLallEq d L)) T K :=
-  Iff.rfl
-
 end KernelGeneric
 
 /-! ## 8. The instances: `d = 3`, `L = 5`, `W = 2`, `g = λ = 1/2`, `E = 0`, `t = 9/10` -/
-
-section Instances
-/-- The instance data: `L = 5` (`125` blocks), `W = 2` (`N = (WL)^3 = 1000`), `g = 1/2`
-(`W^{-3/2} ≤ g ≤ 𝔡⁻¹` for `𝔡 ≤ 1/2`), `E = 0` (`m(+) = i`), `t = 9/10`, `κ = gmax = 1`. -/
-noncomputable def KLinstPar : KLPar 1 1 where
-  L := 5
-  W := 2
-  hL := by norm_num
-  hW := by norm_num
-  g := 1 / 2
-  hg0 := by norm_num
-  hg1 := by norm_num
-  E := 0
-  hE := by norm_num
-  t := 9 / 10
-  ht0 := by norm_num
-  ht1 := by norm_num
-
-/-- A nondegenerate loop: charges `(+,-,+)`, labels three distinct blocks of `Z_5^3`. -/
-def KLinstσ : Fin 3 → Bool := ![true, false, true]
-
-def KLinsta : Fin 3 → Zd 3 5 := ![0, 1, 2]
-
-/-- The scales at the instance data: `η_t = 1/10`,
-`B_{t,0} = 514/175 = 2.9371`. -/
-theorem KLinst_scales :
-    Gauss.etaT 0 (9 / 10) = 1 / 10 ∧ Bparam 3 5 (1 / 2) (9 / 10) 0 = 514 / 175 := by
-  refine ⟨?_, ?_⟩
-  · have : mE 0 = Complex.I := by
-      simp only [mE]
-      have h : Real.sqrt (4 - (0 : ℝ) ^ 2) = 2 := by
-        rw [show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
-      rw [h]; push_cast; simp
-    rw [Gauss.etaT, this]; norm_num
-  · norm_num [Bparam, abs_of_pos]
-
-/-- `(Kn2sol)` at the instance data. -/
-theorem KLinst_two :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false], [0, 1]⟩
-      = ((2 : ℂ) ^ 3)⁻¹ * (mSigma 0 true * mSigma 0 false)
-          * Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 false)) 0 1 := by
-  simpa using KLK_two 3 5 (1 / 2) 2 0 (9 / 10) true false 0 1
-
-/-- `(Kn3sol)` at the instance data. -/
-theorem KLinst_three :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩
-      = (((2 : ℂ) ^ 3)⁻¹) ^ 2 * (mSigma 0 true * mSigma 0 false * mSigma 0 true) *
-          ∑ b : Zd 3 5,
-            Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 false)) 0 b *
-              Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (mSigma 0 false * mSigma 0 true)) 1 b *
-                Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (mSigma 0 true * mSigma 0 true)) 2 b := by
-  simpa using KLK_three 3 5 (1 / 2) 2 0 (9 / 10) true false true 0 1 2
-
-/-- `(WI_calK)` at `n = 2`, proved: `s = +`, `a₁ = 0`. -/
-theorem KLinst_ward_two :
-    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false], [0, x]⟩
-      = (2 * Complex.I * (2 : ℂ) ^ 3 * (Gauss.etaT 0 (9 / 10) : ℂ))⁻¹ *
-          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true], [0]⟩ - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[false], [0]⟩) := by
-  simpa using KLward_two 3 5 (1 / 2) (by norm_num) 2 (by norm_num) (E := 0) (by norm_num)
-    (t := 9 / 10) ⟨by norm_num, by norm_num⟩ true 0
-
-/-- `(eq_K-Kpi)` at `n = 4` for `σ = (+,-,+,-)`: three trees, `π ∈ {∅, {(0,2)}, {(1,3)}, …}`. -/
-theorem KLinst_Kpi :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) (KLloopOf 3 5 ![true, false, true, false] ![0, 1, 2, 3])
-      = (((2 : ℂ) ^ 3)⁻¹) ^ 3 * ∑ π ∈ (diagonals 4).powerset,
-          KLKpi 3 5 (1 / 2) (mSigma 0) (9 / 10) ![true, false, true, false] ![0, 1, 2, 3] π := by
-  simpa using KLK_eq_sum_Kpi 3 5 (1 / 2) 2 0 (9 / 10) (n := 4) (by norm_num)
-    ![true, false, true, false] ![0, 1, 2, 3]
-
-/-- `(eq:K-Kpi)`-first stage `K^{(π)} = Σ_δ Σ^{(π)} ∏ Θ` at `n = 4`, `σ = (+,-,+,-)`, `π = ∅`. -/
-theorem KLinst_Kpi_SigmaPi :
-    KLKpi 3 5 (1 / 2) (mSigma 0) (9 / 10) ![true, false, true, false] ![0, 1, 2, 3] ∅
-      = ∑ δ : Fin 4 → Zd 3 5,
-          KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) ![true, false, true, false] ∅ δ *
-            ∏ v, thetaEdge 3 5 (1 / 2) (mSigma 0) (9 / 10) (![true, false, true, false] v)
-              (![true, false, true, false] (v + 1)) (![0, 1, 2, 3] v) (δ v) :=
-  KLKpi_eq_sum_SigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) _ _ ∅
-
-/-- `Σ^{(∅)}` symmetry at `n = 3`, `σ = (+,-,+)`, `d₁ = 1`, `s = (0,1,2)`: the two arguments
-`d₁ + s` and `d₁ - s` are different label vectors. -/
-theorem KLinst_SigmaPi_symm :
-    KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) KLinstσ ∅ (fun i => (1 : Zd 3 5) + KLinsta i)
-      = KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) KLinstσ ∅ (fun i => (1 : Zd 3 5) - KLinsta i) :=
-  KLSigmaPi_empty_symm 3 5 (1 / 2) (by norm_num) (E := 0) (by norm_num)
-    (t := 9 / 10) ⟨by norm_num, by norm_num⟩ KLinstσ 1 KLinsta rfl
-
-/-- `treeEqRhs = treeEqRhsS (SB d L g)` for `K = 𝒦` at the instance data, on the `3`-loop. -/
-theorem KLinst_treeEqRhsS :
-    treeEqRhs 3 5 2 (1 / 2) (fun I => KLK 3 5 (1 / 2) 2 0 (9 / 10) I)
-        (KLloopOf 3 5 KLinstσ KLinsta)
-      = treeEqRhsS 3 5 2 (SB 3 5 (1 / 2)) (fun I => KLK 3 5 (1 / 2) 2 0 (9 / 10) I)
-        (KLloopOf 3 5 KLinstσ KLinsta) :=
-  treeEqRhs_eq_treeEqRhsS 3 5 2 (1 / 2) _ _
-
-/-- `MLoop = MLoopM` at the instance data (`m = mSigma 0`, `W = 2`) on the `3`-loop. -/
-theorem KLinst_MLoopM :
-    MLoop 3 5 2 (mSigma 0) (KLloopOf 3 5 KLinstσ KLinsta)
-      = MLoopM 3 5 2 (mSigma 0) (KLallEq 3 5) (KLloopOf 3 5 KLinstσ KLinsta) :=
-  congrFun (KLMLoop_eq_MLoopM 3 5 2 (mSigma 0)) _
-
-/-- `IsKLoop ↔ IsKLoopS` for the family `𝒦` on `T = [0,1)` at the instance data
-(the left side is `KLisKLoopPin` of ticket KL3, not proved here). -/
-theorem KLinst_IsKLoopS :
-    IsKLoop 3 5 2 (1 / 2) (mSigma 0) (Set.Ico 0 1) (fun t I => KLK 3 5 (1 / 2) 2 0 t I)
-      ↔ IsKLoopS 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoopM 3 5 2 (mSigma 0) (KLallEq 3 5))
-          (Set.Ico 0 1) (fun t I => KLK 3 5 (1 / 2) 2 0 t I) :=
-  IsKLoop_iff_IsKLoopS 3 5 2 (1 / 2) (mSigma 0) _ _
-
-/-- `𝒦^{(1)} = m(σ)` and `𝒦^{(2)} = kTwo` at the instance data. -/
-theorem KLinst_one_two_kTwo :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true], [0]⟩ = mSigma 0 true ∧
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false], [0, 1]⟩
-      = kTwo 3 5 2 (1 / 2) (mSigma 0) (9 / 10) true false 0 1 :=
-  ⟨KLK_one 3 5 (1 / 2) 2 0 (9 / 10) true 0, KLK_two_eq_kTwo 3 5 (1 / 2) 2 0 (9 / 10) true false 0 1⟩
-
-/-- `KLgen` on `KLloopOf` is the tree sum at `n = 4` (alternating charges). -/
-theorem KLinst_gen_loopOf :
-    KLgen 3 5 (1 / 2) 2 (mSigma 0) (9 / 10) (KLloopOf 3 5 ![true, false, true, false] ![0, 1, 2, 3])
-      = KLn 3 5 (1 / 2) 2 (mSigma 0) (9 / 10) 4 ![true, false, true, false] ![0, 1, 2, 3] :=
-  KLgen_loopOf 3 5 (1 / 2) 2 (mSigma 0) (9 / 10) (by norm_num) _ _
-
-end Instances
 
 end RBM.Loop

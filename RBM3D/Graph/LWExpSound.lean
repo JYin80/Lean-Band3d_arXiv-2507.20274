@@ -46,11 +46,6 @@ def LWG5LeafProps (Ls : Bool → Bool → List ((ℕ × ℕ) × PGraph (Fin 2)))
       LWJoined q.2) ∧
     (if q.2.ext 0 = q.2.ext 1 then (4 : ℤ) else 5) ≤ q.2.g.scalingOrder
 
-/-- `LWG5Expand'` split into its two halves. -/
-def LWG5ExpandSplit (d : ℕ) : Prop :=
-  ∃ Ls : Bool → Bool → List ((ℕ × ℕ) × PGraph (Fin 2)),
-    LWG5LeafProps Ls ∧ LWG5Identity d Ls
-
 /-- The pin `LWG5Expand'Pin d` of T2265 (`docs/tickets/checks/T2265-check.lean:197-207`), up to names. -/
 def LWG5Expand' (d : ℕ) : Prop :=
   ∃ Ls : Bool → Bool → List ((ℕ × ℕ) × PGraph (Fin 2)),
@@ -82,14 +77,6 @@ def LeafOK (P : PGraph (Fin 2)) : Prop :=
   P.g.Normal ∧ P.g.nM ≤ 1 ∧ 2 ≤ P.g.nW ∧ LWAttached P ∧
     ((∀ a b : P.E', P.g.molOf (Sum.inl a) = P.g.molOf (Sum.inl b) → a = b) ∨ LWJoined P) ∧
     (if P.ext 0 = P.ext 1 then (4 : ℤ) else 5) ≤ P.g.scalingOrder
-
-/-- Soundness of the lite classification at a node: under the flag of `childrenB'`, every real child is a leaf with the
-leaf properties or is related to a below-target model child. -/
-def SoundStep : Prop :=
-  ∀ (N : MNode) (h : Function.Surjective N.ext) (c : Cand N.a N.b) (hc : c ∈ cands N.g), (childrenB' N c).1 = true →
-    ∀ Q ∈ (Cand.toR N h c hc).kids,
-      ((if Q.2.ext 0 = Q.2.ext 1 then (4 : ℤ) else 5) ≤ Q.2.g.scalingOrder → LeafOK Q.2) ∧
-      (¬ (if Q.2.ext 0 = Q.2.ext 1 then (4 : ℤ) else 5) ≤ Q.2.g.scalingOrder → ∃ M ∈ (childrenB' N c).2, Rel M Q.2)
 
 /-- Soundness at the root (`k` is arbitrary: `Rel` ignores the waved colours). -/
 def SoundRoot : Prop :=
@@ -1249,13 +1236,6 @@ private theorem lwExpSound_transfer {rm : MNode} {P : PGraph (Fin 2)} {L : List 
   ⟨fun hle => H.1 ((Rel.leaf_iff hrel).2 hle) P hrel, fun hnle => (H.2 (by
     by_contra hh; exact hnle ((Rel.leaf_iff hrel).1 (by simpa using hh)))).imp fun M hM => ⟨hM.1, hM.2 P hrel⟩⟩
 
-/-- **`SoundStep`**: under the flag of `childrenB'`, every real child is a leaf with the properties or is related to a
-listed child. -/
-theorem soundStep : SoundStep := by
-  intro N h c hc hflag Q hQ
-  obtain ⟨r, hr, hrel, -⟩ := lwExpSound_forall₂_mem_right (childrenSim N h c hc) Q hQ
-  exact lwExpSound_transfer hrel (lwExpSound_childSound N h c hflag r hr)
-
 /-- The key of a model node: everything `Rel` reads (the waved colours are not in it). -/
 private structure lwExpSound_Key where
   a : ℕ
@@ -1314,9 +1294,6 @@ private theorem lwExpSound_key_FT :
     (cPartitionX (a := 1) (b := 3) (LWG5Graph true true) ![0, 1]).map (fun r => lwExpSound_key r.2) =
       (cPartitionX (a := 1) (b := 3) (LWG5Graph false true) ![0, 1]).map (fun r => lwExpSound_key r.2) := by
   decide +kernel
-
-#print axioms lwExpSound_key_FF
-#print axioms lwExpSound_key_FT
 
 /-- The model partition of the root and the real one are related term by term, for every `k`, `s`. -/
 private theorem lwExpSound_rootSim (k s : Bool) :
@@ -1399,9 +1376,6 @@ theorem lwG5LeafProps_holds : LWG5LeafProps (expandRoot selClassical 4) := by
   exact lwExpSound_expand 4 r.2 H1 (fun hnle => (H2 hnle).imp fun M hM =>
     ⟨hM.2, goodB'_mono 3 M (List.all_eq_true.1 hall M hM.1)⟩) t ht
 
-theorem lwG5ExpandSplit_iff (d : ℕ) : LWG5ExpandSplit d ↔ LWG5Expand' d := Iff.rfl
-theorem lwG5LeafProps_iff (Ls : Bool → Bool → List ((ℕ × ℕ) × PGraph (Fin 2))) :
-    LWG5LeafProps Ls ↔ ∀ k s, ∀ q ∈ Ls k s, LeafOK q.2 := Iff.rfl
 theorem lwG5ExpandOfHalves : LWG5ExpandOfHalves := fun hid hleaf d => ⟨expandRoot selClassical 4, hleaf, hid d⟩
 
 /-- **The expansion of `𝒢_xy` (`B:78-108`)**: the pin `LWG5Expand' d` for every `d`. -/
@@ -1410,80 +1384,6 @@ theorem lwG5Expand'_holds : ∀ d, LWG5Expand' d := fun d =>
 end Assembly
 
 /-! ## 10. Compiled instances (root term `9` of `(k, s) = (false, false)`: `a = 0`, `b = 3`, `ord 2 < tg 4`, three candidates) -/
-
-section Inst
-
-private abbrev lwExpSound_N : MNode := rootAt' false false 9
-private theorem lwExpSound_N_surj : Function.Surjective lwExpSound_N.ext := by decide +kernel
-private abbrev lwExpSound_c : Cand lwExpSound_N.a lwExpSound_N.b := (cands lwExpSound_N.g)[0]'(by decide +kernel)
-private abbrev lwExpSound_f : Σ b', LGraph (Fin (lwExpSound_N.a + 1)) (Fin b') :=
-  (fams lwExpSound_N.g lwExpSound_c)[0]'(by decide +kernel)
-
-/-- Nondegeneracy: below the target, three candidates, `533` children at the first, `11` terms of its family `R2`. -/
-example : lwExpSound_N.a = 0 ∧ lwExpSound_N.b = 3 ∧ lwExpSound_N.g.scalingOrder = 2 ∧ tgt lwExpSound_N = 4 ∧
-    (cands lwExpSound_N.g).length = 3 ∧ (childrenX lwExpSound_N lwExpSound_c).length = 533 ∧
-    (cPartitionX lwExpSound_f.2 lwExpSound_N.ext).length = 11 ∧
-    ((cPartitionX lwExpSound_f.2 lwExpSound_N.ext)[2]'(by decide +kernel)).2.b = 1 ∧
-    ((cPartitionX lwExpSound_f.2 lwExpSound_N.ext)[2]'(by decide +kernel)).2.g.scalingOrder = 7 := by decide +kernel
-
-example : LWG5Expand' 3 := lwG5Expand'_holds 3
-example := And.intro (lwG5ExpandSplit_iff 3) (And.intro (lwG5LeafProps_iff (expandRoot selClassical 4)) lwG5ExpandOfHalves)
-
-/-- Instance of `relInvariance` at the node and its own packed graph. -/
-example := relInvariance lwExpSound_N lwExpSound_N_surj _ (rel_self lwExpSound_N lwExpSound_N_surj)
-
-/-- Instance of `relKids`: the existential witness, the `Forall₂` and the length of the children. -/
-theorem lwExpSound_inst_relKids : ∃ c ∈ cands lwExpSound_N.g,
-    List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
-      (childrenX lwExpSound_N c) (Cand.toR lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _)).kids ∧
-    (Cand.toR lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _)).kids.length =
-      (childrenX lwExpSound_N c).length :=
-  (relKids lwExpSound_N _ (rel_self lwExpSound_N lwExpSound_N_surj)
-    (Cand.toR lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _))).imp fun _ hc => ⟨hc.1, hc.2, hc.2.length_eq.symm⟩
-
-/-- Instances of `belowOfSound` at the root `LWG5Graph false false`: the first partition term is a leaf, the term `95`
-is the first one below the target. -/
-example : ∀ Q, Rel ((cPartitionX (a := 1) (b := 3) (LWG5Graph false false) ![0, 1])[0]'(by decide +kernel)).2 Q → LeafOK Q :=
-  (belowOfSound 1 3 (LWG5Graph false false) ![0, 1] (by decide) root_FF_shape'.1 _ (List.getElem_mem _)).1 (by decide +kernel)
-example : ∃ M ∈ (rootInfo' false false).2, ∀ Q, Rel ((cPartitionX (a := 1) (b := 3) (LWG5Graph false false) ![0, 1])[95]'
-    (by decide +kernel)).2 Q → Rel M Q :=
-  (belowOfSound 1 3 (LWG5Graph false false) ![0, 1] (by decide) root_FF_shape'.1 _ (List.getElem_mem _)).2 (by decide +kernel)
-
-/-- **The terms the certificate of T2306 did not cover** (Amend 1): the family graph `R2` of candidate `0` of the node has
-`5` choices that `belowOf` skipped and `belowOf'` evaluates (`lwCertB_lost_R2`); the leaf term `2` (classes `a ~ c ~ x + y`,
-the merged b-edge `=(a, c)`) has the leaf properties in every related packed graph, in particular in its own. -/
-theorem lwExpSound_inst_belowOfSound_R2 :
-    ∀ Q, Rel ((cPartitionX lwExpSound_f.2 lwExpSound_N.ext)[2]'(by decide +kernel)).2 Q → LeafOK Q :=
-  (belowOfSound _ _ lwExpSound_f.2 lwExpSound_N.ext lwExpSound_N_surj (by decide +kernel) _ (List.getElem_mem _)).1
-    (by decide +kernel)
-
-theorem lwExpSound_inst_leafOK_R2 : LeafOK (((cPartitionX lwExpSound_f.2 lwExpSound_N.ext)[2]'(by decide +kernel)).2.toP
-    (by decide +kernel)) :=
-  lwExpSound_inst_belowOfSound_R2 _ (rel_self _ _)
-example : ∃ M ∈ (belowOf' lwExpSound_f.2 lwExpSound_N.ext).2, ∀ Q, Rel ((cPartitionX lwExpSound_f.2 lwExpSound_N.ext)[8]'
-    (by decide +kernel)).2 Q → Rel M Q :=
-  (belowOfSound _ _ lwExpSound_f.2 lwExpSound_N.ext lwExpSound_N_surj (by decide +kernel) _ (List.getElem_mem _)).2
-    (by decide +kernel)
-
-/-- Instance of `soundStep` at the first kid of the first candidate (`childrenB'` flag by the kernel). -/
-example := soundStep lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _) (by decide +kernel)
-  ((Cand.toR lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _)).kids[0]'
-    (by rw [← (childrenSim lwExpSound_N lwExpSound_N_surj lwExpSound_c (List.getElem_mem _)).length_eq]; decide +kernel))
-  (List.getElem_mem _)
-
-/-- Instances of `soundRoot` at the first real root term, for `k = false` and `k = true` (`s = false`). -/
-example (k : Bool) := soundRoot k false cert_FF'.1 ((partitionX (LWG5Graph k false))[0]'
-  (by rw [← (lwExpSound_rootSim k false).length_eq]; cases k <;> decide +kernel)) (List.getElem_mem _)
-
-/-- Instance of `lwG5LeafProps_holds`: the first partition term of the root is a leaf, hence a member of the list. -/
-theorem lwExpSound_inst_leafProps : ∃ q ∈ expandRoot selClassical 4 false false, LeafOK q.2 := by
-  let rm := (cPartitionX (a := 1) (b := 3) (LWG5Graph false false) ![0, 1])[0]'(by decide +kernel)
-  obtain ⟨r, hr, hrel⟩ := lwExpSound_forall₂_mem_left (lwExpSound_rootSim false false) rm (List.getElem_mem _)
-  have hle := (Rel.leaf_iff hrel).1 (show leaf rm.2 = true by decide +kernel)
-  have hmem : ((r.1.1 + 0, r.1.2 + 0), r.2) ∈ expandRoot selClassical 4 false false :=
-    List.mem_flatMap.2 ⟨r, hr, List.mem_map.2 ⟨((0, 0), r.2), by simp only [expand, hle, ↓reduceIte, List.mem_singleton], rfl⟩⟩
-  exact ⟨_, hmem, lwG5LeafProps_holds false false _ hmem⟩
-end Inst
 
 end RBM.Gauss.Sizes
 

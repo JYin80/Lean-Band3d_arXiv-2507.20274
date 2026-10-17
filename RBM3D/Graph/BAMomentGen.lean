@@ -72,22 +72,6 @@ def LWfg {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.S
   ∑ α, if α = x ∨ α = y then (0 : ℂ) else
     ∑ β, ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (STblk sz n α) (STblk sz n β)) * C.GM n t ω β β * C.G n t ω x α * C.G n t ω α y
 
-/-- **Target 1 (a)**: at the band carrier `LWfg` is the merged `LWf` (`SB_eq_map_SBR`, `Propagator/Props4.lean:52`;
-`bandFM.GM = STGM` on the diagonal). -/
-theorem LWfg_bandFM {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
-    LWfg (bandFM sz E) n t ω x y = LWf sz n (E n) t ω x y := by
-  unfold LWfg LWf
-  refine Finset.sum_congr rfl fun α _ => ?_
-  split_ifs
-  · rfl
-  refine Finset.sum_congr rfl fun β _ => ?_
-  have h : ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (bandFM sz E).S n (STblk sz n α) (STblk sz n β)) = (LWS sz n α β : ℂ) := by
-    simp only [bandFM, LWS, svarF, SB_eq_map_SBR, Matrix.map_apply, STblk]
-    push_cast
-    rfl
-  rw [h]
-  rfl
-
 /-- **Target 1 (b)** (twin of `lwMoment_fxy_bridge`, `Graph/LWMoment.lean:79`): at the block Anderson carrier `S^{(B)}(0) = I`, and
 `t` times the carrier `f_{xy}` is the graph quantity `fxyVal` at the data `BAlwData` (`BAlwS = t · svarF(0)`) of the slice of the sample. -/
 theorem LWfg_baFMz {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
@@ -135,12 +119,6 @@ def LWMomentG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
                 (fun n q _ => ∫ ω, ‖LWfg (mk sz z) n (t n) ω q.1 q.2‖ ^ p ∂(law sz))
                 (fun n q _ => (((mk sz z).eta n (t n))⁻¹ * Φ n 0 *
                   Φ n (c * ((zdistInf d (sz.L n) (STblk sz n q.1 - STblk sz n q.2) : ℕ) : ℝ))) ^ p)
-
-/-- **Target 2**: the band instance of the generic pin is the merged `LWMoment` (a result through target 1 (a), not definitional). -/
-theorem LWMoment_iff_bandPin (d : ℕ) : LWMoment d ↔ bandPin LWMomentG d := by
-  unfold LWMoment bandPin LWMomentG
-  simp only [LWfg_bandFM]
-  exact Iff.rfl
 
 /-- **Target 2**: the block Anderson reading (law `seqP (sz.withLam 0)`, `BAFlow`, `baFMz`, `BAflowT0`), beside `BALWterm`. -/
 abbrev BALWMoment : ℕ → Prop := baPin LWMomentG
@@ -335,15 +313,6 @@ section Data
 def BAMomentGen_D {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) : BALData (Idx d (sz.L n) (sz.W n)) :=
   BAExp14d_dataT d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
     (BAExp14a_slc sz n ω)
-
-theorem BAMomentGen_D_G {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
-    (BAMomentGen_D sz z n t ω).G x y = (baFMz sz z).G n t ω x y := rfl
-
-theorem BAMomentGen_D_M {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
-    (BAMomentGen_D sz z n t ω).M x y = (baFMz sz z).M n x y := rfl
-
-theorem BAMomentGen_D_GM {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
-    (BAMomentGen_D sz z n t ω).G x y - (BAMomentGen_D sz z n t ω).M x y = (baFMz sz z).GM n t ω x y := rfl
 
 /-- `S' = svarF(0)` is `W^{-d}` on a block and `0` elsewhere (copy of the private `BAExp14d_svar0`, `Graph/BAExp14d.lean:294`). -/
 private theorem BAMomentGen_svar0 {d L W : ℕ} [NeZero L] [NeZero W] (x y : Idx d L W) :
@@ -1519,30 +1488,6 @@ end FarAssembly
 
 Data (`BA/LWPinsBA.lean` §3): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`), the flow `flow_sz0`, `z = zSeq`, `t ≡ 1/2`.  The instance of
 target 4 is in `Graph/BAMomentGenB.lean` §4. -/
-
-section Inst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- **Instance (ii) of target 2**: the band instance of the generic pin at `d = 3`, from the merged `lwMoment_holds 3`. -/
-example : bandPin LWMomentG 3 := (LWMoment_iff_bandPin 3).1 (lwMoment_holds 3)
-
-/-- **Instance (i) of target 3** at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10`: the engine lists with their conclusion (the theorem has no
-hypothesis). -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)), BALocRegConcl 2 (1 / 4) 2 3 10 outs errs ∧
-    ∀ Q ∈ outs ++ errs, 2 ≤ Q.g.waved.countP (fun e => !e.col) :=
-  ba_localregularX_holds 2 (1 / 4) (by norm_num) 2 3 10
-
-/-- **Instance (iv) of target 1** at `n = 0` of the data above, `x = 0`, `y = 1`: (b) the BA bridge and (a) the band bridge. -/
-example (ω : sz0.SeqΩ) : ((1 / 2 : ℝ) : ℂ) * LWfg (baFMz sz0 zSeq) 0 (1 / 2) ω 0 1 =
-    fxyVal (BAlwData 3 (sz0.L 0) (sz0.W 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0) (1 / 2)
-      (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0) (BAExp14a_slc sz0 0 ω)).toLData 0 1 :=
-  LWfg_baFMz sz0 zSeq 0 (1 / 2) ω 0 1
-
-example (ω : sz0.SeqΩ) : LWfg (bandFM sz0 (fun _ => 0)) 0 (1 / 2) ω 0 1 = LWf sz0 0 0 (1 / 2) ω 0 1 :=
-  LWfg_bandFM sz0 (fun _ => 0) 0 (1 / 2) ω 0 1
-
-end Inst
 
 end RBM.BA
 

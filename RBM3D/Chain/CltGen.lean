@@ -204,65 +204,6 @@ theorem bandFM_STThg (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) 
   unfold Step2Gen_Theta Theta
   rw [Step2Kern_Mss_band, show (bandFM sz E).S n = SB d (sz.L n) (sz.lam n) from rfl, smul_mul_assoc, one_mul, smul_smul]
 
-/-- Band route of target 8 (`f^{far}`): `STfFarg` at `bandFM` is the merged `STfFar`; hence the conclusions agree. -/
-theorem bandFM_STfFarg (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (s t : ℝ) (σ : Fin 2 → Bool)
-    (a : Fin 2 → Zd d (sz.L n)) (ω : sz.SeqΩ) : STfFarg (bandFM sz E) n s t σ a ω = STfFar sz n (E n) s t σ a ω := by
-  unfold STfFarg STfFar
-  simp only [bandFM_STThg]
-  rfl
-
-theorem bandFM_STCltFarConcl (sz : Sizes d) (E s t : ℕ → ℝ) :
-    STCltFarConclgL (bandFM sz E) (Sizes.seqP sz) s t ↔ STCltFarConcl sz E s t := by
-  unfold STCltFarConclgL STCltFarConcl Prec PrecL
-  simp only [bandFM_STfFarg]
-
-/-- The isolation conclusion over `bandFM` is the band `STCltIsoConcl` (definitional). -/
-theorem bandFM_STCltIsoConcl (sz : Sizes d) (E s t : ℕ → ℝ) :
-    STCltIsoConclgL (bandFM sz E) (Sizes.seqP sz) s ↔ STCltIsoConcl sz E s t := Iff.rfl
-
-/-- `STExpInv` (the band statement, `|E n| < 2`) is `STExpInvgL` at `bandFM sz E`. -/
-theorem bandFM_STExpInv (h : STExpInv d) (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| < 2) :
-    STExpInvgL (bandFM sz E) (Sizes.seqP sz) :=
-  fun n u hu0 hu1 σ a c => h sz n (E n) u (hE n) hu0 hu1 σ a c
-
 /-! ## Instances of the bridges at the band data of `Step5Inst` (`d = 3`, `szCL`, `n = 0`, `s = sCL`, `t = tCL`) -/
-
-section Checks
-open RBM.Gauss.Step5Inst
-
-private theorem cltGen_chk_E (n : ℕ) : |STflowE zCL n| ≤ 1 / 2 := by
-  have hz : 0 < (zCL n).im := by
-    have := szCL_two_le_L n
-    change 0 < (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ / 2
-    positivity
-  exact (abs_lemE_le hz).trans (by simp [zCL])
-
-example : CltRepg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) (fun _ => 0) szCL.lam (STflowE zCL) :=
-  cltRepg_band szCL _
-example : STCltFarConclgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL ↔
-    szCL.STCltFarConcl (STflowE zCL) sCL tCL := bandFM_STCltFarConcl szCL _ sCL tCL
-example : STCltIsoConclgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL ↔
-    szCL.STCltIsoConcl (STflowE zCL) sCL tCL := bandFM_STCltIsoConcl szCL _ sCL tCL
-example (x : Idx 3 (szCL.L 0) (szCL.W 0)) : ∑ y, ‖(bandFM szCL (STflowE zCL)).M 0 x y‖ ^ 2 ≤ 1 :=
-  bandFM_M_le szCL _ (fun n => (cltGen_chk_E n).trans (by norm_num)) 0 x
-example : STThg (bandFM szCL (STflowE zCL)) 0 true false (1 / 2) =
-    Theta 3 (szCL.L 0) (szCL.lam 0) (((1 / 2 : ℝ) : ℂ) * (mSigma (STflowE zCL 0) true * mSigma (STflowE zCL 0) false)) :=
-  bandFM_STThg szCL _ 0 true false (1 / 2)
-example (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (szCL.L 0)) (ω : szCL.SeqΩ) :
-    STfFarg (bandFM szCL (STflowE zCL)) 0 0 (1 / 2) σ a ω = STfFar szCL 0 (STflowE zCL 0) 0 (1 / 2) σ a ω :=
-  bandFM_STfFarg szCL _ 0 0 (1 / 2) σ a ω
-example (h : STExpInv 3) : STExpInvgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) :=
-  bandFM_STExpInv h szCL _ (fun n => (cltGen_chk_E n).trans_lt (by norm_num))
-
-end Checks
-
-#print axioms cltRepg_band
-#print axioms bandFM_M_le
-#print axioms bandFM_STMfarg
-#print axioms bandFM_STThg
-#print axioms bandFM_STfFarg
-#print axioms bandFM_STCltFarConcl
-#print axioms bandFM_STCltIsoConcl
-#print axioms bandFM_STExpInv
 
 end RBM.BA

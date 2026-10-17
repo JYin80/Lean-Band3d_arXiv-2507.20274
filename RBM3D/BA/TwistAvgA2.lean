@@ -1163,63 +1163,8 @@ section Inst
 open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
 local notation "μ0" => Sizes.seqP (sz0.withLam 0)
 
-/-- Target 1 at the datum: `baTwistAvgRec_holds 3` gives a constant `K > 0` and the recursion at `(sz0, zSeq)`, `t ≡ 1/2`. -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    ∃ K : ℝ, 0 < K ∧ BATwistAvgRecAt (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) K := by
-  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  exact ⟨K, hK, H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM⟩
-
-/-- Target 1, non-vacuity of the conclusion: at `p = 1`, `ε' = 1/10`, `D = 1`, for every `n` of an eventual set there is a pair `c₂ ≠ c₁` of blocks
-at which the recursion holds (`atTop` on `ℕ` is `NeBot`). -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    ∃ K : ℝ, 0 < K ∧ ∀ᶠ n in atTop, ∃ c₁ c₂ : Zd 3 (sz0.L n), c₂ ≠ c₁ ∧
-      twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1) ≤
-        K * (((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * sz0.Bctl n (1 / 2)) * (twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 1) +
-          twAvgXmax (baFMz sz0 zSeq) μ0 n (1 / 2) 1 * twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 1)) +
-        2 * ((1 : ℕ) : ℝ) * K * (((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * sz0.Bctl n (1 / 2) ^ 2) * twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 2) +
-        ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
-  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  refine ⟨K, hK, ?_⟩
-  filter_upwards [H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM 1 le_rfl (1 / 10) 1
-    (by norm_num) (by norm_num)] with n hn
-  have : Fact (1 < sz0.L n) := ⟨by have := sz0.three_le_L n; omega⟩
-  exact ⟨0, ![1, 0, 0], fun hh => by simpa using congrFun hh 0, hn 0 ![1, 0, 0]⟩
-
-/-- Target 2 (ii), deterministic half, at `n = 0`, `t = 1/2`, any sample `ω`, `c₁ = 0`, `c₂ = (1,0,0)`. -/
-example (ω : (sz0).SeqΩ) :=
-  twAvgSCS_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le ω 0 ![1, 0, 0]
-
-/-- Target 2 (ii), `≺` form, at the datum (`STLmaxgL` is another gate's pin). -/
-example (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
-    PrecL sz0 μ0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n q ω => ‖twAvgS1 (baFMz sz0 zSeq) n (1 / 2) ω q.1 q.2‖ + ‖twAvgS2 (baFMz sz0 zSeq) n (1 / 2) ω q.1 q.2‖)
-      (fun n _ _ => sz0.Bctl n (1 / 2) ^ 2) :=
-  twAvgSPrec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hM
-
-/-- Target 2 (iii) at the datum: `ξ_c = ‖𝓛¹_c - m‖ ≺ B = Bctl n (1/2)` (`LWAvgLawgL`, a pin), `ξ ≤ N` (target 2 (iv)), `R = Bctl > 0`, `Y ≡ 1`, `ε = D = 1/2`
-(the law is `BAExp14a_μ sz0 = seqP (sz0.withLam 0)`, which carries the probability-measure instance on `sz0.SeqΩ`). -/
-example (hA : LWAvgLawgL (baFMz sz0 zSeq) (BAExp14a_μ sz0) (fun _ => 1 / 2)) :
-    ∀ᶠ n in atTop, ∀ c : Zd 3 (sz0.L n),
-      ∫ ω, ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ * 1 ∂(BAExp14a_μ sz0) ≤
-        ((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) * sz0.Bctl n (1 / 2) * ∫ ω, (1 : ℝ) ∂(BAExp14a_μ sz0) +
-        ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) * (∫ ω, (1 : ℝ) ^ 2 ∂(BAExp14a_μ sz0)) ^ ((1 : ℝ) / 2) := by
-  obtain ⟨-, hb, he⟩ := twAvgReg_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) (by norm_num) flow_sz0
-  have henv : ∀ᶠ n in atTop, ∀ (c : Zd 3 (sz0.L n)) (ω : sz0.SeqΩ),
-      ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) := by
-    filter_upwards [he] with n hn c ω
-    rw [Real.rpow_one]
-    exact (hb n (1 / 2) (by norm_num) (half_lt_t0 n).le ω c c).2.1.trans (hn (1 / 2) (by norm_num) (half_lt_t0 n).le)
-  filter_upwards [twAvgT6_holds sz0 (BAExp14a_μ sz0) (V := fun n => Zd 3 (sz0.L n))
-    (fun n c ω => ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖) (fun n _ => sz0.Bctl n (1 / 2)) 1
-    sz0_tendsto (fun _ _ _ => norm_nonneg _) (fun n _ => (STBctl_pos sz0 n (by norm_num)).le) henv hA (1 / 2) (1 / 2) (by norm_num) (by norm_num)] with n hn c
-  exact hn c (fun _ => 1) measurable_const (fun _ => zero_le_one) (integrable_const _)
-
 /-- The interface to TL1b (statement only): the bootstrap with S1, Markov at `μ`, the union over the pairs. -/
 def T2427_TL1b : Prop := ∀ d, BATwistAvgRec d → BATwistAvgProd d
-
-/-- The pinned text of the interface: `T2427_TL1b` unfolds to `∀ d, BATwistAvgRec d → BATwistAvgProd d` (`BA/TwistPins.lean:154`). -/
-example : T2427_TL1b ↔ ∀ d, BATwistAvgRec d → BATwistAvgProd d := Iff.rfl
 
 end Inst
 

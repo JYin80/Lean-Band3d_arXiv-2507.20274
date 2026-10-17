@@ -195,95 +195,6 @@ section Pins12
 
 open scoped Matrix.Norms.Operator
 
-/-- **`(sum_res_1)` of `lem:sum_decay` at BA** (`A:111-153`), every `n ≥ 2`, `d ≥ 3`, uniform in `g ∈ (0, Λ]`.  The constant
-is `C = m' + 2n` with `m'` least with `2 (1 + C_X)^{n-1} < 4^{m'}`, `C_X` the constant of `baEKXiBall_holds`. -/
-theorem baEKSumDecay1_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecay1 d n Λ κ := by
-  intro hd hn hΛ hκ
-  obtain ⟨CX, hCX, hX⟩ := baEKXiBall_holds d Λ κ hd hΛ hκ
-  obtain ⟨m', hm'⟩ := pow_unbounded_of_one_lt (2 * (1 + CX) ^ (n - 1)) (by norm_num : (1 : ℝ) < 4)
-  have hn2 : (2 : ℝ) ≤ n := by exact_mod_cast hn
-  have hm'0 : (0 : ℝ) ≤ m' := Nat.cast_nonneg m'
-  refine ⟨(m' : ℝ) + 2 * n, by linarith, ?_⟩
-  intro L hL g hg hgΛ W ε D hW1 hε0 hε1 hD hρ s t hs hst ht hWt E m hr σ A hA
-  have : NeZero L := ⟨by omega⟩
-  have hW0 : 0 < W := by linarith
-  have hLge : (1 : ℝ) ≤ L := by exact_mod_cast (by omega : 1 ≤ L)
-  have hL0 : (0 : ℝ) < (L : ℝ) ^ 2 := by positivity
-  have hgt : g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t := by linarith
-  have hgL : g ^ 2 ≤ (L : ℝ) ^ 2 * (1 - t) := by
-    rw [div_le_iff₀ hL0] at hgt; linarith
-  have ht1 : t < 1 := by
-    have : 0 < g ^ 2 / (L : ℝ) ^ 2 := by positivity
-    linarith
-  have hs1 : s < 1 := lt_of_le_of_lt hst ht1
-  have hu : (0 : ℝ) < 1 - t := by linarith
-  have hv : (0 : ℝ) < 1 - s := by linarith
-  set r : ℝ := (g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|) with hrdef
-  set q : ℝ := ellT L g t ^ 2 / ellT L g s ^ 2 with hq
-  set P : ℝ := (1 - s) / (1 - t) with hP
-  set ρ : ℝ := W ^ ε with hρdef
-  have hρ4 : 4 ≤ ρ := hρ
-  have hℓs : 1 ≤ ellT L g s := one_le_ellT hLge
-  have hℓt : ellT L g s ≤ ellT L g t := ellT_mono hg.le hst ht1
-  have hℓs0 : 0 < ellT L g s := by linarith
-  have hr1 : 1 ≤ r := by
-    rw [hrdef, abs_of_pos hu, abs_of_pos hv, le_div_iff₀ (by positivity)]
-    linarith
-  have hq1 : 1 ≤ q := by
-    rw [hq, le_div_iff₀ (by positivity)]
-    have := pow_le_pow_left₀ hℓs0.le hℓt 2
-    linarith
-  have hP0 : 0 ≤ P := div_nonneg hv.le hu.le
-  have hPW : P ≤ W := by
-    have h1 : ((1 - t) / (1 - s))⁻¹ ≤ W := inv_le_of_inv_le₀ hW0 hWt
-    rwa [inv_div] at h1
-  have hP2 : P ≤ 2 * q * r := ek_ratio_le hLge hg.le hst ht1 hgL
-  have hWD : 0 ≤ W ^ (-D) := Real.rpow_nonneg hW0.le _
-  have hAn : 0 ≤ ‖A‖ := norm_nonneg _
-  have hW1' : (1 : ℝ) ≤ W := hW1.le
-  have hn1 : n - 1 + 1 = n := Nat.sub_add_cancel (by omega)
-  have hcast : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
-    rw [Nat.cast_sub (by omega)]; simp
-  -- the absorption of the constants into `W^{Cε}`
-  have habs1 : ρ ^ (m' + 2 * (n - 1)) ≤ W ^ (((m' : ℝ) + 2 * n) * ε) := by
-    have h1 : ρ ^ (m' + 2 * (n - 1)) = W ^ (ε * ((m' + 2 * (n - 1) : ℕ) : ℝ)) := by
-      rw [hρdef, ← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
-    rw [h1]
-    refine Real.rpow_le_rpow_of_exponent_le hW1' ?_
-    push_cast
-    rw [hcast]
-    nlinarith
-  have habs2 : W ^ (-D) * W ^ n ≤ W ^ (-D + ((m' : ℝ) + 2 * n)) := by
-    have h1 : W ^ n ≤ W ^ ((m' : ℝ) + 2 * n) := by
-      rw [← Real.rpow_natCast]
-      exact Real.rpow_le_rpow_of_exponent_le hW1' (by linarith)
-    calc W ^ (-D) * W ^ n ≤ W ^ (-D) * W ^ ((m' : ℝ) + 2 * n) :=
-          mul_le_mul_of_nonneg_left h1 hWD
-      _ = W ^ (-D + ((m' : ℝ) + 2 * n)) := (Real.rpow_add hW0 _ _).symm
-  have hq0 : 0 ≤ q := by linarith
-  have hr0 : 0 ≤ r := by linarith
-  have hpos : 0 ≤ W ^ (((m' : ℝ) + 2 * n) * ε) * q * r ^ n * ‖A‖ + W ^ (-D + ((m' : ℝ) + 2 * n)) := by
-    positivity
-  refine (pi_norm_le_iff_of_nonneg hpos).mpr fun a => ?_
-  have hcore := EKSum_UN_anchor_bound (d := d) (n := n) hr hL hs hst ht1 (by linarith : 1 ≤ ρ) σ A
-    hA hWD ⟨0, by omega⟩ (CX := CX) (Rk := P) hCX.le
-    (fun σ₁ σ₂ Λ' hΛ' R hR hRℓ a ctr F hF =>
-      hX L hL g hg hgΛ E m hr s t hs hst ht1 hgt σ₁ σ₂ Λ' hΛ' R hR hRℓ a ctr F hF)
-    a ((sum_norm_row_le _ (a _)).trans (EKSum_norm_uKer_le hr hs hst ht1 _ _))
-  have hclaim : P * (1 + CX * ρ ^ 2 * r) ^ (n - 1) ≤ ρ ^ (m' + 2 * (n - 1)) * q * r ^ n := by
-    have := ek_arith_res1 hCX.le hρ4 hq1 hr1 hP2 hm'
-    rwa [hn1] at this
-  have hPP : P * P ^ (n - 1) ≤ W ^ n := by
-    rw [← pow_succ', hn1]
-    exact pow_le_pow_left₀ hP0 hPW n
-  calc ‖BAUN d L g E m σ s t A a‖
-      ≤ ‖A‖ * (P * (1 + CX * ρ ^ 2 * r) ^ (n - 1)) + W ^ (-D) * (P * P ^ (n - 1)) := hcore
-    _ ≤ ‖A‖ * (ρ ^ (m' + 2 * (n - 1)) * q * r ^ n) + W ^ (-D) * W ^ n := by
-        gcongr
-    _ ≤ ‖A‖ * (W ^ (((m' : ℝ) + 2 * n) * ε) * q * r ^ n) + W ^ (-D + ((m' : ℝ) + 2 * n)) := by
-        gcongr
-    _ = W ^ (((m' : ℝ) + 2 * n) * ε) * q * r ^ n * ‖A‖ + W ^ (-D + ((m' : ℝ) + 2 * n)) := by ring
-
 /-- **`(sum_res_2_NAL)` of `lem:sum_decay` at BA** (`A:154-158`), every `n ≥ 2`, `d ≥ 3`.  The anchor is an index `k` with
 `σ_k = σ_{k+1}`, whose one-index row sum is bounded by `C_s` of `baEKSameRow_holds` instead of `P`.  The constant is
 `C = m'' + 2n - 2` with `m''` least with `C_s (1 + C_X)^{n-1} < 4^{m''}`. -/
@@ -1898,31 +1809,6 @@ hypothesis is the theorem.  Data: `L = 4`, `g₀ = √t₀ λ ≤ 1/64`, `κ = 1
 `n = 2`, `σ = (+,-)` (`(+,+)` for the non-alternating pin), `s = 0`, `t = 1/2 ≤ 1 - g₀²/L²`, `W = 16`, `ε = 1/2` (`W^ε = 4`),
 `D = 2`, `K = 2` (`L³ = 64 ≤ 16² = W^K`, `log 4 ≤ 4`), `A = δ_0` (`(deccA0)` holds), and for the sum-zero pin
 `A = δ_0 ⊗ (δ_0 - δ_e)`, `e = (1,0,0)` (`(sumAzero)` and `(deccA0)` hold).  No hypothesis is left open. -/
-
-namespace EKSumInst
-
-open RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.BA.FlowPinsInst RBM.BA.EKPinsInst
-
-/-- `baEKSumDecay1_holds` at the flow datum: `n = 2`, `σ = (+,-)`, `A = δ_0`. -/
-theorem inst_baEKSumDecay1 : ∃ C : ℝ, 0 < C ∧
-    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, false] 0 (1 / 2) AI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
-      (ellT (sz0.L 0) gI (1 / 2) ^ 2 / ellT (sz0.L 0) gI 0 ^ 2) *
-        ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ 2 * ‖AI‖ + (16 : ℝ) ^ (-2 + C) :=
-  inst_BAEKSumDecay1 (baEKSumDecay1_holds 3 2 1 (1 / 2))
-
-/-- `baEKSumDecayNAL_holds` at the flow datum: `n = 2`, `σ = (+,+)`, `A = δ_0`. -/
-theorem inst_baEKSumDecayNAL : ∃ C : ℝ, 0 < C ∧
-    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, true] 0 (1 / 2) AI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
-      ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ (2 - 1) * ‖AI‖ + (16 : ℝ) ^ (-2 + C) :=
-  inst_BAEKSumDecayNAL (baEKSumDecayNAL_holds 3 2 1 (1 / 2))
-
-/-- `baEKSumDecay2_holds` at the flow datum: `n = 2`, `σ = (+,-)`, `K = 2`, `A = δ_0 ⊗ (δ_0 - δ_e)`. -/
-theorem inst_baEKSumDecay2 : ∃ C : ℝ, 0 < C ∧
-    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, false] 0 (1 / 2) AzI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
-      ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ 2 * ‖AzI‖ + (16 : ℝ) ^ (-2 + C) :=
-  inst_BAEKSumDecay2 (baEKSumDecay2_holds 3 2 1 (1 / 2))
-
-end EKSumInst
 
 end RBM.BA
 

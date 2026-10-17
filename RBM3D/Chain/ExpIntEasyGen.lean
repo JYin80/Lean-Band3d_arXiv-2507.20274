@@ -355,127 +355,12 @@ end PinsOf
 
 /-! ## 5. The band re-derivations -/
 
-/-- The kernel facts of a band flow at the bulk datum `κm = √(2κ)/2`: the premise `hKer` of the pins at the band class `STEKBandKer`, `gK = sz.lam` (copy of the private
-`Step6KitGen_KerF_band`, `Step6KitGen:1063`). -/
-private theorem ExpIntEasyGen_KerF_band {d : ℕ} : ∀ κ : ℝ, 0 < κ → ∃ κm : ℝ, 0 < κm ∧
-    ∀ (sz : Sizes d) (ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z → (∀ n, κm ≤ ((bandFM sz (STflowE z)).m n).im) ∧
-      STEKBandKer sz (bandFM sz (STflowE z)) sz.lam κm ∧ ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ :=
-  fun κ hκ => ⟨Real.sqrt (2 * κ) / 2, by positivity, fun sz ε 𝔠 𝔡 z hflow =>
-    ⟨fun n => st6_mE_im_ge hκ (st6_flowE_le sz hflow n),
-      ⟨STflowE z, rfl, rfl, fun n => ⟨(st6_flowE_le sz hflow n).trans (by linarith), st6_mE_im_ge hκ (st6_flowE_le sz hflow n)⟩⟩,
-      step34Gen_band_hg hflow.1⟩⟩
-
-/-- **Band `stExpIntIII_holds` re-derived** (`ExpIntEasy:610`) from `stExpIntIIIgL_of` through `STExpIntIII_of_gL` (`Step6Gen:618`): the premises at the band tuple are the merged
-`step5CasesGen_flowFacts_band`, `stek_sumNdecaygL_band` and the band class `STEKBandKer` at `gK = sz.lam`. -/
-theorem stExpIntIII_gen_band (d : ℕ) : STExpIntIII d :=
-  STExpIntIII_of_gL d (stExpIntIIIgL_of (fun sz z => sz.lam) (fun sz => inferInstance) (step5CasesGen_flowFacts_band d)
-    (stek_sumNdecaygL_band d) ExpIntEasyGen_KerF_band)
-
-/-- **Band `stExpIntIV_holds` re-derived** (`ExpIntEasy:618`) from `stExpIntIVgL_of` through `STExpIntIV_of_gL` (`Step6Gen:626`). -/
-theorem stExpIntIV_gen_band (d : ℕ) : STExpIntIV d :=
-  STExpIntIV_of_gL d (stExpIntIVgL_of (fun sz z => sz.lam) (fun sz => inferInstance) (step5CasesGen_flowFacts_band d)
-    (stek_sumNdecaygL_band d) ExpIntEasyGen_KerF_band)
-
 /-! ## 6. Compiled nonempty instances at `d = 3` (regime (iii) `(sz0, z0, 0, 1/16)`, regime (iv) `(szG, zB, 5/8, 3/4)`)
 
 Data (merged, `Step6Pins` §8; `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`).  Discharged: flow, times, regime, admissibility, probability law, flow facts, the kernel pin
 `stek_sumNdecaygL_band` and the band class `STEKBandKer` with its bulk datum `κm = √(2κ)/2`.  What stays a hypothesis is another gate's pin: the drift bounds
 (`STExpDriftHiConclgL`, `STExpDriftLoConclgL`: rows of T2506 and `LWtermEXPG`).  The Duhamel identity along `[s,t]` (`STExpDuhEqgL`) is discharged by the merged
 `stExpDuhamelZ_holds` through `st6_duhEq_of_ping`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- **Target 3, `expIntEasy_kernel_seqg`** at regime (iii) `(sz0, z0)`, `s = 0`, `u = 1/16`, `X ≡ 1`: the premise `h` (the eventual bound of the expected drift) stays a hypothesis. -/
-example (h : ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, ∀ v : ℝ, sInst n ≤ v → v ≤ tInst n → ∀ σ : Fin 2 → Bool,
-      ‖(fun b => STExpDriftg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) n v σ b)‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ τ * 1)
-    (τ : ℝ) (hτ : 0 < τ) :
-    ∀ᶠ n in atTop, ∀ v : ℝ, sInst n ≤ v → v ≤ tInst n → ∀ σ : Fin 2 → Bool,
-      ‖Step2Gen_UN (bandFM sz0 (STflowE z0)) n σ v (tInst n)
-          (fun b => STExpDriftg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) n v σ b)‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ τ * (((1 - v) / (1 - tInst n)) ^ 2 * 1) := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H sz0 (1 / 10) (1 / 6) (1 / 10) z0 flow_z0
-  exact expIntEasy_kernel_seqg (stek_sumNdecaygL_band 3) (by norm_num) hκm sz0_admissible _ _ hKer hg inferInstance
-    sz0_hs0 (fun n => (sz0_hst n).le) (fun n => by simp only [tInst]; norm_num) (fun _ _ => 1) (fun _ _ _ _ => zero_le_one)
-    h τ hτ
-
-/-- **Target 3, `expIntIII_int_unifg`** at regime (iii): the drift bounds `STExpDriftHiConclgL` stay a hypothesis. -/
-example (hDr : STExpDriftHiConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    PrecL sz0 (Sizes.seqP sz0) (U := STIdx2 sz0 sInst tInst)
-      (fun n p _ => ‖∫ v in (sInst n)..(p.1 : ℝ), Step2Gen_UN (bandFM sz0 (STflowE z0)) n p.2.1 v (p.1 : ℝ)
-          (fun b => STExpDriftg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) n v p.2.1 b) p.2.2‖)
-      (fun n p _ => sz0.STExpTarget n (p.1 : ℝ)) := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H sz0 (1 / 10) (1 / 6) (1 / 10) z0 flow_z0
-  exact expIntIII_int_unifg (stek_sumNdecaygL_band 3) (by norm_num) hκm sz0_admissible _ _ hKer hg inferInstance
-    sz0_hs0 sz0_hst (fun n => by simp only [tInst]; norm_num) sz0_reg5III hDr
-
-/-- **Target 3, `expIntIV_int_unifg`** at regime (iv) `(szG, zB, 5/8, 3/4)`: the drift bound `STExpDriftLoConclgL` stays a hypothesis. -/
-example (hDr : STExpDriftLoConclgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4)) :
-    PrecL szG (Sizes.seqP szG) (U := STIdx2 szG (fun _ => 5 / 8) (fun _ => 3 / 4))
-      (fun n p _ => ‖∫ v in ((5 / 8 : ℝ))..(p.1 : ℝ), Step2Gen_UN (bandFM szG (STflowE zB)) n p.2.1 v (p.1 : ℝ)
-          (fun b => STExpDriftg (bandFM szG (STflowE zB)) (Sizes.seqP szG) n v p.2.1 b) p.2.2‖)
-      (fun n p _ => szG.STExpTarget n (p.1 : ℝ)) := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H szG (1 / 10) (1 / 6) (1 / 10) zB flow_zG
-  exact expIntIV_int_unifg (stek_sumNdecaygL_band 3) (by norm_num) hκm szG_admissible _ _ hKer hg inferInstance
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hDr
-
-/-- **Target 4, `STExpIntConclgL_of_int`** at regime (iii), composed with `expIntIII_int_unifg`; the drift bounds stay hypotheses, the Duhamel identity along `[0, 1/16]` is discharged by `stExpDuhamelZ_holds`. -/
-example (hDr : STExpDriftHiConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    STExpIntConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) ∅ STSigAll sInst tInst := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H sz0 (1 / 10) (1 / 6) (1 / 10) z0 flow_z0
-  exact STExpIntConclgL_of_int _ _ inferInstance sz0_tendsto
-    (st6_duhEq_of_ping (STExpDuhamelZ_to_gL 3 (by norm_num) (stExpDuhamelZ_holds 3)) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0
-      sz0_hs0 (fun n => by simp only [tInst]; norm_num))
-    (expIntIII_int_unifg (stek_sumNdecaygL_band 3) (by norm_num) hκm sz0_admissible _ _ hKer hg inferInstance
-      sz0_hs0 sz0_hst (fun n => by simp only [tInst]; norm_num) sz0_reg5III hDr)
-
-/-- **Target 4, `STExpIntIIIConclgL_of_flow`** at regime (iii) and **`STExpIntIVConclgL_of_flow`** at regime (iv): the drift bounds stay hypotheses, the Duhamel identity is discharged by `stExpDuhamelZ_holds`. -/
-example (hDr : STExpDriftHiConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    STExpIntConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) ∅ STSigAll sInst tInst := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H sz0 (1 / 10) (1 / 6) (1 / 10) z0 flow_z0
-  exact STExpIntIIIConclgL_of_flow _ (stek_sumNdecaygL_band 3) (by norm_num) hκm sz0_admissible _ hKer hg inferInstance
-    sz0_hs0 sz0_hst (fun n => by simp only [tInst]; norm_num) sz0_reg5III
-    (st6_duhEq_of_ping (STExpDuhamelZ_to_gL 3 (by norm_num) (stExpDuhamelZ_holds 3)) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0
-      sz0_hs0 (fun n => by simp only [tInst]; norm_num)) hDr
-
-example (hDr : STExpDriftLoConclgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) (fun _ => 5 / 8) (fun _ => 3 / 4)) :
-    STExpIntConclgL (bandFM szG (STflowE zB)) (Sizes.seqP szG) ∅ STSigAll (fun _ => 5 / 8) (fun _ => 3 / 4) := by
-  obtain ⟨κm, hκm, H⟩ := ExpIntEasyGen_KerF_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg⟩ := H szG (1 / 10) (1 / 6) (1 / 10) zB flow_zG
-  exact STExpIntIVConclgL_of_flow _ (stek_sumNdecaygL_band 3) (by norm_num) hκm szG_admissible _ hKer hg inferInstance
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (st6_duhEq_of_ping (STExpDuhamelZ_to_gL 3 (by norm_num) (stExpDuhamelZ_holds 3)) (by norm_num : (0 : ℝ) < 1 / 10) flow_zG
-      (fun _ => by norm_num) (fun _ => by norm_num)) hDr
-
-/-- **Target 4, the pins `stExpIntIIIgL_of`, `stExpIntIVgL_of` at the band tuple, `d = 3`**: every family premise is discharged (probability law, flow facts,
-`stek_sumNdecaygL_band`, the band class); no hypothesis remains. -/
-example : STExpIntIIIgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpIntIIIgL_of (fun sz z => sz.lam) (fun sz => inferInstance) (step5CasesGen_flowFacts_band 3)
-    (stek_sumNdecaygL_band 3) ExpIntEasyGen_KerF_band
-
-example : STExpIntIVgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpIntIVgL_of (fun sz z => sz.lam) (fun sz => inferInstance) (step5CasesGen_flowFacts_band 3)
-    (stek_sumNdecaygL_band 3) ExpIntEasyGen_KerF_band
-
-/-- **The band re-derivations** `stExpIntIII_gen_band`, `stExpIntIV_gen_band`, read at the data of regimes (iii) and (iv) through the merged `inst_expIntIII`, `inst_expIntIV`; the
-stochastic premises of `STIngR6` are the hypotheses of the produced statements. -/
-example : InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
-    STExpIntConcl sz ∅ STSigAll E s t) sz0 z0 sInst tInst :=
-  inst_expIntIII (stExpIntIII_gen_band 3)
-
-example : InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftLoConcl sz E s t →
-    STExpIntConcl sz ∅ STSigAll E s t) szG zB (fun _ => 5 / 8) (fun _ => 3 / 4) :=
-  inst_expIntIV (stExpIntIV_gen_band 3)
-
-end Instances
 
 end RBM.BA
 

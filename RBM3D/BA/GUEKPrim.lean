@@ -533,30 +533,6 @@ end Profile
 
 /-! ## 5. Targets 3-6 -/
 
-/-- **Target 3 (O9, lossless oscillation of `Θ̃^{BA}_ζ`)**: twin of `norm_ThetaTilde_sub_le`
-(`ZeroModeProfile.lean:367`): `C = 2 C₈ / cT` with `C₈ = C₈(d, 𝔡⁻¹, κ')` of `baProp8_holds` at `κ' = (πκ)^5/2048`
-and `cT = κ'/(κ'+1)`, uniform in `L`, `ζ ∈ [0,1]`, `z`; no `W^{τ'}`.  The `β J` part of `baThetaTilde_eq` cancels. -/
-theorem baThetaTilde_osc :
-    ∀ d : ℕ, 3 ≤ d → ∀ 𝔡 κ : ℝ, 0 < 𝔡 → 0 < κ → ∃ C : ℝ, 0 < C ∧
-      ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ lam : ℝ, 0 < lam → lam ≤ 𝔡⁻¹ →
-        ∀ z : ℂ, 0 < z.im → z.im ≤ 1 → BAbulk d L lam κ z.re → ∀ ζ : ℝ, 0 ≤ ζ → ζ ≤ 1 →
-          ∀ (σ : Bool) (u v : Zd d L),
-            let Q := BAMss d L (BAMB d L lam z (BAm d L lam z)) true σ;
-            ‖Ring.inverse (1 - Q * SBtilde d L 0 ζ) u v - Ring.inverse (1 - Q * SBtilde d L 0 ζ) 0 0‖ ≤
-              C * (lam ^ 2)⁻¹ := by
-  intro d hd 𝔡 κ h𝔡 hκ
-  obtain ⟨C, hC, H⟩ := GUEKPrim_osc_core d hd 𝔡 κ h𝔡 hκ
-  refine ⟨C, hC, fun L _ hL lam hlam hlamΛ z hz hz1 hb ζ hζ0 hζ1 σ u v => ?_⟩
-  obtain ⟨β, ρ, hΘ, -⟩ := GUEKPrim_tilde (d := d) (L := L) lam hz σ hζ0 hζ1
-  intro Q
-  have h := H L hL lam hlam hlamΛ z hz hz1 hb σ (1 - ζ) (by linarith) (by linarith) u v 0 0
-  change ‖Ring.inverse (1 - GUEKPrim_Q d L lam z σ * SBtilde d L 0 ζ) u v -
-    Ring.inverse (1 - GUEKPrim_Q d L lam z σ * SBtilde d L 0 ζ) 0 0‖ ≤ _
-  rw [hΘ]
-  simp only [Matrix.add_apply, Matrix.smul_apply, Jmat, Matrix.of_apply, smul_eq_mul, mul_one]
-  convert h using 2
-  ring
-
 /-- **Target 6 (the BA `thetaDiff` at `ζ = 0`, Q4 (c))**, in the consumer form of `queRowDiff`
 (`Main/QUEFromQDiff.lean:244`) on the end profile `(Θ M)^{(+,σ)}/W^d` (`= BAprof sz n z true σ`, T2449 probe `:164`):
 lossless, `C = C(d, 𝔡, κ)` (`GUEKPrim_rowdiff` at `s = 1`: property 8 at the flow point), no `W^τ`. -/
@@ -603,26 +579,6 @@ profile reads `sz.L n`, `sz.lam n`, `sz.W n` at the index only; as `RandomLayerB
 (`RandomLayerBGBA_comp d (baProfComp d)` → `g1Rowk_of_inputsG`). -/
 theorem baProfComp (d : ℕ) : RBG_ProfComp (UNKind.ba d) (UNOUProfile.ba d) :=
   fun _ _ _ _ _ _ _ => ⟨rfl, rfl⟩
-
-/-- **Target 6 (the `ζ = 0` bridge)**: at `ζ = 0` the profile is the end profile of `BAEnd_QDiffL` (`BAprof sz n z true σ`,
-T2449 probe `:164`, `(PropThetaQ Q 1 * Q)_{ab}/W^d`): `T2515_ProfZero`, for every profile `P` with the text of D1 (iii). -/
-theorem _root_.RBM.Univ.UNOUProfile.ba_zero (d : ℕ) :
-    ∀ P : UNOUProfile (UNKind.ba d),
-      (∀ (sz : Sizes d) (n : ℕ) (ζ : ℝ) (z : ℂ) (a b : Zd d (sz.L n)),
-        (let Q := BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) z (BAm d (sz.L n) (sz.lam n) z)) true false;
-          P.pm sz n ζ z a b = (Ring.inverse (1 - Q * SBtilde d (sz.L n) 0 ζ) * Q) a b / ((sz.W n : ℕ) : ℂ) ^ d) ∧
-        (let Q := BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) z (BAm d (sz.L n) (sz.lam n) z)) true true;
-          P.pp sz n ζ z a b = (Ring.inverse (1 - Q * SBtilde d (sz.L n) 0 ζ) * Q) a b / ((sz.W n : ℕ) : ℂ) ^ d)) →
-      ∀ (sz : Sizes d) (n : ℕ) (z : ℂ) (σ : Bool) (a b : Zd d (sz.L n)),
-        (let Q := BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) z (BAm d (sz.L n) (sz.lam n) z)) true σ;
-          (if σ then P.pp sz n 0 z a b else P.pm sz n 0 z a b) = (PropThetaQ Q 1 * Q) a b / ((sz.W n : ℕ) : ℂ) ^ d) := by
-  intro P hP sz n z σ a b
-  have h0 : ∀ Q : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ,
-      Ring.inverse (1 - Q * SBtilde d (sz.L n) 0 0) = PropThetaQ Q 1 := fun Q => by
-    simp [SBtilde, EMn2BA_SB_zero, PropThetaQ]
-  cases σ
-  · simp only [Bool.false_eq_true, ite_false]; rw [(hP sz n 0 z a b).1, h0]
-  · simp only [ite_true]; rw [(hP sz n 0 z a b).2, h0]
 
 /-! ## 6. The BA GUE-phase 2-loop primitive (target 7) -/
 
@@ -1124,117 +1080,6 @@ theorem kTwoGUEBA_bridge_pp {d : ℕ} (sz : Sizes d) (n : ℕ) {ζ : ℝ} (hζ0 
 `ζ ∈ {0, 1/2, 1}`.  Flow-point data: the merged `MFixedPointInst.P` (`(L, g) = (4, 10)`, `P.real : BAReal 3 4 P.g0 (Im m₀)
 P.E P.m₀`) and `fp 4 _` (`S0`).  Every deterministic hypothesis is discharged; `UNG1Rowk` and `UNG2bRowk` (N2's, C5's inputs)
 stay hypotheses of the `ouRowk_of_pins` example only. -/
-
-namespace GUEKPrimInst
-
-open RBM.Univ.BAInst RBM.BA.UNPinsInst RBM.BA.MFixedPointInst
-
-private theorem hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-/-- The point `z = E_* + i/2` of the class `S0`. -/
-def zS0 : ℂ := ⟨(fp 4 hg).E, 1 / 2⟩
-
-private theorem S0_win : 0 < S0.lam 0 ∧ S0.lam 0 ≤ (1 / 10 : ℝ)⁻¹ :=
-  ⟨(fp 4 hg).g0_pos, by
-    change (fp 4 hg).g0 ≤ (1 / 10 : ℝ)⁻¹
-    have := (fp 4 hg).g0_le
-    norm_num
-    linarith⟩
-
-private theorem fp_im_pos : 0 < ((fp 4 hg).m0).im := (fp 4 hg).real.1.1
-
-/-- Target 1 at `S0`, `n = 0`, `ζ = 1/2`, `z = E_* + i/2`, `a = b = 0`. -/
-example := UNOUProfile.ba_spec 3 S0 0 (1 / 2) zS0 0 0
-
-/-- Target 2 (transfer) at `S0` and at the merged point `(L, g) = (4, 10)`, `s = 1/2`, charges `(+,-)`. -/
-example := baThetaTransfer 3 4 (S0.lam 0) zS0 (by norm_num [zS0]) (1 / 2) true false
-
-example := baThetaTransfer 3 4 10 (zS 4 10) (zS_im_pos 4 10) (1 / 2) true false
-
-/-- Target 2 (comparison) at `κ_*`, `E_*`. -/
-example := (baT0Cmp (clsκ 4 hg) (clsκ_pos 4 hg)).imp fun cT h =>
-  And.intro h.1 (h.2 3 4 (S0.lam 0) zS0 (cls_bulk 4 (by norm_num) hg) (by norm_num [zS0]) (by norm_num [zS0]))
-
-/-- Target 3 (zero-mode identity) at the merged flow point `P`, `t₀ = 1/2`, `ζ ∈ {0, 1/2, 1}`, charges `(+,-)`, `(+,+)`. -/
-example := baThetaTilde_eq (MFixedPointInst.P).real (t0 := 1 / 2) (by norm_num) (by norm_num) (ζ := 0) le_rfl
-  zero_le_one true false
-
-example := baThetaTilde_eq (MFixedPointInst.P).real (t0 := 1 / 2) (by norm_num) (by norm_num) (ζ := 1 / 2)
-  (by norm_num) (by norm_num) true true
-
-example := baThetaTilde_eq (MFixedPointInst.P).real (t0 := 1 / 2) (by norm_num) (by norm_num) (ζ := 1) zero_le_one
-  le_rfl true false
-
-/-- Target 3 (oscillation, lossless) at `S0`, `n = 0`, `z = E_* + i/2`, `𝔡 = 1/10`, `ζ ∈ {0, 1/2, 1}`. -/
-example := (baThetaTilde_osc 3 le_rfl (1 / 10) (clsκ 4 hg) (by norm_num) (clsκ_pos 4 hg)).imp fun C h =>
-  And.intro h.1 fun σ u v =>
-    And.intro (h.2 4 (by norm_num) (S0.lam 0) S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) 0 le_rfl zero_le_one σ u v)
-    (And.intro (h.2 4 (by norm_num) (S0.lam 0) S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) (1 / 2) (by norm_num) (by norm_num) σ u v)
-     (h.2 4 (by norm_num) (S0.lam 0) S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) 1 zero_le_one le_rfl σ u v))
-
-/-- Target 6 (`baThetaDiff`) at `S0`, `n = 0`, `z = E_* + i/2`. -/
-example := (baThetaDiff 3 le_rfl (1 / 10) (clsκ 4 hg) (by norm_num) (clsκ_pos 4 hg)).imp fun C h =>
-  And.intro h.1 fun σ a b b' => h.2 S0 0 S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-    (cls_bulk 4 (by norm_num) hg) σ a b b'
-
-/-- Target 4 (`baOUProfRowk_holds`) at `S0`, `n = 0`, `z = E_* + i/2`, `ζ ∈ {0, 1/2, 1}`. -/
-example := (baOUProfRowk_holds 3 le_rfl (1 / 10) (clsκ 4 hg) (by norm_num) (clsκ_pos 4 hg)).imp fun C h =>
-  And.intro h.1 fun a b b' =>
-    And.intro (h.2 S0 0 S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) 0 le_rfl zero_le_one a b b')
-    (And.intro (h.2 S0 0 S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) (1 / 2) (by norm_num) (by norm_num) a b b')
-     (h.2 S0 0 S0_win.1 S0_win.2 zS0 (by norm_num [zS0]) (by norm_num [zS0])
-      (cls_bulk 4 (by norm_num) hg) 1 zero_le_one le_rfl a b b'))
-
-/-- Target 4 as the premise `hprof` of `ouRowk_of_pins` (N2): the BA kind with the BA profile; `UNG1Rowk` and `UNG2bRowk`
-are the other gates' pins. -/
-example {ML Loc Que : Prop} (h1 : UNG1Rowk (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d) ML Loc Que)
-    (h2 : UNG2bRowk (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d)) :
-    UNOURowk (fun d => UNKind.ba d) ML Loc Que :=
-  ouRowk_of_pins (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d) (fun d hd => baOUProfRowk_holds d hd) h1 h2
-
-/-- Target 5 (`baProfComp`) through `RandomLayerBGBA_comp`, and at `S0` with `φ = (2 * ·)`. -/
-example : RBG_Comp (UNKind.ba 3) (UNOUProfile.ba 3) := RandomLayerBGBA_comp 3 (baProfComp 3)
-
-example (j : ℕ) := RandomLayerBGBA_comp 3 (baProfComp 3) S0 (2 * ·) (fun a b h => by change 2 * a < 2 * b; omega) j
-
-example := baProfComp 3 S0 (2 * ·) 1 (1 / 2) zS0 (0 : Zd 3 4) 0
-
-/-- Target 6 (`UNOUProfile.ba_zero`, the `ζ = 0` bridge) at `S0`, `n = 0`, `z = E_* + i/2`, charge `(+,-)`. -/
-example := UNOUProfile.ba_zero 3 (UNOUProfile.ba 3) (UNOUProfile.ba_spec 3) S0 0 zS0 false 0 0
-
-/-- Target 7 at the merged flow point `P`: `kTwoGUEBA_self`, `kTwoGUEBA_eq_ThetaTilde` (`t₀ = 1/2`, `ζ = 1/2`). -/
-example := kTwoGUEBA_self 3 4 2 (MFixedPointInst.P).g0 (MFixedPointInst.P).E (MFixedPointInst.P).m0 (1 / 2) true false 0 0
-
-example := kTwoGUEBA_eq_ThetaTilde 3 4 2 (MFixedPointInst.P).real (t0 := 1 / 2) (ζ := 1 / 2) (by norm_num) (by norm_num)
-  (by norm_num) (by norm_num) true false 0 0
-
-/-- Target 7, (7.33) at `n = 2` in cut-and-glue form on `[1/4, 1/2]` at `P`, `W = 2`, both charge pairs. -/
-example := hasDerivAt_kTwoGUELoopBA 3 4 2 (MFixedPointInst.P).g0 ((MFixedPointInst.P).m0).im (MFixedPointInst.P).E
-  (MFixedPointInst.P).m0 (MFixedPointInst.P).real (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num) true false 0 1
-
-example := hasDerivAt_kTwoGUELoopBA 3 4 2 (MFixedPointInst.P).g0 ((MFixedPointInst.P).m0).im (MFixedPointInst.P).E
-  (MFixedPointInst.P).m0 (MFixedPointInst.P).real (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num) true true 0 1
-
-/-- Target 7, the bridges to `pm`/`pp` at `S0`, `n = 0`, `z = E_* + i/2`, `ζ = 1/2`. -/
-example := kTwoGUEBA_bridge_pm S0 0 (ζ := 1 / 2) (by norm_num) (by norm_num) (z := zS0) (by norm_num [zS0]) 0 0
-
-example := kTwoGUEBA_bridge_pp S0 0 (ζ := 1 / 2) (by norm_num) (by norm_num) (z := zS0) (by norm_num [zS0]) 0 0
-
-example := kTwoGUEBA_bridge 3 (UNOUProfile.ba 3) (UNOUProfile.ba_spec 3) S0 0 0 ⟨le_rfl, zero_le_one⟩ zS0
-  (by norm_num [zS0]) 0 0
-
-/-- Target 7, `gueK_existsBA` at the data of `S0`, `n = 0` (`L = 4`, `W = 32`, `g = λ`, `(κ, E, m) = (Im m₀, E_*, m₀)` of the
-flow point `fp 4 _`), start `t₁ = 1/4`, end `t₀ = 1/2`, all lengths `≤ 4`. -/
-example := gueK_existsBA 3 4 32 (by norm_num) (g := (fp 4 hg).g0) (κ := ((fp 4 hg).m0).im) (E := (fp 4 hg).E)
-  (m := (fp 4 hg).m0) (fp 4 hg).g0_pos fp_im_pos (fp 4 hg).real (t1 := 1 / 4) (t0 := 1 / 2) (by norm_num)
-  (by norm_num) (by norm_num) 4
-
-end GUEKPrimInst
 
 end RBM.BA
 

@@ -54,7 +54,7 @@ open private cltFar_ell_sq cltFar_c3 cltFar_c0 cltFar_c3_pos cltFar_polylog cltF
   cltFar_zeta_off cltFar_off_numeric cltFar_Npow_le_W cltFarKp cltFarKp_nonneg cltFar_Lp_le cltFar_Bq_le
   cltFar_Gq_le cltFar_R_le cltFar_assemble cltFar_theta_eq cltFar_theta_ge cltFar_zeta_ge cltFar_union_bound
   cltFar_union_numeric from RBM3D.Evolution.CltFar
-open private meanFarG_B meanFarG_B_bound meanFarG_chk_Th meanFarG_chk_K meanFarG_chk_m meanFarG_chk_t1 meanFarG_chk_E
+open private meanFarG_B meanFarG_B_bound
   from RBM3D.Evolution.MeanFarG
 
 open MeasureTheory ProbabilityTheory Filter Matrix
@@ -902,53 +902,6 @@ end Far
 
 /-! ## 6. The band: the producers of `STThPropsg`, `STKpropsg` (target 7) and the band bridge (target 8) -/
 
-section Band
-
-/-- **Target 7a: the band producer of `STThPropsg`** (`T2479_ThPropsBand`): shift (`Theta_apply_add_right_of_three_le`), symmetry
-(`Theta_transpose_of_three_le`), `(prop:ThfadC)` (`prop5Decay_holds`), `(prop:BD1)` (`prop6Diff1_holds`), `(prop:BD2)`
-(`prop7Diff2_holds`) of the band propagator `bandFM_STThg` at `sz.lam`, at `Λ = 𝔡⁻¹`, `c = 1/2`, `κ' = min κ (1/2)`; the band coupling is
-`gK = sz.lam` (no comparison text).  The proof is the private producer of `MeanFarG` (`open private`). -/
-theorem bandFM_STThPropsg {d : ℕ} (sz : Sizes d) (κ 𝔡 : ℝ) (E : ℕ → ℝ) (hd : 3 ≤ d) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡)
-    (hWO : sz.WO 𝔡) (hE : ∀ n, |E n| ≤ 2 - κ) : STThPropsg (bandFM sz E) :=
-  meanFarG_chk_Th sz κ 𝔡 E hd hκ h𝔡 hWO hE
-
-/-- **Target 7b: the band producer of `STKpropsg`** (`T2479_KPropsBand`): invariance of `𝒦^{(2)}` under translations and the
-reflection (`KLK_two` with the `Θ` shift and symmetry) and `‖𝒦^{(2)}_s‖ ≤ c₁/A` (`meanFar_T1`, `meanFar_n_K`; regime from `STReg5I`). -/
-theorem bandFM_STKpropsg {d : ℕ} (sz : Sizes d) (κ 𝔡 : ℝ) (E s t : ℕ → ℝ) (hd : 3 ≤ d) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡)
-    (hWO : sz.WO 𝔡) (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht : ∀ n, t n < 1)
-    (hreg : STReg5I sz s t) : STKpropsg (bandFM sz E) s :=
-  meanFarG_chk_K sz κ 𝔡 E s t hd h𝔡 hWO hE hκ hs0 hst ht hreg
-
-/-- **Target 8: the band bridge** (`T2479_BandFar`): the generic pin gives the band pin `STCltFar d` (`3_5:2173-2176`).  `HCltOf` at
-`bandFM sz (STflowE z)`, `seqP sz`, `H₀ = 0`, `g' = sz.lam` is built as in `stCltIso_holds` (`CltStep:1556-1573`); the inputs
-`STThPropsg`, `STKpropsg` are targets 7a, 7b at `κ/2`, `STExpInvgL` is `stExpInvgL_band`, and the conclusion is read through
-`bandFM_STCltFarConcl`.  The band `stCltFar_holds` keeps its statement and its proof. -/
-theorem stCltFar_of_gL (d : ℕ) (hF : STCltFargL d) : STCltFar d := by
-  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
-  refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
-  intro 𝔠 sz z hflow s t hs0 hst htl hreg _ _ _ _ _ _ _ hS2 _ _
-  obtain ⟨hadm, hE, ht1, hRC⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
-  have hκ' : 0 < κ / 2 := by linarith
-  have hcl : ∀ n, s n ≤ lemT (z n) := fun n => (hst n).le.trans (htl n)
-  have hWt : Filter.Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) Filter.atTop Filter.atTop :=
-    tendsto_atTop_mono' _ hadm.2.2.2.1 ((tendsto_rpow_atTop hadm.1).comp hadm.2.2.1)
-  have hHC : HCltOf (bandFM sz (STflowE z)) (Sizes.seqP sz) (fun _ => 0) sz.lam (STflowE z) (cltCk (κ / 2)) (ε / 2) 𝔠 𝔡
-      Cd s t :=
-    ⟨hd, (cltCk_facts hκ' (hE 0).le).1, (cltCk_facts hκ' (hE 0).le).2.2, half_pos hε, hadm,
-      fun n => (cltCk_facts hκ' (hE n).le).2.1, hs0, hst, ht1, hRC, cltRepg_band sz _,
-      fun n x => bandFM_M_le sz _ (fun n => (hE n).le.trans (by linarith)) n x,
-      bandFM_STMfarg sz _ ((Real.tendsto_log_atTop.comp hWt).eventually_gt_atTop 0) _, hS2.1, hS2.2.2,
-      bandFM_STGijDecgL_of_three_le hd hκ hε h𝔡 hflow hs0 hcl,
-      bandFM_STKfargL hd hκ hε hflow hs0 hcl⟩
-  refine (bandFM_STCltFarConcl sz (STflowE z) s t).1 ?_
-  exact hF (cltCk (κ / 2)) (ε / 2) 𝔠 𝔡 Cd sz (bandFM sz (STflowE z)) (Sizes.seqP sz) sz.lam (STflowE z) (fun _ => 0) s t
-    hHC hreg (bandFM_STThPropsg sz (κ / 2) 𝔡 (STflowE z) hd hκ' h𝔡 hadm.2.2.2.2 (fun n => (hE n).le))
-    (bandFM_STKpropsg sz (κ / 2) 𝔡 (STflowE z) s t hd hκ' h𝔡 hadm.2.2.2.2 (fun n => (hE n).le) hs0
-      (fun n => (hst n).le) ht1 hreg)
-    (stExpInvgL_band sz _)
-
-end Band
-
 /-! ## 7. Compiled nonempty instances (`d = 3`, band data of `Step5Inst`: `szCL`, `bandFM szCL (STflowE zCL)`, `seqP szCL`, `sCL`, `tCL`)
 
 `szCL` is the merged sequence of `RBM.Gauss.Step5Inst` (`d = 3`, `L_n = 2 (n+24)^5`, `W_n = 2^{n+24}`, `lam ≡ 1`, `s ≡ 0`,
@@ -957,113 +910,6 @@ the admissibility, `κ ≤ Im m`, `0 ≤ sCL < tCL < 1`, `CltRepg` (`cltRepg_ban
 (`stExpInvgL_band`), `STThPropsg`, `STKpropsg` (targets 7a, 7b), `HCltOf` (`cltGood_hCltOf_szCL`) and `STCltIsoConclgL`
 (`stCltIsogL_holds`).  The only hypotheses of the examples are the Step 2 pins `STLocalEntryUgL`, `STGdecayWgL` (another gate).  The index
 set of `STCltFarConclgL` is nonempty at every `n` (`szCL_cltFar_index_nonempty`). -/
-
-section Instances
-
-open RBM.Gauss.Step5Inst
-
-private theorem cltFarG_chk_s1 (n : ℕ) : sCL n < 1 := by
-  change (0 : ℝ) < 1; norm_num
-
-/-- **Instance of target 7a** at the band data: `STThPropsg (bandFM szCL (STflowE zCL))`. -/
-private theorem cltFarG_chk_Th : STThPropsg (bandFM szCL (STflowE zCL)) :=
-  bandFM_STThPropsg szCL (1 / 2) (1 / 10) (STflowE zCL) (by norm_num) (by norm_num) (by norm_num) szCL_WO meanFarG_chk_E
-
-/-- **Instance of target 7b** at the band data: `STKpropsg (bandFM szCL (STflowE zCL)) sCL`. -/
-private theorem cltFarG_chk_K : STKpropsg (bandFM szCL (STflowE zCL)) sCL :=
-  bandFM_STKpropsg szCL (1 / 2) (1 / 10) (STflowE zCL) sCL tCL (by norm_num) (by norm_num) (by norm_num) szCL_WO
-    meanFarG_chk_E (fun _ => le_rfl) (fun n => (szCL_hst n).le) meanFarG_chk_t1 szCL_reg5I
-
-example : STThPropsg (bandFM szCL (STflowE zCL)) :=
-  bandFM_STThPropsg szCL (1 / 2) (1 / 10) (STflowE zCL) (by norm_num) (by norm_num) (by norm_num) szCL_WO meanFarG_chk_E
-
-example : STKpropsg (bandFM szCL (STflowE zCL)) sCL :=
-  bandFM_STKpropsg szCL (1 / 2) (1 / 10) (STflowE zCL) sCL tCL (by norm_num) (by norm_num) (by norm_num) szCL_WO
-    meanFarG_chk_E (fun _ => le_rfl) (fun n => (szCL_hst n).le) meanFarG_chk_t1 szCL_reg5I
-
-/-- **Instance of target 5a** (`cltFar_domg`) at `(τ, D₁) = (1, 1)`, every `σ`; the window of `β = (0, 0)` is nonempty at every `n`
-(`|β₀ - β₁| = 0`), so the specialisation to `σ = (+,-)`, `β = (0, 0)` is the event `N < |𝗕_β| (0^{d-2} + 1)`. -/
-example (hDec : STGdecayWgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
-    ∀ᶠ n in atTop,
-      (∀ σ : Fin 2 → Bool, CltMom2.DomHypg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) n (sCL n) σ
-        (((szCL.size n : ℕ) : ℝ) ^ (1 : ℝ)) (((szCL.size n : ℕ) : ℝ) ^ (-(1 : ℝ)))) ∧
-      Sizes.seqP szCL {ω | ((szCL.size n : ℕ) : ℝ) ^ (1 : ℝ) <
-          ‖STcltBg (bandFM szCL (STflowE zCL)) n (sCL n) ![true, false] (![0, 0] : Fin 2 → Zd 3 (szCL.L n)) ω‖ *
-            (((zdistInf 3 (szCL.L n) ((![0, 0] : Fin 2 → Zd 3 (szCL.L n)) 0 - (![0, 0] : Fin 2 → Zd 3 (szCL.L n)) 1) : ℕ) : ℝ) ^
-              (3 - 2) + 1)} ≤ ENNReal.ofReal (((szCL.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) := by
-  filter_upwards [cltFar_domg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) (by norm_num) szCL_admissible
-    cltFarG_chk_s1 (fun n => (szCL_hst n).le) szCL_reg5I hDec (τ := 1) (D₁ := 1) one_pos one_pos] with n hn
-  refine ⟨hn, hn ![true, false] ![0, 0] ?_⟩
-  have h0 : zdistInf 3 (szCL.L n) ((![0, 0] : Fin 2 → Zd 3 (szCL.L n)) 0 - (![0, 0] : Fin 2 → Zd 3 (szCL.L n)) 1) = 0 := by
-    simp [zdistInf]
-  rw [h0, Nat.cast_zero]
-  have hlog : 0 ≤ Real.log ((szCL.W n : ℕ) : ℝ) := Real.log_nonneg (cltFar_one_le_W szCL n)
-  have hℓ : 0 < ellT (szCL.L n) (szCL.lam n) (sCL n) := ellT_pos (cltFar_one_le_L szCL n)
-  positivity
-
-/-- **Instance of target 5b** (`cltFar_offg`) at `(D, D') = (1, 1)`: `‖off_{σ,a}‖ ≤ W^{-1}` for every mixed `σ` and every `a` at
-once, off an event of probability `≤ N^{-1}`. -/
-example (hDec : STGdecayWgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
-    ∀ᶠ n in atTop, Sizes.seqP szCL {ω | ∃ σ : Fin 2 → Bool, σ 0 ≠ σ 1 ∧ ∃ a : Fin 2 → Zd 3 (szCL.L n),
-        ((szCL.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) <
-          ‖CltMom2.offg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) n (sCL n) (tCL n) σ a ω‖} ≤
-      ENNReal.ofReal (((szCL.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) :=
-  cltFar_offg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) (g' := szCL.lam) (E := STflowE zCL)
-    (H₀ := fun _ => 0) (κ := 1 / 2) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (Cd := 1) (by norm_num) (by norm_num)
-    szCL_admissible meanFarG_chk_m sCL tCL (fun _ => le_rfl) szCL_hst meanFarG_chk_t1 (cltRepg_band szCL _)
-    szCL_reg5I hDec cltFarG_chk_Th cltFarG_chk_K 1 1 one_pos one_pos
-
-/-- **Instance of target 5c** (`cltFar_flucg`) at `(τ, D) = (1/10, 1)`, `σ = (+,-)`, `a = (x_n, 0)` (`|a₁ - a₂| = L_n/2`; the index
-`(σ, a)` is in the index set of `STCltFarConclgL` by `szCL_cltFar_index_nonempty`): `STCltIsoConclgL` is `stCltIsogL_holds` on
-`cltGood_hCltOf_szCL`. -/
-example (hLoc : STLocalEntryUgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
-    (hDec : STGdecayWgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
-    ∀ᶠ n in atTop, Sizes.seqP szCL {ω | ((szCL.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) *
-          (STAI szCL n ^ (-(6 / 5 : ℝ)) /
-            (((zdistInf 3 (szCL.L n) ((![xCL n, 0] : Fin 2 → Zd 3 (szCL.L n)) 0 -
-              (![xCL n, 0] : Fin 2 → Zd 3 (szCL.L n)) 1) : ℕ) : ℝ) ^ (3 - 2) + 1)) <
-        ‖(((1 - sCL n) ^ 2 / (szCL.lam n ^ 4 * (szCL.lam n ^ 2 * ((szCL.W n : ℕ) : ℝ) ^ 3) ^ (6 / 5 : ℝ)) : ℝ) : ℂ) *
-          CltMom2.flucg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) n (sCL n) (tCL n) ![true, false] ![xCL n, 0] ω‖} ≤
-      ENNReal.ofReal (((szCL.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) := by
-  filter_upwards [cltFar_flucg (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) (g' := szCL.lam) (E := STflowE zCL)
-    (H₀ := fun _ => 0) (κ := 1 / 2) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (Cd := 1) (by norm_num) (by norm_num)
-    szCL_admissible meanFarG_chk_m sCL tCL (fun _ => le_rfl) szCL_hst meanFarG_chk_t1 (cltRepg_band szCL _)
-    szCL_reg5I hDec cltFarG_chk_Th cltFarG_chk_K
-    (stCltIsogL_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) szCL.lam
-      (STflowE zCL) (fun _ => 0) sCL tCL (cltGood_hCltOf_szCL hLoc hDec))
-    (1 / 10) 1 (by norm_num) one_pos] with n hn
-  exact hn ![true, false] (by decide) ![xCL n, 0]
-
-/-- **Instance of target 6** (`stCltFargL_holds`, the pin `STCltFargL 3`) at the band data: `HCltOf` is `cltGood_hCltOf_szCL`,
-`STReg5I` is `szCL_reg5I`, `STThPropsg`, `STKpropsg` are targets 7a, 7b, `STExpInvgL` is `stExpInvgL_band`; the index set of the
-conclusion is nonempty at every `n` (the next example). -/
-example (hLoc : STLocalEntryUgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
-    (hDec : STGdecayWgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
-    STCltFarConclgL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL :=
-  stCltFargL_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL (bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) szCL.lam
-    (STflowE zCL) (fun _ => 0) sCL tCL (cltGood_hCltOf_szCL hLoc hDec) szCL_reg5I cltFarG_chk_Th cltFarG_chk_K
-    (stExpInvgL_band szCL _)
-
-/-- The index set of `STCltFarConclgL` at `(szCL, sCL, tCL)` is nonempty at every `n` (merged `szCL_cltFar_index_nonempty`; it is the
-index type of `STCltFarConcl`): the instance of target 6 is not vacuous. -/
-example (n : ℕ) := szCL_cltFar_index_nonempty n
-
-/-- **Instance of target 8**: the band pin `STCltFar 3` from the generic pin. -/
-example : STCltFar 3 := stCltFar_of_gL 3 (stCltFargL_holds 3)
-
-/-- The pin of the ticket's check (`T2479_FarPin`, every `d`) and the bridge (`T2479_BandFar`). -/
-example : ∀ d : ℕ, STCltFargL d := stCltFargL_holds
-example : ∀ d : ℕ, STCltFargL d → STCltFar d := stCltFar_of_gL
-
-end Instances
-
-#print axioms cltFar_domg
-#print axioms cltFar_offg
-#print axioms cltFar_flucg
-#print axioms stCltFargL_holds
-#print axioms bandFM_STThPropsg
-#print axioms bandFM_STKpropsg
-#print axioms stCltFar_of_gL
 
 end RBM.BA
 

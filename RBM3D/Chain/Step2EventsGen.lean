@@ -395,11 +395,6 @@ theorem Step2EventsGen_STEEkMg_measurable {Cm : Step2Mat sz} {μ : Measure sz.Se
   · simp only [hk, ite_true]; exact Step2EventsGen_STLMg_measurable hG n u _ _
   · simp only [hk, ite_false]; exact Step2EventsGen_STLMg_measurable hG n u _ _
 
-theorem Step2EventsGen_STEEMg_measurable {Cm : Step2Mat sz} {μ : Measure sz.SeqΩ} (hG : Step2EventsGen_Grid Cm μ) (n : ℕ)
-    (u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ => STEEMg Cm n u H σ a :=
-  (Step2EventsGen_STEEkMg_measurable hG n u 0 σ a).add (Step2EventsGen_STEEkMg_measurable hG n u 1 σ a)
-
 variable (Cm : Step2Mat sz)
   {Hm : ∀ n : ℕ, ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
   (hLM : ∀ (n : ℕ) (u : ℝ) (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) ω, Cm.LM n u (Hm n u ω) σ a = Cm.L n u σ a ω)
@@ -437,10 +432,6 @@ end MatrixFacts
 `Step2Events.lean:159`).  Definitional at `bandFM`. -/
 def STScaleInvgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ) (Kf : ℕ → ℝ → ℝ) : Prop :=
   ∀ (tt : ∀ n, TimeIcc s t n) (D : ℝ), 0 < D → STLWassmExpgL C μ (fun n => (tt n : ℝ)) D (fun n => Kf n (tt n : ℝ))
-
-/-- Band bridge of target 8 (`Iff.rfl`). -/
-theorem bandFM_STScaleInv {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (Kf : ℕ → ℝ → ℝ) :
-    STScaleInv sz E s t Kf ↔ STScaleInvgL (bandFM sz E) (Sizes.seqP sz) s t Kf := Iff.rfl
 
 /-- **Target 8, `ST_LW_sectionsg`** (band `ST_LW_sections`, `Step2Events.lean:348`): at every time section `tt n ∈ [s_n, t_n]` the
 premises of `STLWTgL`, `STEMn2ExpgL` hold (`(initialGT2)` from the weak law of Step 1 and `(eq:LW_assm_exp)` at the scale family)
@@ -1117,10 +1108,6 @@ theorem Step2EventsGen_bandFlow (d : ℕ) :
     Step2EventsGen_Flow d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n)) :=
   ⟨fun _ _ _ _ _ _ h => h.1, fun sz _ _ _ _ _ _ h n => lemT_lt_one (ST_flow_im_pos sz h n)⟩
 
-/-- **F7 at the band**: `Lloop` is `loopFine` at `seqHflow`, `Step2EventsGen_loopFine_rot3`. -/
-theorem Step2EventsGen_bandRot3 {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : Step2EventsGen_Rot3 (bandFM sz E) :=
-  fun n t σ₀ σ₁ a₀ y a₁ ω => Step2EventsGen_loopFine_rot3 _ _ σ₀ σ₁ a₀ y a₁
-
 /-- **The law clause of F9 at the band**: `Hm = seqHflow`, `(5.1)` is `ST_pathP_eq_seqP`. -/
 theorem Step2EventsGen_bandLaw {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) :
     Step2EventsGen_Law (bandStep2Mat sz E) (Sizes.seqP sz) (fun n u => sz.seqHflow n u) :=
@@ -1134,35 +1121,6 @@ theorem Step2EventsGen_bandGrid {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) :
     fun n u _ σ a => STLM_measurable sz n (E n) u σ a, fun n u x y => STGMM_measurable sz n (E n) u x y,
     Step2EventsGen_bandLaw sz E⟩
 
-/-- **The band reading of the good event** (proved, not `Iff.rfl`): `(mE E).im * (1 - u)` against `eta = etaT = (1 - u) * (mE E).im`,
-and `bandStep2_STgDrift` for the identity (the drift reads the block kernel). -/
-theorem Step2EventsGen_bandGoodAt {d : ℕ} (sz : Sizes d) (Es s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (D : ℝ) (ℓk : ℕ → ℝ)
-    (Λ δ₀ a₀ r₀ ρ₁ : ℝ) (Mart Rem : STLab sz n → ℕ → PathΩ sz → ℂ) (ω : PathΩ sz) :
-    STGoodAt sz s t K n (Es n) D ℓk Λ δ₀ a₀ r₀ ρ₁ Mart Rem ω ↔
-      STGoodAtg (bandStep2Mat sz Es) s t K n D ℓk Λ δ₀ a₀ r₀ ρ₁ Mart Rem ω := by
-  have e : ∀ u : ℝ, (bandStep2Mat sz Es).eta n u = (mE (Es n)).im * (1 - u) := fun u => by
-    change etaT (Es n) u = _
-    unfold etaT; ring
-  constructor
-  · intro h
-    refine ⟨h.weak, h.init, fun j hj i => ?_, fun j hj i => ?_, h.mart, h.rem, fun i k hk => ?_⟩
-    · have := h.lw j hj i
-      rw [e]; exact this
-    · have := h.mg j hj i
-      rw [e]; exact this
-    · have := h.ident i k hk
-      simp only [bandStep2_STgDrift sz Es s t K n] at this
-      exact this
-  · intro h
-    refine ⟨h.weak, h.init, fun j hj i => ?_, fun j hj i => ?_, h.mart, h.rem, fun i k hk => ?_⟩
-    · have := h.lw j hj i
-      rw [e] at this; exact this
-    · have := h.mg j hj i
-      rw [e] at this; exact this
-    · have := h.ident i k hk
-      simp only [← bandStep2_STgDrift sz Es s t K n] at this
-      exact this
-
 /-! ## 10. Compiled nonempty instances at the band (`d = 3`; `sz0`, `z0`, `flow_z0`, `[s, T] = [0, 1/16]`, `K ≡ 16`)
 
 Every deterministic hypothesis is discharged with the band instance data of `Induction/Step2Events.lean` (section `Instances`, private,
@@ -1170,181 +1128,7 @@ Every deterministic hypothesis is discharged with the band instance data of `Ind
 pin of another gate (`STLWTgL 3`, `STEMn2ExpgL 3` at the band, `STStep1WeakgL`, `STDecaygL`, `STScaleInvgL`, the martingale tail
 (E5), the a.e. identity, the remainder, `LWtermG 3`, `LWtermExpG 3`). -/
 
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step2DefsInst
-
-open private hBd_sz0 hKcap_sz0 hsmall_sz0 hcard_idx hcard_lab hcard_fin2lab hW_sz0 size_ge_17 sI_nonneg sI_le KI KI_ne
-  VI cardVI_le measF from RBM3D.Induction.Step2Events
-
-private theorem Step2EventsGen_inst_hE (n : ℕ) : |STflowE z0 n| ≤ 2 - 1 / 10 :=
-  (abs_lemE_le (ST_flow_im_pos sz0 flow_z0 n)).trans (flow_z0.2 n).1
-
-/-- Target 8 at the band family: `ST_LW_sectionsg` at the section `tt n = s_n`; the pins `STLWTgL 3`, `STEMn2ExpgL 3` (band),
-Step 1 and `STScaleInvgL` at the scale family `K_u ≡ 0` stay hypotheses. -/
-example (hLWT : bandPin STLWTgL 3) (hEMe : bandPin STEMn2ExpgL 3)
-    (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hinv : STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (fun _ _ => 0)) :=
-  ST_LW_sectionsg 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow 3) hLWT hEMe (by norm_num)
-    sz0 (1 / 10) (1 / 10) (1 / 10) (1 / 6) z0 (by norm_num) (by norm_num) (by norm_num) flow_z0 sInst tInst (1 / 2) (1 / 4)
-    (fun _ _ => 0) sI_nonneg sixteenth_le_lemT hS1W (by norm_num) (by norm_num) hBd_sz0 hKcap_sz0 hinv
-    (fun n => ⟨sInst n, le_rfl, sI_le n⟩)
-
-/-- (E1) at the band family: the weak-law event `‖G - M‖_max ≤ 3` of the grid walk at `K ≡ 16`. -/
-example (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    STEvWeakg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 3 :=
-  ST_event_weakg 3 sz0 (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0) (Step2EventsGen_bandGrid sz0 _) sInst tInst tInst KI
-    sI_nonneg sI_le (fun _ => le_rfl) KI_ne 5 (by norm_num) (Eventually.of_forall hcard_idx) hS1W (1 / 8) 3 (by norm_num)
-    hsmall_sz0
-
-/-- (E2) at the band family: the initial-state event from `STDecaygL` at `s`, `a₀ = 2 N^{1/8} Bctl^{1/5}`. -/
-example (hDec : STDecaygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst) :
-    STEvInitg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0)
-      (fun n => 2 * ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ) * (sz0.Bctl n (sInst n)) ^ (1 / 5 : ℝ)) :=
-  ST_event_initg 3 sz0 (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0) (Step2EventsGen_bandGrid sz0 _) sInst tInst KI
-    sI_nonneg sI_le KI_ne hDec 3 (by norm_num)
-    (Eventually.of_forall fun n => ST_card_lab_le sz0 n (by have := size_ge_17 n; omega)) (1 / 8) (by norm_num)
-    (6 * (1 + 3)) (by norm_num) 1 (fun _ _ => 0)
-    (fun n => 2 * ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ) * (sz0.Bctl n (sInst n)) ^ (1 / 5 : ℝ))
-    (Eventually.of_forall fun n i =>
-      ST_init_cmp sz0 n (u := sInst n) (D := 1) (ℓ := 0) (Di := 6 * (1 + 3))
-        (X := ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ)) (Real.rpow_nonneg (Nat.cast_nonneg _) _) le_rfl
-        (STBctl_pos sz0 n (by norm_num [sInst])).le i (hW_sz0 n 0 _ _))
-
-/-- (E3) at the band family: the light-weight event, `Λ_n = N^{1/8}`, `D = 1`; F3 is `DecayGen_bandSpec`, F9 `Step2EventsGen_bandGrid`. -/
-example (hLWT : bandPin STLWTgL 3) (hEMe : bandPin STEMn2ExpgL 3)
-    (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hinv : STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (fun _ _ => 0)) :
-    STEvLWg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0)
-      (fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ)) :=
-  ST_event_lwg 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow 3) hLWT hEMe (by norm_num)
-    sz0 (1 / 10) (1 / 10) (1 / 10) (1 / 6) (Real.sqrt (1 / 10) / 2) z0 (by norm_num) (by norm_num) (by norm_num) flow_z0
-    (DecayGen_bandSpec sz0 (by norm_num) Step2EventsGen_inst_hE) (Step2EventsGen_bandGrid sz0 _)
-    sInst tInst tInst KI (1 / 2) (1 / 4) (fun _ _ => 0) sI_nonneg sixteenth_le_lemT hS1W (by norm_num) (by norm_num)
-    hBd_sz0 hKcap_sz0 hinv sI_le (fun _ => le_rfl) KI_ne 4 (by norm_num) (Eventually.of_forall hcard_lab) (1 / 8)
-    (by norm_num) (fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ)) (fun n => le_rfl) 1 one_pos
-
-/-- (E4) at the band family: the martingale-variance event, `Λ_n = 2 N^{1/8}`, `D = 1`. -/
-example (hLWT : bandPin STLWTgL 3) (hEMe : bandPin STEMn2ExpgL 3)
-    (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hinv : STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (fun _ _ => 0)) :
-    STEvMGg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0)
-      (fun n => 2 * ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ)) :=
-  ST_event_mgg 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow 3) hLWT hEMe (by norm_num)
-    sz0 (1 / 10) (1 / 10) (1 / 10) (1 / 6) (Real.sqrt (1 / 10) / 2) z0 (by norm_num) (by norm_num) (by norm_num) flow_z0
-    (DecayGen_bandSpec sz0 (by norm_num) Step2EventsGen_inst_hE) (Step2EventsGen_bandGrid sz0 _)
-    sInst tInst tInst KI (1 / 2) (1 / 4) (fun _ _ => 0) sI_nonneg sixteenth_le_lemT hS1W (by norm_num) (by norm_num)
-    hBd_sz0 hKcap_sz0 hinv sI_le (fun _ => le_rfl) KI_ne 5 (by norm_num) (Eventually.of_forall hcard_fin2lab) (1 / 8)
-    (by norm_num) (fun n => 2 * ((sz0.size n : ℕ) : ℝ) ^ (1 / 8 : ℝ)) (fun n => le_rfl) 1 one_pos
-
-/-- Target 10 at the band carrier `bandStep2Mat sz0 (STflowE z0)` (`[s, T] = [0, 1/16]`, `K ≡ 16`, `D = D' = 1`, `Dm = D' + 4 = 5`,
-`Λ = N^{1/10}`, `ρ₁ ≡ 1`): (E1)-(E4), the martingale tail, the identity and the remainder (other gates' outputs) stay open; the size
-tendsto, `hΔ`, `hΛ`, `hρ` and `hcardLab` are discharged. -/
-example (Mart Rem : ∀ n, STLab sz0 n → ℕ → PathΩ sz0 → ℂ) (a₀ r₀ : ℕ → ℝ)
-    (hw : STEvWeakg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1)
-    (hi : STEvInitg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0) a₀)
-    (hl : STEvLWg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0)
-      (fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ)))
-    (hm : STEvMGg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI 1 (fun _ _ => 0)
-      (fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ)))
-    (hmart : ∀ᶠ n in atTop, ∀ i : STLab sz0 n, (bandStep2Mat sz0 (STflowE z0)).Pp {ω | ∃ k, k ≤ KI n ∧
-      ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * (∑ j ∈ Finset.range k, gridStep sInst tInst KI n *
-        ‖STEEMg (bandStep2Mat sz0 (STflowE z0)) n (gridTime sInst tInst KI n j)
-          ((bandStep2Mat sz0 (STflowE z0)).Hpath sInst tInst KI n j ω) i.1 i.2‖ +
-        ((sz0.size n : ℕ) : ℝ) ^ (-(5 : ℝ))) ^ (1 / 2 : ℝ) < ‖Mart n i k ω‖} ≤
-      ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(5 : ℝ))))
-    (hident : ∀ n (i : STLab sz0 n), ∀ᵐ ω ∂(bandStep2Mat sz0 (STflowE z0)).Pp, ∀ k, k ≤ KI n →
-      STgAg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI n i.1 i.2 k ω =
-        STgAg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI n i.1 i.2 0 ω + ((gridStep sInst tInst KI n : ℝ) : ℂ) *
-          ∑ j ∈ Finset.range k, STgDriftg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI n i.1 i.2 j ω +
-            Rem n i k ω + Mart n i k ω)
-    (hrem : ∀ᶠ n in atTop, ∀ i : STLab sz0 n, ∀ᵐ ω ∂(bandStep2Mat sz0 (STflowE z0)).Pp, ∀ k, k ≤ KI n →
-      ‖Rem n i k ω‖ ≤ r₀ n * STprof sz0 n (gridTime sInst tInst KI n 0) 1
-        ((fun _ _ => (0 : ℝ)) n (gridTime sInst tInst KI n 0)) (i.2 0) (i.2 1)) :
-    ∀ᶠ n in atTop, (bandStep2Mat sz0 (STflowE z0)).Pp {ω | ¬ STGoodAtg (bandStep2Mat sz0 (STflowE z0)) sInst tInst KI n 1
-      (fun j => (fun _ _ => (0 : ℝ)) n (gridTime sInst tInst KI n j)) (((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ)) 1 (a₀ n) (r₀ n) 1
-      (Mart n) (Rem n) ω} ≤ ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) :=
-  ST_good_probg 3 sz0 (bandStep2Mat sz0 (STflowE z0)) (Sizes.tendsto_size sz0 sz0_tendsto) sInst tInst KI 1
-    (fun _ _ => 0) 1 (fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ)) a₀ r₀ (fun _ => 1) Mart Rem hw hi hl hm
-    (fun n => ST_gridStep_nonneg _ _ _ n (by norm_num [sInst, tInst])) 1 5 (1 / 10) one_pos (by norm_num) hmart
-    (fun n => by
-      have := Real.rpow_nonneg (Nat.cast_nonneg (sz0.size n) : (0 : ℝ) ≤ _) (1 / 10 : ℝ)
-      exact le_rfl)
-    (Eventually.of_forall fun n i => by
-      have hN := one_le_size_sz0 n
-      have h1 := ST_prof_lower_N sz0 (by norm_num) n (D := 1) zero_le_one
-        (gridTime sInst tInst KI n 0) 0 (i.2 0) (i.2 1)
-      have h2 : ((sz0.size n : ℕ) : ℝ) ^ (-(5 : ℝ)) ≤
-          (((sz0.size n : ℕ) : ℝ) ^ (-(1 + (1 : ℝ)))) ^ 2 := by
-        rw [ST_rpow_sq (Nat.cast_nonneg _)]
-        exact Real.rpow_le_rpow_of_exponent_le hN (by norm_num)
-      have h3 := pow_le_pow_left₀ (Real.rpow_nonneg (Nat.cast_nonneg _) _) h1 2
-      simpa using h2.trans h3)
-    hident hrem
-    (by filter_upwards [(Sizes.tendsto_size sz0 sz0_tendsto).eventually_ge_atTop 4] with n hn using
-      ST_card_lab_le sz0 n hn)
-
-/-- Target 11 at the band family: both L-bridges applied with the band pins `LWtermG 3`, `LWtermExpG 3` (stage L) as hypotheses;
-`3 ≤ 3`, F1 and F7 are discharged. -/
-example (h : bandPin LWtermG 3) : bandPin STLWBgL 3 :=
-  stLWBgL_of_LWtermG 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n))
-    (fun sz z => bandFM sz (STflowE z)) (by norm_num) (fun _ _ _ _ _ _ h => h.1)
-    (fun sz z => Step2EventsGen_bandRot3 sz _) h
-
-example (h : bandPin LWtermExpG 3) : bandPin STLWTgL 3 :=
-  stLWTgL_of_LWtermExpG 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n))
-    (fun sz z => bandFM sz (STflowE z)) (by norm_num) (fun _ _ _ _ _ _ h => h.1)
-    (fun sz z => Step2EventsGen_bandRot3 sz _) h
-
 /-! ### The transfer helpers at the band carrier -/
-
-example : PrecL sz0 (Sizes.seqP sz0) (U := fun _ => Unit) (fun _ _ _ => (1 / 2 : ℝ)) (fun _ _ _ => (2 : ℝ)) :=
-  Step2EventsGen_prec_mono_eventually (Sizes.seqP sz0) (ζ := fun _ _ _ => (1 : ℝ))
-    (Eventually.of_forall fun n u ω => by norm_num)
-    (sz0.prec_of_le (fun _ _ _ => zero_le_one) (fun _ _ _ => by norm_num))
-
-example : PrecL sz0 (Sizes.seqP sz0) (U := fun _ => Unit) (fun _ _ _ => (1 / 2 : ℝ)) (fun _ _ _ => (1 : ℝ)) :=
-  Step2EventsGen_prec_of_le_ev (Sizes.seqP sz0) (fun _ _ _ => zero_le_one)
-    (Eventually.of_forall fun n u ω => by norm_num)
-
-example : PrecL sz0 (Sizes.seqP sz0) (U := fun _ => Unit)
-    (fun n _ ω => Finset.univ.sup' Finset.univ_nonempty (fun v : Fin 2 => (1 / 2 : ℝ))) (fun _ _ _ => (1 : ℝ)) :=
-  Step2EventsGen_prec_sup (Sizes.seqP sz0) (V := fun _ => Fin 2) (fun _ _ _ => (1 / 2 : ℝ)) (fun _ => 1)
-    (sz0.prec_of_le (fun _ _ _ => zero_le_one) (fun _ _ _ => by norm_num))
-
-/-- `Step2EventsGen_grid_whp_of_sections` at `s ≡ 0`, `t ≡ 1/16`, `K ≡ 16`, one label, `F ≡ 1/2 ≤ N^1 Z ≡ 1`. -/
-example := Step2EventsGen_grid_whp_of_sections (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0)
-  (Step2EventsGen_bandLaw sz0 (STflowE z0)) (V := VI) sInst tInst KI sI_nonneg sI_le KI_ne (C := 1) (by norm_num)
-  (Eventually.of_forall cardVI_le) (fun _ _ _ _ => 1 / 2) (fun _ _ _ _ => 1)
-  (fun _ _ _ => measurable_const) (fun _ _ _ => measurable_const) 1 one_pos
-  (fun tt => sz0.prec_of_le (fun _ _ _ => zero_le_one) (fun _ _ _ => by norm_num))
-
-/-- `Step2EventsGen_grid_whp_zero`: the grid index `0` from the single-time statement at `s_n`. -/
-example := Step2EventsGen_grid_whp_zero (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0)
-  (Step2EventsGen_bandLaw sz0 (STflowE z0)) (V := VI) sInst tInst KI sI_nonneg sI_le KI_ne (C := 1) (by norm_num)
-  (Eventually.of_forall fun n => by
-    have h := size_ge_17 n
-    simp only [VI, Fintype.card_fin, Nat.cast_one, Real.rpow_one]
-    have : (17 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast h
-    linarith)
-  (fun _ _ _ _ => 1 / 2) (fun _ _ _ _ => 1)
-  (fun _ _ _ => measurable_const) (fun _ _ _ => measurable_const) 1 one_pos
-  (sz0.prec_of_le (fun _ _ _ => zero_le_one) (fun _ _ _ => by norm_num))
-
-/-- `Step2EventsGen_model_le_path` at `n = 7`, `F = ‖H_{00}‖`, `Z ≡ 1`, `τ = 0`, `Bad` the grid event itself. -/
-example := Step2EventsGen_model_le_path (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0)
-  (Step2EventsGen_bandLaw sz0 (STflowE z0)) sInst tInst KI sI_nonneg sI_le KI_ne 7 (fun n _ H => ‖H 0 0‖)
-  (fun _ _ _ => 1) (fun n _ => measF n) (fun _ _ => measurable_const) 0 _ Set.Subset.rfl
-
-/-- `Step2EventsGen_cstar_le` at the band `κm = √(1/10)/2`. -/
-example : 3 + 3 * (((bandStep2Mat sz0 (STflowE z0)).m 0).im)⁻¹ ≤ 3 + 3 * (Real.sqrt (1 / 10) / 2)⁻¹ :=
-  Step2EventsGen_cstar_le (C := (bandStep2Mat sz0 (STflowE z0)).toFlowFM)
-    (DecayGen_bandSpec sz0 (E := STflowE z0) (by norm_num) Step2EventsGen_inst_hE) 0
-
-end Instances
 
 end RBM.BA
 

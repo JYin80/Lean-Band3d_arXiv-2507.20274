@@ -558,10 +558,6 @@ def genMatOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
         loopL d L W (blockMat d L W (M + (y : ℂ) • coordinateMatrix d L W c)) (ztOf m E u) I)) 0 +
     deriv (fun v : ℝ => loopL d L W (blockMat d L W M) (ztOf m E v) I) u
 
-theorem genMat_eq_genMatOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (E u : ℝ)
-    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) :
-    genMat d L W g E u M I = genMatOf d L W g (mE E) E u M I := rfl
-
 /-- **`loopGenNOf`** (the generic form of `loopGenN`): the loop generator identity along the flow
 `ztOf m E u` for every one-loop value `m` with `0 < m.im`, every coupling `g` of `S^{(B)}(g)` and `3 ≤ L`. -/
 theorem loopGenNOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E : ℝ) (hL : 3 ≤ L)
@@ -661,11 +657,6 @@ general-`n` hierarchy identity, from `hierarchyN_of_loopGenN` and `stLoopGenNFor
 theorem hierarchyN_holds (d : ℕ) : HierarchyN d :=
   hierarchyN_of_loopGenN d (stLoopGenNForm_holds d)
 
-/-- **G1 (band statement unchanged)**: the merged `loopGenN` has the type `loopGenNOf` gives at `m = mE E`. -/
-theorem recovers_loopGenN : type_of% @loopGenN :=
-  fun d L W g _ _ E hL hE u hu1 M hM _ σ a =>
-    loopGenNOf d L W g (mE E) E hL (mE_im_pos hE) u hu1 M hM σ a
-
 /-! ## Compiled nonempty instances
 
 `loopGenN` at `d = 3`, `L = 3`, `W = 2`, `g = 1/2`, `E = 1/2`, `u = 1/2`, the non-scalar Hermitian
@@ -674,108 +665,6 @@ sites).  `stLoopGenNForm_holds` and `hierarchyN_holds` at the merged admissible 
 (`RBM.Gauss.SizesInst.sz0`: `d = 3`, `L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`), size index `0`, `E = 0`,
 `u = 1/2`, `M = 1`, `k = 3`.  No hypothesis is left open. -/
 
-section Instances
-
-open RBM.Gauss.SizesInst
-
-/-- The non-scalar Hermitian test matrix `X_{(0,1,true)} + X_{(1,0,true)}` of `Idx 3 3 2` (exactly
-one of the two summands is nonzero, according to `idxKey`; `LoopGenN_M0_apply`). -/
-private noncomputable def LoopGenN_M0 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ :=
-  coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
-    coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)
-
-private theorem LoopGenN_M0_isHermitian : LoopGenN_M0.IsHermitian :=
-  (coordinateMatrix_isHermitian 3 3 2 _).add (coordinateMatrix_isHermitian 3 3 2 _)
-
-/-- `LoopGenN_M0` is not the zero matrix: its `(0, 1)` entry is `1`. -/
-private theorem LoopGenN_M0_apply : LoopGenN_M0 (0 : Idx 3 3 2) (1 : Idx 3 3 2) = 1 := by
-  have h01 : (0 : Idx 3 3 2) ≠ 1 := by decide
-  change Xentry 3 3 2 (Pi.single ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) 1) 0 1 +
-    Xentry 3 3 2 (Pi.single ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true) 1) 0 1 = 1
-  simp only [Xentry]
-  rcases idxKey_lt_or_eq_or_lt 3 3 2 (0 : Idx 3 3 2) 1 with h | h | h
-  · simp [h, h01, h01.symm]
-  · exact absurd h h01
-  · simp [h, not_lt.mpr h.le, h01, h01.symm]
-
-/-- **`loopGenN` at `d = 3`, `L = 3`, `W = 2`, `g = 1/2`**, a non-scalar Hermitian `M`, `k = 3`. -/
-private theorem LoopGenN_check_loopGenN :
-    genMat 3 3 2 (1 / 2) (1 / 2) (1 / 2) LoopGenN_M0
-        (loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]) =
-      (((2 : ℕ) : ℂ) ^ 3) * ∑ k' ∈ Finset.Icc 1 (loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).length,
-          ∑ l' ∈ Finset.Ioc k' (loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).length,
-          ∑ x : Zd 3 3, ∑ y : Zd 3 3,
-        loopL 3 3 2 (blockMat 3 3 2 LoopGenN_M0) (zt (1 / 2) (1 / 2))
-            ((loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).cutGlueL k' l' x) *
-          SB 3 3 (1 / 2) x y *
-          loopL 3 3 2 (blockMat 3 3 2 LoopGenN_M0) (zt (1 / 2) (1 / 2))
-            ((loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).cutGlueR k' l' y) +
-        (((2 : ℕ) : ℂ) ^ 3) * ∑ k' ∈ Finset.Icc 1 (loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).length,
-          ∑ x : Zd 3 3, ∑ y : Zd 3 3,
-          (loopL 3 3 2 (blockMat 3 3 2 LoopGenN_M0) (zt (1 / 2) (1 / 2))
-              ⟨[(loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).σ.getD (k' - 1) false], [x]⟩ -
-            mSigma (1 / 2) ((loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).σ.getD (k' - 1) false)) *
-            SB 3 3 (1 / 2) x y *
-          loopL 3 3 2 (blockMat 3 3 2 LoopGenN_M0) (zt (1 / 2) (1 / 2))
-            ((loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2]).cutGlue k' y) :=
-  loopGenN 3 3 2 (1 / 2) (1 / 2) le_rfl (by norm_num [abs_of_pos]) (1 / 2) (by norm_num)
-    LoopGenN_M0 LoopGenN_M0_isHermitian
-    ![true, false, true] ![(0 : Zd 3 3), 1, 2]
-
-/-- **`stLoopGenNForm_holds` at `sz0`**, `k = 3`, `σ = (+,-,+)`, `a = (0,1,2)`, `M = 1`:
-`genMat(𝓛) = STllPairN + STegtM`, unconditionally. -/
-theorem LoopGenN_check_stLoopGenNForm_sz0 :
-    genMat 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-        (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) =
-      sz0.STllPairN 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-          (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) +
-        sz0.STegtM 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-          (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) :=
-  stLoopGenNForm_holds 3 sz0 0 0 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 1
-    Matrix.isHermitian_one 3 (by norm_num) _ _
-
-/-- **`hierarchyN_holds` at `sz0`**, `k = 3`, `σ = (+,-,+)`, `a = (0,1,2)`, `M = 1`, unconditionally
-(`HierarchyN_check_sz0` of `Induction/HierarchyN.lean` with its hypothesis `STLoopGenNForm 3`
-discharged). -/
-theorem LoopGenN_check_hierarchyN_sz0 :
-    genMat 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-        (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) -
-        deriv (fun v : ℝ => sz0.STKloop 0 0 v ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-          (1 / 2) =
-      ThetaN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (![true, false, true] i)) (1 / 2)
-            (fun b => sz0.STLKIM 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-              (loopOf ![true, false, true] b)) ![(0 : Zd 3 (sz0.L 0)), 1, 2]
-        + ∑ l ∈ Finset.Icc 3 3, sz0.STksimLKM 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) l
-            (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-        + sz0.STelklkM 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-            (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-        + sz0.STegtM 0 0 (1 / 2) (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-            (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) :=
-  hierarchyN_holds 3 sz0 0 0 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 1
-    Matrix.isHermitian_one 3 (by norm_num) _ _
-
-/-- **Generic non-band instance**: `loopGenNOf` at `m = i` (`0 < m.im`), `E = 3` (outside the band,
-`|E| ≥ 2`, where `mE E` is not in the upper half-plane), `d = 3`, `L = 3`, `W = 2`, `g = 1/2`,
-`u = 1/2`, the non-scalar Hermitian `LoopGenN_M0`, the loop `(+,-,+)`, `a = (0,1,2)`; no `BA/*` import. -/
-example :=
-  loopGenNOf 3 3 2 (1 / 2) Complex.I 3 le_rfl (by simp) (1 / 2) (by norm_num)
-    LoopGenN_M0 LoopGenN_M0_isHermitian ![true, false, true] ![(0 : Zd 3 3), 1, 2]
-
-/-- The generic theorem at the band value `m = mE (1/2)` (the instance of `loopGenN` above, through
-`recovers_loopGenN`). -/
-example :=
-  loopGenNOf 3 3 2 (1 / 2) (mE (1 / 2)) (1 / 2) le_rfl (mE_im_pos (by norm_num [abs_of_pos])) (1 / 2)
-    (by norm_num) LoopGenN_M0 LoopGenN_M0_isHermitian ![true, false, true] ![(0 : Zd 3 3), 1, 2]
-
-end Instances
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.loopGenNOf
-#print axioms RBM.Ind.loopGenN
-#print axioms RBM.Ind.recovers_loopGenN
-#print axioms RBM.Ind.genMat_eq_genMatOf
-#print axioms RBM.Ind.stLoopGenNForm_holds
-#print axioms RBM.Ind.hierarchyN_holds

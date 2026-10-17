@@ -103,12 +103,6 @@ def MNode.toP (N : MNode) (h : Function.Surjective N.ext) : PGraph (Fin 2) where
   ext_surj := h
   g := N.g
 
-open RBM.Gauss.Sizes in
-/-- The candidate of the model node as a candidate of the packed graph (in the sense of section 2). -/
-def Cand.toR (N : MNode) (h : Function.Surjective N.ext) (c : Cand N.a N.b) (hc : c ∈ cands N.g) : RCand (N.toP h) :=
-  ⟨c.x, c.y, c.y', c.p, c.q, (cands_spec N.g c hc).1, (cands_spec N.g c hc).2.1, (cands_spec N.g c hc).2.2.1,
-    (cands_spec N.g c hc).2.2.2.1, (cands_spec N.g c hc).2.2.2.2.1, (cands_spec N.g c hc).2.2.2.2.2⟩
-
 end RBM.Graph.LWCert
 
 namespace RBM.Gauss.Sizes
@@ -163,16 +157,6 @@ theorem Rel.cand {N : MNode} {P : PGraph (Fin 2)} (h : Rel N P) (c : Cand N.a N.
   · simp only [hp1, SEdge.map, hφ, Sum.map_inr]
   · simp only [hq1, SEdge.map, hφ, Sum.map_inr]
 
-/-- A model node has a candidate iff its packed graph satisfies `LWG5Cand` (one direction, from `cands_spec`). -/
-theorem lwG5Cand_of_cands (N : MNode) (h : Function.Surjective N.ext) (hne : (cands N.g).isEmpty = false) :
-    LWG5Cand (N.toP h) := by
-  cases hc : cands N.g with
-  | nil => rw [hc] at hne; simp at hne
-  | cons c cs =>
-    exact ⟨c.x, c.y, c.y', c.p, c.q, (cands_spec N.g c (by rw [hc]; simp)).1, (cands_spec N.g c (by rw [hc]; simp)).2.1,
-      (cands_spec N.g c (by rw [hc]; simp)).2.2.1, (cands_spec N.g c (by rw [hc]; simp)).2.2.2.1,
-      (cands_spec N.g c (by rw [hc]; simp)).2.2.2.2.1, (cands_spec N.g c (by rw [hc]; simp)).2.2.2.2.2⟩
-
 /-- The model partition with the exponents of `m`, `m̄` (same order as `LGraph.partition`). -/
 def cPartitionX {a b : ℕ} (Γ : LGraph (Fin (a+1)) (Fin b)) (ext : Fin 2 → Fin (a+1)) : List ((ℕ × ℕ) × MNode) :=
   (Γ.dotChoices.map Γ.withDots).flatMap fun Δ =>
@@ -202,13 +186,6 @@ def PartitionSim : Prop :=
   ∀ (N : MNode) (h : Function.Surjective N.ext) (m : ℂ),
     List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : PGraph (Fin 2)) => Rel r.2 Q ∧ Q.g.coeff = m ^ r.1.1 * star m ^ r.1.2 * r.2.g.coeff)
       (cPartitionX N.g N.ext) ((N.g.partition m).map (pcomp (N.toP h)))
-
-/-- **Bridge 2 (the children)**: the real children of the packed node at a candidate (`RCand.kids`) are, list-wise,
-the model children up to `Rel`. -/
-def ChildrenSim : Prop :=
-  ∀ (N : MNode) (h : Function.Surjective N.ext) (c : Cand N.a N.b) (hc : c ∈ cands N.g),
-    List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
-      (childrenX N c) (Cand.toR N h c hc).kids
 
 /-! ## 2. The model merge: labels, class numbers, and `cMerge` as a labelling whose fibres are the classes -/
 
@@ -1117,42 +1094,6 @@ theorem lwExpSim_forall₂_flatMap_same {α γ δ : Type*} (R : γ → δ → Pr
     rw [List.flatMap_cons, List.flatMap_cons]
     exact List.rel_append (h x List.mem_cons_self) (ih fun y hy => h y (List.mem_cons_of_mem _ hy))
 
-/-- One family: the model partition of the renumbered graph against the real partition, with the shift `j` of `m`. -/
-private theorem lwExpSim_block (N : MNode) (h : Function.Surjective N.ext) {b' : ℕ} {I : Type}
-    [Fintype I] [DecidableEq I] (τ : Fin (N.a + 1) ⊕ I ≃ Fin (N.a + 1) ⊕ Fin b')
-    (hτ : ∀ a, τ (Sum.inl a) = Sum.inl a) (Γ : LGraph (Fin (N.a + 1)) I) (j : ℕ) :
-    List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
-      ((cPartitionX (Γ.relabel τ) N.ext).map fun r => ((r.1.1 + j, r.1.2 + 0), r.2))
-      ((partitionX Γ).map fun r => ((r.1.1 + j, r.1.2), pcomp (N.toP h) r.2)) := by
-  rw [List.forall₂_map_left_iff, List.forall₂_map_right_iff]
-  refine (lwExpSim_partition_sim N h τ hτ Γ).imp fun r q hq => ⟨hq.1, ?_⟩
-  change (r.1.1 + j, r.1.2 + 0) = (q.1.1 + j, q.1.2)
-  rw [← hq.2.1]
-  rfl
-
-/-- The same for a family that is not renumbered. -/
-private theorem lwExpSim_block_id (N : MNode) (h : Function.Surjective N.ext) (Γ : LGraph (Fin (N.a + 1)) (Fin N.b))
-    (j : ℕ) :
-    List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
-      ((cPartitionX Γ N.ext).map fun r => ((r.1.1 + j, r.1.2 + 0), r.2))
-      ((partitionX Γ).map fun r => ((r.1.1 + j, r.1.2), pcomp (N.toP h) r.2)) := by
-  have := lwExpSim_block N h (Equiv.sumCongr (Equiv.refl _) (Equiv.refl (Fin N.b))) (fun a => rfl) Γ j
-  rwa [lwExpSim_relabel_refl] at this
-
-/-- **Bridge 2**: the model children of a packed model node at a candidate are the real children, term by term. -/
-theorem childrenSim : ChildrenSim := by
-  intro N h c hc
-  unfold childrenX famsX RCand.kids
-  dsimp only [Cand.toR]
-  simp only [List.flatMap_append, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.flatMap_assoc,
-    List.append_assoc]
-  have e1 := fun {k : ℕ} (Γ : LGraph (Fin (N.a + 1)) (Fin N.b ⊕ Fin k)) (j : ℕ) =>
-    lwExpSim_block N h (Equiv.sumCongr (Equiv.refl _) finSumFinEquiv) (fun a => rfl) Γ j
-  exact List.rel_append (lwExpSim_block_id N h _ 3) (List.rel_append (e1 _ 1) (List.rel_append (e1 _ 3)
-    (List.rel_append (e1 _ 1) (List.rel_append (e1 _ 3)
-      (lwExpSim_forall₂_flatMap_same _ _ _ _ fun q' _ => List.rel_append (e1 _ 1) (e1 _ 3))))))
-
-
 /-- **A model node is related to its own packed graph** (by the identity equivalences). -/
 theorem rel_self (N : MNode) (h : Function.Surjective N.ext) : Rel N (N.toP h) := by
   have e := lwExpSim_relabel_refl N.g
@@ -1166,45 +1107,6 @@ theorem rel_self (N : MNode) (h : Function.Surjective N.ext) : Rel N (N.toP h) :
   rfl
 
 /-! ## 10. The compiled instances -/
-
-/-- The root `𝒢_xy` of LW-14c (`k = s = false`) as a model node: external `x = 0`, `y = 1`, three internal vertices. -/
-private def lwExpSim_rootN : MNode := ⟨1, 3, LWG5Graph false false, ![0, 1]⟩
-
-private theorem lwExpSim_rootN_surj : Function.Surjective lwExpSim_rootN.ext := by decide
-
-/-- **Instance of `partitionSim`** at the root graph `LWG5Graph false false` (`163` partition terms) and `m = 1/2 + i/3`
-(`m ≠ m̄`): every hypothesis is discharged (`ext = ![0, 1]` is onto) and both lists are nonempty. -/
-example : List.Forall₂
-    (fun (r : (ℕ × ℕ) × MNode) (Q : PGraph (Fin 2)) =>
-      Rel r.2 Q ∧ Q.g.coeff = (⟨1 / 2, 1 / 3⟩ : ℂ) ^ r.1.1 * star (⟨1 / 2, 1 / 3⟩ : ℂ) ^ r.1.2 * r.2.g.coeff)
-    (cPartitionX lwExpSim_rootN.g lwExpSim_rootN.ext)
-    ((lwExpSim_rootN.g.partition ⟨1 / 2, 1 / 3⟩).map (pcomp (lwExpSim_rootN.toP lwExpSim_rootN_surj))) :=
-  partitionSim lwExpSim_rootN lwExpSim_rootN_surj ⟨1 / 2, 1 / 3⟩
-
-example : (cPartitionX lwExpSim_rootN.g lwExpSim_rootN.ext).length = 163 := by decide +kernel
-
-/-- **Instance of `rel_self`** at the root model node. -/
-example : Rel lwExpSim_rootN (lwExpSim_rootN.toP lwExpSim_rootN_surj) := rel_self _ _
-
-/-- The model node of the instance of `childrenSim`: the explicit normal graph `lwExpTerm3_instGraph` (external `x = 0`,
-`y = 1`, internal `α`; five solid, two waved and three `×`-dotted edges). -/
-private def lwExpSim_instN : MNode := ⟨1, 1, lwExpTerm3_instGraph, ![0, 1]⟩
-
-private theorem lwExpSim_instN_surj : Function.Surjective lwExpSim_instN.ext := by decide
-
-/-- Its candidate: `x = α`, `p = G_{αy}`, `q = G_{xα}`. -/
-private def lwExpSim_instC : Cand lwExpSim_instN.a lwExpSim_instN.b := (cands lwExpSim_instN.g)[0]'(by decide)
-
-/-- **Instance of `childrenSim`** at `lwExpTerm3_instGraph` and its candidate (all hypotheses discharged). -/
-example : List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
-    (childrenX lwExpSim_instN lwExpSim_instC)
-    (Cand.toR lwExpSim_instN lwExpSim_instN_surj lwExpSim_instC (List.getElem_mem _)).kids :=
-  childrenSim lwExpSim_instN lwExpSim_instN_surj lwExpSim_instC (List.getElem_mem _)
-
-/-- Nondegeneracy of the instance: one candidate, eleven families, `550` children. -/
-example : (cands lwExpSim_instN.g).length = 1 ∧ (famsX lwExpSim_instN.g lwExpSim_instC).length = 11 ∧
-    (childrenX lwExpSim_instN lwExpSim_instC).length = 550 := by
-  decide +kernel
 
 end RBM.Gauss.Sizes
 

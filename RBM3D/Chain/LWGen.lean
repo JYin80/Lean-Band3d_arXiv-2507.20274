@@ -104,20 +104,6 @@ def LWtermExpG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
                 ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * tailW d (sz.L n) (sz.lam n) (t n) (ℓ n)
                   ((sz.W n : ℕ) : ℝ) D ((zdistInf d (sz.L n) (p.2 0 - p.2 1) : ℕ) : ℝ)))
 
-/-- `lem:LWterm_EXP` (`LWPins.lean:311`): the premises are the generic Step 1/2 pins of `Chain/Carrier`. -/
-def LWtermEXPG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
-    (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
-    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
-  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
-      ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ T0 sz z n) →
-        STLocalEntrygL (mk sz z) (law sz) t → LWAvgLawgL (mk sz z) (law sz) t → STLmaxgL (mk sz z) (law sz) t →
-        STLKgL (mk sz z) (law sz) t → STDecaygL (mk sz z) (law sz) t →
-        PrecL sz (law sz) (U := fun n => {_p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) //
-            sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - t n})
-          (fun n p _ => ‖∫ ω, LWEg (mk sz z) n (t n) p.1.1 p.1.2 ω ∂(law sz)‖)
-          (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
-
 end Generic
 
 /-! ## 2. The family of generic pins and the band instance (`Iff.rfl` bridges) -/
@@ -125,26 +111,6 @@ end Generic
 /-- A generic pin of the shape `(d, law, Flow, mk, T0)` of `STMainIndG` (`BA/FlowPins.lean:434`, `Step2Gen.STStep2G`). -/
 abbrev PinFam : Type := ∀ d : ℕ, (∀ sz : Sizes d, Measure sz.SeqΩ) → (∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) →
   (∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) → (∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) → Prop
-
-/-- Band: law `seqP`, setting `STFlow`, carrier `bandFM`, horizon `lemT` (as `Step2Gen.bandFM_STLWB`). -/
-def bandPin (P : PinFam) (d : ℕ) : Prop := P d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-  (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))
-
-theorem band_LWE {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (t : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n))
-    (ω : sz.SeqΩ) : LWE sz n (E n) t σ a ω = LWEg (bandFM sz E) n t σ a ω := rfl
-theorem band_LWAvgLaw {d : ℕ} (sz : Sizes d) (E t : ℕ → ℝ) :
-    LWAvgLaw sz E t ↔ LWAvgLawgL (bandFM sz E) (Sizes.seqP sz) t := Iff.rfl
-theorem band_LWAssm {d : ℕ} (sz : Sizes d) (E t : ℕ → ℝ) (ε₀ : ℝ) (Ψ : ℕ → ℝ) (Φ : ℕ → ℝ → ℝ) (C₁ C₂ C₃ : ℝ)
-    (Cc : ℝ → ℝ) : LWAssm sz E t ε₀ Ψ Φ C₁ C₂ C₃ Cc ↔ LWAssmgL (bandFM sz E) (Sizes.seqP sz) t ε₀ Ψ Φ C₁ C₂ C₃ Cc :=
-  Iff.rfl
-theorem band_LWAssmExp {d : ℕ} (sz : Sizes d) (E t : ℕ → ℝ) (ε₀ : ℝ) (Ψ ℓ : ℕ → ℝ) :
-    LWAssmExp sz E t ε₀ Ψ ℓ ↔ LWAssmExpgL (bandFM sz E) (Sizes.seqP sz) t ε₀ Ψ ℓ := Iff.rfl
-theorem LWterm_iff (d : ℕ) : LWterm d ↔ bandPin LWtermG d := Iff.rfl
-theorem LWtermExp_iff (d : ℕ) : LWtermExp d ↔ bandPin LWtermExpG d := Iff.rfl
-theorem LWtermEXP_iff (d : ℕ) : LWtermEXP d ↔ bandPin LWtermEXPG d := Iff.rfl
-/-- `bandFM_STLWB` (`Step2Gen`) in the `bandPin` form. -/
-theorem STLWB_bandPin (d : ℕ) : STLWB d ↔ bandPin STLWBgL d := Iff.rfl
-theorem STLWT_bandPin (d : ℕ) : STLWT d ↔ bandPin STLWTgL d := Iff.rfl
 
 end RBM.BA
 

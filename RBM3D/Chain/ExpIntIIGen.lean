@@ -332,106 +332,12 @@ theorem stExpIntIIgL_of {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
 
 /-! ## 4. The band re-derivation -/
 
-open private Step6KitGen_KerFR1_band from RBM3D.Chain.Step6KitGen
-
-/-- **Band `stExpIntII_holds` re-derived** (`ExpIntII:553`) from `stExpIntIIgL_of` through `STExpIntII_of_gL` (`Step6Gen:634`): the premises at the band
-tuple are the merged `stek_nonzerogL_band` (`Aof = 1`), the flow facts `step5CasesGen_flowFacts_band` and the class `STEKBandKer` with `gK = sz.lam`. -/
-theorem stExpIntII_gen_band (d : ℕ) : STExpIntII d :=
-  STExpIntII_of_gL d (stExpIntIIgL_of (Ker := @STEKBandKer d) (Aof := fun _ => 1) (fun sz _ => sz.lam)
-    (fun sz => inferInstance) (step5CasesGen_flowFacts_band d) (stek_nonzerogL_band d) (fun _ _ => le_rfl)
-    Step6KitGen_KerFR1_band)
-
 /-! ## 5. Compiled nonempty instances at `d = 3` (regime (ii) data of the band: `szB`, `zB`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `(s, t) = (15/16, 31/32)`)
 
 `szB`: `L = 4`, `W_n = n + 4`, `lam = 1`; `lam²/L³ = 1/64 ≤ 1 - t = 1/32 ≤ 1 - s = 1/16 = lam²/L²` (the boundary of the window of
 `(sum_res_Ndecay_nonzero)` is hit).  Discharged: flow, times, regime, admissibility, probability law, flow facts, the class `STEKBandKer` with `gK = lam` and R1 at `Aof = 1`,
 the kernel pin `stek_nonzerogL_band`, the Duhamel identity (merged `stExpDuhamelZ_holds`).  The drift bounds `STExpDriftHiConclgL` (`(eq:Exp(L-K)1)`,
 `(eq:ExpLWn=2)`: rows a and LW-14) stay a hypothesis of the examples that read them. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- **`expIntII_kernel_unifg`** at `(szB, zB, 15/16, 31/32)`, `A = {1,2}`, `P = STSigMixed`, the carrier `bandFM szB (STflowE zB)`, the law `seqP szB`. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 15 / 16) (fun _ => 31 / 32))
-    (τ : ℝ) (hτ : 0 < τ) :
-    ∀ᶠ n in atTop, ∀ (u : TimeIcc (fun _ : ℕ => (15 / 16 : ℝ)) (fun _ => 31 / 32) n) (v : ℝ), 15 / 16 ≤ v → v ≤ (u : ℝ) →
-      ∀ σ : Fin 2 → Bool, STSigMixed σ →
-        ‖zeroModeSet 3 (szB.L n) (Finset.univ : Finset (Fin 2))
-            (Step2Gen_UN (bandFM szB (STflowE zB)) n σ v (u : ℝ)
-              (fun b => STExpDriftg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n v σ b))‖ ≤
-          ((szB.size n : ℕ) : ℝ) ^ τ * ((1 - v)⁻¹ * (szB.Bctl n v ^ (11 / 5 : ℝ) + szB.Bctl n v ^ (5 / 2 : ℝ))) := by
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact expIntII_kernel_unifg (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_nonzerogL_band 3) (by norm_num) hκm le_rfl
-    szB_admissible szB.lam hKer hg hR1 inferInstance (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun n => by simp [szB]; norm_num) hdr _ STSigMixed (fun σ _ i _ => Finset.mem_univ i) τ hτ
-
-/-- **`expIntII_drift_integral_leg`** at the same data with `M = N^τ` (the kernel bound of the previous example): eventually, for every `u ∈ [15/16, 31/32]`,
-`σ₁ ≠ σ₂`, `a`, the drift integral is `≤ N^τ · 3 T_u · (3-2) log 4`. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 15 / 16) (fun _ => 31 / 32))
-    {τ : ℝ} (hτ : 0 < τ) :
-    ∀ᶠ n in atTop, ∀ (u : TimeIcc (fun _ : ℕ => (15 / 16 : ℝ)) (fun _ => 31 / 32) n) (σ : Fin 2 → Bool), STSigMixed σ →
-      ∀ a : Fin 2 → Zd 3 (szB.L n),
-        ‖∫ v in (15 / 16 : ℝ)..(u : ℝ), zeroModeSet 3 (szB.L n) (Finset.univ : Finset (Fin 2))
-            (Step2Gen_UN (bandFM szB (STflowE zB)) n σ v (u : ℝ)
-              (fun b => STExpDriftg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n v σ b)) a‖ ≤
-          ((szB.size n : ℕ) : ℝ) ^ τ *
-            (3 * STExpTarget szB n (u : ℝ) * ((((3 : ℕ) : ℝ) - 2) * Real.log ((szB.L n : ℕ) : ℝ))) := by
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  filter_upwards [expIntII_kernel_unifg (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_nonzerogL_band 3) (by norm_num) hκm le_rfl
-    szB_admissible szB.lam hKer hg hR1 inferInstance (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun n => by simp [szB]; norm_num) hdr _ STSigMixed (fun σ _ i _ => Finset.mem_univ i) τ hτ] with n hn u σ hσ a
-  have hu1 : (u : ℝ) < 1 := lt_of_le_of_lt u.2.2 (by norm_num)
-  exact expIntII_drift_integral_leg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (s := 15 / 16) (u := (u : ℝ))
-    (M := ((szB.size n : ℕ) : ℝ) ^ τ) (by norm_num) (Real.rpow_nonneg (Nat.cast_nonneg _) _) u.2.1 hu1
-    (by simp [szB]; norm_num) (by have := u.2.2; simp [szB]; norm_num; linarith) σ Finset.univ
-    (fun v hv1 hv2 => hn u v hv1 hv2 σ hσ) a
-
-/-- **`STExpIntConclgL_of_kernel`** at the same data, `A = {1,2}`, `P = STSigMixed`: the Duhamel identity is the merged `stExpDuhamelZ_holds`
-(through `STExpDuhamelZ_to_gL`, `st6_duhEq_of_ping`); the drift bounds stay a hypothesis. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 15 / 16) (fun _ => 31 / 32)) :
-    STExpIntConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (Finset.univ : Finset (Fin 2)) STSigMixed
-      (fun _ => 15 / 16) (fun _ => 31 / 32) := by
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  refine STExpIntConclgL_of_kernel (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto (by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) szB_reg5II
-    (st6_duhEq_of_ping (STExpDuhamelZ_to_gL 3 (by norm_num) (stExpDuhamelZ_holds 3)) (by norm_num : (0 : ℝ) < 1 / 10) flow_zB
-      (fun _ => by norm_num) (fun _ => by norm_num)) _ _ fun τ hτ => ?_
-  exact expIntII_kernel_unifg (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_nonzerogL_band 3) (by norm_num) hκm le_rfl
-    szB_admissible szB.lam hKer hg hR1 inferInstance (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun n => by simp [szB]; norm_num) hdr _ STSigMixed (fun σ _ i _ => Finset.mem_univ i) τ hτ
-
-/-- **`STExpIntIIConclgL_of_flow`** at the same data: the pair of conclusions of the pin; the drift bounds stay a hypothesis. -/
-example (hdr : STExpDriftHiConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 15 / 16) (fun _ => 31 / 32)) :
-    STExpIntConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (Finset.univ : Finset (Fin 2)) STSigMixed
-        (fun _ => 15 / 16) (fun _ => 31 / 32) ∧
-      STExpIntConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) ∅ STSigSame (fun _ => 15 / 16) (fun _ => 31 / 32) := by
-  obtain ⟨κm, hκm, H⟩ := Step6KitGen_KerFR1_band (d := 3) (1 / 10) (by norm_num)
-  obtain ⟨-, hKer, hg, hR1⟩ := H szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact STExpIntIIConclgL_of_flow (bandFM szB (STflowE zB)) (Aof := fun _ => 1) (stek_nonzerogL_band 3) (by norm_num) hκm le_rfl
-    szB_admissible szB.lam hKer hg hR1 inferInstance (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    szB_reg5II
-    (st6_duhEq_of_ping (STExpDuhamelZ_to_gL 3 (by norm_num) (stExpDuhamelZ_holds 3)) (by norm_num : (0 : ℝ) < 1 / 10) flow_zB
-      (fun _ => by norm_num) (fun _ => by norm_num)) hdr
-
-/-- **`stExpIntIIgL_of`, the pin at the band tuple, `d = 3`**: every family premise is discharged (probability law, flow facts, `stek_nonzerogL_band`, the class
-`STEKBandKer` with R1 at `Aof = 1`); no hypothesis remains. -/
-example : STExpIntIIgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpIntIIgL_of (Ker := @STEKBandKer 3) (Aof := fun _ => 1) (fun sz _ => sz.lam) (fun sz => inferInstance)
-    (step5CasesGen_flowFacts_band 3) (stek_nonzerogL_band 3) (fun _ _ => le_rfl) Step6KitGen_KerFR1_band
-
-/-- **The pin read at the data of regime (ii)** `(szB, zB, 15/16, 31/32)`: the band re-derivation `stExpIntII_gen_band`, through the merged `inst_expIntII`; the
-stochastic premises of `STIngR6` are the hypotheses of the produced statement. -/
-example : InstIng6Concl (fun sz E s t => STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
-      STExpIntConcl sz (Finset.univ : Finset (Fin 2)) STSigMixed E s t ∧ STExpIntConcl sz ∅ STSigSame E s t) szB zB
-      (fun _ => 15 / 16) (fun _ => 31 / 32) :=
-  inst_expIntII (stExpIntII_gen_band 3)
-
-end Instances
 
 end RBM.BA
 

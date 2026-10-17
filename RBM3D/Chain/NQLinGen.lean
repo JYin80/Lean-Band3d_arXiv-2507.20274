@@ -95,26 +95,6 @@ def NQLinGoodgL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
   STIngRgL d STAny law Flow (fun sz z => (mkM sz z).toFlowFM) T0
     (fun sz z s t => NQLinConclg (mkM sz z) (law sz) s t)
 
-section LinBridge
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
-
-/-- Band bridge of the set (`Iff.rfl` at each `H`). -/
-theorem bandStep2_GoodLinN (n : ℕ) (u : ℝ) (k : ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℝ) :
-    GoodLinN sz n (E n) u k Γ Φ₁ Φ₂ Φ₃ = GoodLinNg (bandStep2Mat sz E) n u k Γ Φ₁ Φ₂ Φ₃ := rfl
-
-/-- Band bridge of the conclusion (`Iff.rfl`). -/
-theorem bandStep2_NQLinConcl (s t : ℕ → ℝ) :
-    NQLinConcl sz E s t ↔ NQLinConclg (bandStep2Mat sz E) (Sizes.seqP sz) s t := Iff.rfl
-
-/-- Band bridge of the pin, through `bandFM_STIngR` (`Chain/Step34Gen.lean:447`). -/
-theorem bandStep2_NQLinGood (d : ℕ) :
-    NQLinGood d ↔ NQLinGoodgL d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STAny (fun sz E s t => NQLinConcl sz E s t)
-
-end LinBridge
-
 /-! ## 2. Target 8: measurability of `GoodLinNg`, and `GoodSetNg ⊆ GoodLinNg` -/
 
 section MeasurableProof
@@ -138,19 +118,6 @@ theorem measurableGoodLinNg {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
       measurableSet_le (GridGoodGen_meas_STelklkMg hLIM (loopOf σ a)).norm measurable_const
   · exact gridGood_measurableSet_forall fun σ => gridGood_measurableSet_forall fun a =>
       measurableSet_le (GridGoodGen_meas_STegtMg hLIM (loopOf σ a)).norm measurable_const
-
-/-- **Target 8, `goodSetNg_subset_goodLinNg`** (band `goodSetN_subset_goodLinN`, `NQLin:212`): `GoodSetNg` lies in `GoodLinNg` at
-`Φ₁ = Φ₃ = Φ`, `Φ₂ = kΓΦ²` (the merged quadratic level; (D2) rewrites by `ring`). -/
-theorem goodSetNg_subset_goodLinNg (n : ℕ) (u : ℝ) (k : ℕ) (Γ Λ Φ τ' D' : ℝ)
-    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : GoodSetNg Cm n u k Γ Λ Φ τ' D' H) :
-    H ∈ GoodLinNg Cm n u k Γ Φ ((k : ℝ) * Γ * Φ ^ 2) Φ := by
-  obtain ⟨-, -, -, hD1, hD2, hD3, -, -, -⟩ := hH
-  refine ⟨hD1, fun σ a => ?_, hD3⟩
-  have h := hD2 σ a
-  have e : Γ * ((k : ℝ) * (Γ * Φ) ^ 2) * ((sz.Bctl n u) ^ k / Cm.eta n u) =
-      Γ * (Γ * ((k : ℝ) * Γ * Φ ^ 2)) * ((sz.Bctl n u) ^ k / Cm.eta n u) := by ring
-  rw [← e]
-  exact h
 
 end MeasurableProof
 
@@ -380,23 +347,6 @@ theorem nqLinGoodgL_of (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
 
 end Public
 
-section BandReDerivation
-
-/-- **Band re-derivation of `nqLinGood_holds`** (`NQLin:591`, the same statement `NQLinGood d`): the merged band theorem from `nqLinGoodgL_of` at the band
-family `(seqP, STFlow, bandStep2Mat · (STflowE ·), lemT)`, with **no open hypothesis**: `STSEforLngL` is `stSEforLn_holds` through `bandFM_STSEforLn`, the
-carrier facts are the band lemmas (`Step2EventsGen_bandFlow`, `stepDecompGen_loopForm_band` with `|lemE z| < 2`, `stepDecompGen_walkForm_band`,
-`Step2EventsGen_bandLaw`, `bandStep34_LCompat`). -/
-theorem nqLinGood_holds_of_gen (d : ℕ) : NQLinGood d :=
-  (bandStep2_NQLinGood d).2
-    (nqLinGoodgL_of d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => seqHflow sz) (fun _ z => STflowE z)
-      (fun sz _ => sz.lam) (fun _ _ _ => 0) ((bandFM_STSEforLn d).1 (stSEforLn_holds d)) (Step2EventsGen_bandFlow d)
-      (fun sz κ ε 𝔠 𝔡 z hκ hz => stepDecompGen_loopForm_band sz _ fun n => abs_lemE_lt_two (ST_flow_im_pos sz hz n))
-      (fun sz κ ε 𝔠 𝔡 z _ _ => stepDecompGen_walkForm_band sz _)
-      (fun sz z => Step2EventsGen_bandLaw sz _) (fun sz z => bandStep34_LCompat sz _))
-
-end BandReDerivation
-
 /-! ## 4. Target 10: the linear drift, the exit time of `GoodSetNg ∩ GoodLinNg`, the sub-Gaussian input -/
 
 section Drift
@@ -415,13 +365,6 @@ def nqLinExitTauNg (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ → ℕ) (k :
   gridExitTauNg Cm s v K n (fun j =>
     {H | GoodSetNg Cm n (gridTime s v K n j) k (Γ n) (Λ n) (Φ n) τ' D' H} ∩
       GoodLinNg Cm n (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n))
-
-/-- **Target `dDriftNonAltNg_eq_lin`** (band `dDriftNonAltN_eq_lin`, `NQLin:724`): the merged quadratic level is the linear level at `Φ₁ = Φ₃ = Φ`,
-`Φ₂ = kΓΦ²` (by `ring`). -/
-theorem dDriftNonAltNg_eq_lin (Cm : Step2Mat sz) (n : ℕ) (u : ℝ) (k : ℕ) (Γ Φ : ℝ) :
-    dDriftNonAltNg Cm n u k Γ Φ = dDriftLinNg Cm n u k Γ Φ ((k : ℝ) * Γ * Φ ^ 2) Φ := by
-  unfold dDriftNonAltNg dDriftLinNg
-  ring
 
 variable {Cm : Step2Mat sz}
 
@@ -884,217 +827,17 @@ levels `(Γ, Λ, Φ) = (4, 3, 1)` of `GoodSetNg`, linear levels `(Φ₁, Φ₂, 
 is `nqLinExitTauNg`, positive at every sample.  Target 9: `nqLinConclg_of` at the window `[0, 1/16]` (the pin `STSEforLnConclgL` of U2 stays a
 hypothesis), `nqLinGoodgL_of` over the band family with no open hypothesis (`STSEforLngL` is `stSEforLn_holds`). -/
 
-section Inst
-
-open private W0 lam0 L0r rpow32_fifth rpow32_four_fifth im_mE_half hσ3 hW1 hWε hdW hvL eta_inv_le_N eta_inv_le_v step0 N_eps1
-  ha1_inst ha2_inst ha3_inst he1_inst he2_inst he3_inst he4_inst from RBM3D.Induction.NQLin
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.GridGoodNInst RBM.Gauss.Step34Inst RBM.Ind.AzumaProxyNInst
-  RBM.Ind.NQGood1Inst RBM.Ind.NQGood2Inst RBM.Ind.NQBudgetInst
-
-private abbrev NQLinGen_Cm0 : Step2Mat sz0 := bandStep2Mat sz0 Einst
-
-private abbrev NQLinGen_C : ℝ := nqGood1C 3 3 10 (1 / 2)
-
-private theorem NQLinGen_hL0 : StepDecompGen_LoopForm NQLinGen_Cm0 Einst := stepDecompGen_loopForm_band sz0 Einst Einst_abs_lt
-
-private theorem NQLinGen_hWalk0 : StepDecompGen_WalkForm NQLinGen_Cm0 sz0.lam (fun _ => 0) := stepDecompGen_walkForm_band sz0 Einst
-
-private theorem NQLinGen_hRow0 (n : ℕ) : GridRepTailGen_Ker NQLinGen_Cm0.toFlowFM n := gridRepTailGen_ker_band sz0 Einst n (Einst_abs_lt n).le
-
-private theorem NQLinGen_hQV0 : QVPropagatedNg NQLinGen_Cm0 sz0.lam := qvPropagatedNg NQLinGen_Cm0 Einst sz0.lam NQLinGen_hL0 (fun _ => rfl)
-
-private theorem NQLinGen_hm0 : ‖NQLinGen_Cm0.m 0‖ ≤ 1 := (norm_mE (by norm_num [abs_of_pos])).le
-
-private theorem NQLinGen_hS0 : ∀ a : Zd 3 (sz0.L 0), ∑ b : Zd 3 (sz0.L 0), ‖NQLinGen_Cm0.S 0 a b‖ ≤ 1 :=
-  fun a => (sum_norm_SB_row 3 (sz0.L 0) (sz0.lam 0) (sz0.three_le_L 0) a).le
-
-private theorem NQLinGen_kerNAL0 : NQGoodGen_KerNAL (bandFM sz0 Einst) sz0.lam 3 NQLinGen_C 0 :=
-  nqGoodGen_kerNAL_band_at sz0 Einst (by norm_num) (by norm_num) (by norm_num) (by norm_num) 0 (by rw [lam0]; norm_num)
-    (by rw [lam0]; norm_num) (by norm_num [Einst, abs_of_pos]) im_mE_half
-
-private theorem NQLinGen_R1 : ∀ m, 0 ≤ sz0.lam m * sz0.lam m ∧ sz0.lam m ^ 2 ≤ sz0.lam m ^ 2 ∧ sz0.lam m ^ 2 ≤ 1 * sz0.lam m ^ 2 :=
-  fun m => ⟨mul_self_nonneg _, le_rfl, (one_mul _).ge⟩
-
-private theorem NQLinGen_hdW : (((3 : ℕ) : ℝ)) * Real.sqrt 1 * ((sz0.W 0 : ℕ) : ℝ) ^ (1 / 5 : ℝ) ≤ ((sz0.W 0 : ℕ) : ℝ) ^ (4 / 5 : ℝ) := by
-  rw [Real.sqrt_one, mul_one]; exact hdW
-
-private theorem NQLinGen_goodSet0 :
-    GoodSetNg NQLinGen_Cm0 0 0 3 4 3 1 (1 / 5) 6 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :=
-  (bandStep2_GoodSetN sz0 Einst 0 0 3 4 3 1 (1 / 5) 6 0).1 zero_mem_goodSetN_inst
-
 /-! ### Target 8: the set `GoodLinNg` -/
-
-/-- `H_0 = 0 ∈ GoodLinNg` at the data (`goodSetNg_subset_goodLinNg` from `H_0 = 0 ∈ GoodSetNg`; levels `(Γ, Φ₁, Φ₂, Φ₃) = (4, 1, 12, 1)`). -/
-private theorem NQLinGen_goodLin0 :
-    (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ∈ GoodLinNg NQLinGen_Cm0 0 0 3 4 1 12 1 := by
-  have h := goodSetNg_subset_goodLinNg (Cm := NQLinGen_Cm0) 0 0 3 4 3 1 (1 / 5) 6 NQLinGen_goodSet0
-  have e : ((3 : ℕ) : ℝ) * 4 * 1 ^ 2 = 12 := by norm_num
-  rw [e] at h
-  exact h
-
-/-- **Instance of `goodSetNg_subset_goodLinNg`** at the data (`k = 3`, `Γ = 4`, `Φ = 1`): a member of `GoodSetNg` at the levels `(4, 3, 1)` is in `GoodLinNg`
-at `(4, 1, 3·4·1², 1)`; here `H_0 = 0`. -/
-example : (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ∈
-    GoodLinNg NQLinGen_Cm0 0 0 3 4 1 (((3 : ℕ) : ℝ) * 4 * 1 ^ 2) 1 :=
-  goodSetNg_subset_goodLinNg (Cm := NQLinGen_Cm0) 0 0 3 4 3 1 (1 / 5) 6 NQLinGen_goodSet0
-
-/-- **Instance of `measurableGoodLinNg`** at the data. -/
-example : MeasurableSet (GoodLinNg NQLinGen_Cm0 0 (1 / 32) 3 4 1 12 1) :=
-  measurableGoodLinNg NQLinGen_hL0 0 (1 / 32) 3 4 1 12 1
-
-/-- Band bridge of the set at the data (`rfl`): the merged `GoodLinN` is `GoodLinNg` at the band carrier. -/
-example : GoodLinN sz0 0 (Einst 0) (1 / 32) 3 4 1 12 1 = GoodLinNg NQLinGen_Cm0 0 (1 / 32) 3 4 1 12 1 :=
-  bandStep2_GoodLinN sz0 Einst 0 (1 / 32) 3 4 1 12 1
 
 /-! ### Target 9: the pin `NQLinGood` -/
 
-/-- **Target 9 (a), `nqLinConclg_of`** at `(sz0, Einst, s ≡ 0, t ≡ 1/16)`: the pin `NQLinConclg` for the band carrier and the law `seqP`, and through
-`bandStep2_NQLinConcl` the merged conclusion.  Open: `STSEforLnConclgL` (the registered pin `lem:SEforLn`, U2). -/
-example (hSE : STSEforLnConclgL NQLinGen_Cm0 (seqHflow sz0) (Sizes.seqP sz0) sInst tInst) :
-    NQLinConclg NQLinGen_Cm0 (Sizes.seqP sz0) sInst tInst ∧ NQLinConcl sz0 Einst sInst tInst :=
-  have h := nqLinConclg_of NQLinGen_Cm0 Einst (Sizes.seqP sz0) (seqHflow sz0) sInst tInst NQLinGen_hL0
-    (Step2EventsGen_bandLaw sz0 Einst) sz0_tendsto sz0_hs0 tInst_lt_one hSE
-  ⟨h, (bandStep2_NQLinConcl sz0 Einst sInst tInst).2 h⟩
-
-/-- **Target 9 (b), `nqLinGoodgL_of`** over the band family `(seqP, STFlow, bandStep2Mat · (STflowE ·), lemT)` (`d = 3`): `NQLinGoodgL`, and through
-`bandStep2_NQLinGood` the merged pin `NQLinGood 3`, with **no open hypothesis**.  Per flow: `Step2EventsGen_Flow`, `LoopForm` (`|lemE z| < 2`),
-`WalkForm`, the law, `Step34Gen_LCompat`; `STSEforLngL` is `stSEforLn_holds` through `bandFM_STSEforLn`. -/
-example : NQLinGoodgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) ∧ NQLinGood 3 := by
-  have h := nqLinGoodgL_of 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ => seqHflow sz) (fun _ z => STflowE z)
-    (fun sz _ => sz.lam) (fun _ _ _ => 0) ((bandFM_STSEforLn 3).1 (stSEforLn_holds 3)) (Step2EventsGen_bandFlow 3)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stepDecompGen_loopForm_band sz _ fun n => abs_lemE_lt_two (ST_flow_im_pos sz hz n))
-    (fun sz κ ε 𝔠 𝔡 z _ _ => stepDecompGen_walkForm_band sz _)
-    (fun sz z => Step2EventsGen_bandLaw sz _) (fun sz z => bandStep34_LCompat sz _)
-  exact ⟨h, (bandStep2_NQLinGood 3).2 h⟩
-
 /-! ### Target 10: the linear drift, the exit time and the sub-Gaussian input -/
-
-private abbrev NQLinGen_tau0 : PathΩ sz0 → ℕ :=
-  nqLinExitTauNg NQLinGen_Cm0 sInst vg Kg 3 Γ4 Λ3 Φ1 Φ1 (fun _ => 12) Φ1 (1 / 5) 6 0
-
-/-- `H_0 = 0 ∈ GoodSetNg ∩ GoodLinNg` at the grid time `u_0` and the levels of the instance (`zero_mem_goodSetN_inst_grid`). -/
-private theorem NQLinGen_mem0 :
-    (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ∈
-      {H | GoodSetNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 0) 3 (Γ4 0) (Λ3 0) (Φ1 0) (1 / 5) 6 H} ∩
-        GoodLinNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 0) 3 (Γ4 0) (Φ1 0) ((fun _ => (12 : ℝ)) 0) (Φ1 0) := by
-  have h0 : GoodSetNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 0) 3 (Γ4 0) (Λ3 0) (Φ1 0) (1 / 5) 6
-      (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :=
-    (bandStep2_GoodSetN sz0 Einst 0 _ 3 _ _ _ (1 / 5) 6 0).1 zero_mem_goodSetN_inst_grid
-  have h := goodSetNg_subset_goodLinNg (Cm := NQLinGen_Cm0) 0 (gridTime sInst vg Kg 0 0) 3 (Γ4 0) (Λ3 0) (Φ1 0) (1 / 5) 6 h0
-  have e : ((3 : ℕ) : ℝ) * Γ4 0 * Φ1 0 ^ 2 = (fun _ : ℕ => (12 : ℝ)) 0 := by norm_num [Γ4, Φ1]
-  rw [e] at h
-  exact ⟨h0, h⟩
-
-/-- **The exit time is positive at every sample** (`H_0 = 0 ∈ GoodSetNg ∩ GoodLinNg`, `azumaProxy_pos_gridExitTauNg`). -/
-private theorem NQLinGen_tau0_pos (ω : PathΩ sz0) : 0 < NQLinGen_tau0 ω :=
-  azumaProxy_pos_gridExitTauNg (by norm_num [Kg]) (by
-    rw [azumaProxy_Hpath_zerog NQLinGen_hWalk0 sInst vg Kg 0 rfl ω]
-    exact NQLinGen_mem0)
-
-example (ω : PathΩ sz0) : 0 < nqLinExitTauNg NQLinGen_Cm0 sInst vg Kg 3 Γ4 Λ3 Φ1 Φ1 (fun _ => 12) Φ1 (1 / 5) 6 0 ω :=
-  NQLinGen_tau0_pos ω
-
-/-- **Instance of `dDriftNonAltNg_eq_lin`** at the data. -/
-example (u : ℝ) : dDriftNonAltNg NQLinGen_Cm0 0 u 3 4 1 = dDriftLinNg NQLinGen_Cm0 0 u 3 4 1 (((3 : ℕ) : ℝ) * 4 * 1 ^ 2) 1 :=
-  dDriftNonAltNg_eq_lin NQLinGen_Cm0 0 u 3 4 1
-
-/-- **Instance of `driftTensorNg_norm_le_of_goodLin`**: `H_0 = 0 ∈ GoodLinNg`, `k = 3`, `σ = (+,-,+)`, every label vector `a`; the bound is the
-linear level `4² (B_0^3/η_0) ((3-2)·1 + 12 + 1)`. -/
-private theorem NQLinGen_drift_instance (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    ‖driftTensorNg NQLinGen_Cm0 0 0 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) sig3 a‖ ≤
-      dDriftLinNg NQLinGen_Cm0 0 0 3 4 1 12 1 :=
-  driftTensorNg_norm_le_of_goodLin (by norm_num) NQLinGen_goodLin0 sig3 a
-
-example (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    ‖driftTensorNg NQLinGen_Cm0 0 0 (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) sig3 a‖ ≤
-      dDriftLinNg NQLinGen_Cm0 0 0 3 4 1 12 1 :=
-  NQLinGen_drift_instance a
-
-/-- The linear drift level at the data is positive (so the bound above is not vacuous). -/
-example : 0 < dDriftLinNg NQLinGen_Cm0 0 0 3 4 1 12 1 := by
-  unfold dDriftLinNg
-  have hη := NQGood1Gen_eta_pos NQLinGen_hL0 0 (show (0 : ℝ) < 1 from one_pos)
-  have hB := Sizes.STBctl_pos sz0 0 (show (0 : ℝ) < 1 from one_pos)
-  positivity
-
-/-- **Instance of `nqLin_hdriftNg`**: along the walk, strictly before the exit time of `GoodSetNg ∩ GoodLinNg`, `‖Dr_j(b)‖ ≤ dDriftLinNg`
-(`mem_of_lt_nqLinExitTauNg` gives the membership). -/
-example : ∀ ω j, j < Kg 0 → j < NQLinGen_tau0 ω → ∀ b : Fin 3 → Zd 3 (sz0.L 0),
-    ‖driftTensorNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 j) (NQLinGen_Cm0.Hpath sInst vg Kg 0 j ω) sig3 b‖ ≤
-      dDriftLinNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 j) 3 (Γ4 0) (Φ1 0) ((fun _ => (12 : ℝ)) 0) (Φ1 0) :=
-  nqLin_hdriftNg (Cm := NQLinGen_Cm0) (n := 0) (k := 3) (by norm_num) sig3 sInst vg Kg Γ4 Φ1 (fun _ => 12) Φ1 NQLinGen_tau0
-    (fun ω j hj => (mem_of_lt_nqLinExitTauNg hj).2)
-
-/-- **Instance of `mem_of_lt_nqLinExitTauNg`**: strictly before the exit, the grid state is in the intersection. -/
-example (ω : PathΩ sz0) (j : ℕ) (h : j < NQLinGen_tau0 ω) :
-    NQLinGen_Cm0.Hpath sInst vg Kg 0 j ω ∈
-      {H | GoodSetNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 j) 3 (Γ4 0) (Λ3 0) (Φ1 0) (1 / 5) 6 H} ∩
-        GoodLinNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 j) 3 (Γ4 0) (Φ1 0) ((fun _ => (12 : ℝ)) 0) (Φ1 0) :=
-  mem_of_lt_nqLinExitTauNg h
-
-/-- **Instance of `nqLinExitMeasNg`**: `{j < nqLinExitTauNg}` is `filt sz0 j`-measurable. -/
-example (j : ℕ) : MeasurableSet[filt sz0 j] {ω | j < NQLinGen_tau0 ω} :=
-  nqLinExitMeasNg NQLinGen_hL0 NQLinGen_hWalk0 sInst vg Kg 0 3 Γ4 Λ3 Φ1 Φ1 (fun _ => 12) Φ1 (1 / 5) 6 j
-
-/-- **Instance of `subGaussStop_linNg`**: the `SubGaussStopNg` input of `AssembledNg` at the exit time of `GoodSetNg ∩ GoodLinNg` and the proxy
-`cQVNonAltNg`, for `m = 4`, `j = 0` and the far label vector (the pin `AzumaSubGNg` is the theorem `azumaSubGNg`, `QVPropagatedNg` is `qvPropagatedNg`; no
-hypothesis is open). -/
-example :
-    SubGaussStopNg NQLinGen_Cm0 sig3 (gridTime sInst vg Kg 0) NQLinGen_tau0 (fun j ω => ZvecNg NQLinGen_Cm0 sInst vg Kg 0 j sig3 ω) 4 aFar 0
-      (cQVNonAltNg NQLinGen_Cm0 sInst vg Kg 0 3 NQLinGen_C (4 / 5) Γ4 Λ3 5 4 aFar 0) :=
-  subGaussStop_linNg (Cm := NQLinGen_Cm0) (gK := sz0.lam) (A := 1) (Ck := NQLinGen_C) (Cv := NQLinGen_C) (E := Einst) (by norm_num)
-    (by norm_num) (azumaSubGNg NQLinGen_Cm0 NQLinGen_hWalk0 sInst vg Kg) NQLinGen_hL0 NQLinGen_hWalk0 NQLinGen_hQV0 sInst_nonneg
-    sInst_le_vg vg_lt_one 0 NQLinGen_hm0 NQLinGen_hS0 NQLinGen_R1 le_rfl NQLinGen_kerNAL0 (NQLinGen_hRow0 0) le_rfl hvL
-    (by rw [W0]; norm_num [sInst, vg]) hW1 (by norm_num) (by norm_num) hWε NQLinGen_hdW (by simp) (by norm_num) hσ3 Γ4 Λ3 Φ1 Φ1
-    (fun _ => 12) Φ1 (by norm_num) 4 le_rfl aFar 0 (by norm_num) (delta_shift_ok 0 (by norm_num [Kg]))
 
 /-! ### Target 10: the linear budget at the data of `NQBudgetGen.budgetNonAltNg`
 
 `n = 0`: `Γ = N^{2/21} = 4`, `Λ = 3`, `Φ₁ = Φ₃ = 1`, `Φ₂ = 12` (`= kΓΦ²`), `D' = 6`, `D'' = 5`, `D_Y = 1`, `D_t = -5`, `τ_K = 1/21`, `ε_q = 1`, `ε₀ = Ck + 12`, `X0 = 4 B_0^3`,
 label `aFar`.  `hlog`, `hR` are the band's explicit bounds at the data (`hlog_instance`, `hR_instance`: the same statements at the band carrier),
 `ha1`, `ha3`, `he1`-`he4` the band's for every `Ck > 0`, `ha2` the new inequality with `(N^{ε₁})² = 16`. -/
-
-/-- **`tbDriftLinNg` at the data** (levels `(Γ, Φ₁, Φ₂, Φ₃) = (4, 1, 12, 1)`, `D' = 6`). -/
-example :
-    gridStep sInst vg Kg 0 * ∑ j ∈ Finset.range (Kg 0),
-      (kappaNonAltNg 3 NQLinGen_C (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) (j + 1) (Kg 0) *
-          dDriftLinNg NQLinGen_Cm0 0 (gridTime sInst vg Kg 0 j) 3 (Γ4 0) (Φ1 0) ((fun _ : ℕ => (12 : ℝ)) 0) (Φ1 0) +
-        epsNonAltNg NQLinGen_C ((sz0.W 0 : ℕ) : ℝ) (j + 1) (Kg 0) * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) ≤
-      ((sz0.W 0 : ℕ) : ℝ) ^ (NQLinGen_C * (4 / 5)) *
-          (Γ4 0 * Γ4 0 * ((((3 : ℕ) : ℝ) - 2) * Φ1 0 + (fun _ : ℕ => (12 : ℝ)) 0 + Φ1 0)) *
-          (sz0.Bctl 0 (vg 0)) ^ 3 *
-          ∑ j ∈ Finset.range (Kg 0), gridStep sInst vg Kg 0 / NQLinGen_Cm0.eta 0 (gridTime sInst vg Kg 0 j) +
-        ((Kg 0 : ℕ) * gridStep sInst vg Kg 0) * (((sz0.W 0 : ℕ) : ℝ) ^ NQLinGen_C * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) :=
-  tbDriftLinNg NQLinGen_Cm0 NQLinGen_hL0 (s := sInst) (v := vg) (K := Kg) 0 3 NQLinGen_C (4 / 5) Γ4 Φ1 (fun _ => 12) Φ1 6
-    NQLinGen_hm0 (by norm_num [sInst]) (by norm_num [sInst, vg]) (by norm_num [vg]) (by norm_num [Kg]) (by norm_num)
-    (by norm_num [Γ4]) (by norm_num [Φ1]) (by norm_num) (by norm_num [Φ1]) eta_inv_le_N
-
-/-- **`budgetNonAltLinNg` at the data** (`d = 3`, `sz0`, `n = 0`: `L = 4`, `W = 32`, `N = 2^21`; `E ≡ 1/2`, grid `(sInst, vg, Kg)`: `Δ = 1/128`; `k = 3`,
-`ε = 4/5`; levels `(Γ, Λ, Φ₁, Φ₂, Φ₃) = (4, 3, 1, 12, 1)` with `Γ = N^{2/21}`; `D' = 6`, `D'' = 5`, `D_Y = 1`, `D_t = -5`, `τ_K = 1/21`, `ε_q = 1`,
-`ε₀ = Ck + 12` with the abstract `Ck = nqGood1C 3 3 10 (1/2) > 0`; `X0 = 4 B_0^3`; label `aFar`): every hypothesis is discharged; nothing is left
-open.  The right side is `N^{ε₀}(Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^3` with `Φ₂ = 12`: no `Φ²`. -/
-example :
-    assembledRHSLinNg NQLinGen_Cm0 sInst vg Kg 0 3 NQLinGen_C (4 / 5) Γ4 Λ3 Φ1 (fun _ => 12) Φ1 6 5 1 (1 / 21) 1
-        (4 * (sz0.Bctl 0 (sInst 0)) ^ 3) aFar ≤
-      ((sz0.size 0 : ℕ) : ℝ) ^ (NQLinGen_C + 12) *
-        (Λ3 0 ^ ((1 : ℝ) / 2) + Φ1 0 + (fun _ : ℕ => (12 : ℝ)) 0 + Φ1 0) * (sz0.Bctl 0 (vg 0)) ^ 3 :=
-  budgetNonAltLinNg NQLinGen_Cm0 NQLinGen_hL0 sInst vg Kg 0 3 NQLinGen_C (4 / 5) Γ4 Λ3 Φ1 (fun _ => 12) Φ1 6 5 1 (-5)
-    (1 / 21) 1 (NQLinGen_C + 12) (2 / 21) (4 * (sz0.Bctl 0 (sInst 0)) ^ 3) aFar
-    (by norm_num) (by norm_num) NQLinGen_hm0 (by norm_num [sInst]) (by norm_num [sInst, vg])
-    (by norm_num [vg]) (by norm_num [Kg]) eta_inv_le_N
-    (by
-      have h : (NQLinGen_Cm0.eta 0 (vg 0))⁻¹ ≤ 11 / 10 := eta_inv_le_v
-      rw [step0]; linarith)
-    (by rw [N_eps1]) (by norm_num [Λ3]) (by norm_num [Φ1]) (by norm_num) (by norm_num [Φ1])
-    hlog_instance (by rw [N_eps1]) hR_instance
-    (ha1_inst _ nqGood1C_pos_instance) (ha2_inst _ nqGood1C_pos_instance) (ha3_inst _ nqGood1C_pos_instance)
-    (he1_inst _ nqGood1C_pos_instance) (he2_inst nqGood1C_pos_instance) (he3_inst _ nqGood1C_pos_instance)
-    (he4_inst _ nqGood1C_pos_instance)
-
-end Inst
 
 end RBM.BA
 

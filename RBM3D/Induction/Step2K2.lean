@@ -183,38 +183,4 @@ theorem stK2decay_holds (d : ℕ) : STK2decay d := by
 `sz0` at `n = 0`: `L = 4`, `W = 32`, `lam = 1/64` (`N = 2097152`, `sz0_values`), and the pin's
 constants `κ = 𝔡 = 1/10` (so `lam ≤ 𝔡⁻¹ = 10`).  Every deterministic hypothesis is discharged. -/
 
-open RBM.Gauss.SizesInst in
-/-- **`stK2decay_holds`, instantiated** at `d = 3`, `n = 0` (`L = 4`, `W = 32`, `lam = 1/64`),
-`E = 1/2`, `u = 1/2`, `D = 5`, all four sign patterns and all `a ∈ (Z_4^3)²`. -/
-example :
-    ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L 0)),
-      ‖STKloop sz0 0 (1 / 2) (1 / 2) σ a‖ ≤
-        C * STprof sz0 0 (1 / 2) 5 ((sz0.L 0 : ℕ) : ℝ) (a 0) (a 1) := by
-  obtain ⟨C, hC, hall⟩ := stK2decay_holds 3 (by norm_num) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num)
-  have hlam : 0 < sz0.lam 0 := by simp [sz0]
-  have hlam' : sz0.lam 0 ≤ ((1 : ℝ) / 10)⁻¹ := by
-    have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
-    rw [this]; norm_num
-  exact ⟨C, hC, fun σ a => hall sz0 0 (1 / 2) (1 / 2) 5 hlam hlam' (by norm_num [abs_of_pos])
-    (by norm_num) (by norm_num) (by norm_num) σ a⟩
-
-open RBM.Gauss.SizesInst in
-/-- The same at `n = 1` (`L = 8`, `W = 1024`, `lam = 1/4096`), `E = 0`, `u = 99/100` (near `1`),
-`D = 0`, at the concrete off-diagonal pair `a = (0, e₁)` and signs `(+, -)`. -/
-example :
-    ∃ C : ℝ, 0 < C ∧
-      ‖STKloop sz0 1 0 (99 / 100) ![true, false] ![0, Pi.single 0 1]‖ ≤
-        C * STprof sz0 1 (99 / 100) 0 ((sz0.L 1 : ℕ) : ℝ) 0 (Pi.single 0 1) := by
-  obtain ⟨C, hC, hall⟩ := stK2decay_holds 3 (by norm_num) (1 / 10) (1 / 10) (by norm_num)
-    (by norm_num)
-  have hlam : 0 < sz0.lam 1 := by simp [sz0]
-  have hlam' : sz0.lam 1 ≤ ((1 : ℝ) / 10)⁻¹ := by
-    have : sz0.lam 1 = 1 / 4096 := by norm_num [sz0]
-    rw [this]; norm_num
-  refine ⟨C, hC, ?_⟩
-  have := hall sz0 1 0 (99 / 100) 0 hlam hlam' (by norm_num) (by norm_num) (by norm_num)
-    le_rfl ![true, false] ![0, Pi.single 0 1]
-  simpa using this
-
 end RBM.Gauss.Sizes

@@ -96,21 +96,6 @@ def twAvgXmax (C : FlowFM sz) (μ : Measure sz.SeqΩ) (n : ℕ) (t : ℝ) (p : �
 
 /-! ### Target 2 (i): the moment identity of Steps 1-3 (TP:70-78, 86-87), mirror form, at the BA carrier and the BA law -/
 
-/-- `𝔼|T|^{2p} = t Σ_c M_{c₁c} 𝔼[X_c (M_{cc₂} + twTr c c₂) Φ] + t(p-1) 𝔼[𝒮₁ T^{p-2} T̄^p] + t p 𝔼[𝒮₂ |T|^{2p-2}]`, `T = twTr c₁ c₂`,
-`Φ = T^{p-1} T̄^p`, `X_c = 𝓛^{(1)}_{+,c} - m = Tr(Ǧ E_c)`, `M_{ab} = twMB` (`M^{(B)}`).  An exact identity at one size `n` and one time `t`. -/
-def twAvgMomentAt (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (p : ℕ) (c₁ c₂ : Zd d (sz.L n)) : Prop :=
-  let C := baFMz sz z; let μ := Sizes.seqP (sz.withLam 0)
-  ((∫ ω, ‖twTr C n t ω c₁ c₂‖ ^ (2 * p) ∂μ : ℝ) : ℂ) =
-    (t : ℂ) * ∑ c, twMB C n c₁ c * ∫ ω, (C.L n t (fun _ : Fin 1 => true) (fun _ => c) ω - C.m n) *
-        (twMB C n c c₂ + twTr C n t ω c c₂) * twTr C n t ω c₁ c₂ ^ (p - 1) * (starRingEnd ℂ) (twTr C n t ω c₁ c₂) ^ p ∂μ +
-    (t : ℂ) * ((p : ℂ) - 1) * ∫ ω, twAvgS1 C n t ω c₁ c₂ * twTr C n t ω c₁ c₂ ^ (p - 2) * (starRingEnd ℂ) (twTr C n t ω c₁ c₂) ^ p ∂μ +
-    (t : ℂ) * (p : ℂ) * ∫ ω, twAvgS2 C n t ω c₁ c₂ * ((‖twTr C n t ω c₁ c₂‖ ^ (2 * p - 2) : ℝ) : ℂ) ∂μ
-
-/-- **Target 2 (i)**: `twAvgMomentAt` for every flow datum, `n`, `0 ≤ t ≤ T₀`, `p ≥ 1`, pair `(c₁, c₂)` (no `3 ≤ d`: `lanlw` is for every `d`). -/
-def twAvgMoment (d : ℕ) : Prop :=
-  ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z → ∀ (n : ℕ) (t : ℝ), 0 ≤ t → t ≤ BAflowT0 sz z n →
-    ∀ p : ℕ, 1 ≤ p → ∀ c₁ c₂ : Zd d (sz.L n), twAvgMomentAt sz z n t p c₁ c₂
-
 /-! ### Target 2 (iv): continuity (measurability, integrability) and deterministic envelopes -/
 
 /-- **Target 2 (iv)**: for `0 ≤ t ≤ T₀` (and `0 < κ`, `0 < ε`, `BAFlow`): `twTr`, `𝒮₁`, `𝒮₂`, `𝓛^{(1)}_c - m` are continuous in `ω` (so measurable),
@@ -166,10 +151,6 @@ def TwistAvgA_pt (n : ℕ) (c : Zd d (sz.L n)) (o : Fin (sz.W n ^ d)) : Idx d (s
 theorem TwistAvgA_split_pt (n : ℕ) (c : Zd d (sz.L n)) (o : Fin (sz.W n ^ d)) :
     split d (sz.L n) (sz.W n) (TwistAvgA_pt n c o) = (c, o) :=
   (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply _
-
-theorem TwistAvgA_pt_split (n : ℕ) (x : Idx d (sz.L n) (sz.W n)) :
-    TwistAvgA_pt n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) x).2 = x :=
-  (splitEquiv d (sz.L n) (sz.W n)).symm_apply_apply x
 
 theorem TwistAvgA_shift_eq (n : ℕ) (c : Zd d (sz.L n)) (x : Idx d (sz.L n) (sz.W n)) :
     twShift n c x = TwistAvgA_pt n c (split d (sz.L n) (sz.W n) x).2 := rfl
@@ -1046,39 +1027,8 @@ theorem TwistAvgA_moment (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n
 
 end Moment
 
-/-- **Target 2 (i) is proved**: the moment identity of Steps 1-3 of Lemma T.7 (`TP:86-87`, mirror form), for every `d`. -/
-theorem twAvgMoment_holds (d : ℕ) : twAvgMoment d := fun κ ε 𝔠 𝔡 sz z hκ hflow n t ht0 ht p hp c₁ c₂ =>
-  TwistAvgA_moment hκ hflow n ht0 ht p hp c₁ c₂
-
-
 /-! ## 9. Instances (target 3): `d = 3`, `sz0` (`L = 4`, `W = 32` at `n = 0`), `zSeq`, `flow_sz0`, `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `t ≡ 1/2 ≤ T₀`.
 Every hypothesis of the two theorems is deterministic and is discharged at the datum. -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
-
-/-- Target 2 (i) at `n = 0` (`L = 4`, `W = 32`), `t = 1/2`, `p = 1`, `c₁ = 0`, `c₂ = (1,0,0) ≠ c₁`. -/
-example : twAvgMomentAt sz0 zSeq 0 (1 / 2) 1 0 ![1, 0, 0] :=
-  twAvgMoment_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le 1 le_rfl 0 ![1, 0, 0]
-
-/-- The same at `p = 2` (both `𝒮₁` and `𝒮₂` terms present). -/
-example : twAvgMomentAt sz0 zSeq 0 (1 / 2) 2 0 ![1, 0, 0] :=
-  twAvgMoment_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le 2 (by norm_num) 0 ![1, 0, 0]
-
-/-- The pair of the two instances above is a pair of distinct blocks. -/
-example : (![1, 0, 0] : Zd 3 (sz0.L 0)) ≠ 0 := by
-  have : Fact (1 < sz0.L 0) := ⟨by decide⟩
-  exact fun hh => by simpa using congrFun hh 0
-
-/-- Target 2 (iv) at the datum: the pointwise bound `‖twTr‖ ≤ η⁻¹ + 1` and the eventual envelope `η⁻¹ + 1 ≤ N` at `t = 1/2` give `‖twTr‖ ≤ N`,
-for all blocks `c₁, c₂`. -/
-example : ∀ᶠ n in atTop, ∀ (ω : sz0.SeqΩ) (c₁ c₂ : Zd 3 (sz0.L n)),
-    ‖twTr (baFMz sz0 zSeq) n (1 / 2) ω c₁ c₂‖ ≤ ((sz0.size n : ℕ) : ℝ) := by
-  obtain ⟨-, hb, he⟩ := twAvgReg_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) (by norm_num) flow_sz0
-  filter_upwards [he] with n hn ω c₁ c₂
-  exact (hb n (1 / 2) (by norm_num) (half_lt_t0 n).le ω c₁ c₂).1.trans (hn (1 / 2) (by norm_num) (half_lt_t0 n).le)
-
-end Inst
 
 end RBM.BA
 

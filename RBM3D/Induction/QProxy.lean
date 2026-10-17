@@ -654,25 +654,6 @@ private theorem qProxyW0_spec {d : ℕ} (m : ℕ) {Λg K C c C₀ ε D : ℝ} (h
   exact (Classical.choose_spec (stQop_sub_fastDecay d m K C c (C₀ + qProxyCn d m Λg K C c + 1) ε
     (D - qProxyCn d m Λg K C c) hC hc hε)).2 L hL g hg W hW' hLK
 
-/-- The spec of EK-4 at the constant `qProxy4C` (`ekSumDecay2_holds`). -/
-private theorem qProxy4C_spec {d k : ℕ} (hd : 3 ≤ d) (hk : 2 ≤ k) {Λg κ' K : ℝ} (hΛ : 0 < Λg)
-    (hκ' : 0 < κ') (hK : 0 < K) :
-    ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λg →
-      ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε → Real.log L ≤ W ^ ε →
-      (L : ℝ) ^ d ≤ W ^ K →
-      ∀ s t : ℝ, 0 ≤ s → s ≤ t → t ≤ 1 - g ^ 2 / (L : ℝ) ^ 2 → W⁻¹ ≤ (1 - t) / (1 - s) →
-      ∀ m : ℂ, ‖m‖ = 1 → κ' ≤ m.im → ∀ σ : Fin k → Bool, ∀ A : (Fin k → Zd d L) → ℂ,
-        haveI : NeZero L := ⟨by omega⟩
-        EKFastDecay g s W ε D A → EKSumZero A →
-        ‖UN d L g (EKsgn m σ) s t A‖ ≤
-          W ^ (qProxy4C d k Λg κ' K * ε) * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) ^ k * ‖A‖ +
-            W ^ (-D + qProxy4C d k Λg κ' K) := by
-  have h : 3 ≤ d ∧ 2 ≤ k ∧ 0 < Λg ∧ 0 < κ' ∧ 0 < K := ⟨hd, hk, hΛ, hκ', hK⟩
-  unfold qProxy4C
-  rw [dite_eq_left_of_eq_true (eq_true h)]
-  exact (Classical.choose_spec (ekSumDecay2_holds d k Λg κ' (prop5Decay_holds d Λg)
-    (prop5Short_holds d Λg κ') (prop6Diff1_holds d Λg κ' (1 / 2)) hd hk hΛ hκ' K hK)).2
-
 end Constants
 
 section D1
@@ -706,25 +687,6 @@ theorem qProxyG_kerEK4_band_at {d k : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (hd 
     (prop6Diff1_holds d Λ κ' (1 / 2)) hd hk hΛ hκ' KL hKL)
   rw [hC, ← bandStep2_Ugen]
   exact hEK (sz.L n) (sz.three_le_L n) (sz.lam n) hg hgΛ _ ε D hW hε0 hε1 hD hWε hlog hLK s t hs hst ht hWt (mE (E n)) (norm_mE hE) hκm σ A hA hsum
-
-private theorem QProxyG_flow_im {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    0 < (z n).im :=
-  lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (h.2 n).2.1
-
-private theorem QProxyG_flow_E {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (QProxyG_flow_im h n)).trans (h.2 n).1
-
-theorem qProxyG_kerEK4_band (d : ℕ) : QProxyG_KerEK4Fam d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun sz _ => sz.lam) := by
-  intro hd k hk κ ε 𝔡 KL hκ hε h𝔡 hKL
-  have hκ' : 0 < min κ (4 / 5) := lt_min hκ (by norm_num)
-  refine ⟨qProxy4C d k 𝔡⁻¹ (min κ (4 / 5)) KL, qProxy4C_pos hd hk (inv_pos.2 h𝔡) hκ' hKL, ?_⟩
-  intro sz 𝔠 z hflow
-  filter_upwards [hflow.1.2.2.2.2] with n hn
-  have hlam : 0 < sz.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1
-  have hE := QProxyG_flow_E hflow n
-  exact qProxyG_kerEK4_band_at sz (STflowE z) hd hk (inv_pos.2 h𝔡) hκ' hKL n hlam hn.2 (by linarith) (nqGood1_mE_im_ge hκ hE)
 
 end D1
 
@@ -1292,46 +1254,6 @@ theorem qvFormQN_le_of_bounds {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) (Λg κ'
     (fun n' => ⟨mul_self_nonneg _, le_rfl, by rw [one_mul]⟩) le_rfl hg hgΛ hKer
     (gridRepTailGen_ker_band sz (fun _ => E) n hE) le_rfl hW hε0 hε1 hWε hlog hε0 hε1 hWε (by simp) hLK hdW
     (by simp) hC₀ hD hW₀ hϑ hv0 hvw hwL hWt M hMee hT hTfar a
-
-/-- **Target 6b (`qvFormQN_le_of_goodSetN`)**: 6a on the good set at the time `u` of the good set: for
-`M ∈ GoodSetN n E u (m+1) Γ Λ Φ τ' D`, clauses (D4) and (Vb) give `M_ee = Γ(ΓΛ)B_u^{2k}/η_u` and `δ = W^{-D}`.
-**`Φ` is arbitrary and absent from the right side** (only the membership uses it; the level of the current
-length plays no role here, DECISIONS §62 (4)).  RBM2D `qvFormQN_le_of_goodSet` (`AltProxyQ:933`);
-pattern `qvFormN_le_of_goodSetN` (`NQGood1.lean:551`). -/
-theorem qvFormQN_le_of_goodSetN {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) (Λg κ' K C c : ℝ)
-    (hΛ : 0 < Λg) (hκ' : 0 < κ') (hK : 0 < K) (hC : 0 < C) (hc : 0 < c)
-    (sz : Sizes d) (n : ℕ) (hg : 0 < sz.lam n) (hgΛ : sz.lam n ≤ Λg)
-    {ε τ' C₀ D : ℝ} (hW : 1 < ((sz.W n : ℕ) : ℝ)) (hε0 : 0 < ε) (hε1 : ε < 1)
-    (hWε : 4 ≤ ((sz.W n : ℕ) : ℝ) ^ ε)
-    (hlog : Real.log ((sz.L n : ℕ) : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ ε)
-    (hLK : ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K)
-    (hdW : (d : ℝ) * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε) (hC₀ : 0 ≤ C₀)
-    (hD : (m : ℝ) + 2 + qProxyCQ d m Λg K C c < D)
-    (hW₀ : qProxyW0 d m Λg K C c C₀ ε D ≤ ((sz.W n : ℕ) : ℝ))
-    {ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ} (hϑ : STMollifierProps (d := d) (sz.lam n) C c ϑ)
-    {u w : ℝ} (hu0 : 0 ≤ u) (huw : u ≤ w) (hwL : w ≤ 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2)
-    (hWt : (((sz.W n : ℕ) : ℝ))⁻¹ ≤ (1 - w) / (1 - u)) {E : ℝ} (hE : |E| ≤ 2)
-    (hκm : κ' ≤ (mE E).im) {σ : Fin (m + 1) → Bool} {Γ Λ Φ : ℝ}
-    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-    (hM : M ∈ sz.GoodSetN n E u (m + 1) Γ Λ Φ τ' D)
-    (hMee : Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * (m + 1)) / etaT E u) ≤ ((sz.W n : ℕ) : ℝ) ^ C₀)
-    (a : Fin (m + 1) → Zd d (sz.L n)) :
-    qvFormQN sz n ϑ E u w σ M a ≤
-      (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1) Λg κ' K * ε) *
-          ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1)) *
-        ((((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1) Λg κ' K * ε) *
-            ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1)) *
-          (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d m Λg K C c * ε) *
-              (Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * (m + 1)) / etaT E u)) +
-            ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d m Λg K C c)) +
-          ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1) Λg κ' K *
-            ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d m Λg K C c)) +
-        ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1) Λg κ' K *
-          (((sz.W n : ℕ) : ℝ) ^ (m + 1) * ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d m Λg K C c)) := by
-  obtain ⟨-, -, -, -, -, -, hD4, -, hVb⟩ := hM
-  exact qvFormQN_le_of_bounds hd hm Λg κ' K C c hΛ hκ' hK hC hc sz n hg hgΛ hW hε0 hε1 hWε hlog hLK
-    hdW hC₀ hD hW₀ hϑ hu0 huw hwL hWt hE hκm M hMee (fun b b' => hD4 σ b b')
-    (fun b b' hfar => hVb σ b b' hfar) a
 
 end QVBound
 

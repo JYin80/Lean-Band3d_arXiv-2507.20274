@@ -271,10 +271,6 @@ def STStep4R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ �
 /-- The regime predicates as functions of the sizes (`STCaseI`, `STCaseII` have an implicit `d`). -/
 def STAny {d : ℕ} (_sz : Sizes d) (_s _t : ℕ → ℝ) : Prop := True
 
-/-- Steps 3 and 4, the general statements, and the two cases. -/
-def STStep3 (d : ℕ) : Prop := STStep3R d STAny
-def STStep4 (d : ℕ) : Prop := STStep4R d STAny
-def STStep3I (d : ℕ) : Prop := STStep3R d STCaseI
 def STStep3II (d : ℕ) : Prop := STStep3R d STCaseII
 def STStep4I (d : ℕ) : Prop := STStep4R d STCaseI
 def STStep4II (d : ℕ) : Prop := STStep4R d STCaseII
@@ -390,10 +386,6 @@ def STSEforLnConcl (E s t : ℕ → ℝ) : Prop :=
 `n'₁, n'₂ ≤ n-1`), `m = 2 n_ - 1`, `m = 4 p`; those of `Ξ^{𝓛-𝒦}` are `m ≤ n_ - 1`. -/
 def STlenL (n_ p m : ℕ) : Prop := m ≤ n_ + 1 ∨ m = 2 * n_ - 1 ∨ m = 4 * p
 
-/-- `sup_{w ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{w,k}` (a bounded family: the loops are bounded on `[s,u] ⊂ [0,1)`). -/
-def STsupXiLK (n : ℕ) (E s u : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
-  ⨆ w : Set.Icc s u, STXiLK sz n E (w : ℝ) k ω
-
 /-- The deterministic part of the right side of `(am;asoi222)` (`3_5:1366`) / of `(am;asoiuw)`
 (`3_5:1143-1149`): controls `XL m = Ξ^{𝓛}_{·,m}`, `XLK m = Ξ^{𝓛-𝒦}_{·,m}` (constant in `v ∈ [s,u]`, depending on the
 endpoint `u`), `B = W^{-d}B_{u,0}`, loop length `n_`, martingale exponent `p`; `lo = 1` for
@@ -404,40 +396,6 @@ def STbootRHS (lo : ℕ) (XL XLK : ℕ → ℝ) (B : ℝ) (n_ p : ℕ) : ℝ :=
     (∑ m ∈ Finset.Icc lo (n_ - 1), XLK m + ∑ m ∈ Finset.Icc (n_ - 1) (n_ + 1), XL m +
       ∑ m ∈ Finset.Icc ((n_ + 1) / 2 + 1) (n_ - 1),
         XLK (n_ + 2 - m) * (XL (STn12 m).1 * XL (STn12 m).2) ^ (1 / 2 : ℝ))
-
-/-- **`(am;asoi222)`** (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`, uniformly in
-`u ∈ [s,t]` and with the supremum over `v ∈ [s,u]` inside `Prec` (the index `(v,u)`): for `n_ ≥ 2`, `p ≥ 1` and
-deterministic control parameters `Ξ^{𝓛}_{v,m} = XL m n u`, `Ξ^{𝓛-𝒦}_{v,m} = XLK m n u` (`≥ 1`, constant in `v`,
-depending on `u`: the form in which `lem:iterations` and `(saww02)` apply the lemma; the paper allows `v`-dependent
-parameters and a `sup_v` on the right, paper-delta candidate `T2041a`) with `Ξ̂ ≺ Ξ` for the lengths `m` that occur:
-`sup_{v ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{v,n_} ≺ STbootRHS 1 ...`. -/
-def STXiBoot (E s t : ℕ → ℝ) : Prop :=
-  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
-    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
-    (∀ m, 1 ≤ m → STlenL n_ p m →
-      Prec sz (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω) (fun n q _ => XL m n q.1.2)) →
-    (∀ m, 1 ≤ m → m + 1 ≤ n_ →
-      Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 m ω) (fun n q _ => XLK m n q.1.2)) →
-    Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 n_ ω)
-      (fun n q _ => STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2) (sz.Bctl n q.1.2) n_ p)
-
-/-- **`lem:STOeq_NQ`** (`3_5:1136`, bound `(am;asoiuw)` `3_5:1143-1148`): for the non-alternating sign vectors
-(`σ_k = σ_{k+1}` for some `k`), uniformly in the endpoint `u`, the loops at `u`:
-`max_{σ nal, a} |(𝓛-𝒦)^{(n_)}_{u,σ,a}| / (W^{-d}B_{u,0})^{n_} ≺ B_u^{1/6} sup_{w ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{w,n_} +
-STbootRHS 2 ...` (same controls as `STXiBoot`). -/
-def STNQConcl (E s t : ℕ → ℝ) : Prop :=
-  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
-    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
-    (∀ m, 1 ≤ m → STlenL n_ p m →
-      Prec sz (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω) (fun n q _ => XL m n q.1.2)) →
-    (∀ m, 1 ≤ m → m + 1 ≤ n_ →
-      Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 m ω) (fun n q _ => XLK m n q.1.2)) →
-    Prec sz (U := fun n => TimeIcc s t n × {σ : Fin n_ → Bool // ∃ k, σ k = σ (finRotate n_ k)} ×
-        (Fin n_ → Zd d (sz.L n)))
-      (fun n q ω => ‖Lloop sz n (E n) (q.1 : ℝ) q.2.1.1 q.2.2 ω - STKloop sz n (E n) (q.1 : ℝ) q.2.1.1 q.2.2‖ /
-        (sz.Bctl n (q.1 : ℝ)) ^ n_)
-      (fun n q ω => (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * STsupXiLK sz n (E n) (s n) (q.1 : ℝ) n_ ω +
-        STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (q.1 : ℝ)) n_ p)
 
 /-- A Step-3 ingredient pin: the setting of `lem:main_ind` (constants first, `𝔠_d` after `C_d`), a regime `R`,
 the hypotheses `(a)` at `s`, `(con_st_ind)`, the conclusions of Step 2, `ML:Kbound`, `(wardineq_K)`; the
@@ -455,49 +413,15 @@ def STIngR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → 
 /-- `lem:SEforLn` (the setting of `lem:main_ind`; any regime). -/
 def STSEforLn (d : ℕ) : Prop := STIngR d STAny (fun sz E s t => STSEforLnConcl sz E s t)
 
-/-- `lem:STOeq_NQ` (`3_5:1136`): case (i). -/
-def STOeqNQ (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STNQConcl sz E s t)
-
-/-- `lem:STOeq_Qt` (`3_5:1362`): case (i), `1 - t ≥ ilambda²/L²`. -/
-def STOeqQt (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STXiBoot sz E s t)
-
-/-- `lem:STOeq_Qt_nonzero` (`3_5:1561`): case (ii), `1 - s ≤ ilambda²/L²`: the same bound `(am;asoi222)`. -/
-def STOeqQtNZ (d : ℕ) : Prop := STIngR d STCaseII (fun sz E s t => STXiBoot sz E s t)
-
 /-- `(eq:iteration_induc)` at `(r,l)` (`3_5:1410`): `sup_{v ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{v,r} ≺ Ψ(r,l;s,u)`, uniformly in
 `u ∈ [s,t]`, with `Ψ` built from the parameter `A`. -/
 def STIterHyp (E s t : ℕ → ℝ) (A : ℕ → ℝ) (r l : ℕ) : Prop :=
   Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 r ω)
     (fun n q _ => STPsi (A n) (etaT (E n) (s n) / etaT (E n) q.1.2) r l)
 
-/-- **`lem:iterations`** (`3_5:1407-1417`) and its case-`(ii)` analogue (`3_5:1575-1595`; "we omit the details", `3_5:1594`):
-under the setting, `(lRB1)`, the Step-2 conclusions and `(am;asoi222)` (`STXiBoot`), with `1 - s ≤ ilambda²` and
-`1 - t ≥ ilambda²/L²` (case (i), `A = ilambda² W^d`) resp. `1 - s ≤ ilambda²/L²` (case (ii), `A = (W^{-d}B_{s,0})⁻¹`):
-if `(eq:iteration_induc)` holds at `(r,k)`, `2 ≤ r ≤ n_-1`, and at `(r,k-1)`, `2 ≤ r ≤ n_+2`, then at `(n_,k)`;
-`n_ ≥ 2`, `k ≥ 1`. -/
-def STIterR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) : Prop :=
-  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
-    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ lemT (z n)) →
-          R sz s t → STKbound sz (STflowE z) → STLK sz (STflowE z) s → STConStInd sz 𝔠d s t →
-          STStep1Loop sz (STflowE z) s t → STStep2Concl sz (STflowE z) s t Cd →
-          STXiBoot sz (STflowE z) s t →
-          ∀ n_ k : ℕ, 2 ≤ n_ → 1 ≤ k →
-            (∀ r, 2 ≤ r → r + 1 ≤ n_ → STIterHyp sz (STflowE z) s t (Aof sz s) r k) →
-            (∀ r, 2 ≤ r → r ≤ n_ + 2 → STIterHyp sz (STflowE z) s t (Aof sz s) r (k - 1)) →
-            STIterHyp sz (STflowE z) s t (Aof sz s) n_ k
-
 /-- Regime of `lem:iterations`, case (i): `1 - s ≤ ilambda²` and `1 - t ≥ ilambda²/L²`. -/
 def STRegIterI {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) : Prop :=
   STCaseI sz s t ∧ ∀ n, 1 - s n ≤ sz.lam n ^ 2
-
-/-- `lem:iterations`, case (i) (`A = ilambda² W^d`, `Ψ` of `(adsyzz0s8d6)`). -/
-def STIterations (d : ℕ) : Prop := STIterR d STRegIterI (fun sz _ n => STAI sz n)
-
-/-- The case-(ii) analogue (`A = (W^{-d}B_{s,0})⁻¹`, `Ψ` of `(eq:psipara_smalletacase)`). -/
-def STIterationsII (d : ℕ) : Prop := STIterR d STCaseII (fun sz s n => STAII sz s n)
 
 /-! ### The mollifier `ϑ`, the bounds on `𝒬_t`, `(eq:Ward_typeP)` and `ℬ₄, ℬ₅` -/
 
@@ -538,46 +462,6 @@ def STQopNorm (d : ℕ) : Prop :=
 def STLKtensor (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin (m + 1) → Bool) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   fun a => Lloop sz n E u σ a ω - STKloop sz n E u σ a
-
-/-- The alternating sign vectors: `σ_k = -σ_{k+1}` for all `k` (`(NALsig_diff)`, `3_5:1199`). -/
-def STAlternating {k : ℕ} (σ : Fin k → Bool) : Prop := ∀ i, σ (finRotate k i) ≠ σ i
-
-/-- **`(eq:Ward_typeP)`** (`3_5:1264`, `jywiiwsoks` `3_5:1271`), alternating `σ`, uniformly in `u ∈ [s,t]`, case (i):
-`[𝒫∘(𝓛-𝒦)^{(m+1)}_{u,σ}]_{a₁} ϑ_{u,a} ≺ (W^{-d}B_{u,0})^{m+1} Ξ^{𝓛-𝒦}_{u,m}` for a deterministic `Ξ^{𝓛-𝒦}_{u,m} = X n u`
-(`Ξ̂ ≺ Ξ`) and any mollifier family with constants `C, c`.  Proof: Ward `(WI_calK)`, fast decay, `(ℓ^d η)⁻¹ ≲ B_{u,0}`
-(`3_5:1264`: needs `1 - u ≥ ilambda²/L²`). -/
-def STWardTypeP (E s t : ℕ → ℝ) : Prop :=
-  ∀ (m : ℕ) (C c : ℝ), 1 ≤ m →
-    ∀ ϑ : (∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), (∀ n, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) →
-    ∀ X : ℕ → ℝ → ℝ, (∀ n u, 1 ≤ X n u) →
-      Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) m ω) (fun n u _ => X n (u : ℝ)) →
-      Prec sz (U := fun n => TimeIcc s t n × {σ : Fin (m + 1) → Bool // STAlternating σ} × (Fin (m + 1) → Zd d (sz.L n)))
-        (fun n q ω => ‖STPsum (d := d) (STLKtensor sz n (E n) (q.1 : ℝ) ω q.2.1.1) (q.2.2 0) * ϑ n (q.1 : ℝ) q.2.2‖)
-        (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ (m + 1) * X n (q.1 : ℝ))
-
-/-- **`(y27kasdfg)`** (`3_5:1692`): for alternating `σ` and `ℬ₄ = [𝒬_u, Θ^{(m+1)}_{u,σ}] ∘ (𝓛-𝒦)_{u,σ}`,
-`ℬ₅ = -[𝒫∘(𝓛-𝒦)_{u,σ}] ∂_uϑ_u`: `‖ℬ₄(u)‖_∞ + ‖ℬ₅(u)‖_∞ ≺ η_u⁻¹ (W^{-d}B_{u,0})^{m+1} Ξ^{𝓛-𝒦}_{u,m}` (same controls). -/
-def STB45 (E s t : ℕ → ℝ) : Prop :=
-  ∀ (m : ℕ) (C c : ℝ), 1 ≤ m →
-    ∀ ϑ : (∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), (∀ n, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) →
-    ∀ X : ℕ → ℝ → ℝ, (∀ n u, 1 ≤ X n u) →
-      Prec sz (U := fun n => TimeIcc s t n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) m ω) (fun n u _ => X n (u : ℝ)) →
-      Prec sz (U := fun n => TimeIcc s t n × {σ : Fin (m + 1) → Bool // STAlternating σ} × (Fin (m + 1) → Zd d (sz.L n)))
-        (fun n q ω =>
-          ‖(STQop (d := d) (ϑ n) (q.1 : ℝ)
-              (ThetaN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) q.2.1.1) (q.1 : ℝ)
-                (STLKtensor sz n (E n) (q.1 : ℝ) ω q.2.1.1)) -
-            ThetaN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) q.2.1.1) (q.1 : ℝ)
-              (STQop (d := d) (ϑ n) (q.1 : ℝ) (STLKtensor sz n (E n) (q.1 : ℝ) ω q.2.1.1))) q.2.2‖ +
-          ‖STPsum (d := d) (STLKtensor sz n (E n) (q.1 : ℝ) ω q.2.1.1) (q.2.2 0) *
-              deriv (fun τ => ϑ n τ q.2.2) (q.1 : ℝ)‖)
-        (fun n q _ => (etaT (E n) (q.1 : ℝ))⁻¹ * (sz.Bctl n (q.1 : ℝ)) ^ (m + 1) * X n (q.1 : ℝ))
-
-/-- `(eq:Ward_typeP)`: case (i). -/
-def STWardTypePPin (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STWardTypeP sz E s t)
-
-/-- `(y27kasdfg)`: case (i). -/
-def STB45Pin (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STB45 sz E s t)
 
 /-! ## 4. The consumer form of the evolution-kernel pins (for EK-6)
 
@@ -620,18 +504,6 @@ def STEKSumNdecay (d : ℕ) : Prop :=
       Prec sz (U := fun n => TimeIcc s t n)
         (fun n v ω => ‖UN d (sz.L n) (sz.lam n) (EKsgn (m n) σ) (v : ℝ) (t n) (𝒜 n v ω)‖)
         (fun n v ω => ((1 - (v : ℝ)) / (1 - t n)) ^ n_ * X n v ω)
-
-/-- **`(sum_res_1)`** (`3_5:1639`) at scale `N` (any `σ`; not consumed by Steps 3-4): `≺ (ℓ_t²/ℓ_s²)·ratio^{n}`. -/
-def STEKSumRes1 (d : ℕ) : Prop :=
-  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-    ∀ s t : ℕ → ℝ, STEKWin sz s t → ∀ m : ℕ → ℂ, (∀ n, ‖m n‖ = 1) → ∀ σ : Fin n_ → Bool,
-    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ), STEKDecay sz s t 𝒜 →
-    ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), STEKLow sz s t X →
-      Prec sz (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
-      Prec sz (U := fun n => TimeIcc s t n)
-        (fun n v ω => ‖UN d (sz.L n) (sz.lam n) (EKsgn (m n) σ) (v : ℝ) (t n) (𝒜 n v ω)‖)
-        (fun n v ω => (ellT (sz.L n) (sz.lam n) (t n) ^ 2 / ellT (sz.L n) (sz.lam n) (v : ℝ) ^ 2) *
-          ((sz.lam n ^ 2 + |1 - (v : ℝ)|) / (sz.lam n ^ 2 + |1 - t n|)) ^ n_ * X n v ω)
 
 /-- **`(sum_res_2_NAL)`** (`3_5:1649`) at scale `N`, `σ` non-alternating, bulk `κ ≤ Im m`: `≺ ratio^{n-1} X`. -/
 def STEKSumRes2NAL (d : ℕ) : Prop :=
@@ -714,379 +586,12 @@ def szB : Sizes 3 where
   three_le_L := fun _ => by norm_num
   W_pos := fun n => by omega
 
-theorem szB_W_tendsto : Tendsto (fun n : ℕ => ((szB.W n : ℕ) : ℝ)) atTop atTop := by
-  refine tendsto_atTop_mono (fun n => ?_) (tendsto_natCast_atTop_atTop (R := ℝ))
-  change (n : ℝ) ≤ ((n + 4 : ℕ) : ℝ)
-  exact_mod_cast Nat.le_add_right n 4
-
-theorem szB_size (n : ℕ) : szB.size n = (4 * (n + 4)) ^ 3 := by
-  simp [Sizes.size, szB, mul_comm]
-
-theorem szB_size_ge (n : ℕ) : 4096 ≤ szB.size n := by
-  rw [szB_size]
-  calc 4096 = 16 ^ 3 := by norm_num
-    _ ≤ (4 * (n + 4)) ^ 3 := Nat.pow_le_pow_left (by omega) 3
-
-theorem szB_tendsto : szB.SizeTendsto := by
-  refine tendsto_atTop_mono (fun n => ?_) (tendsto_natCast_atTop_atTop (R := ℝ))
-  have : n ≤ szB.size n := by
-    rw [szB_size]
-    calc n ≤ 4 * (n + 4) := by omega
-      _ ≤ (4 * (n + 4)) ^ 3 := Nat.le_self_pow (by norm_num) _
-  exact_mod_cast this
-
-theorem szB_bandwidth : szB.Bandwidth (1 / 6) := by
-  refine Eventually.of_forall fun n => ?_
-  have h : ((szB.size n : ℕ) : ℝ) ≤ ((szB.W n : ℕ) : ℝ) ^ 6 := by
-    have : szB.size n ≤ (szB.W n) ^ 6 := by
-      rw [szB_size]
-      change (4 * (n + 4)) ^ 3 ≤ (n + 4) ^ 6
-      have h4 : 4 * (n + 4) ≤ (n + 4) ^ 2 := by nlinarith
-      calc (4 * (n + 4)) ^ 3 ≤ ((n + 4) ^ 2) ^ 3 := Nat.pow_le_pow_left h4 3
-        _ = (n + 4) ^ 6 := by ring
-    exact_mod_cast this
-  calc ((szB.size n : ℕ) : ℝ) ^ (1 / 6 : ℝ)
-      ≤ (((szB.W n : ℕ) : ℝ) ^ 6) ^ (1 / 6 : ℝ) := Real.rpow_le_rpow (Nat.cast_nonneg _) h (by norm_num)
-    _ = (szB.W n : ℝ) := by
-        rw [show (1 / 6 : ℝ) = ((6 : ℕ) : ℝ)⁻¹ by norm_num]
-        exact Real.pow_rpow_inv_natCast (Nat.cast_nonneg _) (by norm_num)
-
-theorem szB_WO : szB.WO (1 / 10) := by
-  refine Eventually.of_forall fun n => ⟨?_, by norm_num [szB]⟩
-  have hW : (1 : ℝ) ≤ ((szB.W n : ℕ) : ℝ) := by
-    change (1 : ℝ) ≤ ((n + 4 : ℕ) : ℝ)
-    exact_mod_cast (by omega : 1 ≤ n + 4)
-  exact (Real.rpow_le_one_of_one_le_of_nonpos hW (by norm_num)).trans (by simp [szB])
-
-theorem szB_admissible : szB.Admissible (1 / 6) (1 / 10) :=
-  ⟨by norm_num, by norm_num, szB_tendsto, szB_bandwidth, szB_WO⟩
-
-/-- The flow points `z_n = 1/2 + i/64` of the second family. -/
-def zB (_n : ℕ) : ℂ := ⟨1 / 2, 1 / 64⟩
-
-theorem zB_locDomain (n : ℕ) : szB.locDomain (1 / 10) (1 / 10) n (zB n) := by
-  have hN : (4096 : ℝ) ≤ ((szB.size n : ℕ) : ℝ) := by exact_mod_cast szB_size_ge n
-  refine ⟨?_, ?_, ?_⟩
-  · simp only [zB, abs_of_pos (show (0 : ℝ) < 1 / 2 by norm_num)]; norm_num
-  · change ((szB.size n : ℕ) : ℝ) ^ (-1 + 1 / 10 : ℝ) ≤ 1 / 64
-    calc ((szB.size n : ℕ) : ℝ) ^ (-1 + 1 / 10 : ℝ) ≤ (4096 : ℝ) ^ (-1 + 1 / 10 : ℝ) :=
-          Real.rpow_le_rpow_of_nonpos (by norm_num) hN (by norm_num)
-      _ ≤ 1 / 64 := by
-          have h1 : (64 : ℝ) ≤ (4096 : ℝ) ^ (9 / 10 : ℝ) := by
-            calc (64 : ℝ) = (4096 : ℝ) ^ (1 / 2 : ℝ) := by
-                  rw [← Real.sqrt_eq_rpow]; rw [show (4096 : ℝ) = 64 ^ 2 by norm_num]
-                  exact (Real.sqrt_sq (by norm_num)).symm
-              _ ≤ (4096 : ℝ) ^ (9 / 10 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-          rw [show (-1 + 1 / 10 : ℝ) = -(9 / 10 : ℝ) by norm_num, Real.rpow_neg (by norm_num)]
-          calc ((4096 : ℝ) ^ (9 / 10 : ℝ))⁻¹ ≤ (64 : ℝ)⁻¹ := inv_anti₀ (by norm_num) h1
-            _ = 1 / 64 := by norm_num
-  · simp only [zB]; norm_num
-
-theorem flow_zB : STFlow szB (1 / 10) (1 / 10) (1 / 6) (1 / 10) zB := ⟨szB_admissible, zB_locDomain⟩
-
-/-- `lemT zB ≥ 31/32`: `(1 - t₀) Im m(E) = √t₀ Im z` (merged `zt_im_lemma28`), `Im m(E) ≥ 1/2` for `|E| ≤ |Re z| = 1/2`,
-`Im z = 1/64`. -/
-theorem lemT_zB (n : ℕ) : (31 / 32 : ℝ) ≤ lemT (zB n) := by
-  have hz : 0 < (zB n).im := by simp [zB]
-  have h1 := zt_im_lemma28 hz
-  rw [zt_im] at h1
-  have hE : |lemE (zB n)| ≤ 1 / 2 := (abs_lemE_le hz).trans (by simp [zB])
-  have hE2 : (lemE (zB n)) ^ 2 ≤ 1 / 4 := by
-    have := abs_le.1 hE
-    nlinarith [this.1, this.2]
-  have hmE : (1 / 2 : ℝ) ≤ (mE (lemE (zB n))).im := by
-    rw [mE_im]
-    have h4 : (1 : ℝ) ≤ Real.sqrt (4 - (lemE (zB n)) ^ 2) := by
-      rw [← Real.sqrt_one]
-      exact Real.sqrt_le_sqrt (by linarith)
-    linarith
-  have hT := lemT_lt_one hz
-  have hsq : Real.sqrt (lemT (zB n)) ≤ 1 := by
-    rw [← Real.sqrt_one]; exact Real.sqrt_le_sqrt hT.le
-  have him : (zB n).im = 1 / 64 := by simp [zB]
-  rw [him] at h1
-  have h2 : (1 - lemT (zB n)) * (1 / 2) ≤ (1 - lemT (zB n)) * (mE (lemE (zB n))).im :=
-    mul_le_mul_of_nonneg_left hmE (by linarith)
-  have h3 : Real.sqrt (lemT (zB n)) * (1 / 64) ≤ 1 / 64 := by nlinarith
-  linarith
-
-/-- `W^{-3} B_{c,0} → 0` for a constant time `c < 1` (any size data at `d = 3` with `W → ∞`). -/
-theorem Bctl_tendsto_const (sz : Sizes 3)
-    (hWt : Tendsto (fun n : ℕ => ((sz.W n : ℕ) : ℝ)) atTop atTop) {c : ℝ} (hc : c < 1) :
-    Tendsto (fun n => sz.Bctl n c) atTop (nhds 0) := by
-  have hW : Tendsto (fun n : ℕ => (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) :=
-    tendsto_inv_atTop_zero.comp ((tendsto_pow_atTop (by norm_num : (3 : ℕ) ≠ 0)).comp hWt)
-  have hup : Tendsto (fun n : ℕ => 2 * (1 - c)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) atTop (nhds 0) := by
-    simpa using hW.const_mul (2 * (1 - c)⁻¹)
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hup
-    (fun n => (st_Bctl_pos sz hc).le) (fun n => Bctl_const_le_gen sz n hc)
-
-/-- `(con_st_ind)` for constant times `s₀ < t₀ < 1`, every `𝔠_d > 0`. -/
-theorem conStInd_const (sz : Sizes 3)
-    (hWt : Tendsto (fun n : ℕ => ((sz.W n : ℕ) : ℝ)) atTop atTop) {s0 t0 : ℝ} (hst : s0 < t0)
-    (ht : t0 < 1) {𝔠d : ℝ} (h𝔠 : 0 < 𝔠d) : STConStInd sz 𝔠d (fun _ => s0) (fun _ => t0) := by
-  have h0 := (Bctl_tendsto_const sz hWt ht).rpow_const (Or.inr h𝔠.le)
-  rw [Real.zero_rpow h𝔠.ne'] at h0
-  have hr : 0 < (1 - t0) / (1 - s0) := div_pos (by linarith) (by linarith)
-  filter_upwards [h0.eventually (gt_mem_nhds hr)] with n hn
-  exact ⟨hn.le, (div_lt_one (by linarith)).2 (by linarith)⟩
-
-theorem szB_caseI : STCaseI szB (fun _ => 0) (fun _ => 1 / 16) := fun n => by
-  simp [szB]; norm_num
-
-theorem szB_caseII : STCaseII szB (fun _ => 15 / 16) (fun _ => 31 / 32) := fun n => by
-  simp [szB]; norm_num
-
 theorem szB_regIterI : STRegIterI szB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
   ⟨fun n => by simp [szB]; norm_num, fun n => by simp [szB]; norm_num⟩
-
-theorem sz0_caseI : STCaseI sz0 sInst tInst := by
-  intro n
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hl0 : 0 ≤ sz0.lam n := by
-    change 0 ≤ ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹
-    positivity
-  have hl : sz0.lam n ≤ 1 := by
-    change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1
-    exact inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith))
-  have hL : (4 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-    change (4 : ℝ) ≤ ((4 * (n + 1) : ℕ) : ℝ)
-    push_cast; linarith
-  have h2 : sz0.lam n ^ 2 ≤ 1 := by nlinarith
-  have h3 : (16 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) ^ 2 := by nlinarith
-  change sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 ≤ 1 - 1 / 16
-  rw [div_le_iff₀ (by linarith)]
-  nlinarith
-
-/-- The result of applying an ingredient pin `STIngR` at the data `(sz, z, s, t)`: the constant `𝔠_d`, then the stochastic
-premises, then the conclusion. -/
-def InstIngConcl (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (sz : Sizes 3)
-    (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STKbound sz (STflowE z) → STKward sz (STflowE z) → STLK sz (STflowE z) s →
-      STStep2Concl sz (STflowE z) s t Cd → Concl sz (STflowE z) s t)
-
-/-- The result of applying `STStep3R` at the data. -/
-def InstStep3Concl (sz : Sizes 3) (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STKbound sz (STflowE z) → STKward sz (STflowE z) → STLK sz (STflowE z) s →
-      STStep1Loop sz (STflowE z) s t → STStep2Concl sz (STflowE z) s t Cd → STLmaxU sz (STflowE z) s t)
-
-/-- The result of applying `STStep4R` at the data. -/
-def InstStep4Concl (sz : Sizes 3) (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STKbound sz (STflowE z) → STKward sz (STflowE z) → STLK sz (STflowE z) s →
-      STStep1Loop sz (STflowE z) s t → STStep2Concl sz (STflowE z) s t Cd →
-      STLmaxU sz (STflowE z) s t → STLKU sz (STflowE z) s t)
-
-/-- The result of applying `STIterR` at the data. -/
-def InstIterConcl (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) (sz : Sizes 3) (z : ℕ → ℂ) (s t : ℕ → ℝ)
-    (Cd : ℝ) : Prop :=
-  ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
-    (STKbound sz (STflowE z) → STLK sz (STflowE z) s → STStep1Loop sz (STflowE z) s t →
-      STStep2Concl sz (STflowE z) s t Cd → STXiBoot sz (STflowE z) s t →
-      ∀ n_ k : ℕ, 2 ≤ n_ → 1 ≤ k →
-        (∀ r, 2 ≤ r → r + 1 ≤ n_ → STIterHyp sz (STflowE z) s t (Aof sz s) r k) →
-        (∀ r, 2 ≤ r → r ≤ n_ + 2 → STIterHyp sz (STflowE z) s t (Aof sz s) r (k - 1)) →
-        STIterHyp sz (STflowE z) s t (Aof sz s) n_ k)
-
-/-- The common shape of the instances of the ingredient pins `STIngR`: the constant `𝔠_d` of the pin, then
-deterministic data `(sz, z, s, t)` with the regime `R` and `(con_st_ind)`; the stochastic premises stay hypotheses. -/
-theorem inst_ing (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STIngR 3 R Concl)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl Concl sz z s t Cd := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, fun hK hKw ha h2 => H (1 / 6) sz z hflow s t hs0 hst ht hR hK hKw ha (hcon 𝔠d h0) h2⟩
-
-/-- The same for `lem:iterations` (`STIterR`). -/
-theorem inst_iter (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
-    (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) (h : STIterR 3 R Aof)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIterConcl Aof sz z s t Cd := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, fun hK ha h1' h2 hB => H (1 / 6) sz z hflow s t hs0 hst ht hR hK ha (hcon 𝔠d h0) h1' h2 hB⟩
-
-/-- The same for `STStep3R` (`(lRB1)` is a hypothesis of Step 3). -/
-theorem inst_step3R (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STStep3R 3 R)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep3Concl sz z s t Cd := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, fun hK hKw ha h1' h2 =>
-    H (1 / 6) sz z hflow s t hs0 hst ht hR hK hKw ha (hcon 𝔠d h0) h1' h2⟩
-
-/-- The same for `STStep4R` (the conclusion of Step 3 is a hypothesis). -/
-theorem inst_step4R (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) (h : STStep4R 3 R)
-    (sz : Sizes 3) (z : ℕ → ℂ) (hflow : STFlow sz (1 / 10) (1 / 10) (1 / 6) (1 / 10) z)
-    (s t : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hR : R sz s t) (hcon : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz 𝔠d s t) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep4Concl sz z s t Cd := by
-  obtain ⟨𝔠d, h0, h1, H⟩ := h (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-    (by norm_num) Cd hCd
-  exact ⟨𝔠d, h0, h1, fun hK hKw ha h1' h2 h3 =>
-    H (1 / 6) sz z hflow s t hs0 hst ht hR hK hKw ha (hcon 𝔠d h0) h1' h2 h3⟩
 
 /-! ### The instances of the pins.  Data: `sz0, z0, s ≡ 0, t ≡ 1/16` (general, case (i)); `szB, zB` with the constant times
 of the regime. -/
 
-theorem sz0_hs0 : ∀ n, 0 ≤ sInst n := fun _ => le_rfl
-theorem sz0_hst : ∀ n, sInst n < tInst n := fun n => by simp only [sInst, tInst]; norm_num
-theorem sz0_ht : ∀ n, tInst n ≤ lemT (z0 n) := fun n => sixteenth_le_lemT n
-theorem sz0_con : ∀ 𝔠d : ℝ, 0 < 𝔠d → STConStInd sz0 𝔠d sInst tInst := fun _ h => conStInd_inst h
-
-theorem szB_flow_ht {t0 : ℝ} (h : t0 ≤ 31 / 32) (n : ℕ) : t0 ≤ lemT (zB n) := h.trans (lemT_zB n)
-
-/-- **Step 3**, general statement, at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_step3 (h : STStep3 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep3Concl sz0 z0 sInst tInst Cd :=
-  inst_step3R STAny h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht trivial sz0_con Cd hCd
-
-/-- **Step 3**, case (i), at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_step3I (h : STStep3I 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep3Concl sz0 z0 sInst tInst Cd :=
-  inst_step3R STCaseI h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con Cd hCd
-
-/-- **Step 3**, case (ii), at `(szB, zB, 15/16, 31/32)`: `1 - s = ilambda²/L²`, `1 - t = ilambda²/(2 L²)`. -/
-theorem inst_step3II (h : STStep3II 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep3Concl szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_step3R STCaseII h szB zB flow_zB (fun _ => 15 / 16) (fun _ => 31 / 32) (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_caseII
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
-theorem inst_step4 (h : STStep4 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep4Concl sz0 z0 sInst tInst Cd :=
-  inst_step4R STAny h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht trivial sz0_con Cd hCd
-
-theorem inst_step4I (h : STStep4I 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep4Concl sz0 z0 sInst tInst Cd :=
-  inst_step4R STCaseI h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con Cd hCd
-
-theorem inst_step4II (h : STStep4II 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstStep4Concl szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_step4R STCaseII h szB zB flow_zB (fun _ => 15 / 16) (fun _ => 31 / 32) (fun _ => by norm_num)
-    (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_caseII
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
-/-- The bridge `STLmax_of_STLmaxU` at `(sz0, z0, 0, 1/16)`; `hst` from `sz0_hst`, the owed `STLmaxU` stays a premise. -/
-example (h : STLmaxU sz0 (STflowE z0) sInst tInst) : STLmax sz0 (STflowE z0) tInst :=
-  STLmax_of_STLmaxU sz0 (fun n => (sz0_hst n).le) h
-
-/-- The bridge `STLK_of_STLKU` at `(sz0, z0, 0, 1/16)`; `hst` from `sz0_hst`, the owed `STLKU` stays a premise. -/
-example (h : STLKU sz0 (STflowE z0) sInst tInst) : STLK sz0 (STflowE z0) tInst :=
-  STLK_of_STLKU sz0 (fun n => (sz0_hst n).le) h
-
-/-- `lem:SEforLn` at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_SEforLn (h : STSEforLn 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STSEforLnConcl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing STAny (fun sz E s t => STSEforLnConcl sz E s t) h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht trivial sz0_con Cd hCd
-
-/-- `lem:STOeq_NQ` (case (i)) at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_OeqNQ (h : STOeqNQ 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STNQConcl sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing STCaseI (fun sz E s t => STNQConcl sz E s t) h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con Cd hCd
-
-/-- `lem:STOeq_Qt` (case (i)) at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_OeqQt (h : STOeqQt 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STXiBoot sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing STCaseI (fun sz E s t => STXiBoot sz E s t) h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con Cd hCd
-
-/-- `lem:STOeq_Qt_nonzero` (case (ii)) at `(szB, zB, 15/16, 31/32)`. -/
-theorem inst_OeqQtNZ (h : STOeqQtNZ 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STXiBoot sz E s t) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_ing STCaseII (fun sz E s t => STXiBoot sz E s t) h szB zB flow_zB (fun _ => 15 / 16) (fun _ => 31 / 32)
-    (fun _ => by norm_num) (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_caseII
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
-/-- `(eq:Ward_typeP)` (case (i)) at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_WardTypeP (h : STWardTypePPin 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STWardTypeP sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing STCaseI (fun sz E s t => STWardTypeP sz E s t) h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con Cd hCd
-
-/-- `(y27kasdfg)` (case (i)) at `(sz0, z0, 0, 1/16)`. -/
-theorem inst_B45 (h : STB45Pin 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIngConcl (fun sz E s t => STB45 sz E s t) sz0 z0 sInst tInst Cd :=
-  inst_ing STCaseI (fun sz E s t => STB45 sz E s t) h sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst
-    sz0_ht sz0_caseI sz0_con Cd hCd
-
-/-- `lem:iterations`, case (i) (`1 - s = 1/8 ≤ ilambda² = 1`, `1 - t = ilambda²/L² = 1/16`) at `(szB, zB, 7/8, 15/16)`. -/
-theorem inst_iterations (h : STIterations 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIterConcl (fun sz _ n => STAI sz n) szB zB (fun _ => 7 / 8) (fun _ => 15 / 16) Cd :=
-  inst_iter STRegIterI (fun sz _ n => STAI sz n) h szB zB flow_zB (fun _ => 7 / 8) (fun _ => 15 / 16)
-    (fun _ => by norm_num) (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_regIterI
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
-/-- `lem:iterations`, case (ii), at `(szB, zB, 15/16, 31/32)`. -/
-theorem inst_iterationsII (h : STIterationsII 3) (Cd : ℝ) (hCd : 0 < Cd) :
-    InstIterConcl (fun sz s n => STAII sz s n) szB zB (fun _ => 15 / 16) (fun _ => 31 / 32) Cd :=
-  inst_iter STCaseII (fun sz s n => STAII sz s n) h szB zB flow_zB (fun _ => 15 / 16) (fun _ => 31 / 32)
-    (fun _ => by norm_num) (fun _ => by norm_num) (szB_flow_ht (by norm_num)) szB_caseII
-    (fun _ h𝔠 => conStInd_const szB szB_W_tendsto (by norm_num) (by norm_num) h𝔠) Cd hCd
-
 /-! ### The deterministic pins at `d = 3` -/
-
-/-- `(yi2oslxj2)` and `(u2jzooi-2)`: the two inequalities of `STContract 3` at `(sz0, n = 2, E = 0, τ = 1/2, ω = 0)`,
-`m = 3, k = 1` resp. `m = 4, 1 = k < j = 2 < l = 3`, `p = 1`, `𝒜 ≡ {0}`, `C = 1`. -/
-theorem inst_contract (h : STContract 3) :
-    (∑ x : Zd 3 (sz0.L 2), ‖STLI sz0 2 0 (1 / 2) (0 : sz0.SeqΩ)
-        ⟨List.ofFn (![true, false, true] : Fin 3 → Bool), List.ofFn (![0, 0] : Fin 2 → Zd 3 (sz0.L 2)) ++ [x]⟩‖ ≤
-      (((sz0.W 2 : ℕ) : ℝ) ^ 3 * etaT 0 (1 / 2))⁻¹ *
-        (STmaxL sz0 2 0 (1 / 2) (2 * 1 - 1) (0 : sz0.SeqΩ) *
-          STmaxL sz0 2 0 (1 / 2) (2 * 3 - 2 * 1 - 1) (0 : sz0.SeqΩ)) ^ (1 / 2 : ℝ)) ∧
-    (∑ x : Zd 3 (sz0.L 2), ∑ y ∈ ({0} : Finset (Zd 3 (sz0.L 2))),
-        ‖STLI sz0 2 0 (1 / 2) (0 : sz0.SeqΩ) ⟨List.ofFn (![true, false, true, false] : Fin 4 → Bool),
-          List.ofFn (Function.update (![0, 0, 0] : Fin 3 → Zd 3 (sz0.L 2)) (1 : Fin 3) y) ++ [x]⟩‖ ≤
-      1 * (((sz0.W 2 : ℕ) : ℝ) ^ 3 * etaT 0 (1 / 2))⁻¹ *
-        (STmaxL sz0 2 0 (1 / 2) (2 * 1 - 1) (0 : sz0.SeqΩ) *
-          STmaxL sz0 2 0 (1 / 2) (2 * 4 - 2 * 3 - 1) (0 : sz0.SeqΩ)) ^ (1 / 2 : ℝ) *
-          STmaxL sz0 2 0 (1 / 2) (2 * (3 - 1) * 1) (0 : sz0.SeqΩ) ^ (1 / (2 * ((1 : ℕ) : ℝ)))) := by
-  have H := h sz0 2 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num) 0
-  refine ⟨H.1 3 1 (by norm_num) (by norm_num) ![true, false, true] ![0, 0], ?_⟩
-  exact H.2 4 1 3 1 ⟨1, by norm_num⟩ 1 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (fun _ => {0}) (fun _ => by norm_num)
-    ![true, false, true, false] ![0, 0, 0]
-
-/-- `lem: newPQ` at `m = 3`, `σ = (+,-,+)`, `A = ∅`: the combinatorial data exist. -/
-theorem inst_newPQ (h : STNewPQ 3) :
-    ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-      (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-      (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-      ∀ (n : ℕ) (E τ : ℝ), |E| < 2 → 0 ≤ τ → τ < 1 → ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L n)),
-        zeroModeSet 3 (sz0.L n) ∅ (fun a' => Lloop sz0 n E τ ![true, false, true] a' ω) a =
-          zeroModeSet 3 (sz0.L n) (∅ ∪ STIdiff ![true, false, true]) (fun a' => Lloop sz0 n E τ ![true, false, true] a' ω) a +
-            ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size n : ℕ) : ℂ) * (etaT E τ : ℂ)) ^ (3 - k α)) *
-              zeroModeSet 3 (sz0.L n) (A' α) (fun a' => Lloop sz0 n E τ (σ' α) a' ω) (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, H⟩ := h 3 ![true, false, true] ∅
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun n E τ hE h0 h1 ω a => (H sz0 n E τ hE h0 h1 ω a).1⟩
-
-/-- The mollifier exists at `d = 3`, `m = 2` (three indices), `Λ = 1`. -/
-theorem inst_mollifier (h : STMollifierEx 3) :
-    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g → g ≤ 1 →
-      haveI : NeZero L := ⟨by omega⟩
-      ∃ ϑ : ℝ → (Fin (2 + 1) → Zd 3 L) → ℂ, STMollifierProps (d := 3) g C c ϑ :=
-  h (by norm_num) 2 1 one_pos
-
-/-- `lem_+Q` at `d = 3`, `m = 1` (two indices), `Λ = 1`, `K = 2`, `C = c = 1`. -/
-theorem inst_qopNorm (h : STQopNorm 3) :
-    ∃ Cn : ℝ, 0 < Cn ∧ ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g → g ≤ 1 →
-      ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε → (L : ℝ) ^ 3 ≤ W ^ (2 : ℝ) →
-      haveI : NeZero L := ⟨by omega⟩
-      ∀ ϑ : ℝ → (Fin (1 + 1) → Zd 3 L) → ℂ, STMollifierProps (d := 3) g 1 1 ϑ →
-      ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ 𝒜 : (Fin (1 + 1) → Zd 3 L) → ℂ, EKFastDecay g t W ε D 𝒜 →
-        ‖STQop (d := 3) ϑ t 𝒜‖ ≤ W ^ (Cn * ε) * ‖𝒜‖ + W ^ (-D + Cn) :=
-  h (by norm_num) 1 1 2 1 1 one_pos two_pos one_pos one_pos
-
 
 end RBM.Gauss.Step34Inst

@@ -31,24 +31,6 @@ namespace RBM.Graph
 
 /-! ## 1. The band lift (T2397 probe 219-246; statements copied) -/
 
-section Lift
-
-/-- The graph of the BA-normal lift of a band graph: every solid edge circled. -/
-def liftG (P : PGraph (Fin 2)) : LGraph P.E' P.I' := { P.g with solid := P.g.solid.map fun e => { e with circ := true } }
-
-/-- The BA-normal lift of a packed band graph: every solid edge circled, no `Ψ`- or `M`-dotted edge (the instance of the pins at the band). -/
-def liftC (P : PGraph (Fin 2)) : BAPGraph (Fin 2) where
-  E' := P.E'
-  I' := P.I'
-  ext := P.ext
-  ext_surj := P.ext_surj
-  g := BAGraph.ofLGraph (liftG P)
-
-theorem liftC_normal (P : PGraph (Fin 2)) (hD : ∀ e ∈ P.g.dotted, e.eq = false) : (liftC P).g.Normal :=
-  ⟨hD, fun e he => by obtain ⟨e0, _, rfl⟩ := List.mem_map.1 he; rfl⟩
-
-end Lift
-
 /-! ## 2. Without `=`-dotted edges every atom is a vertex -/
 
 section OfL
@@ -86,9 +68,6 @@ theorem BAAtomic_vmap_injective_ofL (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, 
 def BAAtomic_vmapEquiv (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = false) :
     E ⊕ I ≃ (promoteC (BAGraph.ofLGraph Γ)).ExtCls ⊕ (promoteC (BAGraph.ofLGraph Γ)).IntCls :=
   Equiv.ofBijective _ ⟨BAAtomic_vmap_injective_ofL Γ h, BAAtomic_vmap_surjective _⟩
-
-theorem BAAtomic_vmapEquiv_apply (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = false) (v : E ⊕ I) :
-    BAAtomic_vmapEquiv Γ h v = (promoteC (BAGraph.ofLGraph Γ)).vmap v := rfl
 
 theorem BAAtomic_reach_of_adj {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : LGraph E' I')
     {a b : E' ⊕ I'} (h : Γ.adj a b = true) : Γ.molGraph.Reachable a b := by
@@ -180,83 +159,6 @@ end OfL
 
 /-! ## 3. `BAPathLift` -/
 
-section PathLift
-
-theorem BAAtomic_cendsMS_liftG (P : PGraph (Fin 2)) : (liftG P).localReg2_cendsMS = P.g.localReg2_cendsMS := by
-  unfold LGraph.localReg2_cendsMS liftG
-  rw [List.map_map]
-  rfl
-
-theorem BAAtomic_pathFam_liftG (P : PGraph (Fin 2)) (k : ℕ) (x y : P.E' ⊕ P.I') :
-    (liftG P).localReg2_PathFam k x y ↔ P.g.localReg2_PathFam k x y := by
-  unfold LGraph.localReg2_PathFam LGraph.localReg2_edgeMS
-  rw [BAAtomic_cendsMS_liftG]
-  exact Iff.rfl
-
-/-- **Map property (BAPathLift)** (T2397 probe 355, row L3b-S1, conservativity): at a normal band graph the image of the lift has the path
-invariant of the graph (`localReg2_pathFam_map`). -/
-def BAPathLift : Prop :=
-  ∀ P0 : PGraph (Fin 2), P0.g.Normal → ∀ k, (BAPGraph.img (liftC P0)).PathInv2 k ↔ P0.PathInv2 k
-
-theorem BAPathLift_holds : BAPathLift := by
-  intro P0 hN k
-  have h := BAAtomic_pathFam_iff (liftG P0) hN.1 k (Sum.inl (P0.ext 0)) (Sum.inl (P0.ext 1))
-  rw [BAAtomic_pathFam_liftG, BAAtomic_vmap_inl, BAAtomic_vmap_inl] at h
-  exact h.symm
-
-/-- The image of the lift has the counters of the band graph (the counters `(n_S, n_W, n_V, n_M)` of the lift are those of `P0` and the
-atoms of the lift are its vertices). -/
-theorem BAAtomic_counters_liftC (P0 : PGraph (Fin 2)) (hD : ∀ e ∈ P0.g.dotted, e.eq = false) :
-    (BAPGraph.img (liftC P0)).g.counters = P0.g.counters := by
-  have h1 : (BAPGraph.img (liftC P0)).g.counters = (liftC P0).g.counters := BAImgCounters_holds (liftC P0)
-  have h2 : (liftC P0).g.counters = (liftG P0).counters := BAGraph.counters_ofLGraph (liftG P0) hD
-  rw [h1, h2]
-  simp [liftG, LGraph.counters, LGraph.nS, LGraph.nW, LGraph.nV, LGraph.nM]
-  rfl
-
-end PathLift
-
 /-! ## 4. Compiled instances at the band lift of a concrete normal band graph -/
-
-section Instances
-
-/-- `p2Graph` (`(eq:p=2graph)`, `LWVocab.lean:191`: `E = Fin 2`, `I = Fin 4`, six solid edges, two waved edges, four `×`-dotted edges) is
-a normal band graph. -/
-private theorem BAAtomic_p2_normal : p2Graph.pack.g.Normal := by decide
-
-/-- `BAPathLift` at `P0 = p2Graph.pack`, for every `k`. -/
-example (k : ℕ) : (BAPGraph.img (liftC p2Graph.pack)).PathInv2 k ↔ p2Graph.pack.PathInv2 k :=
-  BAPathLift_holds p2Graph.pack BAAtomic_p2_normal k
-
-/-- The lift of `p2Graph` is BA-normal, with six solid edges, two waved edges and no `Ψ`- or `M`-dotted edge. -/
-example : (liftC p2Graph.pack).g.Normal ∧ (liftC p2Graph.pack).g.solid.length = 6 ∧ (liftC p2Graph.pack).g.waved.length = 2 ∧
-    (liftC p2Graph.pack).g.psi = [] ∧ (liftC p2Graph.pack).g.mdot = [] :=
-  ⟨liftC_normal _ BAAtomic_p2_normal.1, rfl, rfl, rfl, rfl⟩
-
-/-- (m0) at the lift: the image is normal and a solid edge is circled iff it is a loop. -/
-example : (BAPGraph.img (liftC p2Graph.pack)).g.Normal ∧ LGraph.CircIffLoop (BAPGraph.img (liftC p2Graph.pack)).g :=
-  BAImgNormal_holds (liftC p2Graph.pack) (liftC_normal _ BAAtomic_p2_normal.1)
-
-/-- (m1) at the lift: the image has the counters of the lift, and those of `p2Graph`. -/
-example : (BAPGraph.img (liftC p2Graph.pack)).g.counters = (liftC p2Graph.pack).g.counters ∧
-    (BAPGraph.img (liftC p2Graph.pack)).g.counters = p2Graph.counters :=
-  ⟨BAImgCounters_holds (liftC p2Graph.pack), BAAtomic_counters_liftC p2Graph.pack BAAtomic_p2_normal.1⟩
-
-/-- (m2) at the lift. -/
-example (u v : (liftC p2Graph.pack).E' ⊕ (liftC p2Graph.pack).I') :
-    (promoteC (liftC p2Graph.pack).g).merge.molOf ((promoteC (liftC p2Graph.pack).g).vmap u) =
-      (promoteC (liftC p2Graph.pack).g).merge.molOf ((promoteC (liftC p2Graph.pack).g).vmap v) ↔ v ∈ (liftC p2Graph.pack).g.mol u :=
-  BAImgMol_holds (liftC p2Graph.pack) u v
-
-/-- `BAimg` at the lift (every deterministic hypothesis discharged). -/
-example : (liftC p2Graph.pack).g.img.g.counters = (liftC p2Graph.pack).g.counters ∧
-    (liftC p2Graph.pack).g.img.g.lvl1NLoops = (liftC p2Graph.pack).g.nLoops ∧
-    (liftC p2Graph.pack).g.img.g.lvl1NPairs = (liftC p2Graph.pack).g.nPairs ∧
-    Fintype.card (liftC p2Graph.pack).g.img.E' = (liftC p2Graph.pack).g.nExt ∧
-    ((liftC p2Graph.pack).g.Normal → (liftC p2Graph.pack).g.img.g.Normal) ∧
-    ((liftC p2Graph.pack).g.Normal → ((liftC p2Graph.pack).g.LocStd ↔ (liftC p2Graph.pack).g.img.g.LocStd)) :=
-  BAimg_holds (liftC p2Graph.pack).g
-
-end Instances
 
 end RBM.Graph

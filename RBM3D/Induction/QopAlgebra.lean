@@ -620,11 +620,6 @@ theorem QopAlgebra_Qop_of_sumZero (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ
   funext a
   simp only [STQop, hA (a 0), zero_mul, sub_zero]
 
-/-- `Σ_{a₂..a_n} ϑ = 1` rewritten as `𝒫 ϑ_t = 1`. -/
-theorem QopAlgebra_Psum_mollifier (g t : ℝ) (a₁ : Zd d L) :
-    STPsum (d := d) (QopAlgebra_mollifier d L m g t) a₁ = 1 :=
-  QopAlgebra_mollifier_sum d L m g t a₁
-
 /-- `𝒫 ∂_tϑ = 0`: differentiate `𝒫ϑ_τ = 1` (valid for all `τ`, so the derivative is taken on a neighbourhood). -/
 theorem QopAlgebra_Psum_deriv {ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ}
     (hsum : ∀ τ a₁, ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), ϑ τ a = 1)
@@ -654,16 +649,6 @@ theorem QopAlgebra_Qop_hasDerivAt {ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ
   convert h using 1
   ring
 
-/-- `∂_t(𝒬_t 𝒜) = -(𝒫𝒜)_{a₁} ∂_tϑ_t` for a `t`-independent tensor `𝒜`. -/
-theorem QopAlgebra_Qop_hasDerivAt_const {ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ} {t : ℝ}
-    {ϑ' : (Fin (m + 1) → Zd d L) → ℂ} (hϑ : ∀ a, HasDerivAt (fun τ => ϑ τ a) (ϑ' a) t)
-    (A : (Fin (m + 1) → Zd d L) → ℂ) (a : Fin (m + 1) → Zd d L) :
-    HasDerivAt (fun τ => STQop (d := d) ϑ τ A a) (-(STPsum (d := d) A (a 0) * ϑ' a)) t := by
-  have h := QopAlgebra_Qop_hasDerivAt (A := fun _ => A) (A' := fun _ => 0) (t := t)
-    (fun a => hasDerivAt_const t (A a)) hϑ a
-  convert h using 1
-  simp [STQop, STPsum]
-
 /-! ### Column sums of the one-index kernels -/
 
 /-- `S^{(B)} Θ_ζ` is symmetric. -/
@@ -684,29 +669,12 @@ private theorem qa_col_sum_SBTheta (g : ℝ) (hL : 3 ≤ L) {ζ : ℂ} (hζ : �
   simp only [← Finset.mul_sum, sum_Theta_row_of_three_le hL hζ]
   rw [← Finset.sum_mul, sum_SB_row d L g hL, one_mul]
 
-/-- The column sums of `Θ_ζ` are the constant `(1 - ζ)⁻¹` (`Θ_ζ` is symmetric with row sums `(1 - ζ)⁻¹`). -/
-private theorem qa_col_sum_Theta (g : ℝ) (hL : 3 ≤ L) {ζ : ℂ} (hζ : ‖ζ‖ < 1) (y : Zd d L) :
-    ∑ c : Zd d L, Theta d L g ζ c y = (1 - ζ)⁻¹ := by
-  have h : ∀ c, Theta d L g ζ c y = Theta d L g ζ y c := fun c => by
-    have := congrFun (congrFun (Theta_transpose_of_three_le (d := d) (g := g) hL hζ) y) c
-    simpa [Matrix.transpose_apply] using this
-  simp_rw [h]
-  exact sum_Theta_row_of_three_le hL hζ y
-
 /-- `Σ_c thetaKer(μ, t)(c, y) = μ (1 - tμ)⁻¹`, constant in `y`. -/
 theorem QopAlgebra_col_sum_thetaKer (g : ℝ) (hL : 3 ≤ L) {μ : ℂ} {t : ℝ} (h : ‖(t : ℂ) * μ‖ < 1)
     (y : Zd d L) :
     ∑ c : Zd d L, thetaKer d L g μ t c y = μ * (1 - (t : ℂ) * μ)⁻¹ := by
   simp only [thetaKer, Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul]
   rw [← Finset.mul_sum, qa_col_sum_SBTheta g hL h y]
-
-/-- `Σ_c uKer(μ, s, t)(c, y) = (1 - sμ)(1 - tμ)⁻¹`, constant in `y`. -/
-theorem QopAlgebra_col_sum_uKer (g : ℝ) (hL : 3 ≤ L) {μ : ℂ} {s t : ℝ} (h : ‖(t : ℂ) * μ‖ < 1)
-    (y : Zd d L) :
-    ∑ c : Zd d L, uKer d L g μ s t c y = (1 - (s : ℂ) * μ) * (1 - (t : ℂ) * μ)⁻¹ := by
-  simp only [uKer, sub_mul, one_mul, Matrix.smul_mul, Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul,
-    Finset.sum_sub_distrib]
-  rw [← Finset.mul_sum, qa_col_sum_Theta g hL h y, qa_col_sum_SBTheta g hL h y]
 
 /-! ### Slot-by-slot sums -/
 
@@ -804,57 +772,6 @@ theorem QopAlgebra_ThetaN_sumZero (g : ℝ) (hL : 3 ≤ L) {μs : Fin (m + 1) �
     have h : ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), A a = 0 := hA a₁
     rw [h, mul_zero]
 
-/-- `Σ_b f(b₀) A(b) = Σ_{b₀} f(b₀) (𝒫A)_{b₀}`. -/
-private theorem qa_sum_fiber0 (f : Zd d L → ℂ) (A : (Fin (m + 1) → Zd d L) → ℂ) :
-    ∑ b : Fin (m + 1) → Zd d L, f (b 0) * A b = ∑ b₀ : Zd d L, f b₀ * STPsum (d := d) A b₀ := by
-  classical
-  rw [← Finset.sum_fiberwise Finset.univ (fun b : Fin (m + 1) → Zd d L => b 0)
-    (fun b => f (b 0) * A b)]
-  refine Finset.sum_congr rfl fun b₀ _ => ?_
-  unfold STPsum
-  rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun b hb => ?_
-  rw [(Finset.mem_filter.1 hb).2]
-
-/-- `U^{(m+1)}_{s,t,σ}` preserves sum-zero tensors: summing over `a ∈ {a₀ = a₁}` the factors `i ≥ 1` give the
-constant column sums `(1 - sμ_i)/(1 - tμ_i)`, and slot `0` leaves `Σ_{b₀} K₀(a₁, b₀) (𝒫A)_{b₀} = 0`. -/
-theorem QopAlgebra_UN_sumZero (g : ℝ) (hL : 3 ≤ L) {μs : Fin (m + 1) → ℂ} (hμ : ∀ i, ‖μs i‖ = 1)
-    {s t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {A : (Fin (m + 1) → Zd d L) → ℂ}
-    (hA : ∀ a₁, STPsum (d := d) A a₁ = 0) (a₁ : Zd d L) :
-    STPsum (d := d) (UN d L g μs s t A) a₁ = 0 := by
-  set K : Fin (m + 1) → Matrix (Zd d L) (Zd d L) ℂ := fun i => uKer d L g (cycProd μs i) s t with hK
-  set κ : Fin (m + 1) → ℂ := fun i => (1 - (s : ℂ) * cycProd μs i) * (1 - (t : ℂ) * cycProd μs i)⁻¹ with hκ
-  have hcol : ∀ i (y : Zd d L), ∑ c : Zd d L, K i c y = κ i := fun i y =>
-    QopAlgebra_col_sum_uKer g hL (norm_t_mul_lt_one ht0 ht1 (norm_cycProd hμ i)) y
-  unfold STPsum
-  simp only [UN]
-  rw [Finset.sum_comm]
-  -- for fixed `b`: `Σ_{a₀ = a₁} Π_i K_i(a_i, b_i) = K₀(a₁, b₀) Π_{i ≠ 0} κ_i`
-  have h1 : ∀ b : Fin (m + 1) → Zd d L,
-      ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), (∏ i, K i (a i) (b i)) * A b
-        = (K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * A b := by
-    intro b
-    rw [← Finset.sum_mul]
-    congr 1
-    have h2 : ∀ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁),
-        ∏ i, K i (a i) (b i) = K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), K i (a i) (b i) := by
-      intro a ha
-      have ha0 : a 0 = a₁ := (Finset.mem_filter.1 ha).2
-      rw [← Finset.mul_prod_erase Finset.univ (fun i => K i (a i) (b i)) (Finset.mem_univ (0 : Fin (m + 1))), ha0]
-    rw [Finset.sum_congr rfl h2, ← Finset.mul_sum,
-      qa_sum_filter_prod (d := d) (L := L) (m := m) a₁ (fun i c => K i c (b i))]
-    congr 1
-    exact Finset.prod_congr rfl fun i _ => hcol i (b i)
-  rw [Finset.sum_congr rfl fun b _ => h1 b]
-  have h3 : ∀ b : Fin (m + 1) → Zd d L,
-      (K 0 a₁ (b 0) * ∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * A b
-        = (∏ i ∈ Finset.univ.erase (0 : Fin (m + 1)), κ i) * (K 0 a₁ (b 0) * A b) := fun b => by ring
-  rw [Finset.sum_congr rfl fun b _ => h3 b, ← Finset.mul_sum,
-    qa_sum_fiber0 (d := d) (fun b₀ => K 0 a₁ b₀) A]
-  have : ∑ b₀ : Zd d L, K 0 a₁ b₀ * STPsum (d := d) A b₀ = 0 :=
-    Finset.sum_eq_zero fun b₀ _ => by rw [hA b₀, mul_zero]
-  rw [this, mul_zero]
-
 /-! ### The commutator formulas (pure linearity) -/
 
 theorem QopAlgebra_ThetaN_sub (g : ℝ) (μs : Fin (m + 1) → ℂ) (u : ℝ) (A B : (Fin (m + 1) → Zd d L) → ℂ)
@@ -880,119 +797,9 @@ theorem QopAlgebra_commutator_ThetaN (g : ℝ) (μs : Fin (m + 1) → ℂ) (ϑ :
   simp only [STQop]
   ring
 
-/-- The same for `U^{(m+1)}_{s,t,σ}`. -/
-theorem QopAlgebra_commutator_UN (g : ℝ) (μs : Fin (m + 1) → ℂ) (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ)
-    (s t : ℝ) (A : (Fin (m + 1) → Zd d L) → ℂ) (a : Fin (m + 1) → Zd d L) :
-    STQop (d := d) ϑ t (UN d L g μs s t A) a - UN d L g μs s t (STQop (d := d) ϑ t A) a =
-      UN d L g μs s t (fun b => STPsum (d := d) A (b 0) * ϑ t b) a -
-        STPsum (d := d) (UN d L g μs s t A) (a 0) * ϑ t a := by
-  have h : UN d L g μs s t (STQop (d := d) ϑ t A) a
-      = UN d L g μs s t A a - UN d L g μs s t (fun b => STPsum (d := d) A (b 0) * ϑ t b) a :=
-    QopAlgebra_UN_sub g μs s t A (fun b => STPsum (d := d) A (b 0) * ϑ t b) a
-  rw [h]
-  simp only [STQop]
-  ring
-
 end Algebra
 
 /-! ## 6. Compiled nonempty instances -/
-
-/-- `stMollifierEx_holds` at `d = 3`, `m = 1` (two indices), `Λ = 1`. -/
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g → g ≤ 1 →
-    haveI : NeZero L := ⟨by omega⟩
-    ∃ ϑ : ℝ → (Fin (1 + 1) → Zd 3 L) → ℂ, STMollifierProps (d := 3) g C c ϑ :=
-  stMollifierEx_holds 3 (by norm_num) 1 1 one_pos
-
-/-- `stMollifierEx_holds` at `d = 3`, `m = 2` (three indices), `Λ = 1`. -/
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g → g ≤ 1 →
-    haveI : NeZero L := ⟨by omega⟩
-    ∃ ϑ : ℝ → (Fin (2 + 1) → Zd 3 L) → ℂ, STMollifierProps (d := 3) g C c ϑ :=
-  stMollifierEx_holds 3 (by norm_num) 2 1 one_pos
-
-/-- The same, unpacked at the data `L = 5`, `g = 1`, `m = 2`: the constants and a mollifier. -/
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    ∃ ϑ : ℝ → (Fin (2 + 1) → Zd 3 5) → ℂ, STMollifierProps (d := 3) (1 : ℝ) C c ϑ := by
-  obtain ⟨C, c, hC, hc, h⟩ := stMollifierEx_holds 3 (by norm_num) 2 1 one_pos
-  exact ⟨C, c, hC, hc, h 5 (by norm_num) 1 one_pos le_rfl⟩
-
-/-- The mollifier itself at `d = 3`, `L = 3`, `m = 1`, `g = 1`: the four properties of `STMollifierProps`
-with the explicit constants `C = (1 + 40·3·1) 6^{3·1}`, `c = 1/2`. -/
-example : STMollifierProps (d := 3) (L := 3) (m := 1) (1 : ℝ) ((1 + 40 * ((3 * 1 : ℕ) : ℝ)) * 6 ^ (3 * 1)) (1 / 2)
-    (QopAlgebra_mollifier 3 3 1 1) :=
-  QopAlgebra_mollifier_props 3 3 1 le_rfl one_pos
-
-/-- Data of the algebra instances: `d = 3`, `L = 3`, two indices (`m = 1`), `g = 1`, the mollifier `ϑ`. -/
-private abbrev qaTheta : ℝ → (Fin (1 + 1) → Zd 3 3) → ℂ := QopAlgebra_mollifier 3 3 1 1
-
-private theorem qaTheta_sum (τ : ℝ) (a₁ : Zd 3 3) :
-    ∑ a ∈ Finset.univ.filter (fun a : Fin (1 + 1) → Zd 3 3 => a 0 = a₁), qaTheta τ a = 1 :=
-  QopAlgebra_mollifier_sum 3 3 1 1 τ a₁
-
-/-- `𝒫 ∘ 𝒬_t = 0` at `d = 3`, `L = 3`, `t = 1/2`. -/
-example (A : (Fin (1 + 1) → Zd 3 3) → ℂ) (a₁ : Zd 3 3) :
-    STPsum (d := 3) (STQop (d := 3) qaTheta (1 / 2) A) a₁ = 0 :=
-  QopAlgebra_Psum_Qop qaTheta (qaTheta_sum (1 / 2)) A a₁
-
-/-- `𝒬_t = id` on the sum-zero tensor `𝒬_t 1`. -/
-example : STQop (d := 3) qaTheta (1 / 2) (STQop (d := 3) qaTheta (1 / 2) (fun _ => (1 : ℂ)))
-    = STQop (d := 3) qaTheta (1 / 2) (fun _ => (1 : ℂ)) :=
-  QopAlgebra_Qop_of_sumZero qaTheta (1 / 2) fun a₁ => QopAlgebra_Psum_Qop qaTheta (qaTheta_sum (1 / 2)) _ a₁
-
-/-- `Θ^{(2)}_{t,σ}` preserves sum-zero (`μ_i = 1`, `g = 1`, `t = 1/2`) on the sum-zero tensor `𝒬_t 1`. -/
-example (a₁ : Zd 3 3) :
-    STPsum (d := 3) (ThetaN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 2)
-      (STQop (d := 3) qaTheta (1 / 2) (fun _ => (1 : ℂ)))) a₁ = 0 :=
-  QopAlgebra_ThetaN_sumZero 1 (le_refl 3) (fun _ => norm_one) (by norm_num) (by norm_num)
-    (fun a₁ => QopAlgebra_Psum_Qop qaTheta (qaTheta_sum (1 / 2)) _ a₁) a₁
-
-/-- `U^{(2)}_{s,t,σ}` preserves sum-zero (`μ_i = 1`, `g = 1`, `s = 1/4`, `t = 1/2`). -/
-example (a₁ : Zd 3 3) :
-    STPsum (d := 3) (UN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 4) (1 / 2)
-      (STQop (d := 3) qaTheta (1 / 2) (fun _ => (1 : ℂ)))) a₁ = 0 :=
-  QopAlgebra_UN_sumZero 1 (le_refl 3) (fun _ => norm_one) (by norm_num) (by norm_num)
-    (fun a₁ => QopAlgebra_Psum_Qop qaTheta (qaTheta_sum (1 / 2)) _ a₁) a₁
-
-/-- The commutator `[𝒬_t, Θ^{(2)}_{t,σ}]` at the same data. -/
-example (A : (Fin (1 + 1) → Zd 3 3) → ℂ) (a : Fin (1 + 1) → Zd 3 3) :
-    STQop (d := 3) qaTheta (1 / 2) (ThetaN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 2) A) a
-        - ThetaN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 2) (STQop (d := 3) qaTheta (1 / 2) A) a =
-      ThetaN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 2)
-          (fun b => STPsum (d := 3) A (b 0) * qaTheta (1 / 2) b) a -
-        STPsum (d := 3) (ThetaN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 2) A) (a 0) * qaTheta (1 / 2) a :=
-  QopAlgebra_commutator_ThetaN 1 _ qaTheta (1 / 2) A a
-
-/-- `𝒫 ∂_tϑ = 0` at `t = 0` (two-sided derivative). -/
-example (a₁ : Zd 3 3) : STPsum (d := 3) (fun a => deriv (fun τ => qaTheta τ a) 0) a₁ = 0 :=
-  QopAlgebra_Psum_deriv qaTheta_sum
-    (fun a => (QopAlgebra_mollifier_differentiableAt 3 3 1 le_rfl one_pos (by norm_num) a).hasDerivAt) a₁
-
-/-- `∂_t(𝒬_t 𝒜) = -(𝒫𝒜)_{a₁} ∂_tϑ` at `t = 0`, `𝒜 = 1`. -/
-example (a : Fin (1 + 1) → Zd 3 3) :
-    HasDerivAt (fun τ => STQop (d := 3) qaTheta τ (fun _ => (1 : ℂ)) a)
-      (-(STPsum (d := 3) (fun _ : Fin (1 + 1) → Zd 3 3 => (1 : ℂ)) (a 0) * deriv (fun τ => qaTheta τ a) 0)) 0 :=
-  QopAlgebra_Qop_hasDerivAt_const
-    (fun a => (QopAlgebra_mollifier_differentiableAt 3 3 1 le_rfl one_pos (by norm_num) a).hasDerivAt) _ a
-
-/-- The commutator `[𝒬_t, U^{(2)}_{s,t,σ}]` at `μ_i = 1`, `g = 1`, `s = 1/4`, `t = 1/2`. -/
-example (A : (Fin (1 + 1) → Zd 3 3) → ℂ) (a : Fin (1 + 1) → Zd 3 3) :
-    STQop (d := 3) qaTheta (1 / 2) (UN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 4) (1 / 2) A) a
-        - UN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 4) (1 / 2)
-            (STQop (d := 3) qaTheta (1 / 2) A) a =
-      UN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 4) (1 / 2)
-          (fun b => STPsum (d := 3) A (b 0) * qaTheta (1 / 2) b) a -
-        STPsum (d := 3) (UN 3 3 (1 : ℝ) (fun _ : Fin (1 + 1) => (1 : ℂ)) (1 / 4) (1 / 2) A) (a 0) *
-          qaTheta (1 / 2) a :=
-  QopAlgebra_commutator_UN 1 _ qaTheta (1 / 4) (1 / 2) A a
-
-/-- The general `[∂_t, 𝒬_t]` identity at `t = 0` with the `t`-dependent tensor `𝒜_τ ≡ τ`, `∂_t𝒜 ≡ 1`. -/
-example (a : Fin (1 + 1) → Zd 3 3) :
-    HasDerivAt (fun τ : ℝ => STQop (d := 3) qaTheta τ (fun _ => (τ : ℂ)) a)
-      (STQop (d := 3) qaTheta 0 (fun _ => (1 : ℂ)) a -
-        STPsum (d := 3) (fun _ : Fin (1 + 1) → Zd 3 3 => ((0 : ℝ) : ℂ)) (a 0) *
-          deriv (fun τ => qaTheta τ a) 0) 0 :=
-  QopAlgebra_Qop_hasDerivAt (A := fun τ _ => (τ : ℂ)) (A' := fun _ => 1)
-    (fun _ => by simpa using (hasDerivAt_id (0 : ℝ)).ofReal_comp)
-    (fun a => (QopAlgebra_mollifier_differentiableAt 3 3 1 le_rfl one_pos (by norm_num) a).hasDerivAt) a
 
 end RBM.Gauss.Sizes
 

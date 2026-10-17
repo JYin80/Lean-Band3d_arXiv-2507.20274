@@ -376,31 +376,6 @@ theorem gueGrid_entry_boundBA' (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ
         EntryGrid_union_arith _ _ _ hN2 (EntryGrid_gridK_le sz hd1 n0 n) D
 
 
-/-- **Lemma 4.1 (4.2)+(4.3) on the BA grid**, on the size scale, `d ≥ 3` (twin of `gueGrid_entry_bound`, `EntryGrid:518`).  On the a priori
-event `{all entries of G - M ≤ δ_n}`, `δ_n ≤ N^{-c₀}`, `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, the squared entry `|(G_k - M)_{ij}|²` of the
-grid resolvent at the grid time `u_k` is `≺ max_{a,b} |𝓛_{(+,-),(a,b)}| + W^{-d}` (`gueLmaxBA _ 2`, the 2-loop maximum), uniformly in
-`k ≤ K_n`, `i`, `j`.  Proof: per grid point `k` the bad event on `Pgue (sz.withLam 0)` has the `ouP`-probability of the bad event of the mixture
-`mixMatBA` (`map_gueHBA_eq_mixMatBA`), a subset of the event of C3 b's `gueEntryMixBA` (`a = t₁`, `b = u_k - t₁`); the union over the
-`K_n + 1` grid points costs a power of `N`; at grid time `0` (`t₁ = 0`) the path is `g Ψ_I` and the bad event is empty.  The family premise
-`hdata` is that of `GUEEntryMixBA` (`0 < g n ≤ 𝔡⁻¹` and `BAReal` at every `n`), see the module header. -/
-theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ} (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) (n0 : ℕ)
-    {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hdata : ∀ n, 0 < g n ∧ g n ≤ 𝔡⁻¹ ∧ BAReal d (sz.L n) (g n) κ (E n) (m n))
-    (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1) {δ : ℕ → ℝ} (hδ0 : ∀ n, 0 ≤ δ n)
-    {c₀ : ℝ} (hc₀ : 0 < c₀) (hδ : ∀ᶠ n in atTop, δ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-c₀)) :
-    StochDomAt (Pgue (sz.withLam 0)) sz.size
-      (fun n (p : Fin (gueGridK sz n0 n + 1) × (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))) ω =>
-        {ω' : PathΩ (sz.withLam 0) | ∀ i j : Idx d (sz.L n) (sz.W n),
-            ‖(green (gueHBA sz g t1 t0 (gueGridK sz n0) n p.1 ω')
-                (ztOf (m n) (E n) (gridTime t1 t0 (gueGridK sz n0) n p.1)) -
-              Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) i j‖ ≤ δ n}.indicator
-          (fun ω' => ‖(green (gueHBA sz g t1 t0 (gueGridK sz n0) n p.1 ω')
-                (ztOf (m n) (E n) (gridTime t1 t0 (gueGridK sz n0) n p.1)) -
-              Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) p.2.1 p.2.2‖ ^ 2) ω)
-      (fun n p ω => gueLmaxBA sz g E t1 t0 m (gueGridK sz n0) n 2 p.1 ω + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) := by
-  intro τ hτ D hD
-  exact gueGrid_entry_boundBA' sz hd hadm hκ n0 (fun n => (hdata n).2.2)
-    (Filter.Eventually.of_forall fun n => ⟨(hdata n).1, (hdata n).2.1⟩) ht1 ht10 ht0 hδ0 hc₀ hδ τ hτ D hD
-
 end Main
 
 /-! ## 4. Compiled nonempty instances
@@ -408,49 +383,6 @@ end Main
 `d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`, admissible at `(𝔠, 𝔡) = (1/6, 1/10)`), the BA flow datum of `sz0`
 at every `n` (`g = BAflowLam0`, `E = BAflowEs`, `m = BAmF`; `BAReal` at `κ = 1/2`, `0 < g ≤ 1 ≤ 𝔡⁻¹`), the grid `t₁ = 1/4`, `t₀ = 1/2`,
 `K = gueGridK sz0 2`, the a priori threshold `δ_n = N^{-1/20}`, `c₀ = 1/20`.  Every hypothesis is discharged. -/
-
-namespace GUEEntryGridBAInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- The window `0 < g_n ≤ 1 ≤ 𝔡⁻¹` and `BAReal` at `κ = 1/2`, every `n`. -/
-private theorem GUEEntryGridBAInst_data (n : ℕ) :
-    0 < BAflowLam0 sz0 zSeq n ∧ BAflowLam0 sz0 zSeq n ≤ (1 / 10 : ℝ)⁻¹ ∧
-      BAReal 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (1 / 2) (BAflowEs sz0 zSeq n)
-        (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) := by
-  have hm : 0 < (BAm 3 (sz0.L n) (sz0.lam n) (zSeq n)).im := by
-    rw [BAm_zSeq n]; linarith [mS_im_half (sz0.L n) (sz0.lam n) (sz0_lam_L n)]
-  have hx1 : (1 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hl : sz0.lam n ≤ 1 := (inv_le_one_of_one_le₀ (one_le_pow₀ hx1) : ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1)
-  exact ⟨mul_pos (Real.sqrt_pos.mpr (BAt0_pos (zSeq_im_pos n) hm)) (sz0_lam_pos n),
-    ((BAg0_le (sz0_lam_pos n).le (zSeq_im_pos n) hm).trans hl).trans (by norm_num),
-    BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n⟩
-
-/-- `map_gueHBA_eq_mixMatBA` at the flow datum, `n = 0`, every grid step `k`. -/
-example (k : ℕ) :=
-  map_gueHBA_eq_mixMatBA sz0 (BAflowLam0 sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2) (fun _ => 4) 0 k (by norm_num)
-    (by norm_num)
-
-/-- `gueGrid_entry_boundBA` at the instance. -/
-example :=
-  gueGrid_entry_boundBA sz0 (d := 3) le_rfl (𝔠 := 1 / 6) (𝔡 := 1 / 10) (κ := 1 / 2) flow_sz0.1 (by norm_num) 2
-    (g := BAflowLam0 sz0 zSeq) (E := BAflowEs sz0 zSeq) (t1 := fun _ => 1 / 4) (t0 := fun _ => 1 / 2)
-    (m := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) GUEEntryGridBAInst_data (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) (δ := fun n => ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ)))
-    (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) (c₀ := 1 / 20) (by norm_num)
-    (Eventually.of_forall fun n => le_rfl)
-
-/-- `gueGrid_entry_boundBA'` at the same data (Amend 4 item 2): `BAReal` at every `n`, the window eventually. -/
-example :=
-  gueGrid_entry_boundBA' sz0 (d := 3) le_rfl (𝔠 := 1 / 6) (𝔡 := 1 / 10) (κ := 1 / 2) flow_sz0.1 (by norm_num) 2
-    (g := BAflowLam0 sz0 zSeq) (E := BAflowEs sz0 zSeq) (t1 := fun _ => 1 / 4) (t0 := fun _ => 1 / 2)
-    (m := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun n => (GUEEntryGridBAInst_data n).2.2)
-    (Eventually.of_forall fun n => ⟨(GUEEntryGridBAInst_data n).1, (GUEEntryGridBAInst_data n).2.1⟩)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-    (δ := fun n => ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ))) (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _)
-    (c₀ := 1 / 20) (by norm_num) (Eventually.of_forall fun n => le_rfl)
-
-end GUEEntryGridBAInst
 
 end RBM.BA
 

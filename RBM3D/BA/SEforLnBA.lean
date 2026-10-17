@@ -138,15 +138,6 @@ theorem baStep2Mat_loopForm (d : ℕ) :
   intro sz κ ε 𝔠 𝔡 z hκ hflow n
   exact ⟨lt_of_lt_of_le hκ (EMn2BA_mF_data sz hflow n).1, fun u H k σ a => rfl, fun u H I => rfl, fun u => rfl⟩
 
-/-- **Target 2 (c), `baStep2Mat_carrierFacts`**: `T2486_BACarrierFacts` verbatim, the conjunction of `baStep34_LCompat`,
-`baStep34_KCompat` and `baStep2Mat_loopForm`. -/
-theorem baStep2Mat_carrierFacts (d : ℕ) :
-    (∀ (sz : Sizes d) (lam0 E : ℕ → ℝ),
-      Step34Gen_LCompat (baStep2Mat sz lam0 E) (sz.seqHflowBA lam0) ∧ Step34Gen_KCompat (baStep2Mat sz lam0 E)) ∧
-    (∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
-      StepDecompGen_LoopForm (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (BAflowEs sz z)) :=
-  ⟨fun sz lam0 E => ⟨baStep34_LCompat d sz lam0 E, baStep34_KCompat d sz lam0 E⟩, baStep2Mat_loopForm d⟩
-
 /-- **Target 2 (c), `baStep5CasesGen_flowFacts`** (`T2486_BAFlowFacts`; `T2462_FlowFacts`): `κm = κ`, `EMn2BA_T0_lt_one`, `EMn2BA_mF_data`, the `eta`
 field of `baFM`. -/
 theorem baStep5CasesGen_flowFacts (d : ℕ) :
@@ -191,22 +182,6 @@ end Facts
 /-! ## 3. Target 4: `lem:SEforLn` at the BA carrier -/
 
 section SEforLn
-
-/-- **Target 4 (a), `baSEforLnConclgL_of`** (conclusion head `STSEforLnConclgL`; paper `lem:SEforLn` `3_5:1017`, `lem:main_ind_BA` `7_8:1825`):
-`stSEforLnConclgL_of` at the BA tuple, per carrier.  The carrier facts are `baSEforLnGen_facts`, `STKwardgL` is `baKward_holds`; only the Step 2
-conclusions `STStep2ConclgL (baFMz sz z) ..` (T1-BA), `(con_st_ind)` with `𝔠_d C_d ≤ 1/30` and the times stay hypotheses. -/
-theorem baSEforLnConclgL_of (d : ℕ) (hd : 3 ≤ d) (sz : Sizes d) (κ ε 𝔠 𝔡 Cd 𝔠d : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ)
-    (hκ : 0 < κ) (hε : 0 < ε) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (hCd : 0 < Cd) (h𝔠d : 0 < 𝔠d) (hcc : 𝔠d * Cd ≤ 1 / 30)
-    (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (ht1 : ∀ n, t n < 1) (hcon : sz.STConStInd 𝔠d s t)
-    (hStep2 : STStep2ConclgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Cd) :
-    STSEforLnConclgL (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (sz.seqHflowBA (BAflowLam0 sz z))
-      (Sizes.seqP (sz.withLam 0)) s t := by
-  obtain ⟨κm, hκm, hF⟩ := baStep5CasesGen_flowFacts d κ hκ
-  obtain ⟨hA, -, hmκ, hη⟩ := hF sz ε 𝔠 𝔡 z hflow
-  obtain ⟨⟨E, hloop⟩, hherm, hL, hK, hward, hrow, hcol, hsupp, him, hone⟩ := baSEforLnGen_facts d sz κ ε 𝔠 𝔡 z hκ hflow
-  exact stSEforLnConclgL_of hd sz (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (sz.seqHflowBA (BAflowLam0 sz z))
-    (Sizes.seqP (sz.withLam 0)) κm 𝔠 𝔡 Cd 𝔠d E s t ⟨hκm, hmκ, hη⟩ hA hloop hherm hL hK hward hrow hcol hsupp him hone hCd h𝔠d
-    hcc hs0 hst ht1 hcon (baKward_holds d hd κ ε 𝔡 hκ hε hflow.1.2.1 𝔠 sz z hflow) hStep2
 
 /-- **Target 4 (b), `BASEforLn`** (`T2486_BASEforLn`; the shape of `Chain/Step34GenTw.lean:89`): `lem:SEforLn` as an ingredient pin at the
 BA tuple, for every regime `R` (the proof reads none). -/
@@ -305,66 +280,6 @@ end Eterm
 `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), the windows `s ≡ 1/10 < t ≡ 1/2`, `𝔠_d = 1/100`,
 `C_d = 1` (`𝔠_d C_d ≤ 1/30`), `(con_st_ind)` from `s1Setup_conStInd_const`.  Every deterministic premise is discharged; the inputs
 that stay hypotheses are the Step 2 conclusions `STStep2ConclgL` (T1-BA's pin) and the consumer's `STDecayLoopUgL` (T7-BA). -/
-
-namespace SEforLnBAInst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- **Target 2 (a)** at the data: the Ward class of `baFMz sz0 zSeq`, every size index. -/
-theorem inst_wardCls : ZeroModeGen_WardCls sz0 (baFMz sz0 zSeq) :=
-  baZeroModeGen_wardCls 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-/-- **Target 2 (b)** at the data: the one-loop value of `baFMz sz0 zSeq`, eventually in `n`. -/
-theorem inst_oneLoop :
-    ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u < 1 → ∀ (σ : Bool) (a : Zd 3 (sz0.L n)),
-      (baFMz sz0 zSeq).K n u (fun _ : Fin 1 => σ) (fun _ => a) =
-        if σ then (baFMz sz0 zSeq).m n else (starRingEnd ℂ) ((baFMz sz0 zSeq).m n) :=
-  baKsol_oneLoop 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-/-- **Target 2 (c)** at the data: the compatibilities (unguarded) and the loop form (under the flow). -/
-theorem inst_carrierFacts :
-    (Step34Gen_LCompat (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq)) ∧
-      Step34Gen_KCompat (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq))) ∧
-    StepDecompGen_LoopForm (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (BAflowEs sz0 zSeq) :=
-  ⟨(baStep2Mat_carrierFacts 3).1 sz0 _ _,
-    (baStep2Mat_carrierFacts 3).2 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0⟩
-
-/-- **Target 2 (c), flow facts** at the data: some `κm > 0` and the four facts for `sz0`, `zSeq`. -/
-theorem inst_flowFacts : ∃ κm : ℝ, 0 < κm ∧ sz0.Admissible (1 / 6) (1 / 10) ∧ (∀ n, BAflowT0 sz0 zSeq n < 1) ∧
-    (∀ n, κm ≤ ((baFMz sz0 zSeq).m n).im) ∧
-      ∀ (n : ℕ) (t : ℝ), (baFMz sz0 zSeq).eta n t = (1 - t) * ((baFMz sz0 zSeq).m n).im := by
-  obtain ⟨κm, hκm, hF⟩ := baStep5CasesGen_flowFacts 3 (1 / 2) (by norm_num)
-  exact ⟨κm, hκm, hF sz0 (1 / 10) (1 / 6) (1 / 10) zSeq flow_sz0⟩
-
-/-- **Target 3** at the data: `SEforLnGen_Facts` unfolded at `sz0`, `zSeq`. -/
-example := baSEforLnGen_facts 3 sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0
-
-/-- **Target 4 (a)** at the data: `STSEforLnConclgL` for `sz0`, `zSeq`, `s ≡ 1/10 < t ≡ 1/2`, `𝔠_d = 1/100`, `C_d = 1`; only the Step 2
-conclusions stay a hypothesis. -/
-theorem inst_seforLnConclgL (hStep2 : STStep2ConclgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0))
-      (fun _ => 1 / 10) (fun _ => 1 / 2) 1) :
-    STSEforLnConclgL (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq))
-      (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 10) (fun _ => 1 / 2) :=
-  baSEforLnConclgL_of 3 le_rfl sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 (1 / 100) zSeq (fun _ => 1 / 10) (fun _ => 1 / 2)
-    (by norm_num) (by norm_num) flow_sz0 (by norm_num) (by norm_num) (by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num)
-    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) (by norm_num)) hStep2
-
-/-- **Target 4 (b)** at the data (`d = 3`, the trivial regime `STAny`): unconditional. -/
-theorem inst_baSEforLn : STSEforLngL 3 STAny (fun sz => Sizes.seqP (sz.withLam 0))
-    (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z))
-    (fun sz z => sz.seqHflowBA (BAflowLam0 sz z)) (fun sz z => BAflowT0 sz z) :=
-  baSEforLn_holds 3 STAny
-
-/-- **Target 5** at the data: the four label decays at `k = 3`, `σ = (+,-,+)`, for `sz0`, `zSeq`, `s ≡ 1/10 ≤ t ≡ 1/2`; only the
-consumer's `STDecayLoopUgL` stays a hypothesis. -/
-example
-    (hU : STDecayLoopUgL (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).toFlowFM
-      (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 10) (fun _ => 1 / 2)) :=
-  baEtermDecaygL 3 le_rfl sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq (by norm_num) flow_sz0 (fun _ => 1 / 10) (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) hU 3 (by norm_num) ![true, false, true]
-
-end SEforLnBAInst
 
 end RBM.BA
 

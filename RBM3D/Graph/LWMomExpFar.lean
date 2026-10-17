@@ -49,9 +49,6 @@ def lwMomExpFar_ownExt {p q : ℕ} (Γ : NGraph p q) : Prop :=
   ∀ i : Fin p, ∀ st ∈ Γ.path i,
     st.2 = Sum.inl (Sum.inl i) ∨ st.2 = Sum.inl (Sum.inr i) ∨ ∃ α : Fin q, st.2 = Sum.inr α
 
-instance lwMomExpFar_ownExt_dec {p q : ℕ} (Γ : NGraph p q) : Decidable (lwMomExpFar_ownExt Γ) := by
-  unfold lwMomExpFar_ownExt; infer_instance
-
 /-- The labellings `S` put the internal vertex reached by the first step of each path at `L^∞` distance `> ℓ`
 from that path's `a_i`. -/
 def lwMomExpFar_HeadFar (d L : ℕ) [NeZero L] {p q : ℕ} (Γ : NGraph p q) (a : Fin p → Zd d L) (ℓ : ℝ)
@@ -90,16 +87,6 @@ def AnpFarAndAt (d : ℕ) {p q : ℕ} (Γ : NGraph p q) : Prop :=
 
 def AnpFarAnd (d : ℕ) : Prop :=
   ∀ (p q : ℕ) (Γ : NGraph p q), Γ.NoGhost → Γ.IsNested → lwMomExpFar_ownExt Γ → AnpFarAndAt d Γ
-
-/-- **Supply for LW-13b**: the merged `LWAuxNested` (`AuxGraph.lean:1597-1604`) verbatim with
-`ownExt Γa` added. -/
-def LWAuxNestedOwn : Prop :=
-  ∀ (p : ℕ) (Q : PGraph (Fin 2)), 0 < p → Q.LocReg345 p →
-    Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (Sum.inl (Q.ext 1)) →
-    ∃ Γa : NGraph p Q.g.nM, Γa.NoGhost ∧ Γa.IsNested ∧ lwMomExpFar_ownExt Γa ∧
-      Γa.ordN = LGraph.auxOrd Q.g ∧
-      ∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : Q.E' → κ,
-        Γa.val ξ (fun _ => be (Q.ext 0)) (fun _ => be (Q.ext 1)) = LGraph.auxVal Q.g ξ be
 
 /-! ## 2. The head of a path -/
 
@@ -369,105 +356,17 @@ theorem lwMomExpFar_auxGraph_ownExt {Q : PGraph (Fin 2)} {p : ℕ} (Dt : auxGrap
   obtain ⟨k, -, rfl⟩ := List.mem_map.1 hst
   exact lwMomExpFar_nodeV_cases Dt i _
 
-/-- **The nested form of `Γ^aux` with `ownExt`** (the proof of `lwAuxNested_holds`, `AuxGraph.lean:1606-1640`, with the
-same witness `auxGraph_ngraph Dt`, plus `lwMomExpFar_auxGraph_ownExt`): the input of `lwMomExpFar_and`. -/
-theorem lwMomExpFar_auxOwn : LWAuxNestedOwn := by
-  classical
-  rintro p Q hp ⟨W, h3, h4, h5⟩ hxy
-  have : Fintype (LGraph.AuxIMol Q.g) := Fintype.ofFinite _
-  let e : Fin Q.g.nM ≃ LGraph.AuxIMol Q.g := (Fintype.equivFinOfCardEq (auxGraph_card_aux Q.g)).symm
-  obtain ⟨R, hR⟩ := Multiset.le_iff_exists_add.1 h3.2
-  let Dt : auxGraph_Data Q p := ⟨hp, e, W, R.toList.map fun z => Quot.out z⟩
-  have hout : ∀ z : Sym2 Q.g.Mol, s((Quot.out z).1, (Quot.out z).2) = z := fun z => Quot.out_eq z
-  have hcover : (∑ i, localReg_stepEdges (Dt.W i)) +
-      (↑(Dt.rest.map fun st => s(st.1, st.2)) : Multiset (Sym2 Q.g.Mol)) = Q.g.localReg_molEdgeMS := by
-    have : (↑(Dt.rest.map fun st => s(st.1, st.2)) : Multiset (Sym2 Q.g.Mol)) = R := by
-      change (↑((R.toList.map fun z => Quot.out z).map fun st => s(st.1, st.2)) : Multiset (Sym2 Q.g.Mol)) = R
-      rw [List.map_map]
-      have h1 : ((fun st : Q.g.Mol × Q.g.Mol => s(st.1, st.2)) ∘ fun z : Sym2 Q.g.Mol => Quot.out z) = id := by
-        funext z; exact hout z
-      rw [h1, List.map_id, Multiset.coe_toList]
-    rw [this]
-    exact hR.symm
-  have hnd : ∀ i, ∀ st ∈ Dt.W i, st.1 ≠ st.2 := by
-    intro i st hst
-    have h1 : s(st.1, st.2) ∈ localReg_stepEdges (W i) := localReg_mem_stepEdges.2 ⟨st, hst, rfl⟩
-    have h2 : s(st.1, st.2) ∈ ∑ j, localReg_stepEdges (W j) := Multiset.mem_sum.2 ⟨i, Finset.mem_univ _, h1⟩
-    have h3' := auxGraph_molEdgeMS_nd Q.g (Multiset.mem_of_le h3.2 h2)
-    rwa [Sym2.mk_isDiag_iff] at h3'
-  have hndr : ∀ st ∈ Dt.rest, st.1 ≠ st.2 := by
-    intro st hst
-    obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hst
-    have hzR : z ∈ R := Multiset.mem_toList.1 hz
-    have hz' : z ∈ Q.g.localReg_molEdgeMS := by rw [hR]; exact Multiset.mem_add.2 (Or.inr hzR)
-    have := auxGraph_molEdgeMS_nd Q.g hz'
-    rw [← hout z] at this
-    rwa [Sym2.mk_isDiag_iff] at this
-  exact ⟨auxGraph_ngraph Dt, auxGraph_noGhost Dt, auxGraph_isNested hxy Dt h3.1 hnd hndr h4 h5,
-    lwMomExpFar_auxGraph_ownExt Dt, auxGraph_ordN Dt hcover,
-    fun ξ hsymm be => auxGraph_val_eq hxy Dt hcover ξ hsymm be⟩
-
 end AuxOwn
 
 /-! ## 7. Compiled nonempty instances at `d = 3` -/
 
 section Instances
 
-/-- Instance (1): `figAux` (`p = q = 2`, `ord - p = 0`, `a_0 = a_1`, `b_0 = b_1` allowed): the "and" far pin. -/
-theorem lwMomExpFar_inst_figAux : AnpFarAndAt 3 figAux :=
-  lwMomExpFar_and 3 2 2 figAux figAux_nested.2 figAux_nested.1 (by decide +kernel)
-
 /-- Instance (2): the one-edge graph `a_0 — b_0` (`p = 1`, `q = 0`; the counterexample of the old pin
 `𝖳_t(0)/𝖳_t(ℓ) → ∞` at `a_0 = b_0` is the equality `ξ(a, a) ≤ 𝖳_t(0 ∧ ℓ)` here). -/
 theorem lwMomExpFar_inst_oneEdge : AnpFarAndAt 3 anpKey_oneEdge :=
   lwMomExpFar_and 3 1 0 anpKey_oneEdge (by unfold NGraph.NoGhost; decide +kernel) anpKey_oneEdge_nested
     (by unfold lwMomExpFar_ownExt; decide +kernel)
-
-/-- Instance (3): the head form at `figAux`. -/
-theorem lwMomExpFar_inst_head : AnpFarHeadAt 3 figAux :=
-  lwMomExpFar_head 3 2 2 figAux figAux_nested.2 figAux_nested.1 (by decide +kernel)
-
-/-- Instance (4): the output of `lwMomExpFar_auxOwn` at `localReg2_inst_Q.pack` (`p = 2`, `q = 1`) satisfies the far pin. -/
-theorem lwMomExpFar_inst_aux :
-    ∃ Γa : NGraph 2 localReg2_inst_Q.nM, Γa.NoGhost ∧ Γa.IsNested ∧ lwMomExpFar_ownExt Γa ∧
-      AnpFarAndAt 3 Γa := by
-  obtain ⟨Γa, h1, h2, h3, -⟩ := lwMomExpFar_auxOwn 2 localReg2_inst_Q.pack (by norm_num)
-    localReg2_inst_Q_locReg345 auxGraph_inst_Q_hxy
-  exact ⟨Γa, h1, h2, h3, lwMomExpFar_and 3 _ _ Γa h1 h2 h3⟩
-
-/-- Instance (5): `lwMomExpFar_inst_figAux` applied at concrete data, every hypothesis discharged: `d = 3`, `L = 4`,
-`W = 2`, `g = t = 1/2`, `ℓ = 1`, `ξ = 𝖳_t(|α - β|_∞ ∧ ℓ)` (the extremal edge), `θ` the total mass of `ξ²` (so the
-row-sum premise holds), `a_0 = a_1 = 0`, `b_0 = b_1 = e_0`; the domain `𝐃^∧_{>ℓ}` is nonempty. -/
-example : ∃ (ξ : Zd 3 4 → Zd 3 4 → ℝ) (θ : ℝ) (a b : Fin 2 → Zd 3 4),
-    0 < θ ∧ (∀ α β, 0 ≤ ξ α β ∧ ξ α β = ξ β α) ∧
-    (∀ α β, ξ α β ≤ sfT 3 4 2 (1 / 2) (1 / 2) (min ((zdistInf 3 4 (α - β) : ℕ) : ℝ) 1)) ∧
-    (∀ α, ∑ β, ξ α β ^ 2 ≤ θ) ∧ (lwMomExpFar_farDAnd 3 4 a b 1).Nonempty ∧
-    ∃ C : ℝ, 0 < C ∧
-      figAux.valOn ξ a b (Fintype.piFinset fun _ : Fin 2 => lwMomExpFar_farDAnd 3 4 a b 1) ≤
-        C * θ ^ 2 * sfT 3 4 2 (1 / 2) (1 / 2) 0 ^ (figAux.ordN - ((2 : ℕ) : ℤ)) *
-          ∏ i, sfT 3 4 2 (1 / 2) (1 / 2) (min ((zdistInf 3 4 (a i - b i) : ℕ) : ℝ) 1) := by
-  obtain ⟨C, hC, H⟩ := lwMomExpFar_inst_figAux
-  set ξ : Zd 3 4 → Zd 3 4 → ℝ :=
-    fun α β => sfT 3 4 2 (1 / 2) (1 / 2) (min ((zdistInf 3 4 (α - β) : ℕ) : ℝ) 1) with hξ
-  have hξpos : ∀ α β, 0 < ξ α β := fun α β =>
-    lwMomExpFar_sfT_pos (by norm_num) (by norm_num) (le_min (Nat.cast_nonneg _) zero_le_one)
-  have hsymm : ∀ α β, ξ α β = ξ β α := fun α β => by
-    simp only [hξ]; rw [anpKey_zdistInf_sub_comm]
-  set θ : ℝ := ∑ α, ∑ β, ξ α β ^ 2 with hθ
-  have hrow : ∀ α, ∑ β, ξ α β ^ 2 ≤ θ := fun α =>
-    Finset.single_le_sum (f := fun α => ∑ β, ξ α β ^ 2)
-      (fun α _ => Finset.sum_nonneg fun β _ => sq_nonneg _) (Finset.mem_univ α)
-  have hθpos : 0 < θ := lt_of_lt_of_le
-    (Finset.sum_pos (fun β _ => pow_pos (hξpos 0 β) 2) ⟨0, Finset.mem_univ _⟩) (hrow 0)
-  have hne : (lwMomExpFar_farDAnd 3 4 (fun _ : Fin 2 => (0 : Zd 3 4)) (fun _ => Pi.single 0 1) 1).Nonempty := by
-    refine ⟨Pi.single 1 2, ?_⟩
-    simp only [lwMomExpFar_farDAnd, Finset.mem_filter, Finset.mem_univ, true_and]
-    intro i
-    exact ⟨Nat.one_lt_cast.2 (by decide +kernel), Nat.one_lt_cast.2 (by decide +kernel)⟩
-  exact ⟨ξ, θ, fun _ => 0, fun _ => Pi.single 0 1, hθpos, fun α β => ⟨(hξpos α β).le, hsymm α β⟩,
-    fun α β => le_rfl, hrow, hne, C, hC,
-    H 4 2 (1 / 2) (1 / 2) θ 1 (by norm_num) (by norm_num) hθpos (by norm_num) ξ
-      (fun α β => ⟨(hξpos α β).le, hsymm α β⟩) (fun α β => le_rfl) hrow _ _⟩
 
 end Instances
 

@@ -64,49 +64,4 @@ theorem baStep5III_holds :
 (`Step5IIIGood_reg_sz0`) and `(con_st_ind)` (`s1Setup_conStInd_const`) are discharged; the nine carrier predicates of `STIngR5gL` (other gates'
 pins) stay hypotheses, as in `BA/Step5IIIWalk2.lean` section 7. -/
 
-/-- The nine carrier predicates of `STIngR5gL` at the instance (other gates' pins). -/
-private def Step5IIITargets_instPrem : Prop :=
-  STKboundgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) ∧
-    STKwardgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) ∧
-    STLKgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) ∧
-    STDecaygL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) ∧
-    STDecayStronggL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) ∧
-    STStep1LoopgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) ∧
-    STStep2ConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) 1 ∧
-    STLmaxUgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) ∧
-    STLKUgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ))
-
-/-- **Target 4 (a)**: target 2 at the instance; `(con_st_ind)` at the pin's `𝔠d` from `s1Setup_conStInd_const`, the regime from `Step5IIIGood_reg_sz0`. -/
-private theorem Step5IIITargets_inst_pf (hp : Step5IIITargets_instPrem) :
-    STPfConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) := by
-  obtain ⟨hKb, hKw, hLK, hDec, hDecS, hS1, hS2, hLmax, hLKU⟩ := hp
-  obtain ⟨𝔠d, h0, h1, H⟩ := baPfStep5_holds le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 1 one_pos
-  exact H (1 / 6) SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ))
-    (fun n => by norm_num) (fun n => by norm_num) (fun n => (FlowPinsInst.half_lt_t0 n).le) Step5IIIGood_reg_sz0 hKb hKw hLK hDec hDecS
-    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (s0 := 1 / 10) (t0 := 1 / 2) (by norm_num) (by norm_num) h0) hS1 hS2 hLmax hLKU
-
-example (hp : Step5IIITargets_instPrem) :
-    STPfConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) :=
-  Step5IIITargets_inst_pf hp
-
-/-- **Target 4 (b)**: target 3 at the same data, the uniform Step-5 conclusion. -/
-private theorem Step5IIITargets_inst_step5 (hp : Step5IIITargets_instPrem) :
-    STStep5ConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) := by
-  obtain ⟨hKb, hKw, hLK, hDec, hDecS, hS1, hS2, hLmax, hLKU⟩ := hp
-  obtain ⟨𝔠d, h0, h1, H⟩ := baStep5III_holds le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 1 one_pos
-  exact H (1 / 6) SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ))
-    (fun n => by norm_num) (fun n => by norm_num) (fun n => (FlowPinsInst.half_lt_t0 n).le) Step5IIIGood_reg_sz0 hKb hKw hLK hDec hDecS
-    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (s0 := 1 / 10) (t0 := 1 / 2) (by norm_num) (by norm_num) h0) hS1 hS2 hLmax hLKU
-
-example (hp : Step5IIITargets_instPrem) :
-    STStep5ConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) :=
-  Step5IIITargets_inst_step5 hp
-
-/-- **Target 4 (c)**: (b) through `ST_step5_assemblygL`, `(Eq:Gdecay)` and `(Eq:Gdecay+s<g)` at `t ≡ 1/2`. -/
-example (hp : Step5IIITargets_instPrem) :
-    STDecaygL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 2 : ℝ)) ∧
-      STDecayStronggL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) (fun _ => (1 / 2 : ℝ)) :=
-  ST_step5_assemblygL _ _ (fun _ => (1 / 10 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun n => by norm_num)
-    (Step5IIITargets_inst_step5 hp)
-
 end RBM.BA

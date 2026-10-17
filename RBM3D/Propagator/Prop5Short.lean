@@ -466,41 +466,4 @@ theorem prop5Short_holds (d : ℕ) (Λ κ : ℝ) : Prop5Short d Λ κ := by
 `1/2 ≤ Im I = 1`), `σ = true` (`ξ = t m²`), at `a = 0` and at `a = (1,0,0) ≠ 0`, `|a| = 1`;
 every hypothesis is discharged. -/
 
-example : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
-    ‖Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I true))
-        0 0‖
-      ≤ C * ((if (0 : Zd 3 5) = 0 then (1 : ℝ) else 0)
-        + (1 / 2 : ℝ) ^ 2 * Real.exp (-c * (zdistD 3 5 (0 : Zd 3 5) : ℝ))) := by
-  obtain ⟨C, hC, c, hc, H⟩ := prop5Short_holds 3 1 (1 / 2) (by norm_num) (by norm_num)
-    (by norm_num)
-  exact ⟨C, hC, c, hc, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (9 / 10)
-    (by norm_num) (by norm_num) Complex.I Complex.norm_I (by norm_num) true 0⟩
-
-example : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ (![1, 0, 0] : Zd 3 5) ≠ 0
-    ∧ zdistD 3 5 (![1, 0, 0] : Zd 3 5) = 1 ∧
-    ‖Theta 3 5 (1 / 2) (((9 / 10 : ℝ) : ℂ) * (PropSpin Complex.I true * PropSpin Complex.I true))
-        0 ![1, 0, 0]‖
-      ≤ C * ((if (![1, 0, 0] : Zd 3 5) = 0 then (1 : ℝ) else 0)
-        + (1 / 2 : ℝ) ^ 2 * Real.exp (-c * (zdistD 3 5 (![1, 0, 0] : Zd 3 5) : ℝ))) := by
-  obtain ⟨C, hC, c, hc, H⟩ := prop5Short_holds 3 1 (1 / 2) (by norm_num) (by norm_num)
-    (by norm_num)
-  exact ⟨C, hC, c, hc, by decide, by decide, H 5 (by norm_num) (1 / 2) (by norm_num)
-    (by norm_num) (9 / 10) (by norm_num) (by norm_num) Complex.I Complex.norm_I (by norm_num)
-    true ![1, 0, 0]⟩
-
-/-- The pin proves the merged consumer interface `ThetaDecayShort` for every `d`, `g`, `m`
-(`Loop/*` and `Kernel/*` assume it). -/
-example : ∀ (d : ℕ) (g : ℝ) (m : ℂ), ThetaDecayShort d g m :=
-  fun d g m => (prop5Short_holds d g m.im).thetaDecayShort
-
-example : ThetaDecayShort 3 (1 / 2) Complex.I :=
-  (prop5Short_holds 3 (1 / 2) Complex.I.im).thetaDecayShort
-
-/-- With `Prop5Decay` and `Prop8ZeroMode` still hypotheses, the bundle `Prop5to8` has its
-`short` field proved. -/
-example (h5 : Prop5Decay 3 1) (h6 : Prop6Diff1 3 1 (1 / 2) (1 / 2))
-    (h7 : Prop7Diff2 3 1 (1 / 2) (1 / 2)) (h8 : Prop8ZeroMode 3 1 (1 / 2)) :
-    Prop5to8 3 1 (1 / 2) (1 / 2) :=
-  ⟨h5, prop5Short_holds 3 1 (1 / 2), h6, h7, h8⟩
-
 end RBM

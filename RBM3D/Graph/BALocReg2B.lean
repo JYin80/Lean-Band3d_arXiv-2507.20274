@@ -50,7 +50,7 @@ namespace RBM.Graph
 
 local macro "BALocReg2B_simp0" : tactic => `(tactic| simp only [SEdge.localReg2_cends_mk, SEdge.localReg2_cends_map, SEdge.localReg2_cends, Prod.map_apply, Sym2.map_mk,
   localReg2_mapMS, List.map_cons, List.map_nil, Multiset.map_cons, Multiset.map_zero, Multiset.map_singleton, Multiset.map_add, ← Multiset.cons_coe,
-  Multiset.coe_nil, Multiset.insert_eq_cons, ← Multiset.singleton_add, add_zero, zero_add, id_eq, BALocReg2_cends_bpS, BALocReg2_bpS_σ, BALocReg2_bpS_src, BALocReg2_bpS_dst, SEdge.map])
+  Multiset.coe_nil, Multiset.insert_eq_cons, ← Multiset.singleton_add, add_zero, zero_add, id_eq, BALocReg2_bpS_σ, BALocReg2_bpS_src, BALocReg2_bpS_dst, SEdge.map])
 
 local macro "BALocReg2B_msnorm" : tactic => `(tactic| (BALocReg2B_simp0; try abel))
 
@@ -345,21 +345,10 @@ end Shapes
 
 /-! ## 4. Target 2: the twin of `LocalRegular2`, closed -/
 
-/-- **Target 2: the path step of the tagged BA step, no hypothesis** (band `pathInv2_locStep`, `LocalRegular2:1582`): `baPathStep_holds` at `baPathBinder_holds`. -/
-theorem baPathStep_closed : BAPathStep (untag BALocStepT) := baPathStep_holds baPathBinder_holds
-
 /-- **Target 2: the contract (1)-(5) of L3b1 with no hypothesis** (band `lw_localregular_upto5`, `LocalRegular2:1857`): `baLocReg15_holds` at `baPathBinder_holds`. -/
 theorem baLocReg15_closed : BALocReg15 := baLocReg15_holds baPathBinder_holds
 
 /-! ## 5. Target 3: the composed statement -/
-
-/-- **Target 3 (a): the shape binder of `baEngine_assemble` and `ba_localregularX`** (`BAEngine:268, 335`), verbatim.  Discharged with `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn`
-(the closing step inside `baLocReg6_holds`, `BAShapeO2B:356-359`). -/
-theorem baShapeLLBinder_holds : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN := by
-  rintro sh (rfl | rfl | rfl)
-  · exact baShapeLL_e2_tn
-  · exact baShapeLL_macroA_tn
-  · exact baShapeLL_macroB_tn
 
 /-- **Target 3 (b): any lists with `BALocRegConcl` carry (1)-(5)** (twin of `lw_localregular_upto5`, `LocalRegular2:1857`; DECISIONS §265 (4)): at every `Q ∈ outs ++ errs`, `PathInv2 p`, `n_M ≤ p`,
 `LocReg2` on the image (conjunct (c) gives the start term `P0` and `BAReach`, then `baLocReg15_closed`); at every `Q ∈ outs` (locally standard by conjunct (a)) `LocReg1`, `LocReg345` on the image
@@ -376,248 +365,15 @@ theorem baLocRegConcl_upto5 : ∀ (p : ℕ) (c : ℝ) (K0 d : ℕ) (D : ℝ) (ou
   refine ⟨fun Q hQ => ⟨(key Q hQ).1, (key Q hQ).2.1, (key Q hQ).2.2.1⟩, fun Q hQ => ?_⟩
   exact (key Q (List.mem_append_left _ hQ)).2.2.2 (hC.1 Q hQ).1
 
-/-- **Target 3 (c): the BA `lem:localregular` with (1)-(5), no binder** (twin of `lw_localregular_upto5`, `LocalRegular2:1857`): one pair of lists with `BALocRegConcl`, at least `p` black waved edges in
-every graph (`ba_localregularX` at `baShapeLLBinder_holds`), and the conclusions of `baLocRegConcl_upto5`. -/
-theorem ba_localregular_upto5 : ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAPGraph (Fin 2)),
-    BALocRegConcl p c K0 d D outs errs ∧ (∀ Q ∈ outs ++ errs, p ≤ Q.g.waved.countP (fun e => !e.col)) ∧
-      (∀ Q ∈ outs ++ errs, Q.img.PathInv2 p ∧ Q.g.nM ≤ p ∧ PGraph.LocReg2 Q.img p) ∧
-        ∀ Q ∈ outs, PGraph.LocReg1 Q.img ∧ PGraph.LocReg345 Q.img p ∧ (BAShadowPG Q).LocReg345 p := by
-  intro p c hc K0 d D
-  obtain ⟨outs, errs, hC, hw⟩ := ba_localregularX baShapeLLBinder_holds p c hc K0 d D
-  exact ⟨outs, errs, hC, hw, (baLocRegConcl_upto5 p c K0 d D outs errs hC).1, (baLocRegConcl_upto5 p c K0 d D outs errs hC).2⟩
-
 /-! ## 6. Nonempty instances (target 4), every deterministic hypothesis discharged
 
 The witnesses are those of R1 (`BASimInst`: `P_A` `gg`, `P_B` `within`, `P_C` `ggSplit`, `P_W` `weight`) and of L3b1 (`BALocReg1Inst.baPEr`, `edge`).  The invariant of the parent is satisfied, not assumed: `PathInv2 2` at `P_C` is
 `BALocReg1Inst.pathInv2_C`, `PathInv2 1` at `baPEr` is `pathInv2_Er`, and the hand-built families at `P_A` (`k = 2`), `P_B` (`k = 1`) and the weight witness `baPL` (`k = 1`) are `BALocReg2Inst.pathInv2_A`, `_B`, `_L` of `Graph/BALocReg2`. -/
 
-section Inst
-open BASimInst
-
 /-! ### A weight step with an `e2` output at a start term of `p = 2`
 
 The outputs of a step at a start term live over the quotient types of `LGraph.merge`, on which `decide` does not run; as in `BALocReg1B_reach_locStd` the start term `P0 = D0.packMerge`
 (`D0 = BALocReg1B_D0`, every solid edge circled) is a good renaming of the concrete graph `D0`, and the tag `e2` of the packed output is read on `D0` (`extraB` is invariant under a good renaming). -/
-
-/-- `extraB` is invariant under a renaming of the vertices along an injective map (the tag `e2` of an output of a step) -/
-private theorem BALocReg2B_extraB_map {E I E' I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype E'] [DecidableEq E']
-    [Fintype I'] [DecidableEq I'] (φ : E ⊕ I → E' ⊕ I') (hφ : BALocReg1B_Good φ) (Γ : BAGraph E I) (T : BAGraph E (I ⊕ Fin 2)) :
-    (BALocReg1B_mapG φ Γ).extraB (owxEmb 2) (BALocReg1B_mapG (BALocReg1B_extMap 2 φ) T) = Γ.extraB (owxEmb 2) T := by
-  have hψ := BALocReg1B_extMap_injective 2 φ hφ.1
-  unfold BAGraph.extraB
-  change ((Γ.solid.map (SEdge.map φ)).any _) = _
-  rw [List.any_map]
-  congr 1
-  funext e
-  simp only [Function.comp_apply, SEdge.map]
-  rw [BALocReg1B_sameAtom_map φ hφ.1, ← BALocReg1B_extMap_owxEmb 2 φ e.src, ← BALocReg1B_extMap_owxEmb 2 φ e.dst, BALocReg1B_sameAtom_map _ hψ]
-
-/-- **One weight step with an `e2` output, read on a renamed graph**: if `P.g` is the renaming of `Γ` along a good map, the weight step at the loop `p` of `Γ` has the output `T'` of the derivative term
-`lanlwD Γ p q`, renamed, tagged `e2` when `T` is extra for `Γ`. -/
-private theorem BALocReg2B_weight_out_e2 (P : BAPGraph (Fin 2)) {E0 I0 : Type} [Fintype E0] [DecidableEq E0] [Fintype I0] [DecidableEq I0]
-    (Γ : BAGraph E0 I0) (φ : E0 ⊕ I0 → P.E' ⊕ P.I') (hφ : BALocReg1B_Good φ) (hP : P.g = BALocReg1B_mapG φ Γ)
-    (p q : SEdge (E0 ⊕ I0) × List (SEdge (E0 ⊕ I0))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
-    (hw : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst)
-    (T : BAGraph E0 (I0 ⊕ Fin 2)) (hT : T ∈ (BAGraph.lanlwD Γ p q).splitG) (hx : Γ.extraB (owxEmb 2) T = true) :
-    ∃ LT, BAFrameStepT P LT ∧ ∃ Q, (BAShape.e2, Q) ∈ LT := by
-  set p' := BALocReg1B_pmap φ p with hp'def
-  set q' := BALocReg1B_pmap φ q with hq'def
-  have hp' : p' ∈ lwSplit P.g.solid := by
-    rw [hP]
-    change p' ∈ lwSplit (Γ.solid.map (SEdge.map φ))
-    rw [BALocReg1B_lwSplit_map]
-    exact List.mem_map.2 ⟨p, hp, rfl⟩
-  have hq' : q' ∈ lwSplit p'.2 := by
-    change q' ∈ lwSplit (p.2.map (SEdge.map φ))
-    rw [BALocReg1B_lwSplit_map]
-    exact List.mem_map.2 ⟨q, hq, rfl⟩
-  have hw' : p'.1.σ = true ∧ p'.1.circ = true ∧ p'.1.src = p'.1.dst := ⟨hw.1, hw.2.1, congrArg φ hw.2.2⟩
-  have hL : BAGraph.lanlwD P.g p' q' = BALocReg1B_mapG (BALocReg1B_extMap 2 φ) (BAGraph.lanlwD Γ p q) := by
-    rw [hP]; exact BALocReg1B_lanlwD_map φ Γ p q
-  set T' := BALocReg1B_mapG (BALocReg1B_extMap 2 φ) T with hT'def
-  have hT' : T' ∈ (BAGraph.lanlwD P.g p' q').splitG := by
-    rw [hL, BALocReg1B_splitG_map]
-    exact List.mem_map.2 ⟨T, hT, rfl⟩
-  have hex : P.g.extraB (owxEmb 2) T' = true := by
-    rw [hP, hT'def, BALocReg2B_extraB_map φ hφ]
-    exact hx
-  refine ⟨_, BAFrameStepT.weight P p' hp' hw', _, List.mem_append_left _ (?_ : (BAShape.e2, P.BASim_outOf T') ∈ P.outsT (P.g.tagStd 2) (P.g.lw2 p'))⟩
-  have htag : P.g.tagStd 2 T' = BAShape.e2 := by
-    unfold BAGraph.tagStd
-    simp only [hex, ↓reduceIte]
-  rw [← htag]
-  unfold BAPGraph.outsT
-  exact List.mem_flatMap.2 ⟨BAGraph.lanlwD P.g p' q', List.mem_cons_of_mem _ (List.mem_map.2 ⟨q', hq', rfl⟩), List.mem_map.2 ⟨T', hT', rfl⟩⟩
-
-/-- **A weight step at a start term of `p = 2` with an `e2` output**: the weight step at the blue circled loop `Ǧ_{β₀β₀}` of `P0 = D0.packMerge` (`BALocReg1B_p1`), at a derivative term `lanlwD D0 p1 q`
-with an extra `M`-split `T` (found by `decide +kernel` on the concrete `D0`) -/
-private theorem BALocReg2B_start_weight_e2 : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ∃ LT : List (BAShape × BAPGraph (Fin 2)),
-    BAFrameStepT P0 LT ∧ ∃ Q, (BAShape.e2, Q) ∈ LT := by
-  obtain ⟨q, hq, T, hT, hx, -⟩ : ∃ q ∈ lwSplit BALocReg1B_p1.2, ∃ T ∈ (BAGraph.lanlwD BALocReg1B_D0 BALocReg1B_p1 q).splitG,
-      BALocReg1B_D0.extraB (owxEmb 2) T = true ∧ ∀ e ∈ T.dotted, e.eq = false := by decide +kernel
-  have hD0d : ∀ e ∈ BALocReg1B_D0.dotted, e.eq = false := by decide
-  have hw1 : BALocReg1B_p1.1.σ = true ∧ BALocReg1B_p1.1.circ = true ∧ BALocReg1B_p1.1.src = BALocReg1B_p1.1.dst := by decide
-  set P0 := BALocReg1B_D0.packMerge with hP0def
-  have hP0 : P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition := List.mem_map.2 ⟨_, List.getElem_mem _, rfl⟩
-  obtain ⟨hm0, hg0⟩ := BALocReg1B_merge_map BALocReg1B_D0 hD0d
-  obtain ⟨LT, hLT, Q, hQ⟩ := BALocReg2B_weight_out_e2 P0 BALocReg1B_D0 BALocReg1B_D0.toLGraph.vmap hg0 hm0 BALocReg1B_p1 q
-    (List.getElem_mem _) hq hw1 T hT hx
-  exact ⟨P0, hP0, LT, hLT, Q, hQ⟩
-
-
-
-/-- (i) `within` at `P_B` (`hTB`; `PathInv2 1` at its image): targets 1 (c) at an `e2` and at a `macroA` output -/
-example : (∃ Q, (BAShape.e2, Q) ∈ (baPG baPB).withinOutsT pB ∧ Q.img.PathInv2 1) ∧
-    (∃ Q, (BAShape.macroA, Q) ∈ (baPG baPB).withinOutsT pB ∧ Q.img.PathInv2 1) := by
-  obtain ⟨Q, hQ⟩ := tag_exists ((baPG baPB).withinOutsT pB) .e2 (by decide +kernel)
-  obtain ⟨Q', hQ'⟩ := tag_exists ((baPG baPB).withinOutsT pB) .macroA (by decide +kernel)
-  exact ⟨⟨Q, hQ, baShapePath_e2_tn _ _ ⟨by decide, hTB⟩ Q hQ 1 BALocReg2Inst.pathInv2_B⟩,
-    ⟨Q', hQ', baShapePath_macroA_tn _ _ ⟨by decide, hTB⟩ Q' hQ' 1 BALocReg2Inst.pathInv2_B⟩⟩
-
-/-- target 3 (a) at `P_B` (`hTB`, an `e2` and a `macroA` output; the cost bound is the crude one `-4`): the binder `baShapeLLBinder_holds` applied to the step, as `BAShapeO2B:367` applies the three shape theorems -/
-example (far : Bool) : (∃ Q, (BAShape.e2, Q) ∈ (baPG baPB).withinOutsT pB ∧ locCostGeA far (-4) Q) ∧
-    (∃ Q, (BAShape.macroA, Q) ∈ (baPG baPB).withinOutsT pB ∧ locCostGeA far (-4) Q) := by
-  have hk : locCostGeA far (-4) (baPG baPB) := BAScost_locCostGeA_crude far (baPG baPB)
-  obtain ⟨Q, hQ⟩ := tag_exists ((baPG baPB).withinOutsT pB) .e2 (by decide +kernel)
-  obtain ⟨Q', hQ'⟩ := tag_exists ((baPG baPB).withinOutsT pB) .macroA (by decide +kernel)
-  exact ⟨⟨Q, hQ, baShapeLLBinder_holds _ (Or.inl rfl) _ _ ⟨by decide, hTB⟩ Q hQ far (-4) hk⟩,
-    ⟨Q', hQ', baShapeLLBinder_holds _ (Or.inr (Or.inl rfl)) _ _ ⟨by decide, hTB⟩ Q' hQ' far (-4) hk⟩⟩
-
-/-- (ii) `ggSplit` at `P_C`, `j = 0` (`hTC`; `PathInv2 2` at its image, `BALocReg1Inst.pathInv2_C`): an `e2` output and a `macroB` output -/
-example : (∃ Q, (BAShape.e2, Q) ∈ (baPG baPC).splitOutsT pC qC 0 ∧ Q.img.PathInv2 2) ∧
-    (∃ Q, (BAShape.macroB, Q) ∈ (baPG baPC).splitOutsT pC qC 0 ∧ Q.img.PathInv2 2) := by
-  obtain ⟨Q, hQ⟩ := tag_exists ((baPG baPC).splitOutsT pC qC 0) .e2 (by decide +kernel)
-  obtain ⟨Q', hQ'⟩ := tag_exists ((baPG baPC).splitOutsT pC qC 0) .macroB (by decide +kernel)
-  exact ⟨⟨Q, hQ, baShapePath_e2_tn _ _ ⟨by decide, hTC⟩ Q hQ 2 BALocReg1Inst.pathInv2_C⟩,
-    ⟨Q', hQ', baShapePath_macroB_tn _ _ ⟨by decide, hTC⟩ Q' hQ' 2 BALocReg1Inst.pathInv2_C⟩⟩
-
-/-- (ii), stages: a `macroB` output of stage 1 (the terms `d2`, `d3`, `d4`) and one of stage 2 (`tr.gg2` at the pair of `BAScost_trB`) of the same step; `baShapePath_macroB_tn` applies at both -/
-example : (∃ Q, (BAShape.macroB, Q) ∈ (baPG baPC).outsT (fun _ => BAShape.macroB)
-      [BAGraph.ext 2 baPC qC.2 [bpS true (owxEmb 2 qC.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (bpv 1) (owxEmb 2 pC.1.dst)],
-       BAGraph.ext 2 baPC qC.2 [bpS true (bpv 1) (owxEmb 2 pC.1.dst)] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1)],
-       BAGraph.ext 2 baPC qC.2 [] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 pC.1.dst)]] ∧
-      Q.img.PathInv2 2) ∧
-    (∃ Q, (BAShape.macroB, Q) ∈ (baPG baPC).outsT (fun _ => BAShape.macroB)
-      ((baPC.BAScost_trB pC qC).gg2 (bpS true (bpv 1) (owxEmb 2 pC.1.dst), qC.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 qC.1.src) (bpv 1)])
-        (bpS true (owxEmb 2 qC.1.src) (bpv 1), qC.2.map (SEdge.map (owxEmb 2)))) ∧ Q.img.PathInv2 2) := by
-  obtain ⟨Q, hQ⟩ := tag_exists ((baPG baPC).outsT (fun _ => BAShape.macroB)
-      [BAGraph.ext 2 baPC qC.2 [bpS true (owxEmb 2 qC.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (bpv 1) (owxEmb 2 pC.1.dst)],
-       BAGraph.ext 2 baPC qC.2 [bpS true (bpv 1) (owxEmb 2 pC.1.dst)] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1)],
-       BAGraph.ext 2 baPC qC.2 [] [bpW false (bpv 0) (bpv 1)]
-        [bpM (owxEmb 2 pC.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 qC.1.dst), bpM (owxEmb 2 qC.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 pC.1.dst)]])
-    .macroB (by decide +kernel)
-  obtain ⟨Q', hQ'⟩ := tag_exists ((baPG baPC).outsT (fun _ => BAShape.macroB)
-      ((baPC.BAScost_trB pC qC).gg2 (bpS true (bpv 1) (owxEmb 2 pC.1.dst), qC.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 qC.1.src) (bpv 1)])
-        (bpS true (owxEmb 2 qC.1.src) (bpv 1), qC.2.map (SEdge.map (owxEmb 2))))) .macroB (by decide +kernel)
-  exact ⟨⟨Q, hQ, baShapePath_macroB_tn _ _ ⟨by decide, hTC⟩ Q (List.mem_append_left _ (List.mem_append_left _ (List.mem_append_right _ hQ))) 2 BALocReg1Inst.pathInv2_C⟩,
-    ⟨Q', hQ', baShapePath_macroB_tn _ _ ⟨by decide, hTC⟩ Q' (List.mem_append_left _ (List.mem_append_right _ hQ')) 2 BALocReg1Inst.pathInv2_C⟩⟩
-
-/-- (iii) `gg` at `P_A` (`hTA`, `ggFT`; `PathInv2 2` at its image, `BALocReg2Inst.pathInv2_A`): an `e2` output, so that the `gg2`/`gg4` lemmas run -/
-example : ∃ Q, (BAShape.e2, Q) ∈ ggFT ∧ Q.img.PathInv2 2 := by
-  obtain ⟨Q, hQ⟩ := tag_exists ggFT .e2 (by decide +kernel)
-  exact ⟨Q, hQ, baShapePath_e2_tn _ _ ⟨by decide, hTA⟩ Q hQ 2 BALocReg2Inst.pathInv2_A⟩
-
-/-- (iv) `edge` at the replacement witness `baPEr` (`hStepEr`, `normalEr`; `PathInv2 1` at its image, `pathInv2_Er`): an `e2` output (the terms `lanlwD`) -/
-example : ∃ Q, (BAShape.e2, Q) ∈ BALocReg1Inst.outsEr ∧ Q.img.PathInv2 1 := by
-  obtain ⟨Q, hQ⟩ := tag_exists BALocReg1Inst.outsEr .e2 BALocReg1Inst.tags_Er.2.2.1
-  exact ⟨Q, hQ, baShapePath_e2_tn _ _ ⟨BALocReg1Inst.normalEr, BALocReg1Inst.hStepEr⟩ Q hQ 1 BALocReg1Inst.pathInv2_Er⟩
-
-namespace BALocReg2BInst
-
-/-- the tagged outputs of the `edge` step at `baPEr` (`BALocReg1Inst.outsEr`), twisted by `(true, true)` -/
-def outsErT : List (BAShape × BAPGraph (Fin 2)) := BALocReg1Inst.outsEr.map fun x => (x.1, BAPGraph.twist true true x.2)
-
-theorem stepErT : BALocStepT ((baPG BALocReg1Inst.baPEr).twist true true) outsErT :=
-  ⟨(ba_twist_inv_out true true _).2.2.2.2.2 BALocReg1Inst.normalEr, true, true, _, by rw [BALvl1A_twist_invol]; exact BALocReg1Inst.hStepEr, rfl⟩
-
-theorem pathInv2_ErT : ((baPG BALocReg1Inst.baPEr).twist true true).img.PathInv2 1 := (baPathTwist_holds true true _ 1).2 BALocReg1Inst.pathInv2_Er
-
-end BALocReg2BInst
-
-/-- target 2 (the path step with no hypothesis) at the twisted `edge` step at `baPEr`: every output, among them an `e2` output, carries the invariant of the parent (`PathInv2 1`, satisfied) -/
-example : (∃ Q, (BAShape.e2, Q) ∈ BALocReg2BInst.outsErT ∧ Q.img.PathInv2 1) ∧ ∀ Q ∈ BALocReg2BInst.outsErT.map Prod.snd, Q.img.PathInv2 1 := by
-  have hs := baPathStep_closed _ _ ⟨BALocReg2BInst.outsErT, BALocReg2BInst.stepErT, rfl⟩ 1 BALocReg2BInst.pathInv2_ErT
-  obtain ⟨Q, hQ⟩ := tag_exists BALocReg1Inst.outsEr .e2 BALocReg1Inst.tags_Er.2.2.1
-  have hQ' : (BAShape.e2, BAPGraph.twist true true Q) ∈ BALocReg2BInst.outsErT := List.mem_map.2 ⟨(BAShape.e2, Q), hQ, rfl⟩
-  exact ⟨⟨_, hQ', hs _ (List.mem_map.2 ⟨_, hQ', rfl⟩)⟩, hs⟩
-
-/-- (v) `weight` at a start term of `p = 2` (`PathInv2 2` at its image by `baPathInit_holds`): the weight step at the blue circled loop `Ǧ_{β₀β₀}` has an `e2` output, and `baShapePath_e2_tn` gives the invariant at it -/
-example : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ∃ (LT : List (BAShape × BAPGraph (Fin 2))) (Q : BAPGraph (Fin 2)),
-    BAFrameStepTN P0 LT ∧ (BAShape.e2, Q) ∈ LT ∧ P0.img.PathInv2 2 ∧ Q.img.PathInv2 2 := by
-  obtain ⟨P0, hP0, LT, hLT, Q, hQ⟩ := BALocReg2B_start_weight_e2
-  exact ⟨P0, hP0, LT, Q, ⟨BAGraph.partition_normal _ P0 hP0, hLT⟩, hQ, baPathInit_holds 2 P0 hP0,
-    baShapePath_e2_tn _ _ ⟨BAGraph.partition_normal _ P0 hP0, hLT⟩ Q hQ 2 (baPathInit_holds 2 P0 hP0)⟩
-
-/-- (v′) `weight` at the hand-built weight witness `baPL` (`BALocReg2Inst`, a blue circled loop at the internal vertex; `PathInv2 1` at its image, `pathInv2_L`): the step `BAFrameStepT.weight` has an
-`e2` output (kernel evaluation of `outsT`, `tagStd`), and `baShapePath_e2_tn` gives the invariant at it -/
-example : ∃ Q, (BAShape.e2, Q) ∈ (baPG BALocReg2Inst.baPL).outsT (BALocReg2Inst.baPL.tagStd 2) (BALocReg2Inst.baPL.lw2 BALocReg2Inst.pL) ++
-    (baPG BALocReg2Inst.baPL).outsT (BALocReg2Inst.baPL.tagStd 4) (BALocReg2Inst.baPL.lw4 BALocReg2Inst.pL) ∧ Q.img.PathInv2 1 := by
-  obtain ⟨Q, hQ⟩ := tag_exists ((baPG BALocReg2Inst.baPL).outsT (BALocReg2Inst.baPL.tagStd 2) (BALocReg2Inst.baPL.lw2 BALocReg2Inst.pL) ++
-    (baPG BALocReg2Inst.baPL).outsT (BALocReg2Inst.baPL.tagStd 4) (BALocReg2Inst.baPL.lw4 BALocReg2Inst.pL)) .e2 (by decide +kernel)
-  exact ⟨Q, hQ, baShapePath_e2_tn _ _ ⟨by decide, BAFrameStepT.weight (baPG BALocReg2Inst.baPL) BALocReg2Inst.pL (List.mem_cons_self ..) (by decide)⟩ Q hQ 1
-    BALocReg2Inst.pathInv2_L⟩
-
-/-- (b) stage 2 at the witnesses: macro (a) at `P_B` (`BALocReg2B_trA`, `BALocReg2B_macroA`) and macro (b) at `P_C` (`BALocReg2B_trB`, `BALocReg2B_macroB`), with the invariant of the parent satisfied
-(`PathInv2 1` at `P_B`, `PathInv2 2` at `P_C`) and every hypothesis discharged -/
-example : BALocReg1_PathAt (baPB.BAScost_trA pB) 1 0 1 ∧
-    (∀ X ∈ (baPB.BAScost_trA pB).lw2 (bpS true (bpv 1) (bpv 1), pB.2.map (SEdge.map (owxEmb 2))), BALocReg1_PathAt X 1 0 1) ∧
-    (∀ X ∈ (baPB.BAScost_trA pB).lw4 (bpS true (bpv 1) (bpv 1), pB.2.map (SEdge.map (owxEmb 2))), BALocReg1_PathAt X 1 0 1) := by
-  have hA := BALocReg2B_macroA baPB (by decide) pB (List.mem_cons_self ..) ⟨rfl, rfl⟩
-  exact ⟨BALocReg2B_trA baPB pB (List.mem_cons_self ..) ⟨rfl, rfl⟩ 1 0 1 BALocReg2Inst.pathInv2_B, fun X hX => hA.1 X hX 1 0 1 BALocReg2Inst.pathInv2_B,
-    fun X hX => hA.2 X hX 1 0 1 BALocReg2Inst.pathInv2_B⟩
-
-example : BALocReg1_PathAt (baPC.BAScost_trB pC qC) 2 0 1 ∧
-    (∀ X ∈ (baPC.BAScost_trB pC qC).gg2 (bpS true (bpv 1) (owxEmb 2 pC.1.dst), qC.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 qC.1.src) (bpv 1)])
-      (bpS true (owxEmb 2 qC.1.src) (bpv 1), qC.2.map (SEdge.map (owxEmb 2))), BALocReg1_PathAt X 2 0 1) ∧
-    (∀ X ∈ (baPC.BAScost_trB pC qC).gg4 (bpS true (bpv 1) (owxEmb 2 pC.1.dst), qC.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 qC.1.src) (bpv 1)])
-      (bpS true (owxEmb 2 qC.1.src) (bpv 1), qC.2.map (SEdge.map (owxEmb 2))), BALocReg1_PathAt X 2 0 1) := by
-  have hB := BALocReg2B_macroB baPC (by decide) pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide)
-  exact ⟨BALocReg2B_trB baPC pC qC (List.mem_cons_self ..) (List.mem_cons_self ..) ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) (by decide) (by decide) 2 0 1 BALocReg1Inst.pathInv2_C,
-    fun X hX => hB.1 X hX 2 0 1 BALocReg1Inst.pathInv2_C, fun X hX => hB.2 X hX 2 0 1 BALocReg1Inst.pathInv2_C⟩
-
-/-- (vi) target 2 at a locally standard graph reached from a `p = 2` start term (`BALocReg1B_reach_locStd`: two weight steps; no start term is locally standard), with no hypothesis -/
-example : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, ∃ (K : ℤ) (Q : BAPGraph (Fin 2)), BAReach K P0 Q ∧ ¬ P0.g.LocStd ∧ Q.g.LocStd ∧
-    Q.g.nM = 1 ∧ PGraph.LocReg1 Q.img ∧ PGraph.LocReg345 Q.img 2 ∧ (BAShadowPG Q).LocReg345 2 := by
-  obtain ⟨P0, hP0, Q1, Q, L1, L2, K, -, -, -, -, hn0, -, hreach, hL, hnM, -⟩ := BALocReg1B_reach_locStd
-  obtain ⟨-, -, -, h5⟩ := baLocReg15_closed 2 P0 hP0 K Q hreach
-  exact ⟨P0, hP0, K, Q, hreach, hn0, hL, hnM, h5 hL⟩
-
-/-- (vi), the step: the path step `baPathStep_closed` and the closed contract at the start term itself (`p = 2`) -/
-example : ∃ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, P0.g.nM ≤ 2 ∧ P0.img.PathInv2 2 ∧ PGraph.LocReg2 P0.img 2 ∧
-    ∀ (K : ℤ) (Q : BAPGraph (Fin 2)), BAReach K P0 Q → Q.img.PathInv2 2 ∧ Q.g.nM ≤ 2 ∧ PGraph.LocReg2 Q.img 2 := by
-  obtain ⟨P0, hP0⟩ := List.exists_mem_of_ne_nil _ (BALocReg1B_partition_ne 2 rfl)
-  have h := baLocReg15_closed 2 P0 hP0
-  obtain ⟨h1, h2, h3, -⟩ := h 0 P0 (BAReach.refl P0)
-  exact ⟨P0, hP0, h2, h1, h3, fun K Q hQ => by obtain ⟨a, b, c, -⟩ := h K Q hQ; exact ⟨a, b, c⟩⟩
-
-/-- target 3 (b) at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10`: the hypothesis `BALocRegConcl` is the conclusion of `ba_localregularX` at `baShapeLLBinder_holds` (the engine, proved), and the lists carry (1)-(5) -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)), BALocRegConcl 2 (1 / 4) 2 3 10 outs errs ∧
-    (∀ Q ∈ outs ++ errs, Q.img.PathInv2 2 ∧ Q.g.nM ≤ 2 ∧ PGraph.LocReg2 Q.img 2) ∧
-      ∀ Q ∈ outs, PGraph.LocReg1 Q.img ∧ PGraph.LocReg345 Q.img 2 ∧ (BAShadowPG Q).LocReg345 2 := by
-  obtain ⟨outs, errs, hC, -⟩ := ba_localregularX baShapeLLBinder_holds 2 (1 / 4) (by norm_num) 2 3 10
-  exact ⟨outs, errs, hC, baLocRegConcl_upto5 2 (1 / 4) 2 3 10 outs errs hC⟩
-
-open MeasureTheory RBM.Gauss in
-/-- (vii) target 3 (c) at `p = 2`, `c = 1/4`, `K0 = 2`, `d = 3`, `D = 10` with the identity of expectations at the flow point of `BAEngineInst` (`d = 3`, `L = 4`, `W = 2`, `flowP_data`, `ℓ0`); no hypothesis -/
-example : ∃ outs errs : List (BAPGraph (Fin 2)), BALocRegConcl 2 (1 / 4) 2 3 10 outs errs ∧
-    (∀ Q ∈ outs, Q.g.LocStd ∧ Q.g.nM ≤ 2 ∧ PGraph.LocReg345 Q.img 2 ∧ (BAShadowPG Q).LocReg345 2) ∧
-    ∫ ω, (BAGraph.ofLGraph (fxyPowGraph 2)).val
-        (BAlwData 3 4 2 RBM.BA.CouplingWindowInst.g0P RBM.BA.CouplingWindowInst.EP RBM.BA.CouplingWindowInst.t0P RBM.BA.CouplingWindowInst.m0P ω)
-        BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) =
-      ∫ ω, BAComb.val (outs ++ errs)
-        (BAlwData 3 4 2 RBM.BA.CouplingWindowInst.g0P RBM.BA.CouplingWindowInst.EP RBM.BA.CouplingWindowInst.t0P RBM.BA.CouplingWindowInst.m0P ω)
-        BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) := by
-  obtain ⟨outs, errs, h, -, h1, h2⟩ := ba_localregular_upto5 2 (1 / 4) (by norm_num) 2 3 10
-  exact ⟨outs, errs, h, fun Q hQ => ⟨(h.1 Q hQ).1, (h1 Q (List.mem_append_left _ hQ)).2.1, (h2 Q hQ).2.1, (h2 Q hQ).2.2⟩,
-    h.2.2.2 4 2 (by norm_num) RBM.BA.CouplingWindowInst.g0P RBM.BA.CouplingWindowInst.EP RBM.BA.CouplingWindowInst.t0P RBM.BA.CouplingWindowInst.m0P
-      RBM.BA.CouplingWindowInst.flowP_data.2.2 RBM.BA.CouplingWindowInst.flowP_data.1.le RBM.BA.CouplingWindowInst.flowP_data.2.1 BASymm1Inst.ℓ0⟩
-
-end Inst
 
 end RBM.Graph
 

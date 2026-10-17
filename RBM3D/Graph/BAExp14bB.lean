@@ -535,11 +535,6 @@ private theorem BAExp14b_outer_eq_fr (σ : Bool) (a b : Zd d (sz.L n))
   unfold BAExp14a_outer BAExp14b_fr
   simp only [Finset.mul_sum]
 
-private theorem BAExp14b_outerDt_eq_fr (a b : Zd d (sz.L n))
-    (T : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) :
-    BAExp14b_outerDt sz z n t ω a b T = BAExp14b_fr sz n a b (fun x y α =>
-      BAExp14a_X sz z n t ω (STblk sz n α) * T x y α) := rfl
-
 private theorem BAExp14b_outerDX_eq_fr (σ : Bool) (a b : Zd d (sz.L n))
     (T : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) :
     BAExp14b_outerDX sz z n t ω σ a b T = BAExp14b_fr sz n a b (fun x y α =>
@@ -660,7 +655,7 @@ private theorem BAExp14b_FS2_eq_fr (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n))
     BAExp14b_FS2 sz z n t ω j σ a b = BAExp14b_fr sz n a b (fun x y α => BAExp14b_iS2 sz z n t ω j σ x y α) := by
   fin_cases j <;> simp only [BAExp14b_FS2, BAExp14b_FD1t, BAExp14b_FD2t, BAExp14b_FT2a, BAExp14b_FT2b, BAExp14b_FT3B,
     BAExp14b_FT3CG, BAExp14b_iS2, BAExp14b_iD1t, BAExp14b_iD2t, BAExp14b_iT2a, BAExp14b_iT2b, BAExp14b_iT3B,
-    BAExp14b_iT3CG, BAExp14b_outer_eq_fr, BAExp14b_outerDt_eq_fr, Fin.zero_eta, Fin.mk_one, Fin.isValue,
+    BAExp14b_iT3CG, BAExp14b_outer_eq_fr, Fin.zero_eta, Fin.mk_one, Fin.isValue,
     Matrix.cons_val_zero, Matrix.cons_val_one] <;> rfl
 
 private theorem BAExp14b_FS3_eq_fr (j : Fin 4) (σ : Bool) (a b : Zd d (sz.L n)) :
@@ -1054,22 +1049,6 @@ theorem baExp14b_expand_holds (d : ℕ) : BAExp14bExpand d := by
   · exact BAExp14b_expand_true hκ hflow n ht0 ht σo ac ao
 
 /-! ## 9. Compiled checks and nonempty instances -/
-
-section Inst
-
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-/-- **Nonempty instance of the endpoint theorem `baExp14b_expand_holds`** at `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `λ = 1/64`), `zSeq`,
-`flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t = 1/2 ≤ BAflowT0`, the distinct blocks `ac = 0`, `ao = e₀`, both charge pairs `(σc, σo)`: every
-hypothesis is discharged (the identity has no premise on the law). -/
-example (σc σo : Bool) :=
-  baExp14b_expand_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 0 (1 / 2)
-    (by norm_num) (half_lt_t0 0).le σc σo 0 (Pi.single 0 1)
-
-/-- The conjugation at the same data (any time, charge and sample). -/
-example (t : ℝ) (σo : Bool) (ω : sz0.SeqΩ) := baExp14b_cut_conj sz0 zSeq 0 t σo 0 (Pi.single 0 1) ω
-
-end Inst
 
 end RBM.BA
 

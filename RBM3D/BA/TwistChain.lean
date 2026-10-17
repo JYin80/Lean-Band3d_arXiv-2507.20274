@@ -146,43 +146,6 @@ end Base
 section Chain
 variable {d : ℕ}
 
-/-- **The conclusions and TL2 at every `0 < t_n ≤ T0`**: the twin of `stPosConclG_of_mainIndG` (`MainIndChain.lean:148-172`)
-with the invariant `STConclgL ∧ BATwistLoopLaw`; the base is `STBaseG` and `BATwistLoopBase d` with `STG0M` at the carrier, the
-step is `BAMainIndTL d STAny` at the regime `STAny` (`trivial`). -/
-private theorem TwistChain_posConcl (hmain : BAMainIndTL d STAny)
-    (hhor : STHorizonG d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => BAflowT0 sz z))
-    (hbase : STBaseG d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz)
-    (hTL : BATwistLoopBase d) (hG : ∀ κ ε 𝔠 𝔡 (sz : Sizes d) z, BAFlow sz κ ε 𝔠 𝔡 z → STG0M (baFMz sz z)) :
-    3 ≤ d → ∀ κ ε 𝔡 𝔠 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-      ∀ t : ℕ → ℝ, (∀ n, 0 < t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
-        STConclgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ∧ BATwistLoopLaw (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t := by
-  intro hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf t ht0 htT
-  obtain ⟨𝔠d, h𝔠d, -, H⟩ := hmain hd κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨⟨h𝔠, -, hsz, hbw, hWO⟩, hT, hr⟩ := hhor κ ε 𝔠 𝔡 sz z hκ hε hf
-  have hμ : 0 < 𝔠d * min (2 * 𝔠 * 𝔡) (ε / 2) := mul_pos h𝔠d (lt_min (by have := h𝔡; positivity) (half_pos hε))
-  obtain ⟨K, hK⟩ := exists_nat_ge (2 / (𝔠d * min (2 * 𝔠 * 𝔡) (ε / 2)))
-  rw [div_le_iff₀ hμ] at hK
-  have hK0 : 0 < K := Nat.pos_of_ne_zero fun h0 => by subst h0; norm_num at hK
-  have key : ∀ k ≤ K, STConclgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) (stChainTime t K k) ∧
-      BATwistLoopLaw (baFMz sz z) (Sizes.seqP (sz.withLam 0)) (stChainTime t K k) := by
-    intro k
-    induction k with
-    | zero =>
-      intro _
-      rw [stChainTime_zero]
-      exact ⟨hbase hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf, hTL hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf (hG κ ε 𝔠 𝔡 sz z hf)⟩
-    | succ k ih =>
-      intro hk
-      have ih' := ih (by omega)
-      have hf' := stChainTime_facts ht0 (fun n => (htT n).trans_lt (hT n).2) hK0 (by omega : k < K)
-      obtain ⟨o1, o2, o3, o4, o5, o6, o7⟩ := H 𝔠 sz z hf _ _ (fun n => (hf' n).1)
-        (fun n => ((hf' n).2.1.le.trans (hf' n).2.2).trans (htT n)) (fun n => (hf' n).2.1) (fun n => (hf' n).2.2.trans (htT n))
-        trivial ⟨ih'.1.1, ih'.1.2.2.1, ih'.1.2.2.2.2.2, STLocalMaxgL_of_STLocalEntrygL _ _ _ ih'.1.2.2.2.2.1, ih'.1.2.2.2.1, ih'.2⟩
-        (stChainSteps sz h𝔠 h𝔡 (half_pos hε) h𝔠d hK hbw hWO hsz (fun n => (hT n).2) hr ht0 htT (by omega))
-      exact ⟨⟨o1, o2, o3, o4, o5, o6⟩, o7⟩
-  rw [← stChainTime_top t hK0]
-  exact key K le_rfl
-
 /-! ### Mixing at the class `t_n = 0` (formal: `StochDomAt.of_subset_union`) -/
 
 section Mix
@@ -233,65 +196,9 @@ end Mix
 
 /-! ### The assembly -/
 
-/-- **TL-V (row TL-V)**: the pin `BAChainTL d` (`BA/TwistPins.lean:185`).  Run the chain (`TwistChain_posConcl`) to
-`t'_n = t_n` if `t_n > 0`, `T0_n/2` if `t_n = 0`, and mix with the zero sequence (`STBaseG`, `BATwistLoopBase d` with `STG0M`) on the
-class `t_n = 0`: the twin of `stMLOutG_of_mainIndG` (`Induction/MainIndOut.lean:99-123`) with the sixth conjunct
-`BATwistLoopLaw`.  `BAMainIndTL d STAny` (BA-V) stays a premise. -/
-theorem baChainTL_holds (d : ℕ) : BAChainTL d := by
-  intro hmain hhor hbase hTL hG hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf t ht0 htT
-  obtain ⟨hadm, hT, -⟩ := hhor κ ε 𝔠 𝔡 sz z hκ hε hf
-  have hs : Tendsto sz.size atTop atTop := tendsto_natCast_atTop_iff.1 hadm.2.2.1
-  set t' : ℕ → ℝ := fun n => if t n = 0 then BAflowT0 sz z n / 2 else t n with ht'
-  have hpos : ∀ n, 0 < t' n := fun n => by
-    by_cases h : t n = 0
-    · simp only [ht', h, ite_true]; linarith [(hT n).1]
-    · simp only [ht', h, ite_false]; exact lt_of_le_of_ne (ht0 n) (Ne.symm h)
-  have hle : ∀ n, t' n ≤ BAflowT0 sz z n := fun n => by
-    by_cases h : t n = 0
-    · simp only [ht', h, ite_true]; linarith [(hT n).1]
-    · simp only [ht', h, ite_false]; exact htT n
-  have hm : ∀ n, t n = 0 ∨ t n = t' n := fun n => by
-    by_cases h : t n = 0
-    · exact Or.inl h
-    · exact Or.inr (by simp only [ht', h, ite_false])
-  have h1 := TwistChain_posConcl hmain hhor hbase hTL hG hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf t' hpos hle
-  have h0 := hbase hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf
-  have h0TL := hTL hd κ ε 𝔡 𝔠 hκ hε h𝔡 sz z hf (hG κ ε 𝔠 𝔡 sz z hf)
-  exact ⟨TwistChain_LK_mix _ _ hs hm h0.1 h1.1.1, TwistChain_Lmax_mix _ _ hs hm h0.2.1 h1.1.2.1,
-    TwistChain_Decay_mix _ _ hs hm h0.2.2.1 h1.1.2.2.1, TwistChain_Exp2_mix _ _ hs hm h0.2.2.2.1 h1.1.2.2.2.1,
-    TwistChain_LocalEntry_mix _ _ hs hm h0.2.2.2.2.1 h1.1.2.2.2.2.1, TwistChain_TL2_mix _ _ hs hm h0TL h1.2⟩
-
 end Chain
 
 /-! ## 3. The instances (`d = 3`, `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`), `zSeq`, `flow_sz0`, `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`).
 Other gates' pins (`STG0M` at the carrier: BA-V `GLoopAtT0`; `BAMainIndTL 3 STAny`: BA-V V2a; `STHorizonG`, `STBaseG` at the BA data) stay hypotheses. -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- Target 1 at the datum: TL2 at the zero sequence; `G_0 = M` at the carrier is the one hypothesis. -/
-example (hG : STG0M (baFMz sz0 zSeq)) : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 0) :=
-  baTwistLoopBase_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num) (by norm_num) sz0 zSeq flow_sz0 hG
-
-/-- Target 2 at `t ≡ 0` (the class mixed with the chain to `t' = T0/2`): the TL2 conjunct; the base premise `BATwistLoopBase 3` is
-`baTwistLoopBase_holds 3`. -/
-example (hm : BAMainIndTL 3 STAny) (hh : STHorizonG 3 (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => BAflowT0 sz z))
-    (hb : STBaseG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz)
-    (hG : ∀ κ ε 𝔠 𝔡 (sz : Sizes 3) z, BAFlow sz κ ε 𝔠 𝔡 z → STG0M (baFMz sz z)) :
-    BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 0) :=
-  (baChainTL_holds 3 hm hh hb (baTwistLoopBase_holds 3) hG le_rfl (1 / 2) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num)
-    (by norm_num) sz0 zSeq flow_sz0 (fun _ => 0) (fun _ => le_rfl) (fun n => by linarith [half_lt_t0 n])).2.2.2.2.2
-
-/-- Target 2 at `t ≡ 1/2` (`1/2 ≤ T0` by `half_lt_t0`): the six conclusions, the TL2 conjunct extracted. -/
-example (hm : BAMainIndTL 3 STAny) (hh : STHorizonG 3 (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => BAflowT0 sz z))
-    (hb : STBaseG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz)
-    (hG : ∀ κ ε 𝔠 𝔡 (sz : Sizes 3) z, BAFlow sz κ ε 𝔠 𝔡 z → STG0M (baFMz sz z)) :
-    let C := baFMz sz0 zSeq; STLKgL C μ0 (fun _ => 1 / 2) ∧ STLmaxgL C μ0 (fun _ => 1 / 2) ∧ STDecaygL C μ0 (fun _ => 1 / 2) ∧
-      STExp2gL C μ0 (fun _ => 1 / 2) ∧ STLocalEntrygL C μ0 (fun _ => 1 / 2) ∧ BATwistLoopLaw C μ0 (fun _ => 1 / 2) :=
-  baChainTL_holds 3 hm hh hb (baTwistLoopBase_holds 3) hG le_rfl (1 / 2) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num)
-    (by norm_num) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le)
-
-end Inst
 
 end RBM.BA

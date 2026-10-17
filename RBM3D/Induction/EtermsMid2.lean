@@ -28,7 +28,7 @@ carrier `Cm : Step2Mat sz` (or `C : FlowFM sz`) and a law `μ`: the band objects
 set_option linter.style.longLine false
 set_option linter.unusedVariables false
 
-open private lemDecCalELipG_absorb lemDecCalELip_inst_tN from RBM3D.Induction.LemDecCalELip
+open private lemDecCalELipG_absorb from RBM3D.Induction.LemDecCalELip
 
 noncomputable section
 
@@ -215,9 +215,6 @@ private theorem etermsMid_Kf_nonneg (n : ℕ) (u : ℝ) : 0 ≤ etermsMid_Kf sz 
 private theorem etermsMid_Kf_le (n : ℕ) (u : ℝ) :
     etermsMid_Kf sz n u ≤ Real.log ((sz.W n : ℕ) : ℝ) ^ 10 * ellT (sz.L n) (sz.lam n) u :=
   min_le_right _ _
-
-private theorem etermsMid_Kf_le_L (n : ℕ) (u : ℝ) : etermsMid_Kf sz n u ≤ ((sz.L n : ℕ) : ℝ) :=
-  min_le_left _ _
 
 /-- **The scale `K_u` loses nothing** (`3_5:1961`: "at `ℓ = L`"): once `(d + D) log W ≤ (log W)^5` and
 `W^{-d} B_{u,0} ≤ 1`, `𝒯̃^{K_u}_{u,D} = 𝒯̃^L_{u,D}` (`𝒯_u((log W)^{10} ℓ_u) ≤ W^d e^{-(log W)^5} ≤ W^{-D}`). -/
@@ -1436,29 +1433,6 @@ theorem LemDecCalELip_LK2gL (hL : StepDecompGen_LoopForm Cm E)
     (fun σ a => lemDecCalELipG_Ks ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 (ht n) hK σ a) σ a
   exact (abs_norm_sub_norm_le _ _).trans (h.trans (lemDecCalELipG_absorb (e := 10) (k := 7) h7 hN1 (Real.sqrt_nonneg _)))
 
-/-- **2b (L1) over a carrier**: `STELKLKg` is Hölder-1/2 in `u ∈ [s_n, t_n]` on `G`, constant `N^{17+c}`; the `𝒦^{(2)}` inputs are the size `N`
-(derived from the decay of `𝒦^{(2)}`, `lemDecCalELipG_Kn`) and D3 (band `LemDecCalELip_ELKLK`, `:793`). -/
-theorem LemDecCalELip_ELKLKgL (hL : StepDecompGen_LoopForm Cm E)
-    (hLM : ∀ (n : ℕ) (u : ℝ) (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) ω, Cm.LM n u (Hm n u ω) σ a = Cm.L n u σ a ω)
-    (hc : 0 ≤ c) (hmod : LemDecCalELipG_Mod Hm G c) (hm : ∀ n, ‖Cm.m n‖ ≤ 1) (hS : ∀ n a, ∑ b, ‖Cm.S n a b‖ ≤ 1)
-    (hs : ∀ n, 0 ≤ s n) (ht : ∀ n, t n < 1) (hsize : sz.SizeTendsto)
-    (hQ : ∀ᶠ n in atTop, (Cm.eta n (t n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ 2)
-    (hKn : ∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ t n → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
-      ‖Cm.K n v σ a‖ ≤ ((sz.size n : ℕ) : ℝ))
-    (hKs : ∀ᶠ n in atTop, ∀ u u' : ℝ, 0 ≤ u → u ≤ t n → 0 ≤ u' → u' ≤ t n → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
-      ‖Cm.K n u σ a - Cm.K n u' σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (2 * 2 + 2) * |u - u'|) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ G n, ∀ (u u' : TimeIcc s t n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
-      ‖STELKLKg Cm.toFlowFM n (u : ℝ) σ a ω - STELKLKg Cm.toFlowFM n (u' : ℝ) σ a ω‖ ≤
-        ((sz.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| := by
-  refine ⟨((16 + 1 : ℕ) : ℝ) + c, by positivity, ?_⟩
-  filter_upwards [lemDecCalELipG_loops hL hLM hc hmod hm ht hQ, hKn, hKs, hsize.eventually_ge_atTop 28] with n hn0 hKn' hK h28 ω hω u u' σ a
-  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
-  have hn := hn0 ω hω
-  have h := LemDecCalELip_ELKLK_subg Cm.toFlowFM n ω rfl hN1 (Real.one_le_rpow hN1 hc) ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1)
-    u'.2.2 (hS n) (fun v hv0 hvt k hk σ a => hn.2 v hv0 hvt hk σ a) hKn' (fun σ a => hn.1 u u' ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 σ a)
-    (fun σ a => lemDecCalELipG_Ks ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 (ht n) hK σ a) σ a
-  exact h.trans (lemDecCalELipG_absorb (e := 16) (k := 28) h28 hN1 (Real.sqrt_nonneg _))
-
 /-- **2c (L1) over a carrier**: `STEGtg` is Hölder-1/2 in `u ∈ [s_n, t_n]` on `G`, constant `N^{17+c}` (band `LemDecCalELip_EGt`, `:808`). -/
 theorem LemDecCalELip_EGtgL (hL : StepDecompGen_LoopForm Cm E)
     (hLM : ∀ (n : ℕ) (u : ℝ) (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) ω, Cm.LM n u (Hm n u ω) σ a = Cm.L n u σ a ω)
@@ -1477,111 +1451,11 @@ theorem LemDecCalELip_EGtgL (hL : StepDecompGen_LoopForm Cm E)
     (fun σ a => hn.1 u u' ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 σ a) σ a
   exact h.trans (lemDecCalELipG_absorb (e := 16) (k := 42) h42 hN1 (Real.sqrt_nonneg _))
 
-/-- **2d (L1) over a carrier**: `STeeg Cm Hm` (`m = 2`, every `a'`) is Hölder-1/2 in `u ∈ [s_n, t_n]` on `G`, constant `N^{20+c}`
-(band `LemDecCalELip_ee`, `:823`). -/
-theorem LemDecCalELip_eegL (hL : StepDecompGen_LoopForm Cm E) (hc : 0 ≤ c) (hmod : LemDecCalELipG_Mod Hm G c)
-    (hm : ∀ n, ‖Cm.m n‖ ≤ 1) (hS : ∀ n a, ∑ b, ‖Cm.S n a b‖ ≤ 1) (hs : ∀ n, 0 ≤ s n) (ht : ∀ n, t n < 1) (hsize : sz.SizeTendsto)
-    (hQ : ∀ᶠ n in atTop, (Cm.eta n (t n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ 2) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ G n, ∀ (u u' : TimeIcc s t n) (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd d (sz.L n)),
-      ‖STeeg Cm Hm n (u : ℝ) ω σ a a' - STeeg Cm Hm n (u' : ℝ) ω σ a a'‖ ≤
-        ((sz.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| := by
-  refine ⟨((19 + 1 : ℕ) : ℝ) + c, by positivity, ?_⟩
-  filter_upwards [hQ, hsize.eventually_ge_atTop 36] with n hQn h36 ω hω u u' σ a a'
-  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
-  have h1 : ∀ v, v ≤ t n → v ≤ 1 := fun v hv => (hv.trans (ht n).le)
-  have h := LemDecCalELip_ee_subg hL Hm hc (hm n) ω rfl hN1 (ht n) ((hs n).trans u.2.1) u.2.2 ((hs n).trans u'.2.1) u'.2.2 hQn (hS n)
-    (fun v hv0 hvt => (hmod n ω hω v v hv0 (h1 v hvt) hv0 (h1 v hvt)).1)
-    (fun x y => (hmod n ω hω u u' ((hs n).trans u.2.1) (h1 u u.2.2) ((hs n).trans u'.2.1) (h1 u' u'.2.2)).2 x y) σ a a'
-  exact h.trans (lemDecCalELipG_absorb (e := 19) (k := 36) h36 hN1 (Real.sqrt_nonneg _))
-
 end L1G2
 
 /-! ## 9. Instances of target 1, packaged forms (`d = 3`, band carrier)
 
 The merged preflight data of `LemDecCalELip` section 9 (`sz0`, `E ≡ 1/2`, `s ≡ 0`, `t ≡ 1/16`): the four carrier results of section 8 at the band
 carrier `bandStep2Mat sz0 (fun _ => 1/2)`, `Hm = seqHflow`, `G = contGood`, `c = 1`, every hypothesis discharged. -/
-
-section Inst
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- The band carrier at `E ≡ 1/2` and its inputs for the carrier results of sections 3g-4g (D2 at `c = 1` is `lemDecCalELipG_mod_band`). -/
-private abbrev etermsMid_inst_Cm : Step2Mat sz0 := bandStep2Mat sz0 (fun _ => 1 / 2)
-
-private theorem etermsMid_inst_L : StepDecompGen_LoopForm etermsMid_inst_Cm (fun _ => 1 / 2) :=
-  stepDecompGen_loopForm_band sz0 (fun _ => 1 / 2) (fun _ => by norm_num)
-
-private theorem etermsMid_inst_m (n : ℕ) : ‖etermsMid_inst_Cm.m n‖ ≤ 1 :=
-  (norm_mE (E := 1 / 2) (by norm_num)).le
-
-private theorem etermsMid_inst_S (n : ℕ) (a : Zd 3 (sz0.L n)) : ∑ b, ‖etermsMid_inst_Cm.S n a b‖ ≤ 1 :=
-  (sum_norm_SB_row 3 (sz0.L n) (sz0.lam n) (sz0.three_le_L n) a).le
-
-private theorem etermsMid_inst_Q :
-    ∀ᶠ n in atTop, (etermsMid_inst_Cm.eta n (tInst n))⁻¹ ≤ ((sz0.size n : ℕ) : ℝ) ^ 2 :=
-  (LemDecCalELip_env sz0 (fun _ => 1 / 2) tInst 1 one_pos (fun _ => by norm_num) sz0_tendsto
-    (Eventually.of_forall lemDecCalELip_inst_tN) 0).mono fun n h => h.2.2.2.1
-
-private theorem etermsMid_inst_Kn : ∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ tInst n →
-    ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)), ‖etermsMid_inst_Cm.K n v σ a‖ ≤ ((sz0.size n : ℕ) : ℝ) :=
-  Eventually.of_forall fun n v hv0 hvt σ a => LemDecCalELip_STKloop_two_norm sz0 n (E := 1 / 2) (by norm_num)
-    (by norm_num [tInst]) hv0 hvt (lemDecCalELip_inst_tN n) σ a
-
-private theorem etermsMid_inst_Ks : ∀ᶠ n in atTop, ∀ u u' : ℝ, 0 ≤ u → u ≤ tInst n → 0 ≤ u' → u' ≤ tInst n →
-    ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)), ‖etermsMid_inst_Cm.K n u σ a - etermsMid_inst_Cm.K n u' σ a‖ ≤
-      ((sz0.size n : ℕ) : ℝ) ^ (2 * 2 + 2) * |u - u'| :=
-  Eventually.of_forall fun n u u' hu0 hut hu'0 hu't σ a =>
-    (LemDecCalELip_STKloop_two_lip sz0 n (E := 1 / 2) (by norm_num) (by norm_num [tInst]) hu0 hut hu'0 hu't
-      (lemDecCalELip_inst_tN n) σ a).trans
-      (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by exact_mod_cast sz0.one_le_size n) (by norm_num)) (abs_nonneg _))
-
-/-- **(a')** target 1, 2a over a carrier, at the band carrier `bandStep2Mat sz0 (fun _ => 1/2)`, `Hm = seqHflow`, `G = contGood`, `c = 1`,
-`s ≡ 0`, `t ≡ 1/16`: every hypothesis discharged. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      |STLK2g etermsMid_inst_Cm.toFlowFM n (u : ℝ) σ a ω - STLK2g etermsMid_inst_Cm.toFlowFM n (u' : ℝ) σ a ω| ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_LK2gL etermsMid_inst_L (fun _ _ _ _ _ _ => rfl) zero_le_one (lemDecCalELipG_mod_band sz0)
-    etermsMid_inst_m (fun _ => le_rfl) (fun _ => by norm_num [tInst]) sz0_tendsto etermsMid_inst_Q etermsMid_inst_Ks
-
-/-- **(a')** 2b over a carrier at the same data. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STELKLKg etermsMid_inst_Cm.toFlowFM n (u : ℝ) σ a ω - STELKLKg etermsMid_inst_Cm.toFlowFM n (u' : ℝ) σ a ω‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_ELKLKgL etermsMid_inst_L (fun _ _ _ _ _ _ => rfl) zero_le_one (lemDecCalELipG_mod_band sz0)
-    etermsMid_inst_m etermsMid_inst_S (fun _ => le_rfl) (fun _ => by norm_num [tInst]) sz0_tendsto etermsMid_inst_Q
-    etermsMid_inst_Kn etermsMid_inst_Ks
-
-/-- **(a')** 2c over a carrier at the same data. -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STEGtg etermsMid_inst_Cm.toFlowFM n (u : ℝ) σ a ω - STEGtg etermsMid_inst_Cm.toFlowFM n (u' : ℝ) σ a ω‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_EGtgL etermsMid_inst_L (fun _ _ _ _ _ _ => rfl) zero_le_one (lemDecCalELipG_mod_band sz0)
-    etermsMid_inst_m etermsMid_inst_S (fun _ => le_rfl) (fun _ => by norm_num [tInst]) sz0_tendsto etermsMid_inst_Q
-
-/-- **(a')** 2d over a carrier at the same data (`Hf = seqHflow`, every `a'`). -/
-example : ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ ω ∈ RBM.Ind.ContinuityNet.contGood sz0 n,
-    ∀ (u u' : TimeIcc sInst tInst n) (σ : Fin 2 → Bool) (a a' : Fin 2 → Zd 3 (sz0.L n)),
-      ‖STeeg etermsMid_inst_Cm (fun n u ω => sz0.seqHflow n u ω) n (u : ℝ) ω σ a a' -
-          STeeg etermsMid_inst_Cm (fun n u ω => sz0.seqHflow n u ω) n (u' : ℝ) ω σ a a'‖ ≤
-        ((sz0.size n : ℕ) : ℝ) ^ C * Real.sqrt |(u : ℝ) - (u' : ℝ)| :=
-  LemDecCalELip_eegL etermsMid_inst_L zero_le_one (lemDecCalELipG_mod_band sz0) etermsMid_inst_m etermsMid_inst_S
-    (fun _ => le_rfl) (fun _ => by norm_num [tInst]) sz0_tendsto etermsMid_inst_Q
-
-
-/-- **(a'')** target 1, A8 (a): `lemDecCalELipG_Kn` at the band carrier of the flow `(sz0, z0)` (`κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/16`: the decay of `𝒦^{(2)}`
-(`step2IterGen_K2_band`, the class `Step2IterGen_K2`) and the size data (`STBdatagL` at the band) give `‖𝒦^{(2)}_v‖ ≤ N`, every hypothesis discharged. -/
-example : ∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ tInst n → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-    ‖(bandFM sz0 (STflowE z0)).K n v σ a‖ ≤ ((sz0.size n : ℕ) : ℝ) := by
-  obtain ⟨CK, hCK, hdec⟩ := step2IterGen_K2_band 3 (le_refl 3) (1 / 10) (1 / 10) (1 / 6) (1 / 10) (by norm_num) (by norm_num) sz0 z0
-    flow_z0 sInst tInst sz0_hs0 (fun n => by norm_num [tInst])
-  obtain ⟨cB, hcB, hB⟩ := (bandFM_STBdata 3).1 (ST_Bdata_holds (by norm_num)) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
-  obtain ⟨c, hc, hBdz⟩ := hB (1 / 6)
-  exact lemDecCalELipG_Kn hCK.le hcB hc sz0_tendsto (hdec.mono fun n h u D σ a hu hut hD => h u D σ a hu hut hD)
-    (hBdz sz0 z0 flow_z0 tInst (fun n => by norm_num [tInst]) sz0_ht)
-
-end Inst
 
 end RBM.Gauss.Sizes

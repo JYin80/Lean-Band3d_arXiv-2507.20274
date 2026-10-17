@@ -270,33 +270,7 @@ private theorem EMCTE2_hsum_nonneg {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hH 
     (Finset.prod_nonneg fun j _ => hIm j) (hL1 _)) (Finset.sum_nonneg fun i _ =>
       Finset.sum_nonneg fun j _ => mul_nonneg (Finset.prod_nonneg fun k _ => hIm k) (hL2 _ _))
 
-/-- The weighted kernel sum is a bounded measurable function (complex lift). -/
-private theorem EMCTE2_BM_hsum {M : Ω' → Matrix (Idx d L W) (Idx d L W) ℂ} (hM : Measurable M)
-    (hH : ∀ ω, (M ω).IsHermitian) {n : ℕ} (z : Fin n → ℂ) (hz : ∀ i, 0 < (z i).im) :
-    EMCTE2_BM (fun ω => ((EMCTE2_hsum d L W lam z (M ω) : ℝ) : ℂ)) := by
-  unfold EMCTE2_hsum
-  simp only [Complex.ofReal_add, Complex.ofReal_sum, Complex.ofReal_mul, Complex.ofReal_prod]
-  refine EMCTE2_BM_add (EMCTE2_BM_sum _ fun i _ => EMCTE2_BM_mul
-    (EMCTE2_BM_prod _ fun j _ => EMCTE2_BM_im (EMCTE2_BM_stieltjes hM hH (hz j)))
-    (EMCTE2_BM_L1t (lam := lam) hM hH (hz i))) (EMCTE2_BM_sum _ fun i _ =>
-      EMCTE2_BM_sum _ fun j _ =>
-      EMCTE2_BM_mul (EMCTE2_BM_prod _ fun k _ => EMCTE2_BM_im (EMCTE2_BM_stieltjes hM hH (hz k)))
-        (EMCTE2_BM_L2t (lam := lam) hM hH (hz i) (hz j)))
-
 end Terms
-
-/-- The weighted kernel sum is bounded uniformly over Hermitian matrices (at fixed `z`). -/
-private theorem EMCTE2_hsum_bdd (d L W : ℕ) (lam : ℝ) [NeZero L] [NeZero W] {n : ℕ}
-    (z : Fin n → ℂ) (hz : ∀ i, 0 < (z i).im) :
-    ∃ K : ℝ, ∀ M : Matrix (Idx d L W) (Idx d L W) ℂ, M.IsHermitian →
-      EMCTE2_hsum d L W lam z M ≤ K := by
-  obtain ⟨-, K, hK⟩ := EMCTE2_BM_hsum (d := d) (L := L) (W := W) (lam := lam)
-    (Ω' := {M : Matrix (Idx d L W) (Idx d L W) ℂ // M.IsHermitian}) (M := Subtype.val)
-    measurable_subtype_coe (fun ω => ω.2) z hz
-  refine ⟨K, fun M hM => ?_⟩
-  have h := hK ⟨M, hM⟩
-  rw [Complex.norm_real, Real.norm_eq_abs] at h
-  exact (le_abs_self _).trans h
 
 /-! ## 4. Integrability of the `wirtSecond` terms along the band flow (the Hermitian bounds of
 `TestFunH`; measurability by T1 and `measurable_slice`) -/
@@ -685,14 +659,6 @@ theorem unEMCTE2Row : UNEMCTE2Row := by
   exact ⟨1, 1, one_pos, fun τU _ _ =>
     unEMCTE2_of_sizeTendsto d sz hA.2.2.1 E nf τU 1 (one_mul τU).ge⟩
 
-/-- **Target 4.**  The model-generic row at the band kind (`UNEMCTE2k_band`, `PinsK.lean`); the bulk
-premise `∀ᶠ n, (UNKind.band d).bulk sz κ E n` is not used. -/
-theorem unEMCTE2Rowk_band : UNEMCTE2Rowk (fun d => UNKind.band d) := by
-  intro d _ 𝔠 𝔡 sz hA κ _ E _ nf
-  exact ⟨1, 1, one_pos, fun τU _ _ =>
-    (UNEMCTE2k_band sz E nf τU 1).2
-      (unEMCTE2_of_sizeTendsto d sz hA.2.2.1 E nf τU 1 (one_mul τU).ge)⟩
-
 /-! ## Compiled nonempty instances (CLAUDE.md §4 step 2)
 
 `d = 3`, `sz0` (`L 0 = 4`, `W 0 = 32`, `N = 2^21`), `n = 0`.
@@ -703,76 +669,6 @@ theorem unEMCTE2Rowk_band : UNEMCTE2Rowk (fun d => UNKind.band d) := by
   `E = 1`, `nf = 2`.
 * `inst_unEMCTE2Rowk_band_sz0`: target 4 at the same data. -/
 
-namespace EMCTE2Inst
-
-open RBM.Gauss.SizesInst
-
-theorem inst_eq225_interval : ∃ Bd : ℝ,
-    (∀ s ∈ Set.Ioo (0 : ℝ) 1,
-      ∫ ω, ((∑ i : Fin 1, (∏ j ∈ Finset.univ.erase i,
-              (stieltjesN (ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] j)).im) *
-              L1t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i)) +
-            ∑ i : Fin 1, ∑ j ∈ Finset.univ.erase i,
-              (∏ k ∈ (Finset.univ.erase i).erase j,
-                (stieltjesN (ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] k)).im) *
-              L2t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i) (![Complex.I] j))
-        ∂(ouP (UNModel.band sz0) 0) ≤ Bd) ∧
-    |(∫ ω, ∏ i : Fin 1, (stieltjesN (ouMat (UNModel.band sz0) 0 0 ω) (![Complex.I] i)).im
-          ∂(ouP (UNModel.band sz0) 0)) -
-      ∫ ω, ∏ i : Fin 1, (stieltjesN (ouMat (UNModel.band sz0) 0 1 ω) (![Complex.I] i)).im
-          ∂(ouP (UNModel.band sz0) 0)| ≤
-      (1 / 2) * (1 - 0) * Bd := by
-  have hz : ∀ i : Fin 1, 0 < (![Complex.I] i).im := fun i => by fin_cases i; simp
-  obtain ⟨K, hK⟩ := EMCTE2_hsum_bdd 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) ![Complex.I] hz
-  have hB : ∀ s ∈ Set.Ioo (0 : ℝ) 1,
-      ∫ ω, ((∑ i : Fin 1, (∏ j ∈ Finset.univ.erase i,
-              (stieltjesN (ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] j)).im) *
-              L1t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i)) +
-            ∑ i : Fin 1, ∑ j ∈ Finset.univ.erase i,
-              (∏ k ∈ (Finset.univ.erase i).erase j,
-                (stieltjesN (ouMat (UNModel.band sz0) 0 s ω) (![Complex.I] k)).im) *
-              L2t 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) (ouMat (UNModel.band sz0) 0 s ω)
-                (![Complex.I] i) (![Complex.I] j))
-        ∂(ouP (UNModel.band sz0) 0) ≤ K := by
-    intro s _
-    calc _ ≤ ∫ _ω, K ∂(ouP (UNModel.band sz0) 0) :=
-          integral_mono (EMCTE2_integrable_hsum (lam := sz0.lam 0) (ouP (UNModel.band sz0) 0)
-            (measurable_ouMat (UNModel.band sz0) 0 s)
-            (ouMat_isHermitian (UNModel.band sz0) 0 s) ![Complex.I] hz) (integrable_const K)
-            (fun ω => hK _ (ouMat_isHermitian (UNModel.band sz0) 0 s ω))
-      _ = K := by simp
-  exact ⟨K, hB, eq225_interval 3 sz0 0 1 ![Complex.I] hz 0 1 K le_rfl zero_le_one hB⟩
-
-theorem inst_unEMCTE2_sz0 : UNEMCTE2 sz0 0 2 (1 / 2) 1 :=
-  unEMCTE2_of_sizeTendsto 3 sz0 sz0_tendsto 0 2 (1 / 2) 1 (one_mul _).ge
-
-theorem inst_unEMCTE2Row_sz0 : ∃ Cn τ₀ : ℝ, 0 < τ₀ ∧ UNEMCTE2 sz0 1 2 τ₀ Cn := by
-  obtain ⟨Cn, τ₀, hτ₀, h⟩ := unEMCTE2Row 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm (1 / 2)
-    (by norm_num) 1 (by norm_num) 2
-  exact ⟨Cn, τ₀, hτ₀, h τ₀ hτ₀ le_rfl⟩
-
-theorem inst_unEMCTE2Rowk_band_sz0 : ∃ Cn τ₀ : ℝ, 0 < τ₀ ∧
-    UNEMCTE2k (UNKind.band 3) sz0 1 2 τ₀ Cn := by
-  obtain ⟨Cn, τ₀, hτ₀, h⟩ := unEMCTE2Rowk_band 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm
-    (1 / 2) (by norm_num) 1 (Eventually.of_forall fun n => by
-      change |(1 : ℝ)| ≤ 2 - 1 / 2
-      norm_num) 2
-  exact ⟨Cn, τ₀, hτ₀, h τ₀ hτ₀ le_rfl⟩
-
-end EMCTE2Inst
-
 end RBM.Univ
-
-#print axioms RBM.Univ.eq225_interval
-#print axioms RBM.Univ.unEMCTE2_of_sizeTendsto
-#print axioms RBM.Univ.unEMCTE2Row
-#print axioms RBM.Univ.unEMCTE2Rowk_band
-#print axioms RBM.Univ.EMCTE2Inst.inst_eq225_interval
-#print axioms RBM.Univ.EMCTE2Inst.inst_unEMCTE2_sz0
-#print axioms RBM.Univ.EMCTE2Inst.inst_unEMCTE2Row_sz0
-#print axioms RBM.Univ.EMCTE2Inst.inst_unEMCTE2Rowk_band_sz0
 
 end

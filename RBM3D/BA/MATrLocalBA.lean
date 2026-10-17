@@ -88,10 +88,6 @@ theorem unTrLocalBAAt_of_locAvg : ∀ d : ℕ, 3 ≤ d → UNLocAvgBAAt d → UN
   have hle := BUniv_trace_le d (sz.L n) (sz.W n) (Gres ((UNModelC.ba sz).H n ω) z true) (BAm d (sz.L n) (sz.lam n) z) hcon
   exact absurd hle (not_le.2 hz4)
 
-/-- **B3 `unTrLocalBARow_holds`**: the merged row `UNTrLocalBARow` (`BA/UNPins.lean:169`), one line from B2 and P6. -/
-theorem unTrLocalBARow_holds : UNTrLocalBARow :=
-  UNTrLocalBARow_iff_at.2 fun hLoc d hd => unTrLocalBAAt_of_locAvg d hd (UNLocAvgBA_iff_at.1 hLoc d hd)
-
 /-! ## B4 (private tools): the scaling identity, the bulk at `λ̂`, the comparison of `Bctl` -/
 
 /-- **The scaling identity of `(self_m)` at a complex point** (the complex-`z` form of the merged real-`E` `BAzztE_inv_core`,
@@ -444,77 +440,11 @@ theorem unTrLocalInitBAAt'_of_locAvg : ∀ d : ℕ, 3 ≤ d → UNLocAvgBAAt d �
     linarith
   linarith
 
-/-- **B5 `unTrLocalInitBARow'_holds`**: the merged row `UNTrLocalInitBARow'` (`BA/UNPins.lean:181`), one line from B4 and P6. -/
-theorem unTrLocalInitBARow'_holds : UNTrLocalInitBARow' :=
-  UNTrLocalInitBARow'_iff_at.2 fun hLoc d hd => unTrLocalInitBAAt'_of_locAvg d hd (UNLocAvgBA_iff_at.1 hLoc d hd)
-
 /-! ## B6: compiled nonempty instances at `d = 3` on the class sequence `S0` (`(L, g) = (4, 3/10)`, `(𝔠, 𝔡) = (1/6, 1/10)`)
 
 `E = E_* = (fp 4 _).E` (the bulk energy of the flow point), `κ = κ_* = clsκ 4 _`, `δ = (π κ_*)³/8`; the window hypothesis is discharged
 by the merged `BAbulk_window`.  `UNLocAvgBAAt 3` and `UNLocAvgBA` are the pins of T2514 row a (A8, A7), not yet on `main`: they stay
 hypotheses of the examples; every other hypothesis is discharged. -/
-
-section Inst
-
-open RBM.BA.UNPinsInst RBM.Univ.BAInst
-
-private theorem MATrLocalBA_hg : (0 : ℝ) < 3 / 10 := by norm_num
-
-private theorem MATrLocalBA_hδ : 0 < (Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8 := by
-  have := clsκ_pos 4 MATrLocalBA_hg; positivity
-
-private theorem MATrLocalBA_hwin : ∀ x : ℝ, |x - (fp 4 MATrLocalBA_hg).E| ≤ (Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8 →
-    ∀ᶠ n in atTop, BAbulk 3 (S0.L n) (S0.lam n) (clsκ 4 MATrLocalBA_hg / 2) x := fun x hx =>
-  S0_bulk.mono fun n hn => BAbulk_window 3 (S0.L n) (S0.lam n) _ _ x (clsκ_pos 4 MATrLocalBA_hg) hn hx
-
-/-- **B2 at `S0`, `d = 3`**: the tracial local law of the block Anderson model at `S0`, `κ_*`, `E_*`, `δ = (π κ_*)³/8`, from the block
-averaged local law `UNLocAvgBAAt 3` (a hypothesis: T2514 row a). -/
-example (hL : UNLocAvgBAAt 3) :
-    UNTrLocal S0 (UNModelC.ba S0).toUNModel (fun n => BAm 3 (S0.L n) (S0.lam n)) (fp 4 MATrLocalBA_hg).E
-      ((Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8) :=
-  unTrLocalBAAt_of_locAvg 3 le_rfl hL (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin
-
-/-- **B2 at `S0`, one more step**: the conclusion applied at `(ε, τ, D) = (1/10, 1/10, 1)`. -/
-example (hL : UNLocAvgBAAt 3) : ∀ᶠ n in atTop, (UNModelC.ba S0).μ {ω | ∃ z : ℂ,
-    |z.re - (fp 4 MATrLocalBA_hg).E| ≤ (Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8 ∧ Nsz S0 n ^ (-1 + 1 / 10 : ℝ) ≤ z.im ∧ z.im ≤ 1 ∧
-      ((S0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * S0.Bctl n (1 - z.im) < ‖stieltjesN ((UNModelC.ba S0).H n ω) z - BAm 3 (S0.L n) (S0.lam n) z‖} ≤
-      ENNReal.ofReal (Nsz S0 n ^ (-1 : ℝ)) :=
-  unTrLocalBAAt_of_locAvg 3 le_rfl hL (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin (1 / 10) (1 / 10) 1 (by norm_num) (by norm_num) (by norm_num)
-
-/-- **B3 at `S0`**: `unTrLocalBARow_holds` applied at `S0` (`UNLocAvgBA` is the `∀ d` pin of row a, A7). -/
-example (hL : UNLocAvgBA) :
-    UNTrLocal S0 (UNModelC.ba S0).toUNModel (fun n => BAm 3 (S0.L n) (S0.lam n)) (fp 4 MATrLocalBA_hg).E
-      ((Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8) :=
-  unTrLocalBARow_holds hL 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin
-
-/-- **B4 at `S0`, `d = 3`**: the initial-data local law at `S0`, `κ_*`, `E_*`, `δ = (π κ_*)³/8`, from `UNLocAvgBAAt 3`. -/
-example (hL : UNLocAvgBAAt 3) :
-    UNTrLocalInit' S0 (UNModelC.ba S0) (fun n => BAm 3 (S0.L n) (S0.lam n)) (fp 4 MATrLocalBA_hg).E
-      ((Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8) :=
-  unTrLocalInitBAAt'_of_locAvg 3 le_rfl hL (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin
-
-/-- **B4 at `S0`, one more step**: the conclusion applied at `τ_s = 1/2`, `(ε, τ, D) = (1/10, 1/10, 1)`. -/
-example (hL : UNLocAvgBAAt 3) : ∀ᶠ n in atTop, (UNModelC.ba S0).μ {ω | ∃ z : ℂ,
-    |z.re - (fp 4 MATrLocalBA_hg).E| ≤ (Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8 ∧ Nsz S0 n ^ (-1 + 1 / 10 : ℝ) ≤ z.im ∧ z.im ≤ 1 ∧
-      ((S0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * (S0.Bctl n (1 - z.im) + ouTStar S0 (1 / 2) n) <
-        ‖stieltjesN (ouInit (UNModelC.ba S0) n (ouTStar S0 (1 / 2) n) ω) z - BAm 3 (S0.L n) (S0.lam n) z‖} ≤
-      ENNReal.ofReal (Nsz S0 n ^ (-1 : ℝ)) :=
-  unTrLocalInitBAAt'_of_locAvg 3 le_rfl hL (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin (1 / 2) (by norm_num) (by norm_num) (1 / 10) (1 / 10) 1
-    (by norm_num) (by norm_num) (by norm_num)
-
-/-- **B5 at `S0`**: `unTrLocalInitBARow'_holds` applied at `S0`. -/
-example (hL : UNLocAvgBA) :
-    UNTrLocalInit' S0 (UNModelC.ba S0) (fun n => BAm 3 (S0.L n) (S0.lam n)) (fp 4 MATrLocalBA_hg).E
-      ((Real.pi * clsκ 4 MATrLocalBA_hg) ^ 3 / 8) :=
-  unTrLocalInitBARow'_holds hL 3 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 MATrLocalBA_hg) (clsκ_pos 4 MATrLocalBA_hg)
-    (fp 4 MATrLocalBA_hg).E S0_bulk _ MATrLocalBA_hδ MATrLocalBA_hwin
-
-end Inst
 
 end RBM.BA
 

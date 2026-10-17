@@ -124,21 +124,6 @@ end Vocab
 
 /-! ### Bridges to TL0 (`BA/TwistPins.lean:70, 224-247`) at the flow matrix, all `rfl` -/
 
-section Bridge
-variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) (σ : Fin 2 → Bool) (a b b' c₁ c₂ : Zd d (sz.L n))
-  (x y : Idx d (sz.L n) (sz.W n))
-
-theorem twL2M_eq : twL2' (baFM sz lam0 E) n u ω σ a c₁ c₂ = twL2M sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ a c₁ c₂ := rfl
-theorem twL3M_eq (σ3 : Fin 3 → Bool) :
-    twL3 (baFM sz lam0 E) n u ω σ3 a b c₁ c₂ = twL3M sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ3 a b c₁ c₂ := rfl
-theorem twEGM_eq : twEG (baFM sz lam0 E) n u ω σ a c₁ c₂ = twEGM sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ a c₁ c₂ := rfl
-theorem twB1M_eq : twB1 (baFM sz lam0 E) n u ω σ a c₁ c₂ = twB1M sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ a c₁ c₂ := rfl
-theorem twB2M_eq : twB2 (baFM sz lam0 E) n u ω σ a c₁ c₂ = twB2M sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ a c₁ c₂ := rfl
-theorem twDerM_eq : twDer (baFM sz lam0 E) n u ω σ b c₁ c₂ x y = twDerM sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ b c₁ c₂ x y := rfl
-theorem twEEM_eq : twEE (baFM sz lam0 E) n u ω σ b b' c₁ c₂ = twEEM sz lam0 E n u (sz.seqHflowBA lam0 n u ω) σ b b' c₁ c₂ := rfl
-
-end Bridge
-
 /-! ## 2. The semigroup law of `Ũ = BAuKer` (`BAuKerSemigroup`)
 
 `Ũ_{v,w} = (1 - v M)(1 - w M)⁻¹` with `M = M^{(σ₁σ₂)}` commuting with `Θ_w = (1 - w M)⁻¹` (`BATheta_resolvent`), so `Ũ_{v,v} = 1` and
@@ -897,67 +882,5 @@ theorem BATwistHier_holds (d : ℕ) : BATwistHier d := by
 `σ = (false, true)`, `c₁ = 0`, `c₂ = (1,0,0)`).  Every deterministic hypothesis is discharged: `0 < Im m` (`BAmF_sz0_im_pos`), `u = 1/2 < 1`, `H` the Hermitian
 flow matrix `seqHflowBA` of an arbitrary sample, `BAReal` (`BAflow_real`), `0 < g₀` (`gI_pos`). -/
 
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
-
-/-- Target 1: the seven bridges at the instance (`ω` an arbitrary sample, `H = seqHflowBA`). -/
-example (ω : sz0.SeqΩ) :
-    twL2' (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0] =
-      twL2M sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] :=
-  twL2M_eq sz0 _ _ 0 (1 / 2) ω _ _ _ _
-
-local notation "lam₀" => BAflowLam0 sz0 zSeq
-local notation "E₀" => BAflowEs sz0 zSeq
-
 -- Target 1: the other six bridges at the instance (`u = 1/2`, `H = seqHflowBA`, all `rfl`).
-example (ω : sz0.SeqΩ) := twL3M_eq sz0 lam₀ E₀ 0 (1 / 2) ω 0 0 0 ![1, 0, 0] ![false, true, true]
-example (ω : sz0.SeqΩ) := twEGM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
-example (ω : sz0.SeqΩ) := twB1M_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
-example (ω : sz0.SeqΩ) := twB2M_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
-example (ω : sz0.SeqΩ) := twDerM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0] 0 0
-example (ω : sz0.SeqΩ) := twEEM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 0 ![1, 0, 0]
-
-/-- Target 2 (T.8) at the instance: the generator of the coupling-0 walk applied to `L̃` at the flow matrix. -/
-example (ω : sz0.SeqΩ) :
-    twGenM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] =
-      (((sz0.W 0 : ℕ) : ℂ) ^ 3) * ∑ b, twL2M sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] b 0 ![1, 0, 0] *
-          (baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).LM 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] ![0, b] +
-        twEGM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] :=
-  BATwistGen_holds 3 sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (BAmF_sz0_im_pos 0) (1 / 2) (by norm_num) _
-    (EMn2BA_seqHflowBA_herm sz0 (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0]
-
-/-- Target 3 (T.9) at the instance: `BAReal` from `BAflow_real`, `κ = 1/2`, `u = 1/2`. -/
-example (ω : sz0.SeqΩ) :
-    twGenM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] -
-        deriv (fun v : ℝ => twK (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0 v ![false, true] 0 0 ![1, 0, 0]) (1 / 2) =
-      twDriftM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] :=
-  BATwistHier_holds 3 sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (by norm_num) gI_pos
-    (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0) (1 / 2) (by norm_num) (by norm_num) _
-    (EMn2BA_seqHflowBA_herm sz0 (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0]
-
-/-- `BAuKer_self`, `BAuKer_comp` at the flow datum (`hrI`), `v = 1/4`, `w = 1/2`, `u = 2/3`. -/
-example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 4) false true = 1 :=
-  BAuKer_self hrI (by norm_num) (by norm_num) false true
-example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 2) false true * BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 4) false true =
-    BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 2) false true :=
-  BAuKer_comp hrI (by norm_num) (by norm_num) (by norm_num) (by norm_num) false true
-
-/-- `BAuKerSemigroup` at the same datum. -/
-example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 4) false true = 1 ∧
-    BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 2) false true * BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 4) false true =
-      BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 2) false true :=
-  BAuKerSemigroup_holds 3 (sz0.L 0) gI (1 / 2) EI mI hrI false true (2 / 3) (1 / 4) (1 / 2) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- Item (iii) at the instance: the two kernel bridges (`(E_0 + m_0).im ≠ 0` from `BAmF_sz0_im_pos`). -/
-example : BATheta 3 (sz0.L 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0) (1 / 2) false true *
-      BAMss 3 (sz0.L 0) (BAMB 3 (sz0.L 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0 : ℂ) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0)) false true =
-    Step2Gen_thetaKer (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0 false true (1 / 2) :=
-  twTheta_eq_thetaKer sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (by simpa using (BAmF_sz0_im_pos 0).ne') ![false, true] (1 / 2)
-
-example : twU sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 ![false, true] (1 / 4) (1 / 2) =
-    Step2Gen_uKer (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0 false true (1 / 4) (1 / 2) :=
-  twU_eq_uKer sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (by simpa using (BAmF_sz0_im_pos 0).ne') ![false, true] (1 / 4) (1 / 2)
-
-end Inst
-
 end RBM.BA

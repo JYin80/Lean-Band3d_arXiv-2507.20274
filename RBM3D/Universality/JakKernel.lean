@@ -972,13 +972,6 @@ event holds with `Cb = 1`, `ηt = 1` for every centre and radius (`gridGood_one`
 `α₁ = 3079404`, `α₂ = 186624`, `Qb = 29/2`, `lam = 1/2`. -/
 namespace JakKernelInst
 
-/-- The `216 × 216` identity matrix, a Hermitian matrix on `Idx 3 3 2`. -/
-noncomputable abbrev H1 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ := 1
-
-def y0 : Idx 3 3 2 := 0
-
-theorem H1_herm : H1.IsHermitian := Matrix.isHermitian_one
-
 /-- Crude bound for the diagonal of the resolvent: `Im G_xx(E + iη) ≤ η⁻¹` (RBM2D `im_green_le_inv`
 `:978`; generic). -/
 theorem im_Gres_le_inv {n : Type*} [Fintype n] [DecidableEq n] {H : Matrix n n ℂ}
@@ -1007,86 +1000,6 @@ theorem gridGood_one {n : Type*} [Fintype n] [DecidableEq n] {H : Matrix n n ℂ
   intro j _ x
   simpa using im_Gres_le_inv hH one_pos (E₀ - r + 2 * 1 * j) x
 
-/-- The block bound `|M_{a₀,α}| ≤ 2N = 432` for every Hermitian matrix on `Idx 3 3 2`, every `lam`
-(from `sum_norm_blockM_le`; RBM2D `blockM_le_72` `:1024`). -/
-theorem blockM_le_432 {H : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ} (hH : H.IsHermitian) (lam : ℝ)
-    (a0 : Zd 3 3) (α : Idx 3 3 2) : ‖blockM 3 3 2 lam hH a0 α‖ ≤ 432 := by
-  have h := sum_norm_blockM_le (by norm_num : 3 ≤ 3) lam hH a0
-  have h2 : ‖blockM 3 3 2 lam hH a0 α‖ ≤ ∑ β : Idx 3 3 2, ‖blockM 3 3 2 lam hH a0 β‖ :=
-    Finset.single_le_sum (f := fun β : Idx 3 3 2 => ‖blockM 3 3 2 lam hH a0 β‖)
-      (fun _ _ => norm_nonneg _) (Finset.mem_univ α)
-  have hN : (((2 * 3) ^ 3 : ℕ) : ℝ) = 216 := by norm_num
-  have h3 : (((2 * 3) ^ 3 : ℕ) : ℝ) = 216 := hN
-  rw [h3] at h
-  linarith
-
-/-- Target `sum_mass_window_le_of_im_green_le` at `H = 1`, `η = r = Cb = 1`, `E₀ = 0`, `x = y0`
-(RBM2D `:1019`). -/
-theorem inst_window :
-    ∀ hH : H1.IsHermitian,
-    ∑ l ∈ Finset.univ.filter (fun l => |hH.eigenvalues l - 0| ≤ 1),
-        ‖hH.eigenvectorBasis l y0‖ ^ 2 ≤ 2 * (1 + 2 * 1) * 1 :=
-  fun hH => sum_mass_window_le_of_im_green_le hH one_pos zero_le_one zero_le_one 0 y0
-    (fun j _ => by simpa using im_Gres_le_inv hH one_pos (0 - 1 + 2 * 1 * j) y0)
-
-/-- Target `jak_pointwise_good` at the data above, every `y`, `σ₁`, `σ₂` (RBM2D `:1050`). -/
-theorem inst_good (y : Idx 3 3 2) (σ₁ σ₂ : Bool) :
-    (∏ _j ∈ ({0} : Finset (Fin 1)), (stieltjesN H1 Complex.I).im) *
-        ‖∑ x, (Gres H1 Complex.I σ₁ * Gres H1 Complex.I σ₁) x x *
-          scirc 3 3 2 (1 / 2) x y * Gres H1 Complex.I σ₂ y y‖ ≤
-      (∏ _j ∈ ({0} : Finset (Fin 1)), (1 / Complex.I.im * 1)) *
-        ((((2 * 3) ^ 3 : ℕ) : ℝ)⁻¹ * ((3079404 + (if False then (186624 : ℝ) else 0)) * (29 / 2))) :=
-  jak_pointwise_good (d := 3) (L := 3) (W := 2) (by norm_num) (1 / 2) H1_herm
-    ({0} : Finset (Fin 1)) (fun _ => Complex.I) Complex.I (ηt := 1) (Cb := 1) (w' := 1) (θ := 432)
-    (α₁ := 3079404) (α₂ := 186624) (Qb := 29 / 2) (by simp) (by simp) (fun _ => by simp)
-    (fun _ => by simp) zero_le_one one_pos (by norm_num) 1 1
-    (fun k _ => gridGood_one H1_herm _ _) (fun k _ => gridGood_one H1_herm _ _)
-    (gridGood_one H1_herm _ _) (fun _ => gridGood_one H1_herm _ _) (fun _ : Zd 3 3 => False)
-    (fun a0 _ α _ => blockM_le_432 H1_herm _ a0 α) (by norm_num) (by norm_num) (by norm_num)
-    y σ₁ σ₂
-
-/-- A non-scalar Hermitian matrix on `Idx 3 3 2`: `diag(x₀.val)` (RBM2D `H2` `:1083`). -/
-noncomputable abbrev H2 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ :=
-  Matrix.diagonal (fun x : Idx 3 3 2 => ((((x 0).val : ℕ) : ℝ) : ℂ))
-
-theorem H2_herm : H2.IsHermitian :=
-  Matrix.isHermitian_diagonal_iff.mpr (fun i => by simp [IsSelfAdjoint])
-
-/-- Target `jak_pointwise_good` at the non-scalar `H2`: `u = 1/2 + i`, `w 0 = -1 + i`, `s = {0}`,
-`ηt = Cb = w' = 1`, `K = K' = 1`, `Bad a₀ ↔ a₀ = 0`, `θ = 432`, the same constants, any `y`, `σ₁`, `σ₂`
-(RBM2D `:1099`). -/
-example (y : Idx 3 3 2) (σ₁ σ₂ : Bool) :=
-  jak_pointwise_good (d := 3) (L := 3) (W := 2) (by norm_num) (1 / 2) H2_herm
-    ({0} : Finset (Fin 1)) (fun _ => (⟨-1, 1⟩ : ℂ)) (⟨1 / 2, 1⟩ : ℂ) (ηt := 1) (Cb := 1) (w' := 1)
-    (θ := 432) (α₁ := 3079404) (α₂ := 186624) (Qb := 29 / 2) (by simp) (by simp)
-    (fun _ => by simp) (fun _ => by simp) zero_le_one one_pos (by norm_num) 1 1
-    (fun _ _ => gridGood_one H2_herm _ _) (fun _ _ => gridGood_one H2_herm _ _)
-    (gridGood_one H2_herm _ _) (fun _ => gridGood_one H2_herm _ _) (fun a : Zd 3 3 => a = 0)
-    (fun a0 _ α _ => blockM_le_432 H2_herm _ a0 α) (by norm_num) (by norm_num) (by norm_num)
-    y σ₁ σ₂
-
-/-- Target `jak_pointwise_crude` at `H = 1`, `s = {0}`, `w 0 = u = I`, `y = y0`, every `σ₁`, `σ₂`
-(RBM2D `:1076`). -/
-theorem inst_crude (σ₁ σ₂ : Bool) :
-    (∏ _j ∈ ({0} : Finset (Fin 1)), (stieltjesN H1 Complex.I).im) *
-        ‖∑ x, (Gres H1 Complex.I σ₁ * Gres H1 Complex.I σ₁) x x *
-          scirc 3 3 2 (1 / 2) x y0 * Gres H1 Complex.I σ₂ y0 y0‖ ≤
-      (∏ _j ∈ ({0} : Finset (Fin 1)), Complex.I.im⁻¹) * (2 * (Complex.I.im⁻¹) ^ 3) :=
-  jak_pointwise_crude (d := 3) (L := 3) (W := 2) (by norm_num) (1 / 2) H1_herm
-    ({0} : Finset (Fin 1)) (fun _ => Complex.I) Complex.I (by simp) (fun _ => by simp) y0 σ₁ σ₂
-
 end JakKernelInst
-
-#print axioms RBM.Univ.im_Gres_apply_self
-#print axioms RBM.Univ.sum_mass_window_le_im_green
-#print axioms RBM.Univ.sum_mass_window_le_of_im_green_le
-#print axioms RBM.Univ.jak_pointwise_good
-#print axioms RBM.Univ.jak_pointwise_crude
-#print axioms RBM.Univ.JakKernelInst.im_Gres_le_inv
-#print axioms RBM.Univ.JakKernelInst.gridGood_one
-#print axioms RBM.Univ.JakKernelInst.blockM_le_432
-#print axioms RBM.Univ.JakKernelInst.inst_window
-#print axioms RBM.Univ.JakKernelInst.inst_good
-#print axioms RBM.Univ.JakKernelInst.inst_crude
 
 end RBM.Univ

@@ -75,14 +75,6 @@ theorem baStep5IIIE_trace_mul_le {ι : Type*} [Fintype ι] [DecidableEq ι] (A B
   simp only [Fintype.sum_prod_type] at this
   rwa [show ∑ x, ∑ y, ‖B y x‖ ^ 2 = ∑ i, ∑ j, ‖B i j‖ ^ 2 from Finset.sum_comm] at this
 
-/-- **Target 1 (b)** `|tr(ABC)| ≤ ‖A‖‖B‖‖C‖` (copy of `T2459_trace_mul3_le`, `:299`). -/
-theorem baStep5IIIE_trace_mul3_le {ι : Type*} [Fintype ι] [DecidableEq ι] (A B C : Matrix ι ι ℂ) :
-    ‖(A * B * C).trace‖ ≤ ‖A‖ * ‖B‖ * ‖C‖ := by
-  rw [Matrix.mul_assoc]
-  calc ‖(A * (B * C)).trace‖ ≤ ‖A‖ * ‖B * C‖ := baStep5IIIE_trace_mul_le A (B * C)
-    _ ≤ ‖A‖ * (‖B‖ * ‖C‖) := mul_le_mul_of_nonneg_left (Matrix.frobenius_norm_mul B C) (norm_nonneg _)
-    _ = ‖A‖ * ‖B‖ * ‖C‖ := by ring
-
 /-- **Target 1 (c)** `|tr(X₁⋯X_k)| ≤ ∏ ‖X_i‖_F`, `k ≥ 2` (false at `k = 1`: `|tr X| ≤ √N ‖X‖_F`). -/
 theorem baStep5IIIE_trace_prod_le {ι : Type*} [Fintype ι] [DecidableEq ι] (l : List (Matrix ι ι ℂ)) (hl : 2 ≤ l.length) :
     ‖l.prod.trace‖ ≤ (l.map fun A => ‖A‖).prod := by
@@ -270,21 +262,6 @@ theorem baStep5IIIE_loop_glue (d : ℕ) (sz : Sizes d) (lam0 E : ℕ → ℝ) (n
           Real.sqrt ‖(baStep2Mat sz lam0 E).LM n u H ![σ (p + j), !(σ (p + j))] ![a (p + j), a (p + j - 1)]‖ :=
   Step5IIIEdet_loopM_glue (hH.submatrix _) _ σ a p
 
-/-- **Target 2, list form** (`T2482_LoopHSList`; for `STLIMg`, `STeeLoop` lists): the same bound for the list-indexed loop of
-`baStep2Mat`. -/
-theorem baStep5IIIE_loop_hs_list (d : ℕ) (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u : ℝ)
-    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hH : H.IsHermitian)
-    (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (hk : 2 ≤ k) :
-    ‖STLIMg (baStep2Mat sz lam0 E) n u H ⟨List.ofFn σ, List.ofFn a⟩‖ ≤
-      ∏ i : Fin k, Real.sqrt ‖STLIMg (baStep2Mat sz lam0 E) n u H ⟨[σ i, !(σ i)], [a i, a ((finRotate k).symm i)]⟩‖ := by
-  have key : ∀ {m : ℕ} (σ' : Fin m → Bool) (a' : Fin m → Zd d (sz.L n)),
-      STLIMg (baStep2Mat sz lam0 E) n u H ⟨List.ofFn σ', List.ofFn a'⟩ = (baStep2Mat sz lam0 E).LM n u H σ' a' :=
-    fun σ' a' => (loopM_eq_loopL _ _ _ _ _ _ _).symm
-  rw [key σ a]
-  refine (baStep5IIIE_loop_hs d sz lam0 E n u H hH k σ a hk).trans (le_of_eq (Finset.prod_congr rfl fun i _ => ?_))
-  rw [← key ![σ i, !(σ i)] ![a i, a ((finRotate k).symm i)]]
-  simp [List.ofFn_succ]
-
 /-- The swap (cyclicity of the 2-loop): `𝓛^{(2)}_{(σ,τ),(a,b)} = 𝓛^{(2)}_{(τ,σ),(b,a)}`; at `τ = !σ` every leg is a `(+,-)` loop. -/
 theorem Step5IIIEdet_swap {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ τ : Bool) (a b : Zd d (sz.L n)) :
@@ -409,25 +386,6 @@ theorem Step5IIIEdet_tail_ge {W u D : ℝ} (hW : 0 ≤ W) (hu : u < 1) (r : ℝ)
   rw [Step5IIIEdet_tail_eq hu]
   exact ⟨by linarith, by linarith⟩
 
-/-- `τ² ≤ e^{√r} T_{u,D}(r)`. -/
-theorem Step5IIIEdet_tau_sq_le {W u D : ℝ} (hW : 0 ≤ W) (hu : u < 1) (r : ℝ) :
-    ((W ^ d * (1 - u))⁻¹) ^ 2 ≤ Real.exp (Real.sqrt r) * tailTD d W u D r := by
-  have h := (Step5IIIEdet_tail_ge (d := d) (D := D) hW hu r).2
-  have he : 0 < Real.exp (Real.sqrt r) := Real.exp_pos _
-  calc ((W ^ d * (1 - u))⁻¹) ^ 2 = Real.exp (Real.sqrt r) * (((W ^ d * (1 - u))⁻¹) ^ 2 * Real.exp (-Real.sqrt r)) := by
-        rw [Real.exp_neg]; field_simp
-    _ ≤ _ := mul_le_mul_of_nonneg_left h he.le
-
-/-- `τ ≤ e^{√r/2} √T_{u,D}(r)` (for `τ ≥ 0`). -/
-theorem Step5IIIEdet_tau_le {W u D : ℝ} (hW : 0 ≤ W) (hu : u < 1) (hτ : 0 ≤ (W ^ d * (1 - u))⁻¹) (r : ℝ) :
-    (W ^ d * (1 - u))⁻¹ ≤ Real.exp (Real.sqrt r / 2) * Real.sqrt (tailTD d W u D r) := by
-  have h := Step5IIIEdet_tau_sq_le (d := d) (D := D) hW hu r
-  rw [Real.exp_half, ← Real.sqrt_mul (Real.exp_pos _).le]
-  calc (W ^ d * (1 - u))⁻¹ = Real.sqrt (((W ^ d * (1 - u))⁻¹) ^ 2) := (Real.sqrt_sq hτ).symm
-    _ ≤ _ := Real.sqrt_le_sqrt h
-
-theorem Step5IIIEdet_three_le_d (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) : 3 ≤ d := hs.1
-theorem Step5IIIEdet_u_nonneg (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) : 0 ≤ u := hs.2.1
 theorem Step5IIIEdet_u_lt_one (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) : u < 1 := hs.2.2.1
 theorem Step5IIIEdet_one_le_Λ (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) : 1 ≤ Λ := hs.2.2.2.2.2.2.1
 theorem Step5IIIEdet_one_le_K₀ (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) : 1 ≤ K₀ := hs.2.2.2.2.2.2.2.1
@@ -1386,23 +1344,6 @@ end WG
 
 section Instances
 
-open scoped Matrix.Norms.Frobenius in
-/-- Target 1 at concrete `2 × 2` matrices over `ℂ` (not scalar, not commuting). -/
-example : ‖(((!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) ℂ) * !![0, 1; 1, 0]).trace)‖ ≤
-    ‖(!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) ℂ)‖ * ‖(!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)‖ :=
-  baStep5IIIE_trace_mul_le _ _
-
-open scoped Matrix.Norms.Frobenius in
-example : ‖(((!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) ℂ) * !![0, 1; 1, 0] * !![1, 0; 0, 2]).trace)‖ ≤
-    ‖(!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) ℂ)‖ * ‖(!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)‖ *
-      ‖(!![1, 0; 0, 2] : Matrix (Fin 2) (Fin 2) ℂ)‖ :=
-  baStep5IIIE_trace_mul3_le _ _ _
-
-open scoped Matrix.Norms.Frobenius in
-example : ‖((([!![1, 2; 3, 4], !![0, 1; 1, 0], !![1, 0; 0, 2]] : List (Matrix (Fin 2) (Fin 2) ℂ))).prod.trace)‖ ≤
-    (([!![1, 2; 3, 4], !![0, 1; 1, 0], !![1, 0; 0, 2]] : List (Matrix (Fin 2) (Fin 2) ℂ)).map fun A => ‖A‖).prod :=
-  baStep5IIIE_trace_prod_le _ (by simp)
-
 /-- **Target 3 (a), the witness of the scalar part** at the ticket's instance `n = 1` (`L = 8`, `W = 1024`; `u = 1/2`, `D = 40`,
 `Λ = K₀ = J = 1`): every conjunct of `BAStep5IIIEScalar` holds there (the window of the bundle is collapsed at this `n`: `L/2 = 4 <
 ℓ* = 18.25`, finding F1 of the 1a). -/
@@ -1411,81 +1352,6 @@ theorem Step5IIIEdet_scalar_sz0_one : BAStep5IIIEScalar SizesInst.sz0 1 (1 / 2) 
   unfold BAStep5IIIEScalar
   norm_num [SizesInst.sz0]
   rw [show (1024 : ℝ) = 2 ^ 10 by norm_num]; exact h2
-
-/-- **Target 3 (a), the nondegenerate witness of the scalar part** at `n = 800` (`L = 3204`, `W = 1.055·10¹⁶`, `6ℓ* ≤ L/2`: every window
-of the bundle is nonempty; the 1a-audit §6.2), same `u, D, Λ, K₀, J`. -/
-theorem Step5IIIEdet_scalar_sz0_800 : BAStep5IIIEScalar SizesInst.sz0 800 (1 / 2) 40 1 1 1 := by
-  have h2 : (4 : ℝ) ≤ Real.log (2 ^ 10) := by have := Real.log_two_gt_d9; rw [Real.log_pow]; norm_num; linarith
-  unfold BAStep5IIIEScalar
-  norm_num [SizesInst.sz0]
-  exact ⟨h2.trans (Real.log_le_log (by norm_num) (by norm_num)), Real.one_le_rpow (by norm_num) (by norm_num)⟩
-
-private abbrev Step5IIIEdet_C0 := baStep2Mat SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq)
-
-private abbrev Step5IIIEdet_Hf (ω : SizesInst.sz0.SeqΩ) :=
-  SizesInst.sz0.seqHflowBA (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) 1 (1 / 2) ω
-
-/-- Target 2 at the instance carrier (`n = 1`, `u = 1/2`), any Hermitian `H`. -/
-private theorem Step5IIIEdet_loop_hs_sz0 {H : Matrix (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) ℂ}
-    (hH : H.IsHermitian) {k : ℕ} (hk : 2 ≤ k) (σ : Fin k → Bool) (a : Fin k → Zd 3 (SizesInst.sz0.L 1)) :
-    ‖Step5IIIEdet_C0.LM 1 (1 / 2) H σ a‖ ≤
-      ∏ i : Fin k, Real.sqrt ‖Step5IIIEdet_C0.LM 1 (1 / 2) H ![σ i, !(σ i)] ![a i, a ((finRotate k).symm i)]‖ :=
-  baStep5IIIE_loop_hs 3 _ _ _ 1 (1 / 2) H hH k σ a hk
-
-/-- Target 2 at `H = 0` (Hermitian), `k = 3` and `k = 6`; and at the flow matrix `seqHflowBA` (Hermitian: `BAAuxGraph2_seqHflowBA_herm`). -/
-example (σ : Fin 3 → Bool) (a : Fin 3 → Zd 3 (SizesInst.sz0.L 1)) :=
-  Step5IIIEdet_loop_hs_sz0 Matrix.isHermitian_zero (by norm_num : 2 ≤ 3) σ a
-example (σ : Fin 6 → Bool) (a : Fin 6 → Zd 3 (SizesInst.sz0.L 1)) :=
-  Step5IIIEdet_loop_hs_sz0 Matrix.isHermitian_zero (by norm_num : 2 ≤ 6) σ a
-example (ω : SizesInst.sz0.SeqΩ) (σ : Fin 6 → Bool) (a : Fin 6 → Zd 3 (SizesInst.sz0.L 1)) :=
-  Step5IIIEdet_loop_hs_sz0 (H := Step5IIIEdet_Hf ω) (Graph.BAAuxGraph2_seqHflowBA_herm _ _ _ _ _) (by norm_num : 2 ≤ 6) σ a
-
-/-- Target 2, list form and glue form, at `H = 0`. -/
-example (σ : Fin 3 → Bool) (a : Fin 3 → Zd 3 (SizesInst.sz0.L 1)) :
-    ‖STLIMg Step5IIIEdet_C0 1 (1 / 2) (0 : Matrix (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) ℂ)
-        ⟨List.ofFn σ, List.ofFn a⟩‖ ≤
-      ∏ i : Fin 3, Real.sqrt ‖STLIMg Step5IIIEdet_C0 1 (1 / 2)
-        (0 : Matrix (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) ℂ)
-        ⟨[σ i, !(σ i)], [a i, a ((finRotate 3).symm i)]⟩‖ :=
-  baStep5IIIE_loop_hs_list 3 _ _ _ 1 (1 / 2) _ Matrix.isHermitian_zero 3 σ a (by norm_num)
-example (σ : Fin 6 → Bool) (a : Fin 6 → Zd 3 (SizesInst.sz0.L 1)) (p : Fin 6) :=
-  baStep5IIIE_loop_glue 3 SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 1 (1 / 2) 0
-    Matrix.isHermitian_zero σ a p
-
-/-- Targets 4 and 5 at the instance, `n = 800` (`L = 3204`, `W ≈ 1.06·10¹⁶`, `6ℓ* ≤ L/2`: every window nonempty) and `n = 1`:
-the scalar part is discharged by `Step5IIIEdet_scalar_sz0_800`, `_one`; the matrix part is the pin of U5c's good event, a hypothesis
-of the instances (audit O2). -/
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (SizesInst.sz0.L 800)) :
-    ‖STELKLKMg Step5IIIEdet_C0 800 (1 / 2) H σ a‖ ≤
-      lossE2wG 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800) 1 1 * ((1 - (1 / 2 : ℝ))⁻¹ *
-        ((((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ 3 * |1 - (1 / 2 : ℝ)|)⁻¹ * (1 : ℝ) ^ 2)) * STtailTD SizesInst.sz0 800 (1 / 2) 40 a :=
-  baStep5IIIE_lk 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat σ a
-
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) (Idx 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 800
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (SizesInst.sz0.L 800)) :
-    ‖STEGtMg Step5IIIEdet_C0 800 (1 / 2) H σ a‖ ≤
-      lossE2wG 3 (SizesInst.sz0.L 800) (SizesInst.sz0.W 800) 1 1 * ((1 - (1 / 2 : ℝ))⁻¹ *
-        ((if (zdistInf 3 (SizesInst.sz0.L 800) (a 0 - a 1) : ℝ) ≤ 2 * Real.log ((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ (3 / 2 : ℝ) then 1 else 0) +
-          (((SizesInst.sz0.W 800 : ℕ) : ℝ) ^ 3 * |1 - (1 / 2 : ℝ)|)⁻¹ ^ (1 / 2 : ℝ) * (1 : ℝ) ^ (3 / 2 : ℝ)) *
-            STtailTD SizesInst.sz0 800 (1 / 2) 40 a) :=
-  baStep5IIIE_wG 3 le_rfl SizesInst.sz0 _ _ 800 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_800 hmat σ a
-
-example (H : Matrix (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) (Idx 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1)) ℂ)
-    (hmat : BAStep5IIIEMatrix SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) 1
-      (1 / 2) 40 1 1 1 (1 / 10) 1 H)
-    (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (SizesInst.sz0.L 1)) :
-    ‖STELKLKMg Step5IIIEdet_C0 1 (1 / 2) H σ a‖ ≤
-      lossE2wG 3 (SizesInst.sz0.L 1) (SizesInst.sz0.W 1) 1 1 * ((1 - (1 / 2 : ℝ))⁻¹ *
-        ((((SizesInst.sz0.W 1 : ℕ) : ℝ) ^ 3 * |1 - (1 / 2 : ℝ)|)⁻¹ * (1 : ℝ) ^ 2)) * STtailTD SizesInst.sz0 1 (1 / 2) 40 a :=
-  baStep5IIIE_lk 3 le_rfl SizesInst.sz0 _ _ 1 (1 / 2) 40 1 1 1 (1 / 10) 1 H (by norm_num) (by norm_num)
-    Step5IIIEdet_scalar_sz0_one hmat σ a
 
 end Instances
 

@@ -143,14 +143,6 @@ theorem lwSmat_eq (g t : ℝ) : lwSmat d L W g t = (t : ℂ) • lwLift d L W (S
   push_cast
   ring
 
-/-- `LWPins_lwSp` is `lwSpOf` at `m = mE E`. -/
-theorem LWPins_lwSp_eq (g E t : ℝ) :
-    LWPins_lwSp d L W g E t = lwSpOf d L W g t (mE E) := by
-  have h : Matrix.of (LWPins_lwS d L W g t) = lwSmat d L W g t := by
-    ext x y
-    simp [LWPins_lwS, lwSmat]
-  simp only [LWPins_lwSp, lwSpOf, h]
-
 variable {d L W} in
 /-- The merged `lwSplus` is `lwSpOf` (same size data). -/
 theorem lwSplus_eq (sz : Sizes d) (n : ℕ) (u : ℝ) (m : ℂ) :
@@ -469,22 +461,6 @@ theorem lwSpOf_decay_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (h�
   refine ⟨C, c, hC, hc, fun L W _ _ hL g t E hg hgΛ ht0 ht1 hE => ?_⟩
   obtain ⟨h1, h2⟩ := h L W hL g t hg hgΛ ht0 ht1
   exact ⟨h1, h2 (mE E) (norm_mE (by linarith [abs_nonneg E])) (lwIm_mE_ge hκ hE)⟩
-
-/-- Target 1 with the row and column sums: the constants `(K₀, K₁)` of `LWKBound` for `S` and for
-`S^± = S (1 - m(E)² S)⁻¹`, depending on `(d, Λ, κ)` only. -/
-theorem lwKBound_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
-    ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L →
-      ∀ g t E : ℝ, 0 < g → g ≤ Λ → 0 ≤ t → t < 1 → |E| ≤ 2 - κ →
-        LWKBound (lwSmat d L W g t) (K₀ * ((W : ℝ) ^ d)⁻¹) K₁ ∧
-        LWKBound (lwSpOf d L W g t (mE E)) (K₀ * ((W : ℝ) ^ d)⁻¹) K₁ := by
-  obtain ⟨C, c, hC, hc, h⟩ := lwSpOf_decay_E d hd Λ κ hΛ hκ
-  have hE : 0 < expC (d - 2) c := by
-    unfold expC
-    have : 0 < c := hc
-    positivity
-  refine ⟨C, C * expC (d - 2) c, hC, mul_pos hC hE, fun L W _ _ hL g t E hg hgΛ ht0 ht1 hEκ => ?_⟩
-  obtain ⟨h1, h2⟩ := h L W hL g t E hg hgΛ ht0 ht1 hEκ
-  exact ⟨lwKBound_of_decay hd hC.le hc h1, lwKBound_of_decay hd hC.le hc h2⟩
 
 end Decay
 
@@ -830,9 +806,6 @@ variable {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype E] [DecidableEq 
 def lwWVal (D : LData ι) (e : WEdge (E ⊕ I)) (x y : ι) : ℂ :=
   if e.col then (if e.σ then D.Sp x y else star (D.Sp y x)) else D.S x y
 
-private theorem lwWVal_eq (D : LData ι) (ℓ : E ⊕ I → ι) (e : WEdge (E ⊕ I)) :
-    WEdge.val D ℓ e = lwWVal D e (ℓ e.x) (ℓ e.y) := rfl
-
 /-- The three bounds on `S`, `S^±` give the three bounds on every waved-edge weight. -/
 private theorem lwWVal_bound {D : LData ι} {a K₁ : ℝ} (hS : LWKBound D.S a K₁) (hSp : LWKBound D.Sp a K₁)
     (e : WEdge (E ⊕ I)) :
@@ -1139,147 +1112,15 @@ theorem lwClaimSize (Γ : LGraph E I) (hN : Γ.Normal) (D : LData (Idx d L W)) {
         (((((W * L) ^ d : ℕ) : ℝ)) ^ Γ.nM * (K₀ * ((W : ℝ) ^ d)⁻¹) ^ (Γ.nW - (Γ.nV - Γ.nM))) := by ring
     _ = _ := by rw [hal]; simp only [LGraph.counters]; ring
 
-/-- The constant of the general-graph form: the sum of the constants of the normal graphs of the dotted
-edge partition. -/
-def LGraph.sizeConstG (m : ℂ) (Γ : LGraph E I) (K₀ K₁ : ℝ) : ℝ :=
-  ((Γ.partition m).map fun P => P.g.sizeConst K₀ K₁).sum
-
-private theorem lwNorm_sum_le_of_le {α : Type*} (l : List α) (f : α → ℂ) (c : α → ℝ) (G : ℝ)
-    (h : ∀ x ∈ l, ‖f x‖ ≤ c x * G) : ‖(l.map f).sum‖ ≤ (l.map c).sum * G := by
-  induction l with
-  | nil => simp
-  | cons x l ih =>
-    simp only [List.map_cons, List.sum_cons]
-    have h1 := h x (List.mem_cons_self ..)
-    have h2 := ih (fun y hy => h y (List.mem_cons_of_mem _ hy))
-    calc ‖f x + (l.map f).sum‖ ≤ ‖f x‖ + ‖(l.map f).sum‖ := norm_add_le _ _
-      _ ≤ c x * G + (l.map c).sum * G := add_le_add h1 h2
-      _ = _ := by ring
-
-/-- **`claim:size` for a general graph** (`7_8:248-250`, `scalingSizeG`): the dotted edge partition of
-`Γ` (`Γ.val = Σ_{P ∈ partition} P.val`, the terms are normal graphs) gives
-`|Γ.val| ≤ (Σ_P C_P) · size(Γ)` with `size(Γ) = max_P size(P.g)`. -/
-theorem lwClaimSizeG (m : ℂ) (Γ : LGraph E I) (D : LData (Idx d L W)) {Ψ K₀ K₁ : ℝ}
-    (hK₀ : 0 ≤ K₀) (hK₁ : 0 ≤ K₁)
-    (hM : ∀ x y, D.M x y = if x = y then m else 0)
-    (hG : ∀ x y, x ≠ y → ‖D.G x y‖ ≤ Ψ) (hGd : ∀ x, ‖D.G x x - m‖ ≤ Ψ)
-    (hS : LWKBound D.S (K₀ * ((W : ℝ) ^ d)⁻¹) K₁) (hSp : LWKBound D.Sp (K₀ * ((W : ℝ) ^ d)⁻¹) K₁)
-    (ℓe : E → Idx d L W) :
-    ‖Γ.val D ℓe‖ ≤ Γ.sizeConstG m K₀ K₁ * Γ.scalingSizeG m Ψ W d L := by
-  rw [Γ.val_eq_partition m D (fun x => by simpa using hM x x) ℓe]
-  unfold LComb.val LGraph.sizeConstG
-  have hB := (Γ.scalingSizeG_le_iff m Ψ W d L _).1 le_rfl
-  refine lwNorm_sum_le_of_le (Γ.partition m) (fun P : PGraph E => P.val D ℓe)
-    (fun P : PGraph E => P.g.sizeConst K₀ K₁) _ fun P hP => ?_
-  have hPN := Γ.partition_normal m P hP
-  by_cases h : ∃ ℓ', ℓe = ℓ' ∘ P.ext
-  · obtain ⟨ℓ', hℓ'⟩ := h
-    rw [P.val_of_factor D hℓ']
-    exact (lwClaimSize P.g hPN D hM hG hGd hS hSp ℓ').trans
-      (mul_le_mul_of_nonneg_left (hB.2 P hP) (P.g.sizeConst_nonneg hK₀ hK₁))
-  · rw [P.val_of_not D h, norm_zero]
-    exact mul_nonneg (P.g.sizeConst_nonneg hK₀ hK₁) hB.1
-
 end ClaimIdx
 
 /-! ## 7. `claim:size` for the matrices of the model -/
-
-section Model
-
-/-- **`claim:size` with the constants of the model** (target 3 with target 1).  For `d ≥ 3`, `Λ`, `κ > 0`
-there are constants `(K₀, K₁)`, depending on `(d, Λ, κ)` only, such that for every `L ≥ 3`, `W ≥ 1`,
-`0 < g ≤ Λ`, `0 ≤ t < 1`, `|E| ≤ 2 - κ`, every normal graph `Γ` and every data `D` with `S = t · svarF`,
-`S^± = S (1 - m(E)² S)⁻¹`, `M = m(E) I`, `G` satisfying the entry bound with some `Ψ`
-(`|G_{xy}| ≤ Ψ` for `x ≠ y`, `|G_{xx} - m| ≤ Ψ`):
-`|Γ.val D ℓe| ≤ C_Γ · size(Γ)`, `C_Γ = |coeff| K₁^{n_V-n_M} K₀^{n_W-(n_V-n_M)}`, never depending on
-`L, W, t, E, g, Ψ`. -/
-theorem lwClaimSize_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
-    ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L →
-      ∀ g t E : ℝ, 0 < g → g ≤ Λ → 0 ≤ t → t < 1 → |E| ≤ 2 - κ →
-      ∀ (E' I' : Type) [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : LGraph E' I'),
-        Γ.Normal → ∀ D : LData (Idx d L W), D.S = lwSmat d L W g t → D.Sp = lwSpOf d L W g t (mE E) →
-        (∀ x y, D.M x y = if x = y then mE E else 0) → ∀ Ψ : ℝ,
-        (∀ x y, x ≠ y → ‖D.G x y‖ ≤ Ψ) → (∀ x, ‖D.G x x - mE E‖ ≤ Ψ) → ∀ ℓe : E' → Idx d L W,
-        ‖Γ.val D ℓe‖ ≤ Γ.sizeConst K₀ K₁ * Γ.scalingSize Ψ W d L := by
-  obtain ⟨K₀, K₁, h₀, h₁, h⟩ := lwKBound_E d hd Λ κ hΛ hκ
-  refine ⟨K₀, K₁, h₀, h₁, fun L W _ _ hL g t E hg hgΛ ht0 ht1 hE E' I' _ _ _ _ Γ hN D hS hSp hM Ψ hG hGd ℓe => ?_⟩
-  obtain ⟨hS', hSp'⟩ := h L W hL g t E hg hgΛ ht0 ht1 hE
-  rw [← hS] at hS'
-  rw [← hSp] at hSp'
-  exact lwClaimSize Γ hN D hM hG hGd hS' hSp' ℓe
-
-/-- **`claim:size` for a general graph, with the constants of the model**: `|Γ.val| ≤ (Σ_P C_P) ·
-size_G(Γ)`, `size_G(Γ) = max_P size(P)` over the dotted edge partition. -/
-theorem lwClaimSizeG_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
-    ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L →
-      ∀ g t E : ℝ, 0 < g → g ≤ Λ → 0 ≤ t → t < 1 → |E| ≤ 2 - κ →
-      ∀ (E' I' : Type) [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : LGraph E' I'),
-        ∀ D : LData (Idx d L W), D.S = lwSmat d L W g t → D.Sp = lwSpOf d L W g t (mE E) →
-        (∀ x y, D.M x y = if x = y then mE E else 0) → ∀ Ψ : ℝ,
-        (∀ x y, x ≠ y → ‖D.G x y‖ ≤ Ψ) → (∀ x, ‖D.G x x - mE E‖ ≤ Ψ) → ∀ ℓe : E' → Idx d L W,
-        ‖Γ.val D ℓe‖ ≤ Γ.sizeConstG (mE E) K₀ K₁ * Γ.scalingSizeG (mE E) Ψ W d L := by
-  obtain ⟨K₀, K₁, h₀, h₁, h⟩ := lwKBound_E d hd Λ κ hΛ hκ
-  refine ⟨K₀, K₁, h₀, h₁, fun L W _ _ hL g t E hg hgΛ ht0 ht1 hE E' I' _ _ _ _ Γ D hS hSp hM Ψ hG hGd ℓe => ?_⟩
-  obtain ⟨hS', hSp'⟩ := h L W hL g t E hg hgΛ ht0 ht1 hE
-  rw [← hS] at hS'
-  rw [← hSp] at hSp'
-  exact lwClaimSizeG (mE E) Γ D h₀.le h₁.le hM hG hGd hS' hSp' ℓe
-
-/-- The scaling size is homogeneous of degree `n_S` in `Ψ`: the "up to `N^τ`" of `Γ ≺ size(Γ)`
-(`7_8:260`): if the entry bound holds with `Ψ' = λ Ψ`, `|Γ.val| ≤ C_Γ λ^{n_S} size_Ψ(Γ)`. -/
-theorem LGraph.scalingSize_mul {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-    (Γ : LGraph E I) (c Ψ : ℝ) (W d L : ℕ) :
-    Γ.scalingSize (c * Ψ) W d L = c ^ Γ.nS * Γ.scalingSize Ψ W d L := by
-  unfold LGraph.scalingSize Counters.scalingSize
-  simp only [LGraph.counters]
-  rw [mul_pow]; ring
-
-end Model
-
 
 /-! ## 8. Target 2: the confinement tail of `scalemole` -/
 
 section Tail
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
-
-/-- **The tail of a kernel with the decay of `(eq:estSpm-W)`** (`scalemole`, `7_8:255-258`): the weight
-of the labels at block distance `≥ R` from `x` is `≤ C expC(d-2, c/2) e^{-cR/2}`, uniformly in `L, W`. -/
-theorem lwKernel_tail (hd : 3 ≤ d) {C c : ℝ} (hC : 0 ≤ C) (hc : 0 < c)
-    {K : Matrix (Idx d L W) (Idx d L W) ℂ}
-    (h : ∀ x y, ‖K x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))))
-    (x : Idx d L W) (R : ℝ) :
-    ∑ y ∈ Finset.univ.filter (fun y => R ≤ (lwBdist d L W x y : ℝ)), ‖K x y‖ ≤
-      C * expC (d - 2) (c / 2) * Real.exp (-(c * R / 2)) := by
-  have hW : (0 : ℝ) < ((W : ℝ) ^ d)⁻¹ := by
-    have : (0 : ℝ) < W := Nat.cast_pos.2 (Nat.pos_of_ne_zero (NeZero.ne W))
-    positivity
-  calc ∑ y ∈ Finset.univ.filter (fun y => R ≤ (lwBdist d L W x y : ℝ)), ‖K x y‖
-      ≤ ∑ y ∈ Finset.univ.filter (fun y => R ≤ (lwBdist d L W x y : ℝ)),
-        C * Real.exp (-(c * R / 2)) *
-          (((W : ℝ) ^ d)⁻¹ * Real.exp (-((c / 2) * (lwBdist d L W x y : ℝ)))) := by
-        refine Finset.sum_le_sum fun y hy => ?_
-        have hR : R ≤ (lwBdist d L W x y : ℝ) := (Finset.mem_filter.1 hy).2
-        refine (h x y).trans ?_
-        have h1 : Real.exp (-(c * (lwBdist d L W x y : ℝ))) ≤
-            Real.exp (-(c * R / 2)) * Real.exp (-((c / 2) * (lwBdist d L W x y : ℝ))) := by
-          rw [← Real.exp_add]
-          apply Real.exp_le_exp.2
-          nlinarith
-        calc C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ)))
-            ≤ C * ((W : ℝ) ^ d)⁻¹ * (Real.exp (-(c * R / 2)) *
-              Real.exp (-((c / 2) * (lwBdist d L W x y : ℝ)))) :=
-              mul_le_mul_of_nonneg_left h1 (by positivity)
-          _ = _ := by ring
-    _ ≤ ∑ y : Idx d L W, C * Real.exp (-(c * R / 2)) *
-          (((W : ℝ) ^ d)⁻¹ * Real.exp (-((c / 2) * (lwBdist d L W x y : ℝ)))) :=
-        Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) fun y _ _ => by positivity
-    _ = C * Real.exp (-(c * R / 2)) *
-          ∑ y : Idx d L W, ((W : ℝ) ^ d)⁻¹ * Real.exp (-((c / 2) * (lwBdist d L W x y : ℝ))) := by
-        rw [Finset.mul_sum]
-    _ ≤ C * Real.exp (-(c * R / 2)) * expC (d - 2) (c / 2) :=
-        mul_le_mul_of_nonneg_left (lwSum_decay_row hd (by linarith) x) (by positivity)
-    _ = _ := by ring
 
 /-- At the radius `R = (log W)^{3/2}` of `scalemole` the tail `e^{-cR/2}` is eventually `≤ W^{-D}`. -/
 theorem lwTail_log32 {c : ℝ} (hc : 0 < c) (D : ℝ) :
@@ -1311,42 +1152,12 @@ theorem lwTail_log32 {c : ℝ} (hc : 0 < c) (D : ℝ) :
     linarith
   nlinarith [mul_le_mul_of_nonneg_left h4 hlogpos.le]
 
-/-- Target 2 on the energy `E`: the tail of `S^±` beyond block distance `R` is `≤ C₂ e^{-c₂ R}`, uniformly
-in `L, W, t, E, g` (`(C₂, c₂)` depend on `(d, Λ, κ)` only). -/
-theorem lwSpOf_tail_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
-    ∃ C₂ c₂ : ℝ, 0 < C₂ ∧ 0 < c₂ ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L →
-      ∀ g t E : ℝ, 0 < g → g ≤ Λ → 0 ≤ t → t < 1 → |E| ≤ 2 - κ →
-        ∀ (x : Idx d L W) (R : ℝ),
-          ∑ y ∈ Finset.univ.filter (fun y => R ≤ (lwBdist d L W x y : ℝ)),
-            ‖lwSpOf d L W g t (mE E) x y‖ ≤ C₂ * Real.exp (-(c₂ * R)) := by
-  obtain ⟨C, c, hC, hc, h⟩ := lwSpOf_decay_E d hd Λ κ hΛ hκ
-  have hE : 0 < expC (d - 2) (c / 2) := by
-    unfold expC
-    have : 0 < c / 2 := by linarith
-    positivity
-  refine ⟨C * expC (d - 2) (c / 2), c / 2, mul_pos hC hE, by linarith,
-    fun L W _ _ hL g t E hg hgΛ ht0 ht1 hEκ x R => ?_⟩
-  have := lwKernel_tail hd hC.le hc (h L W hL g t E hg hgΛ ht0 ht1 hEκ).2 x R
-  convert this using 3
-  ring
-
 end Tail
 
 /-! The same bound for the two objects the pins read: `LWPins_lwSp` (the one-size pins `LWweightExp`,
 `LWedgeExp`, `LWggExp`) and `lwSplus` (the sequence-space `Graph/LWStein`). -/
 
 section Names
-
-/-- **Target 1 for `LWPins_lwSp`** (`S^± = S (1 - m(E)² S)⁻¹`, `S = t · svarF`). -/
-theorem LWPins_lwSp_decay (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
-    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L →
-      ∀ g t E : ℝ, 0 < g → g ≤ Λ → 0 ≤ t → t < 1 → |E| ≤ 2 - κ → ∀ x y : Idx d L W,
-        ‖LWPins_lwSp d L W g E t x y‖ ≤
-          C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))) := by
-  obtain ⟨C, c, hC, hc, h⟩ := lwSpOf_decay_E d hd Λ κ hΛ hκ
-  refine ⟨C, c, hC, hc, fun L W _ _ hL g t E hg hgΛ ht0 ht1 hE x y => ?_⟩
-  rw [LWPins_lwSp_eq]
-  exact (h L W hL g t E hg hgΛ ht0 ht1 hE).2 x y
 
 /-- **Target 1 for `lwSplus`** on a size sequence `sz`: for every `n`, `0 < sz.lam n ≤ Λ`, `0 ≤ u < 1`,
 `|E| ≤ 2 - κ`. -/
@@ -1362,123 +1173,6 @@ theorem lwSplus_decay (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ
 
 end Names
 
-/-- **Instance of target 1 for `LWPins_lwSp` and `lwSplus`** at the merged `sz0` (`n = 0`: `L = 4`,
-`W = 32`, `lam = 1/64`), `E = 0`, `u = t = 1/2`. -/
-example : (∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    ∀ x y : Idx 3 4 32, ‖LWPins_lwSp 3 4 32 (1 / 64) 0 (1 / 2) x y‖ ≤
-        C * (((32 : ℕ) : ℝ) ^ 3)⁻¹ * Real.exp (-(c * (lwBdist 3 4 32 x y : ℝ)))) ∧
-    (∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    ∀ x y : Idx 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0), ‖lwSplus SizesInst.sz0 0 (1 / 2) (mE 0) x y‖ ≤
-        C * (((SizesInst.sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ * Real.exp (-(c * (lwBdist 3 (SizesInst.sz0.L 0) (SizesInst.sz0.W 0) x y : ℝ)))) := by
-  obtain ⟨C, c, hC, hc, h⟩ := LWPins_lwSp_decay 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  obtain ⟨C', c', hC', hc', h'⟩ := lwSplus_decay 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  refine ⟨⟨C, c, hC, hc, fun x y => h 4 32 (by norm_num) (1 / 64) (1 / 2) 0 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) x y⟩,
-    ⟨C', c', hC', hc', fun x y => h' SizesInst.sz0 0 (by rw [SizesInst.sz0_values.2.2.2]; norm_num) (by rw [SizesInst.sz0_values.2.2.2]; norm_num) (1 / 2) 0
-      (by norm_num) (by norm_num) (by norm_num) x y⟩⟩
-
 /-! ## 9. Compiled instances at `d = 3`, `L = 4`, `W = 2`, `g = 1/2`, `E = 0`, `t = 1/2` -/
-
-section Instances
-
-/-- Concrete data on `Z_8^3` (`L = 4`, `W = 2`, `N = 512`): `S = t · svarF`, `S^± = S (1 - m(0)² S)⁻¹` at
-`g = 1/2`, `t = 1/2`; `M = m(0) I` with `m(0) = i`; and the dense resolvent-like matrix
-`G = M + Ψ J` with `Ψ = 1/100`, every entry `≠ 0` and `|G_{xy}| = |G_{xx} - m| = Ψ`. -/
-def lwSizeD0 : LData (Idx 3 4 2) where
-  G := fun x y => (if x = y then mE 0 else 0) + (1 / 100 : ℂ)
-  M := fun x y => if x = y then mE 0 else 0
-  S := lwSmat 3 4 2 (1 / 2) (1 / 2)
-  Sp := lwSpOf 3 4 2 (1 / 2) (1 / 2) (mE 0)
-
-private theorem lwSizeD0_hG : ∀ x y, x ≠ y → ‖lwSizeD0.G x y‖ ≤ 1 / 100 := by
-  intro x y hxy
-  simp [lwSizeD0, hxy]
-
-private theorem lwSizeD0_hGd : ∀ x, ‖lwSizeD0.G x x - mE 0‖ ≤ 1 / 100 := by
-  intro x
-  simp [lwSizeD0]
-
-/-- **Instance of target 1** (`(eq:estSpm-W)`): the entry bounds for `S` and `S^±` at `d = 3`, `L = 4`,
-`W = 2`, `g = 1/2`, `E = 0`, `t = 1/2` (`Λ = 1`, `κ = 1/2`), with the sanity fact that `S` is not zero. -/
-example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
-    (∀ x y : Idx 3 4 2, ‖lwSmat 3 4 2 (1 / 2) (1 / 2) x y‖ ≤
-        C * ((2 : ℝ) ^ 3)⁻¹ * Real.exp (-(c * (lwBdist 3 4 2 x y : ℝ)))) ∧
-    (∀ x y : Idx 3 4 2, ‖lwSpOf 3 4 2 (1 / 2) (1 / 2) (mE 0) x y‖ ≤
-        C * ((2 : ℝ) ^ 3)⁻¹ * Real.exp (-(c * (lwBdist 3 4 2 x y : ℝ)))) ∧
-    lwSmat 3 4 2 (1 / 2) (1 / 2) 0 0 ≠ 0 := by
-  obtain ⟨C, c, hC, hc, h⟩ := lwSpOf_decay_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  obtain ⟨h1, h2⟩ := h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-  refine ⟨C, c, hC, hc, by simpa using h1, by simpa using h2, ?_⟩
-  intro h0
-  have := lwSmat_entry (d := 3) (L := 4) (W := 2) (g := 1 / 2) (t := 1 / 2) (by norm_num) 0 0
-  rw [h0, norm_zero] at this
-  have hpos : 0 < sbKernelR 3 4 (1 / 2) ((split 3 4 2 0).1 - (split 3 4 2 0).1) := by
-    simp only [sub_self, sbKernelR]
-    norm_num
-  have : (0 : ℝ) < 1 / 2 * ((2 : ℝ) ^ 3)⁻¹ * sbKernelR 3 4 (1 / 2) ((split 3 4 2 0).1 - (split 3 4 2 0).1) := by
-    positivity
-  simp_all
-
-/-- A pair of distinct external labels on `Z_8^3`. -/
-def lwSizeEll : Fin 2 → Idx 3 4 2 := ![fun _ => 0, fun _ => 1]
-
-private theorem lwSizeD0_hM : ∀ x y, lwSizeD0.M x y = if x = y then mE 0 else 0 := fun _ _ => rfl
-
-/-- **Instance of target 3** (`claim:size`, normal form) on the merged `p2Graph` (`n_S = 6`, `n_W = 2`,
-`n_V = 4`, `n_M = 2`) at the concrete data `lwSizeD0` (`Ψ = 1/100`): every hypothesis is discharged. -/
-example : ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧
-    p2Graph.nS = 6 ∧ p2Graph.nW = 2 ∧ p2Graph.nV = 4 ∧ p2Graph.nM = 2 ∧
-    ‖p2Graph.val lwSizeD0 lwSizeEll‖ ≤
-      p2Graph.sizeConst K₀ K₁ * p2Graph.scalingSize (1 / 100) 2 3 4 := by
-  obtain ⟨K₀, K₁, h₀, h₁, h⟩ := lwClaimSize_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  exact ⟨K₀, K₁, h₀, h₁, p2Graph_counters.1, p2Graph_counters.2.1, p2Graph_counters.2.2.1,
-    p2Graph_counters.2.2.2,
-    h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (Fin 2) (Fin 4) p2Graph (by decide) lwSizeD0 rfl rfl lwSizeD0_hM (1 / 100)
-      lwSizeD0_hG lwSizeD0_hGd lwSizeEll⟩
-
-/-- **Instance of target 3, general-graph form** (`scalingSizeG`, the dotted edge partition) on `p2Graph`;
-the partition is not empty: `size_G(p2Graph) = size(p2Graph)` (a normal graph without repeated dotted
-edges), a positive number. -/
-example : ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧
-    0 < p2Graph.scalingSizeG (mE 0) (1 / 100) 2 3 4 ∧
-    ‖p2Graph.val lwSizeD0 lwSizeEll‖ ≤
-      p2Graph.sizeConstG (mE 0) K₀ K₁ * p2Graph.scalingSizeG (mE 0) (1 / 100) 2 3 4 := by
-  obtain ⟨K₀, K₁, h₀, h₁, h⟩ := lwClaimSizeG_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  refine ⟨K₀, K₁, h₀, h₁, ?_,
-    h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (Fin 2) (Fin 4) p2Graph lwSizeD0 rfl rfl lwSizeD0_hM (1 / 100)
-      lwSizeD0_hG lwSizeD0_hGd lwSizeEll⟩
-  rw [LGraph.scalingSizeG_of_normal (mE 0) p2Graph (by decide) (by decide) (by norm_num)]
-  unfold LGraph.scalingSize Counters.scalingSize
-  positivity
-
-/-- **Instance of target 2** (`scalemole`, the weighted sum over the internal vertices of the two molecules
-of `p2Graph`): `Σ_{ℓ_I} ∏_{waved} |S_{αβ}| ≤ N^{n_M} K₁^{n_V - n_M} (K₀ W^{-d})^{n_W - (n_V - n_M)}`. -/
-example : ∃ K₀ K₁ : ℝ, 0 < K₀ ∧ 0 < K₁ ∧
-    ∑ ℓi : Fin 4 → Idx 3 4 2, (p2Graph.waved.map fun e => ‖WEdge.val lwSizeD0 (Sum.elim lwSizeEll ℓi) e‖).prod ≤
-      (Fintype.card (Idx 3 4 2) : ℝ) ^ p2Graph.nM * K₁ ^ (p2Graph.nV - p2Graph.nM) *
-        (K₀ * ((2 : ℝ) ^ 3)⁻¹) ^ (p2Graph.nW - (p2Graph.nV - p2Graph.nM)) := by
-  obtain ⟨K₀, K₁, h₀, h₁, h⟩ := lwKBound_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  obtain ⟨hS, hSp⟩ := h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-  have : Nonempty (Idx 3 4 2) := ⟨fun _ => 0⟩
-  refine ⟨K₀, K₁, h₀, h₁, ?_⟩
-  have := p2Graph.waved_sum_le (by decide) lwSizeD0 hS hSp lwSizeEll
-  simpa using this
-
-/-- **Instance of target 2, the tail**: the weight of the labels at block distance `≥ 1` from `x` in a row
-of `S^±` is `≤ C₂ e^{-c₂}` (`d = 3`, `L = 4`, `W = 2`, `g = t = 1/2`, `E = 0`), and the tail at the radius
-`(log W)^{3/2}` is eventually `≤ W^{-3}`. -/
-example : (∃ C₂ c₂ : ℝ, 0 < C₂ ∧ 0 < c₂ ∧ ∀ x : Idx 3 4 2,
-    ∑ y ∈ Finset.univ.filter (fun y => 1 ≤ (lwBdist 3 4 2 x y : ℝ)),
-      ‖lwSpOf 3 4 2 (1 / 2) (1 / 2) (mE 0) x y‖ ≤ C₂ * Real.exp (-(c₂ * 1))) ∧
-    ∃ W₀ : ℕ, ∀ W : ℕ, W₀ ≤ W → Real.exp (-(1 * (Real.log W) ^ ((3 : ℝ) / 2) / 2)) ≤ (W : ℝ) ^ (-(3 : ℝ)) := by
-  obtain ⟨C₂, c₂, h₀, h₁, h⟩ := lwSpOf_tail_E 3 le_rfl 1 (1 / 2) one_pos (by norm_num)
-  exact ⟨⟨C₂, c₂, h₀, h₁, fun x => h 4 2 (by norm_num) (1 / 2) (1 / 2) 0 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) x 1⟩, lwTail_log32 one_pos 3⟩
-
-end Instances
 
 end RBM.Graph

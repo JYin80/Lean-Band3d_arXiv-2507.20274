@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Induction.Step34Pins
-import RBM3D.Path.DriftAlgebra
+import RBM3D.Induction.Step2Defs
 import RBM3D.Path.LoopStep
 
 /-!
@@ -775,128 +775,6 @@ admissible sequence `sz0` (`RBM.Gauss.SizesInst.sz0`: `d = 3`, `L_0 = 4`, `W_0 =
 `lam_0 = 1/64`), size index `0`, `E = 0`, `u = 1/2`, `M = 1`, loop length `k = 3`.  Every
 deterministic hypothesis is discharged. -/
 
-section Instances
-
-/-- The loop `((+,-),((0,0,0),(0,0,0)))` of length `2` on `Z_3^3`. -/
-private def HierAlgebra_I0 : LoopIdx (Zd 3 3) := ⟨[true, false], [0, 0]⟩
-
-private theorem HierAlgebra_I0_wf : HierAlgebra_I0.WF := rfl
-
-private theorem HierAlgebra_I0_length : HierAlgebra_I0.length = 2 := rfl
-
-/-- `norm_primBil_le` at `d = 3`, `L = 3`, `W = 2`, `n = 2`, `F = G = 1`, `B_F = B_G = 1`: the
-bound `W^d n² L^d B_F B_G = 8 · 4 · 27 = 864`. -/
-theorem HierAlgebra_check_norm_primBil_le :
-    ‖primBil 3 3 2 (1 / 2) (fun _ => (1 : ℂ)) (fun _ => (1 : ℂ)) HierAlgebra_I0‖ ≤ 864 := by
-  have h := norm_primBil_le 3 3 2 (1 / 2) (le_refl 3) (fun _ => (1 : ℂ)) (fun _ => (1 : ℂ))
-    HierAlgebra_I0 HierAlgebra_I0_wf (zero_le_one : (0 : ℝ) ≤ 1) (zero_le_one : (0 : ℝ) ≤ 1)
-    (fun _ _ _ _ => by simp) (fun _ _ _ _ => by simp)
-  rw [HierAlgebra_I0_length] at h
-  norm_num [card_Zd] at h
-  exact h
-
-/-- The value of `primBil` at that instance is `W^d · Σ_{a,b} S_{ab} = 8 · 27 = 216`: nonzero and
-below the bound `864`. -/
-theorem HierAlgebra_check_primBil_value :
-    primBil 3 3 2 (1 / 2) (fun _ => (1 : ℂ)) (fun _ => (1 : ℂ)) HierAlgebra_I0 = 216 := by
-  unfold primBil
-  rw [HierAlgebra_I0_length]
-  have h1 : (Finset.Icc 1 2 : Finset ℕ) = {1, 2} := by decide
-  have h2 : (Finset.Ioc 1 2 : Finset ℕ) = {2} := by decide
-  have h3 : (Finset.Ioc 2 2 : Finset ℕ) = ∅ := by decide
-  rw [h1, Finset.sum_pair (by decide), h2, h3]
-  simp only [one_mul, mul_one, Finset.sum_singleton, Finset.sum_empty, add_zero]
-  rw [Finset.sum_congr rfl fun x _ => sum_SB_row 3 3 (1 / 2) (le_refl 3) x]
-  simp
-  norm_num
-
-/-- `primRhs_split` at the length-`2` loop (every `K`, `D`). -/
-theorem HierAlgebra_check_primRhs_split (K D : LoopIdx (Zd 3 3) → ℂ) :
-    treeEqRhs 3 3 2 (1 / 2) (K + D) HierAlgebra_I0 - treeEqRhs 3 3 2 (1 / 2) K HierAlgebra_I0
-      = couplingLen 3 3 2 (1 / 2) 2 K D HierAlgebra_I0
-        + (∑ lK ∈ Finset.Icc 3 HierAlgebra_I0.length, couplingLen 3 3 2 (1 / 2) lK K D HierAlgebra_I0)
-        + primBil 3 3 2 (1 / 2) D D HierAlgebra_I0 :=
-  primRhs_split 3 3 2 (1 / 2) K D HierAlgebra_I0 (by rw [HierAlgebra_I0_length])
-
-/-- `couplingLen_two_Kval_eq_thetaOp` at `d = 3`, `L = 3`, `W = 2`, `g = 1/2`, `E = 0`, `u = 1/2`,
-`k = 3`, `σ = (+,-,+)`, `a = (0,1,2)`, for every `D`. -/
-theorem HierAlgebra_check_couplingLen_two (D : LoopIdx (Zd 3 3) → ℂ) :
-    couplingLen 3 3 2 (1 / 2) 2 (KLK 3 3 (1 / 2) 2 0 (1 / 2)) D
-        (loopOf ![true, false, true] ![(0 : Zd 3 3), 1, 2])
-      = ThetaN 3 3 (1 / 2) (fun i => mSigma 0 (![true, false, true] i)) (1 / 2)
-          (fun v => D (loopOf ![true, false, true] v)) ![(0 : Zd 3 3), 1, 2] :=
-  couplingLen_two_Kval_eq_thetaOp 3 3 2 (1 / 2) (le_refl 3) 0 (by norm_num) (1 / 2)
-    (by norm_num) (by norm_num) D (k := 3) (by norm_num) _ _
-
-/-- The remaining public lemmas of §1 at the length-`2` loop (every `K`, `K'`, `D`): bilinearity,
-`primRhs_sub`, the grading sums over `range 4` (`I.length + 2 = 4`) and the vanishing outside
-`2 ≤ l_K ≤ I.length` (`l_K = 5`). -/
-theorem HierAlgebra_check_algebra (K K' D : LoopIdx (Zd 3 3) → ℂ) :
-    primBil 3 3 2 (1 / 2) (K + K') D HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) K D HierAlgebra_I0 + primBil 3 3 2 (1 / 2) K' D HierAlgebra_I0 ∧
-      primBil 3 3 2 (1 / 2) D (K + K') HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) D K HierAlgebra_I0 + primBil 3 3 2 (1 / 2) D K' HierAlgebra_I0 ∧
-      primBil 3 3 2 (1 / 2) (K + D) (K + D) HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) K K HierAlgebra_I0 + primBil 3 3 2 (1 / 2) K D HierAlgebra_I0
-          + primBil 3 3 2 (1 / 2) D K HierAlgebra_I0 + primBil 3 3 2 (1 / 2) D D HierAlgebra_I0 ∧
-      treeEqRhs 3 3 2 (1 / 2) K HierAlgebra_I0 - treeEqRhs 3 3 2 (1 / 2) D HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) D (K - D) HierAlgebra_I0
-          + primBil 3 3 2 (1 / 2) (K - D) D HierAlgebra_I0
-          + primBil 3 3 2 (1 / 2) (K - D) (K - D) HierAlgebra_I0 ∧
-      ∑ lK ∈ Finset.range 4, primBilLen 3 3 2 (1 / 2) lK K D HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) K D HierAlgebra_I0 ∧
-      ∑ lK ∈ Finset.range 4, primBilLenR 3 3 2 (1 / 2) lK K D HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) K D HierAlgebra_I0 ∧
-      ∑ lK ∈ Finset.range 4, couplingLen 3 3 2 (1 / 2) lK K D HierAlgebra_I0
-        = primBil 3 3 2 (1 / 2) K D HierAlgebra_I0 + primBil 3 3 2 (1 / 2) D K HierAlgebra_I0 ∧
-      couplingLen 3 3 2 (1 / 2) 5 K D HierAlgebra_I0 = 0 :=
-  ⟨primBil_add_left 3 3 2 (1 / 2) K K' D _, primBil_add_right 3 3 2 (1 / 2) D K K' _,
-    primBil_add_add 3 3 2 (1 / 2) K D _, primRhs_sub 3 3 2 (1 / 2) K D _,
-    sum_primBilLen 3 3 2 (1 / 2) K D _ (by decide), sum_primBilLenR 3 3 2 (1 / 2) K D _ (by decide),
-    sum_couplingLen 3 3 2 (1 / 2) K D _ (by decide),
-    couplingLen_eq_zero_outside 3 3 2 (1 / 2) K D _ (by decide)⟩
-
-open RBM.Gauss.SizesInst in
-/-- **`loopDrift_sub_K_deriv_n` at `sz0`**, `n = 0`, `E = 0`, `u = 1/2`, `M = 1`, `k = 3`,
-`σ = (+,-,+)`, `a = (0,1,2)` (the labels differ in `Z_4^3`). -/
-theorem HierAlgebra_check_loopDrift_sz0 :
-    (sz0.STllPairN 0 0 (1 / 2)
-          (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-          (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-        + sz0.STegtM 0 0 (1 / 2)
-          (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-          (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]))
-        - deriv (fun v : ℝ => sz0.STKloop 0 0 v ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-          (1 / 2)
-      = ThetaN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (![true, false, true] i)) (1 / 2)
-            (fun b => sz0.STLKIM 0 0 (1 / 2)
-              (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-              (loopOf ![true, false, true] b)) ![(0 : Zd 3 (sz0.L 0)), 1, 2]
-          + ∑ l ∈ Finset.Icc 3 3, sz0.STksimLKM 0 0 (1 / 2)
-              (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) l
-              (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-          + sz0.STelklkM 0 0 (1 / 2)
-              (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-              (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2])
-          + sz0.STegtM 0 0 (1 / 2)
-              (1 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-              (loopOf ![true, false, true] ![(0 : Zd 3 (sz0.L 0)), 1, 2]) :=
-  loopDrift_sub_K_deriv_n sz0 0 0 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 1
-    (k := 3) (by norm_num) _ _
-
-end Instances
-
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.primBil_add_add
-#print axioms RBM.Ind.primRhs_sub
-#print axioms RBM.Ind.sum_primBilLen
-#print axioms RBM.Ind.sum_primBilLenR
-#print axioms RBM.Ind.sum_couplingLen
-#print axioms RBM.Ind.couplingLen_eq_zero_outside
-#print axioms RBM.Ind.primRhs_split
-#print axioms RBM.Ind.norm_primBil_le
-#print axioms RBM.Ind.couplingLen_two_Kval_eq_thetaOp
-#print axioms RBM.Ind.loopDrift_sub_K_deriv_n

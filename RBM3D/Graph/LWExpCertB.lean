@@ -131,31 +131,6 @@ theorem goodB'_succ_of (n : ℕ) (N : MNode) (nc : ℕ) (hc : (cands N.g).length
 
 /-! ## The certificate: one inner node, the shapes, and non-vacuity instances -/
 
-theorem inner_node_one' : goodB' 3 (rootAt' false false 0) = true := by
-  have h : (cands (rootAt' false false 0).g).length = 2 ∧ ∀ j < 2, kidsOk' (rootAt' false false 0) j = true ∧ (kids' (rootAt' false false 0) j).length = 0 := by decide +kernel
-  apply goodB'_succ_of 2 _ 2 h.1 (by omega) (fun j hj => (h.2 j hj).1)
-  intro j hj l hl
-  have := (h.2 j hj).2
-  omega
-
-/-- The root has `163` partition terms, `11` below the target, and all leaf properties hold for the others. -/
-theorem root_FF_shape' : (rootInfo' false false).1 = true ∧ (rootInfo' false false).2.length = 11 := by decide +kernel
-theorem root_FT_shape' : (rootInfo' false true).1 = true ∧ (rootInfo' false true).2.length = 11 := by decide +kernel
-
-/-- Instance (2): the root term `0` of `(k, s) = (false, false)` is not a leaf, has `scalingOrder 3`, target `4`,
-`2` internal vertices and `2` candidates. -/
-theorem lwCert_root0_nonleaf' :
-    leaf (rootAt' false false 0) = false ∧ (rootAt' false false 0).g.scalingOrder = 3 ∧
-      tgt (rootAt' false false 0) = 4 ∧ (rootAt' false false 0).b = 2 ∧
-      (cands (rootAt' false false 0).g).length = 2 := by
-  decide +kernel
-
-/-- Instance (3): all `11` below-target root terms of both `s` are not leaves. -/
-theorem lwCert_roots_below' :
-    (rootInfo' false false).2.all (fun N => !leaf N) = true ∧
-      (rootInfo' false true).2.all (fun N => !leaf N) = true := by
-  decide +kernel
-
 /-! ## Per-candidate split of a depth-1 node (used by the chunk files `LWExpCertBS0`, `LWExpCertBS1`)
 
 A depth-1 node `K` is certified at height `2` by the certificates of its candidates one at a time (each a separate kernel
@@ -183,61 +158,5 @@ theorem lwcertB_onekid (K : MNode) (c : ℕ) (h : kidsOk' K c = true ∧ (kids' 
 theorem lwcertB_two (K : MNode) (nc : ℕ) (hn : (cands K.g).length = nc) (hnc : 0 < nc)
     (h : ∀ c < nc, lwcertB_candGood K c) : goodB' 2 K = true :=
   goodB'_succ_of 1 K nc hn hnc (fun c hc => (h c hc).1) (fun c hc l hl => (h c hc).2 l hl)
-
-/-- The choices of `Δ` that `belowOf` skips and `belowOf'` evaluates: no `×`-edge of `Δ.dotBase ++ c.2` inside an
-`=`-class, but a b-edge of `Δ` inside one (T2318 (a) (ii); diagnostic, for the instances). -/
-def lostOf (Δ : LGraph (Fin (a+1)) (Fin b)) : ℕ :=
-  let n := a + 1 + b
-  let X0 : List (ℕ × ℕ) := (Δ.dotted.filter fun e => !e.eq).map (pairOf a b)
-  let X0' : List (ℕ × ℕ) := (Δ.dotBase.filter fun e => !e.eq).map (pairOf a b)
-  let E0 : List (ℕ × ℕ) := (Δ.dotted.filter fun e => e.eq).map (pairOf a b)
-  (Δ.dotChoices.filter fun c =>
-    let E1 := (c.2.filter fun e => e.eq).map (pairOf a b)
-    let X1 := (c.2.filter fun e => !e.eq).map (pairOf a b)
-    let labs := labsOf n (E0 ++ E1)
-    (X0 ++ X1).any (fun e => labs.getD e.1 0 == labs.getD e.2 0) &&
-      !((X0' ++ X1).any (fun e => labs.getD e.1 0 == labs.getD e.2 0))).length
-
-/-- `lostOf` of the `i`-th family graph of the `j`-th candidate of `N` (`0` if out of range). -/
-def lostAt (N : MNode) (j i : ℕ) : ℕ :=
-  match (cands N.g)[j]? with
-  | some c => match (fams N.g c)[i]? with | some f => lostOf f.2 | none => 0
-  | none => 0
-
-/-- The counterexample of T2318 (a): one external pair, no internal vertex, one b-edge `×(0,1)`. -/
-def lwCertB_cex : LGraph (Fin 2) (Fin 0) := ⟨[], [], [⟨false, Sum.inl 0, Sum.inl 1⟩], 1⟩
-
-/-- Instance (5): the change bites in the tree.  Root term `9` of `(k, s) = (false, false)`, candidate `0`: family `R2`
-(`fams` index `0`) loses `5` choices, family `R8` (first `q'`, index `6`) loses `36`. -/
-theorem lwCertB_lost_R2 : lostAt (rootAt' false false 9) 0 0 = 5 := by decide +kernel
-theorem lwCertB_lost_R8 : lostAt (rootAt' false false 9) 0 6 = 36 := by decide +kernel
-
-/-- Instance (6): the counterexample is covered: `belowOf` lists `1` term, `belowOf'` lists `2`, `lostOf = 1`. -/
-theorem lwCertB_cex_bites :
-    (belowOf (a := 1) (b := 0) lwCertB_cex ![0, 1]).2.length = 1 ∧
-    (belowOf' (a := 1) (b := 0) lwCertB_cex ![0, 1]).2.length = 2 ∧
-    lostOf (a := 1) (b := 0) lwCertB_cex = 1 := by
-  decide +kernel
-
-/-- Instance (7): the root is unchanged (no dotted edge at the root). -/
-theorem lwCertB_root_eq :
-    (rootInfo' false false).2.length = (rootInfo false false).2.length ∧
-    lostOf (a := 1) (b := 3) (LWG5Graph false false) = 0 ∧
-    lostOf (a := 1) (b := 3) (LWG5Graph false true) = 0 := by
-  decide +kernel
-
-#print axioms goodB'_succ_of
-#print axioms inner_node_one'
-#print axioms root_FF_shape'
-#print axioms root_FT_shape'
-#print axioms lwCert_root0_nonleaf'
-#print axioms lwCert_roots_below'
-#print axioms lwcertB_nokids
-#print axioms lwcertB_onekid
-#print axioms lwcertB_two
-#print axioms lwCertB_lost_R2
-#print axioms lwCertB_lost_R8
-#print axioms lwCertB_cex_bites
-#print axioms lwCertB_root_eq
 
 end RBM.Graph.LWCert

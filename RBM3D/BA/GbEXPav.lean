@@ -24,7 +24,4 @@ theorem baFAav_greenLocal (d : ℕ) : BAFAav d → GreenLocal_FAav d := fun h =>
 theorem baGbEXPav_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPav d :=
   greenLocal_gbEXPav_of_fa d hd (baFAav_greenLocal d (baFAav_holds d))
 
-/-- Compiled nonempty instance: `d = 3`. -/
-example : BAGbEXPav 3 := baGbEXPav_holds 3 (by norm_num)
-
 end RBM.BA

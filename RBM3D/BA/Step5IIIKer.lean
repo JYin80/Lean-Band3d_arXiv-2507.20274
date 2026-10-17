@@ -489,43 +489,6 @@ theorem baStep5IIIKernel_at_flow (d : ℕ) : 3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < 
 
 /-! ## 5. The far fields -/
 
-/-- **Target 4 (a)**: the Θ-level far field from the K-level `emn2ExpHK` (the probe's `T2459_Theta_far`, `:242-276`, copied; paper-delta
-T2459e): for `x ≠ x'`, `Θ_{xx'} = t (Θ M)_{xx'}` (`BATheta_resolvent`, `BA/KBase.lean:330`) and `𝒦^{(2)} = W^{-d}(Θ M)`
-(`EMn2BA_K_two`, `BA/EMn2BA.lean:624`), so `baEMn2ExpHK` (`:637`) at `D + d` gives `|Θ_{xx'}| ≤ W^{-D}` beyond `ℓ*_t`. -/
-theorem baStep5III_Theta_far {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) {sz : Sizes d} {z : ℕ → ℂ}
-    (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) {D : ℝ} (hD : 0 < D) :
-    ∀ᶠ n in atTop, ∀ (x x' : Zd d (sz.L n)) (s : Bool), x ≠ x' → emn2ExpEllStar sz n (t n) ≤ (zdistInf d (sz.L n) (x - x') : ℝ) →
-      ‖BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (t n) s (!s) x x'‖ ≤
-        ((sz.W n : ℕ) : ℝ) ^ (-D) := by
-  have hK := baEMn2ExpHK hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
-  filter_upwards [hK, BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow] with n hn hg x x' s hne hfar
-  have hT1 : t n < 1 := (htT n).trans_lt (EMn2BA_T0_lt_one hκ sz hflow n)
-  have hKeq := EMn2BA_K_two hκ sz hflow n hg.1 ⟨ht0 n, hT1⟩ s x x'
-  have hres := (BATheta_resolvent d (sz.L n) _ κ _ _ (BAflow_real κ ε 𝔠 𝔡 sz z hflow n) (t n) (ht0 n) hT1 s (!s)).2
-  have hoff := congrFun (congrFun hres x) x'
-  simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply_ne hne, zero_add, smul_eq_mul] at hoff
-  have hkn := hn x x' s hfar
-  have hW : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
-  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith
-  rw [hoff]
-  set W : ℝ := ((sz.W n : ℕ) : ℝ) with hWdef
-  have hWd : (0 : ℝ) < W ^ d := pow_pos hW0 d
-  have hY : ‖(BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (t n) s (!s) *
-      BAMss d (sz.L n) (BAMB d (sz.L n) (BAflowLam0 sz z n) ((BAflowEs sz z n : ℝ) : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) s (!s)) x x'‖ =
-      W ^ d * ‖(baFMz sz z).K n (t n) ![s, !s] ![x, x']‖ := by
-    rw [hKeq, norm_mul, norm_inv, norm_pow, Complex.norm_natCast, ← hWdef]
-    field_simp
-  rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (ht0 n), hY]
-  have h1 : W ^ d * ‖(baFMz sz z).K n (t n) ![s, !s] ![x, x']‖ ≤ W ^ (-(D + (d : ℝ))) :=
-    calc W ^ d * ‖(baFMz sz z).K n (t n) ![s, !s] ![x, x']‖ ≤ W ^ d * ((W ^ d)⁻¹ * W ^ (-(D + (d : ℝ)))) :=
-          mul_le_mul_of_nonneg_left hkn hWd.le
-      _ = W ^ (-(D + (d : ℝ))) := by field_simp
-  have h2 : W ^ (-(D + (d : ℝ))) ≤ W ^ (-D) :=
-    Real.rpow_le_rpow_of_exponent_le hW (by have : (0 : ℝ) ≤ d := Nat.cast_nonneg d; linarith)
-  calc t n * (W ^ d * ‖(baFMz sz z).K n (t n) ![s, !s] ![x, x']‖) ≤ 1 * (W ^ d * ‖(baFMz sz z).K n (t n) ![s, !s] ![x, x']‖) :=
-        mul_le_mul_of_nonneg_right hT1.le (by positivity)
-    _ ≤ W ^ (-D) := by rw [one_mul]; exact h1.trans h2
-
 /-- `W_n → ∞` from `Admissible` (`Bandwidth` and `SizeTendsto`; the twin of `step34Gen_W_tendsto`, `Chain/Step34Gen.lean:610`). -/
 theorem Step5IIIKer_W_tendsto {d : ℕ} {sz : Sizes d} {𝔠 𝔡 : ℝ} (h : sz.Admissible 𝔠 𝔡) :
     Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop := by
@@ -651,58 +614,6 @@ theorem baStep5III_uKer_far (d : ℕ) : 3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ
 
 `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `s ≡ 1/10 < t ≡ 1/2 < t₀` (`half_lt_t0`); the regime `sz0.lam² ≤ 1 - t` holds from
 `sz0.lam ≤ 1/64`.  Every deterministic hypothesis is discharged. -/
-
-section Instances
-
-/-- `sz0.lam n ≤ 1/64` (copy of `T2459_sz0_lam_le`, probe `:94`). -/
-theorem Step5IIIKer_sz0_lam_le (n : ℕ) : SizesInst.sz0.lam n ≤ 1 / 64 := by
-  have h2 : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
-  have h : (64 : ℝ) ≤ (2 * ((n : ℝ) + 1)) ^ 6 := by
-    have := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) h2 6
-    norm_num at this
-    exact this
-  change ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ 1 / 64
-  rw [one_div]
-  exact inv_anti₀ (by norm_num) h
-
-/-- The regime `sz0.lam² ≤ 1 - t` for every `t ≤ 1/2`. -/
-theorem Step5IIIKer_sz0_reg (n : ℕ) {t : ℝ} (ht : t ≤ 1 / 2) : SizesInst.sz0.lam n ^ 2 ≤ 1 - t := by
-  have h := Step5IIIKer_sz0_lam_le n
-  have h0 := FlowPinsInst.sz0_lam_pos n
-  nlinarith
-
-/-- **Instance of target 1**: at `flow_sz0`, eventually `0 < g₀ ≤ sz0.lam`. -/
-example : ∀ᶠ n in atTop, 0 < BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq n ∧
-    BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq n ≤ SizesInst.sz0.lam n := by
-  filter_upwards [BAflow_lam0_window (1 / 2) (1 / 10) (1 / 6) (1 / 10) SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0] with n hn
-  exact ⟨hn.1, baStep5III_lam0_le_lam (by norm_num) FlowPinsInst.flow_sz0 n hn.1⟩
-
-/-- **Instance of target 3**: `s ≡ 1/10 < t ≡ 1/2`, every `D`. -/
-example : ∃ Cc : ℝ, 0 < Cc ∧ ∀ᶠ n in atTop, ∀ D : ℝ,
-    STTailtoTailConclgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) n Cc D (1 / 10) (1 / 2) := by
-  obtain ⟨Cc, hCc, H⟩ := baStep5IIIKernel_at_flow 3 le_rfl (1 / 2) (1 / 10) (by norm_num) (by norm_num)
-  refine ⟨Cc, hCc, ?_⟩
-  filter_upwards [H (1 / 10) (1 / 6) SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0] with n hn D
-  exact hn D (1 / 10) (1 / 2) (by norm_num) (by norm_num) (by norm_num) (Step5IIIKer_sz0_reg n le_rfl)
-
-/-- **Instance of target 4 (a)**: `t ≡ 1/2`, `D = 1`. -/
-example : ∀ᶠ n in atTop, ∀ (x x' : Zd 3 (SizesInst.sz0.L n)) (s : Bool), x ≠ x' →
-    emn2ExpEllStar SizesInst.sz0 n (1 / 2) ≤ (zdistInf 3 (SizesInst.sz0.L n) (x - x') : ℝ) →
-    ‖BATheta 3 (SizesInst.sz0.L n) (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq n) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq n)
-      (BAmF SizesInst.sz0 (BAflowLam0 SizesInst.sz0 FlowPinsInst.zSeq) (BAflowEs SizesInst.sz0 FlowPinsInst.zSeq) n)
-      (1 / 2) s (!s) x x'‖ ≤ ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) :=
-  baStep5III_Theta_far (d := 3) le_rfl (κ := 1 / 2) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num) (by norm_num) (by norm_num)
-    FlowPinsInst.flow_sz0 (t := fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (FlowPinsInst.half_lt_t0 n).le) one_pos
-
-/-- **Instance of target 4 (b)**: `v = 1/10`, `w = 1/2`, `D = 1`, every charge pair. -/
-example : ∀ᶠ n in atTop, ∀ (τ τ' : Bool) (x y : Zd 3 (SizesInst.sz0.L n)),
-    Real.log ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) ≤ (zdistInf 3 (SizesInst.sz0.L n) (x - y) : ℝ) →
-    ‖Step2Gen_uKer (baFMz SizesInst.sz0 FlowPinsInst.zSeq) n τ τ' (1 / 10) (1 / 2) x y‖ ≤ ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
-  filter_upwards [baStep5III_uKer_far 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 1 one_pos (1 / 6)
-    SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0] with n hn τ τ' x y hfar
-  exact hn (1 / 10) (1 / 2) (by norm_num) (by norm_num) (FlowPinsInst.half_lt_t0 n).le (Step5IIIKer_sz0_reg n le_rfl) τ τ' x y hfar
-
-end Instances
 
 end RBM.BA
 

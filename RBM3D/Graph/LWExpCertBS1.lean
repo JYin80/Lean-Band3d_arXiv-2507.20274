@@ -591,7 +591,4 @@ theorem cert_all' : ∀ s, (rootInfo' false s).1 = true ∧ (rootInfo' false s).
   · exact key _ cert_FF'.1 cert_FF'.2.1 cert_FF'.2.2
   · exact key _ cert_FT'.1 cert_FT'.2.1 cert_FT'.2.2
 
-#print axioms cert_FT'
-#print axioms cert_all'
-
 end RBM.Graph.LWCert

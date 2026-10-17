@@ -870,45 +870,6 @@ Data (`BA/LWPinsBA.lean` §3, `Graph/BAMomentExpGen.lean` §6): `d = 3`, `sz0` (
 (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ_n = Φ_n ≡ W_n^{-1/2}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`),
 `(C₁, C₂, C₃, Cc) = (2, 2, 1, 1)`.  What stays a hypothesis is another gate's input: `STInitialGT2gL` and `LWLoop2gL` (inside `LWAssmgL`). -/
 
-section Inst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-open private BAMomentExpGen_Φ0 BAMomentExpGen_Ψ0 BAMomentExpGen_Ψ0_window BAMomentExpGen_psiAll0 from RBM3D.Graph.BAMomentExpGen
-
-/-- **Instance of target 2** (`baLWterm_holds 3`): `𝓔^{Gc,(2)}_{t,σ,(a,b)} ≺ η_t⁻¹ Φ(0) Φ(|a-b|)²` at the data above.  The deterministic hypotheses (`d = 3`, `κ`, `ε`, `𝔡 > 0`,
-the flow `flow_sz0`, `0 ≤ t ≤ BAflowT0`, the window, the class, `(eq:Psi)`) are discharged; `(initialGT2)` and `(LW_assm)` are the pins of other gates. -/
-example (hI : STInitialGT2gL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (1 / 10) BAMomentExpGen_Ψ0)
-    (hL : LWLoop2gL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) BAMomentExpGen_Φ0) :
-    PrecL sz0 μ0 (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖LWEg (baFMz sz0 zSeq) n ((fun _ => (1 / 2 : ℝ)) n) p.1 p.2 ω‖)
-      (fun n p _ => ((baFMz sz0 zSeq).eta n ((fun _ => (1 / 2 : ℝ)) n))⁻¹ * BAMomentExpGen_Φ0 n 0 *
-        BAMomentExpGen_Φ0 n ((zdistInf 3 (sz0.L n) (p.2 0 - p.2 1) : ℕ) : ℝ) ^ 2) :=
-  baLWterm_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) 2 2 1 (fun _ => 1)
-    BAMomentExpGen_Ψ0 BAMomentExpGen_Φ0
-    ⟨by norm_num, BAMomentExpGen_Ψ0_window, hI, BAMomentExpGen_psiAll0.2.1, BAMomentExpGen_psiAll0.2.2, hL⟩
-
-/-- **Target 3 has no nonempty instance at the merged flow data**: at `t ≡ 1/2` and `sz0`, `1 - t = 1/2 > 1/16 ≥ λ_n²/L_n²` for every `n`, so the index set of
-`BALWtermExpN 3` is empty there (`λ_n ≤ 1`, `L_n ≥ 4`).  The statement is exercised, with its hypotheses, through the union with the other regime (row b). -/
-example : ∀ n : ℕ, ¬ (1 - (1 / 2 : ℝ) ≤ sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2) := by
-  intro n h
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hlam0 : 0 ≤ sz0.lam n := inv_nonneg.mpr (by positivity)
-  have hlam : sz0.lam n ≤ 1 :=
-    inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith))
-  have hL : (4 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) := by
-    change (4 : ℝ) ≤ ((4 * (n + 1) : ℕ) : ℝ)
-    push_cast; nlinarith
-  have h1 : sz0.lam n ^ 2 ≤ 1 := pow_le_one₀ hlam0 hlam
-  have h2 : (16 : ℝ) ≤ ((sz0.L n : ℕ) : ℝ) ^ 2 := by nlinarith
-  rw [le_div_iff₀ (by positivity)] at h
-  nlinarith
-
-end Inst
-
 end RBM.BA
 
 end

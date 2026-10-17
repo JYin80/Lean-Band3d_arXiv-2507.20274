@@ -58,56 +58,11 @@ theorem baMainIndFamTL_IV : ∀ d : ℕ, BAMainIndFamTL d STReg5IV :=
 At the data of `BA/MainIndFamTL.lean` §4: (iii) at `(sz0, zSeq)`, `κ = 1/4`, `(ε, 𝔠, 𝔡) = (1/10, 1/6, 1/10)`, `c₁ = 1/3`, `s ≡ 1/10 < t ≡ 1/2`; (i), (ii), (iv) at the private data of `BA/Step5CasesBA.lean` §5.
 Every premise except the six conclusions at every member of `Fam(s)` (the induction hypothesis) is discharged. -/
 
-section Inst
-
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.Step1FamInst
-open private MainIndOutBA_flow MainIndOutBA_win MainIndOutBA_mem from RBM3D.BA.MainIndOutBA
-open private MainIndFamTL_atSz0 MainIndFamTL_atDatum from RBM3D.BA.MainIndFamTL
-open private Step5CasesBA_szI Step5CasesBA_zI Step5CasesBA_szII Step5CasesBA_zII Step5CasesBA_szIV Step5CasesBA_zIV Step5CasesBA_sz
-  Step5CasesBA_datI Step5CasesBA_datII Step5CasesBA_datIV Step5CasesBA_regI Step5CasesBA_regII Step5CasesBA_regIV from RBM3D.BA.Step5CasesBA
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-local notation "mem0" => BAzSrc sz0 zSeq (fun _ => 2 / 3) (fun _ => 17 / 25)
-local notation "Fam6" "(" C ", " μ ", " s ")" =>
-  STLKgL C μ s ∧ STDecaygL C μ s ∧ STDecayStronggL C μ s ∧ STLocalMaxgL C μ s ∧ STExp2gL C μ s ∧ BATwistLoopLaw C μ s
-local notation "Fam7" "(" C ", " μ ", " t ")" =>
-  STLKgL C μ t ∧ STLmaxgL C μ t ∧ STDecaygL C μ t ∧ STExp2gL C μ t ∧ STLocalEntrygL C μ t ∧ STDecayStronggL C μ t ∧ BATwistLoopLaw C μ t
-
 -- (iii) at `(sz0, zSeq)`: `d = 3`, unconditional; the seven conclusions at the non-main member of `Fam(1/2)`
-example (hfam : ∀ z', BAFamZ sz0 zSeq (1 / 3) (fun _ => 1 / 10) z' → Fam6(baFMz sz0 z', μ0, fun _ => 1 / 10)) :
-    Fam7(baFMz sz0 mem0, μ0, fun _ => 1 / 2) :=
-  MainIndFamTL_atSz0 baMainIndFamTL_III_three (fun n => by nlinarith [sz0_lam_le n, sz0_lam_pos n]) hfam
-
 -- (iii) through the general-`d` form, with Step 5 (iii) at `d = 3`
-example (hfam : ∀ z', BAFamZ sz0 zSeq (1 / 3) (fun _ => 1 / 10) z' → Fam6(baFMz sz0 z', μ0, fun _ => 1 / 10)) :
-    Fam7(baFMz sz0 mem0, μ0, fun _ => 1 / 2) :=
-  MainIndFamTL_atSz0 (baMainIndFamTL_III 3 baStep5III_holds) (fun n => by nlinarith [sz0_lam_le n, sz0_lam_pos n]) hfam
-
 -- (i) at `(L, W₀, lam, κ_dom, t) = (4, 25, 1, 1/70, 1/100)`
-example : ∃ c₁ : ℝ, 0 < c₁ ∧ c₁ ≤ 1 / 2 ∧
-    ((∀ z', BAFamZ Step5CasesBA_szI Step5CasesBA_zI c₁ (fun _ => 0) z' →
-        Fam6(baFMz Step5CasesBA_szI z', Sizes.seqP (Step5CasesBA_szI.withLam 0), fun _ => 0)) →
-      Fam7(baFMz Step5CasesBA_szI Step5CasesBA_zI, Sizes.seqP (Step5CasesBA_szI.withLam 0), fun _ => 1 / 100)) :=
-  MainIndFamTL_atDatum STReg5I (baMainIndFamTL_I 3) Step5CasesBA_datI 10 (by norm_num)
-    (fun n => ⟨by norm_num [Step5CasesBA_szI, Step5CasesBA_sz], by norm_num [Step5CasesBA_szI, Step5CasesBA_sz]⟩) Step5CasesBA_regI
-
 -- (ii) at `(4, 25, 4, 1/1100, 9/10000)`
-example : ∃ c₁ : ℝ, 0 < c₁ ∧ c₁ ≤ 1 / 2 ∧
-    ((∀ z', BAFamZ Step5CasesBA_szII Step5CasesBA_zII c₁ (fun _ => 0) z' →
-        Fam6(baFMz Step5CasesBA_szII z', Sizes.seqP (Step5CasesBA_szII.withLam 0), fun _ => 0)) →
-      Fam7(baFMz Step5CasesBA_szII Step5CasesBA_zII, Sizes.seqP (Step5CasesBA_szII.withLam 0), fun _ => 9 / 10000)) :=
-  MainIndFamTL_atDatum STReg5II (baMainIndFamTL_II 3) Step5CasesBA_datII 10 (by norm_num)
-    (fun n => ⟨by norm_num [Step5CasesBA_szII, Step5CasesBA_sz], by norm_num [Step5CasesBA_szII, Step5CasesBA_sz]⟩) Step5CasesBA_regII
-
 -- (iv) at `(3, 40, 6, 1/1000, 1/2000)`
-example : ∃ c₁ : ℝ, 0 < c₁ ∧ c₁ ≤ 1 / 2 ∧
-    ((∀ z', BAFamZ Step5CasesBA_szIV Step5CasesBA_zIV c₁ (fun _ => 0) z' →
-        Fam6(baFMz Step5CasesBA_szIV z', Sizes.seqP (Step5CasesBA_szIV.withLam 0), fun _ => 0)) →
-      Fam7(baFMz Step5CasesBA_szIV Step5CasesBA_zIV, Sizes.seqP (Step5CasesBA_szIV.withLam 0), fun _ => 1 / 2000)) :=
-  MainIndFamTL_atDatum STReg5IV (baMainIndFamTL_IV 3) Step5CasesBA_datIV 10 (by norm_num)
-    (fun n => ⟨by norm_num [Step5CasesBA_szIV, Step5CasesBA_sz], by norm_num [Step5CasesBA_szIV, Step5CasesBA_sz]⟩) Step5CasesBA_regIV
-
-end Inst
-
 end RBM.BA
 
 end

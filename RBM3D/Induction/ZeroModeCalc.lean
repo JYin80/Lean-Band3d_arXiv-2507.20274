@@ -104,9 +104,6 @@ noncomputable def zeroModeSetLin (A : Finset (Fin n)) :
   map_add' := zeroModeSet_add A
   map_smul' := zeroModeSet_smul A
 
-theorem zeroModeSet_zero (A : Finset (Fin n)) : zeroModeSet d L A (0 : (Fin n → Zd d L) → ℂ) = 0 :=
-  map_zero (zeroModeSetLin (d := d) (L := L) A)
-
 theorem zeroModeSet_sub (A : Finset (Fin n)) (S T : (Fin n → Zd d L) → ℂ) :
     zeroModeSet d L A (S - T) = zeroModeSet d L A S - zeroModeSet d L A T :=
   map_sub (zeroModeSetLin (d := d) (L := L) A) S T
@@ -335,13 +332,6 @@ theorem zeroModeSet_UN (hL : 3 ≤ L) {m : Fin n → ℂ} {s t : ℝ}
   rw [UN_eq_tensorKer]
   exact ZeroModeCalc_zeroModeSet_tensorKer_comm A _ (fun i _ => ZeroModeCalc_projMat_mul_uKer_comm hL (hξ i)) T
 
-/-- The single-index form of `zeroModeSet_UN`: `Q^{(i)} 𝒰 = 𝒰 Q^{(i)}`. -/
-theorem zeroModeOp_UN (hL : 3 ≤ L) {m : Fin n → ℂ} {s t : ℝ}
-    (hξ : ∀ i, ‖(t : ℂ) * cycProd m i‖ < 1) (i : Fin n) (T : (Fin n → Zd d L) → ℂ) :
-    zeroModeOp d L i (UN d L g m s t T) = UN d L g m s t (zeroModeOp d L i T) := by
-  rw [UN_eq_tensorKer]
-  exact ZeroModeCalc_zeroModeOp_tensorKer_comm i _ (ZeroModeCalc_projMat_mul_uKer_comm hL (hξ i)) T
-
 /-- The `i`-th summand of `Θ^{(n)}`: `(Θ^{(n)}_i K ∘ 𝒜)_a = Σ_b K_{a_i b} 𝒜_{a(i ↦ b)}`. -/
 private noncomputable def zmcSlot (i : Fin n) (K : Matrix (Zd d L) (Zd d L) ℂ)
     (T : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
@@ -413,22 +403,6 @@ theorem ZeroModeCalc_STIdiff_subset_iff {k : ℕ} (σ : Fin k → Bool) (A : Fin
     Gauss.Sizes.STIdiff σ ⊆ A ↔ ∀ i, σ i ≠ σ (finRotate k i) → i ∈ A :=
   ⟨fun h i hi => h ((ZeroModeCalc_mem_STIdiff σ i).2 hi), fun h i hi => h i ((ZeroModeCalc_mem_STIdiff σ i).1 hi)⟩
 
-/-- **`A ⊇ I_diff(σ)` gives `SameSignOutside`** for every sign assignment `i ↦ f(σ_i)`; with
-`f = mSigma E` this is the hypothesis of `norm_zeroModeSet_UN_le`, with `f = PropSpin m` that of
-the evolution pins (`EKsgn m σ i = PropSpin m (σ i)`). -/
-theorem sameSignOutside_of_STIdiff_subset {k : ℕ} (f : Bool → ℂ) (σ : Fin k → Bool)
-    {A : Finset (Fin k)} (h : Gauss.Sizes.STIdiff σ ⊆ A) :
-    SameSignOutside (fun i => f (σ i)) A := by
-  intro i hi
-  by_contra hne
-  exact hi (h ((ZeroModeCalc_mem_STIdiff σ i).2 fun heq => hne (congrArg f heq)))
-
-/-- `A ∪ I_diff(σ)`, the index set of `lem: newPQ`, satisfies `SameSignOutside`. -/
-theorem sameSignOutside_union_STIdiff {k : ℕ} (f : Bool → ℂ) (σ : Fin k → Bool)
-    (A : Finset (Fin k)) :
-    SameSignOutside (fun i => f (σ i)) (A ∪ Gauss.Sizes.STIdiff σ) :=
-  sameSignOutside_of_STIdiff_subset f σ Finset.subset_union_right
-
 end Bridge
 
 /-! ## 4. The kernel `Ugen`: commutation with `Q^{(A)}` -/
@@ -439,24 +413,12 @@ section UgenCommute
 
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
-/-- `Ugen` is the merged `UN` at the sign data `EKsgn (mE E) σ` (`EKsgn m σ i = PropSpin m (σ i)`,
-`mSigma E b = PropSpin (mE E) b`): the form in which `STEKNonzero` / `ekSumDecayNonzero_holds` are
-stated. -/
-theorem Ugen_eq_UN_EKsgn (E : ℝ) {k : ℕ} (σ : Fin k → Bool) (v w : ℝ) :
-    Ugen d L g E σ v w = UN d L g (EKsgn (mE E) σ) v w := rfl
-
 /-- **`Q^{(A)}` commutes with `𝒰_{v,w,σ}`** at the energy `E`, `|E| ≤ 2`, for `0 ≤ w < 1`
 (`v` arbitrary). -/
 theorem zeroModeSet_Ugen (hL : 3 ≤ L) {E : ℝ} (hE : |E| ≤ 2) {k : ℕ} (σ : Fin k → Bool)
     {v w : ℝ} (hw0 : 0 ≤ w) (hw1 : w < 1) (A : Finset (Fin k)) (T : (Fin k → Zd d L) → ℂ) :
     zeroModeSet d L A (Ugen d L g E σ v w T) = Ugen d L g E σ v w (zeroModeSet d L A T) :=
   zeroModeSet_UN hL (fun i => norm_mul_mSigma_lt_one hE hw0 hw1 (σ i) (σ (finRotate k i))) A T
-
-/-- The single-index form of `zeroModeSet_Ugen`. -/
-theorem zeroModeOp_Ugen (hL : 3 ≤ L) {E : ℝ} (hE : |E| ≤ 2) {k : ℕ} (σ : Fin k → Bool)
-    {v w : ℝ} (hw0 : 0 ≤ w) (hw1 : w < 1) (i : Fin k) (T : (Fin k → Zd d L) → ℂ) :
-    zeroModeOp d L i (Ugen d L g E σ v w T) = Ugen d L g E σ v w (zeroModeOp d L i T) :=
-  zeroModeOp_UN hL (fun i => norm_mul_mSigma_lt_one hE hw0 hw1 (σ i) (σ (finRotate k i))) i T
 
 end UgenCommute
 
@@ -620,201 +582,6 @@ Targets 1 and 2 at `d = 3`, `L = 4` (`Zd 3 4`, 64 points), `n = 3`, `σ = (+,-,+
 `sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `ilambda_0 = 1/64`), `n = 0`, `E ≡ 0`, `s ≡ 1/10`,
 `t ≡ 1/2`, `K ≡ 4`, `τ ≡ 3`, `j = 4`, `σ = (+,-,+)`, `A = I_diff(σ)`, for every sample `ω`. -/
 
-namespace ZeroModeCalcInst
-
-open RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Ind RBM.Path
-
-/-- `σ = (+,-,+)`: `I_diff(σ) = {0, 1}`. -/
-private def zmcSigma : Fin 3 → Bool := ![true, false, true]
-
-/-- The point mass `δ₀` on `(Z_4^3)^3`. -/
-private noncomputable def zmcDelta : (Fin 3 → Zd 3 4) → ℂ := fun a => if a = 0 then 1 else 0
-
-private theorem zmcDelta_ne : zmcDelta ≠ 0 := fun h => by
-  have := congrFun h 0
-  simp [zmcDelta] at this
-
-private theorem zmcIdiff_card : (STIdiff zmcSigma).card = 2 := by decide
-
-private theorem zmcSigma_nonconst : zmcSigma 0 ≠ zmcSigma 1 := by decide
-
-/-- Target 1, `(normQA2)` for `Q^{(A)}`, `A = I_diff(σ)`, `|A| = 2`: `‖Q^{(A)} δ₀‖ ≤ 4 ‖δ₀‖`. -/
-example : zmcDelta ≠ 0 ∧
-    ‖zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta‖ ≤ 2 ^ 2 * ‖zmcDelta‖ := by
-  refine ⟨zmcDelta_ne, ?_⟩
-  have h := norm_zeroModeSet_le (d := 3) (L := 4) (STIdiff zmcSigma) zmcDelta
-  rwa [zmcIdiff_card] at h
-
-/-- Target 1, `(normQA2)` for one index. -/
-example : ‖zeroModeOp 3 4 (1 : Fin 3) zmcDelta‖ ≤ 2 * ‖zmcDelta‖ :=
-  norm_zeroModeOp_le 1 zmcDelta
-
-/-- Target 1, linearity of `Q^{(A)}` at `A = I_diff(σ)`: additivity, homogeneity, subtraction, sums. -/
-example : zmcDelta ≠ 0 ∧
-    zeroModeSet 3 4 (STIdiff zmcSigma) (zmcDelta + (2 : ℂ) • zmcDelta)
-      = zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta
-        + (2 : ℂ) • zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta :=
-  ⟨zmcDelta_ne, by rw [zeroModeSet_add, zeroModeSet_smul]⟩
-
-example :
-    zeroModeSet 3 4 (STIdiff zmcSigma) (zmcDelta - (3 : ℂ) • zmcDelta)
-      = zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta
-        - (3 : ℂ) • zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta := by
-  rw [zeroModeSet_sub, zeroModeSet_smul]
-
-example : zeroModeSet 3 4 (STIdiff zmcSigma) (∑ i : Fin 3, (i.val + 1 : ℂ) • zmcDelta)
-    = ∑ i : Fin 3, zeroModeSet 3 4 (STIdiff zmcSigma) ((i.val + 1 : ℂ) • zmcDelta) :=
-  zeroModeSet_sum _ _ _
-
-example : zeroModeSet 3 4 (∅ : Finset (Fin 3)) zmcDelta = zmcDelta := zeroModeSet_empty _
-
-/-- The slot condition of the sign data `m(σ_i) = mSigma 0 (σ_i)` at `w = 99/100`. -/
-private theorem zmc_slot_lt_one (i : Fin 3) :
-    ‖(((99 / 100 : ℝ)) : ℂ) * cycProd (fun i => mSigma 0 (zmcSigma i)) i‖ < 1 :=
-  norm_mul_mSigma_lt_one (E := 0) (by norm_num) (by norm_num) (by norm_num)
-    (zmcSigma i) (zmcSigma (finRotate 3 i))
-
-/-- Target 2: `Q^{(A)}` commutes with `𝒰^{(3)}_{9/10, 99/100, σ}` (`UN` form). -/
-example : zmcDelta ≠ 0 ∧
-    zeroModeSet 3 4 (STIdiff zmcSigma)
-        (UN 3 4 (1 / 2 : ℝ) (fun i => mSigma 0 (zmcSigma i)) (9 / 10) (99 / 100) zmcDelta)
-      = UN 3 4 (1 / 2 : ℝ) (fun i => mSigma 0 (zmcSigma i)) (9 / 10) (99 / 100)
-          (zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta) :=
-  ⟨zmcDelta_ne, zeroModeSet_UN (by norm_num) zmc_slot_lt_one _ _⟩
-
-/-- Target 2: `Q^{(A)}` commutes with `Θ^{(3)}_{99/100, σ}`. -/
-example : zmcDelta ≠ 0 ∧
-    zeroModeSet 3 4 (STIdiff zmcSigma)
-        (ThetaN 3 4 (1 / 2 : ℝ) (fun i => mSigma 0 (zmcSigma i)) (99 / 100) zmcDelta)
-      = ThetaN 3 4 (1 / 2 : ℝ) (fun i => mSigma 0 (zmcSigma i)) (99 / 100)
-          (zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta) :=
-  ⟨zmcDelta_ne, zeroModeSet_ThetaN (by norm_num) zmc_slot_lt_one _ _⟩
-
-/-- Target 2: `Q^{(A)}` commutes with `Ugen` (the kernel of the grid identity). -/
-example : zmcDelta ≠ 0 ∧
-    zeroModeSet 3 4 (STIdiff zmcSigma)
-        (Ugen 3 4 (1 / 2 : ℝ) 0 zmcSigma (9 / 10) (99 / 100) zmcDelta)
-      = Ugen 3 4 (1 / 2 : ℝ) 0 zmcSigma (9 / 10) (99 / 100)
-          (zeroModeSet 3 4 (STIdiff zmcSigma) zmcDelta) :=
-  ⟨zmcDelta_ne, zeroModeSet_Ugen (by norm_num) (by norm_num) zmcSigma (by norm_num)
-    (by norm_num) _ _⟩
-
-/-- Target 2, one index: `Q^{(1)}` commutes with `Ugen`. -/
-example : zeroModeOp 3 4 (1 : Fin 3) (Ugen 3 4 (1 / 2 : ℝ) 0 zmcSigma (9 / 10) (99 / 100) zmcDelta)
-    = Ugen 3 4 (1 / 2 : ℝ) 0 zmcSigma (9 / 10) (99 / 100) (zeroModeOp 3 4 (1 : Fin 3) zmcDelta) :=
-  zeroModeOp_Ugen (by norm_num) (by norm_num) zmcSigma (by norm_num) (by norm_num) _ _
-
-/-- Target 2, the matrix identity behind it: `Proj_{e^⊥} Θ_ξ = Θ_ξ Proj_{e^⊥}` at
-`d = 3`, `L = 4`, `g = 1/2`, `ξ = 99/100`. -/
-example : projMat 3 4 * Theta 3 4 (1 / 2 : ℝ) ((99 / 100 : ℝ) : ℂ)
-    = Theta 3 4 (1 / 2 : ℝ) ((99 / 100 : ℝ) : ℂ) * projMat 3 4 :=
-  ZeroModeCalc_projMat_mul_Theta_comm (by norm_num) (by
-    rw [Complex.norm_real]; norm_num)
-
-/-- `Q^{(i)}` on the right of a tensor kernel, at the kernels of `𝒰`. -/
-example : tensorKer 3 4 (fun i => uKer 3 4 (1 / 2 : ℝ) (cycProd (fun i => mSigma 0 (zmcSigma i)) i)
-        (9 / 10) (99 / 100)) (zeroModeOp 3 4 (1 : Fin 3) zmcDelta)
-    = tensorKer 3 4 (Function.update
-        (fun i => uKer 3 4 (1 / 2 : ℝ) (cycProd (fun i => mSigma 0 (zmcSigma i)) i)
-          (9 / 10) (99 / 100)) 1
-        (uKer 3 4 (1 / 2 : ℝ) (cycProd (fun i => mSigma 0 (zmcSigma i)) 1) (9 / 10) (99 / 100)
-          * projMat 3 4)) zmcDelta :=
-  ZeroModeCalc_tensorKer_zeroModeOp 1 _ zmcDelta
-
-/-- The bridge: `SameSignOutside` at `A = I_diff(σ)`, for the sign data of `Ugen` at `E = 0`. -/
-example : SameSignOutside (fun i => mSigma 0 (zmcSigma i)) (STIdiff zmcSigma) :=
-  sameSignOutside_of_STIdiff_subset (mSigma 0) zmcSigma (Finset.Subset.refl _)
-
-example : SameSignOutside (fun i => PropSpin Complex.I (zmcSigma i))
-    ((∅ : Finset (Fin 3)) ∪ STIdiff zmcSigma) :=
-  sameSignOutside_union_STIdiff (PropSpin Complex.I) zmcSigma ∅
-
 /-! ### Targets 3 and 4 at `sz0` -/
-
-private noncomputable def zmcE : ℕ → ℝ := fun _ => 0
-private noncomputable def zmcS : ℕ → ℝ := fun _ => 1 / 10
-private noncomputable def zmcT : ℕ → ℝ := fun _ => 1 / 2
-private def zmcK : ℕ → ℕ := fun _ => 4
-
-/-- Target 3, `Q^{(A)}` outside `𝒰`: `τ ≡ 3`, `j = 4` (so `j ∧ τ = 3 ≤ K = 4`), `σ = (+,-,+)`,
-`A = I_diff(σ)`, every sample `ω`; the sum has three terms. -/
-example (ω : PathΩ sz0) :
-    zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-        (AvecN sz0 zmcE zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)) zmcSigma ω) =
-      zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-          (Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 0)
-            (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-            (AvecN sz0 zmcE zmcS zmcT zmcK 0 0 zmcSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-            (Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 (i + 1))
-              (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-              (predIncN sz0 zmcE zmcS zmcT zmcK 0 i zmcSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-            (Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 (i + 1))
-              (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-              (martIncN sz0 zmcE zmcS zmcT zmcK 0 i zmcSigma ω)) :=
-  zeroModeCalc_duhamel_at sz0 zmcE zmcS zmcT zmcK 0 (by norm_num [zmcE]) (by norm_num [zmcS])
-    (by norm_num [zmcS, zmcT]) (by norm_num [zmcT]) (by norm_num [zmcK]) zmcSigma
-    (STIdiff zmcSigma) (fun _ => 3) 4 ω (by norm_num [zmcK])
-
-/-- Target 3, `Q^{(A)}` inside `𝒰` (same data). -/
-example (ω : PathΩ sz0) :
-    zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-        (AvecN sz0 zmcE zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)) zmcSigma ω) =
-      Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 0)
-          (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-          (zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-            (AvecN sz0 zmcE zmcS zmcT zmcK 0 0 zmcSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 (i + 1))
-            (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-            (zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-              (predIncN sz0 zmcE zmcS zmcT zmcK 0 i zmcSigma ω)) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          Ugen 3 (sz0.L 0) (sz0.lam 0) (zmcE 0) zmcSigma (gridTime zmcS zmcT zmcK 0 (i + 1))
-            (gridTime zmcS zmcT zmcK 0 (min 4 ((fun _ : PathΩ sz0 => 3) ω)))
-            (zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-              (martIncN sz0 zmcE zmcS zmcT zmcK 0 i zmcSigma ω)) :=
-  zeroModeCalc_duhamel_inside_at sz0 zmcE zmcS zmcT zmcK 0 (by norm_num [zmcE])
-    (by norm_num [zmcS]) (by norm_num [zmcS, zmcT]) (by norm_num [zmcT]) (by norm_num [zmcK])
-    zmcSigma (STIdiff zmcSigma) (fun _ => 3) 4 ω (by norm_num [zmcK])
-
-/-- Target 4 (`A = ∅`): `d = 3`, `m = 3`, `σ = (+,-,+)`, `n = 0`, `E = 0`, `τ = 1/2`,
-every sample and every label vector. -/
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) zmcSigma a =
-        zeroModeSet 3 (sz0.L 0) (STIdiff zmcSigma)
-            (fun a' => STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) zmcSigma a') a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                (etaT 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α)
-              (fun a' => STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) (σ' α) a') (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansion_empty 3 3 zmcSigma
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h sz0 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num) ω a⟩
-
-/-- Target 4 for a nonempty `A = {2}` (`A ∪ I_diff(σ) = {0, 1, 2}`), same data. -/
-example : ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
-    (ι : ∀ α, Fin (k α) → Fin 3) (A' : ∀ α, Finset (Fin (k α))),
-    (∀ α, 1 ≤ k α ∧ k α + 1 ≤ 3) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
-    ∀ (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)),
-      zeroModeSet 3 (sz0.L 0) ({2} : Finset (Fin 3))
-          (fun a' => STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) zmcSigma a') a =
-        zeroModeSet 3 (sz0.L 0) (({2} : Finset (Fin 3)) ∪ STIdiff zmcSigma)
-            (fun a' => STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) zmcSigma a') a +
-          ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz0.size 0 : ℕ) : ℂ) *
-                (etaT 0 (1 / 2) : ℂ)) ^ (3 - k α)) *
-            zeroModeSet 3 (sz0.L 0) (A' α)
-              (fun a' => STLKM sz0 0 0 (1 / 2) (sz0.seqHflow 0 (1 / 2) ω) (σ' α) a') (a ∘ ι α) := by
-  obtain ⟨ℓ, k, ξ, σ', ι, A', hk, hA, h⟩ := zeroModeCalc_LK_expansion 3 3 zmcSigma {2}
-  exact ⟨ℓ, k, ξ, σ', ι, A', hk, hA, fun ω a =>
-    h sz0 0 0 (1 / 2) (by norm_num) (by norm_num) (by norm_num) ω a⟩
-
-end ZeroModeCalcInst
 
 end RBM

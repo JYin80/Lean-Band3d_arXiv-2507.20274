@@ -96,92 +96,10 @@ def UNG1RowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile 
 
 /-! ## 2. MNO-C1: the merged pins are the filtered ones at `Dm = fun _ => True` -/
 
-/-- `UNQuekD` at `fun _ => True` is `UNQuek`. -/
-theorem UNQuekD_true (K : ∀ d, UNKind d) : UNQuekD (fun _ => True) K ↔ UNQuek K :=
-  ⟨fun h d hd => h d trivial hd, fun h d _ hd => h d hd⟩
-
-/-- `UNLocAvgkD` at `fun _ => True` is `UNLocAvgk`. -/
-theorem UNLocAvgkD_true (K : ∀ d, UNKind d) : UNLocAvgkD (fun _ => True) K ↔ UNLocAvgk K :=
-  ⟨fun h d hd => h d trivial hd, fun h d _ hd => h d hd⟩
-
-/-- `UNOUClaimskD` at `fun _ => True` is `UNOUClaimsk`. -/
-theorem UNOUClaimskD_true (K : ∀ d, UNKind d) : UNOUClaimskD (fun _ => True) K ↔ UNOUClaimsk K :=
-  ⟨fun h d hd => h d trivial hd, fun h d _ hd => h d hd⟩
-
-/-- `UNOURowkD` at `fun _ => True` is `UNOURowk`. -/
-theorem UNOURowkD_true (K : ∀ d, UNKind d) (ML Loc Que : Prop) :
-    UNOURowkD (fun _ => True) K ML Loc Que ↔ UNOURowk K ML Loc Que :=
-  ⟨fun h a b c => (UNOUClaimskD_true K).1 (h a b c), fun h a b c => (UNOUClaimskD_true K).2 (h a b c)⟩
-
-/-- `UNEMCTE2RowkD` at `fun _ => True` is `UNEMCTE2Rowk`. -/
-theorem UNEMCTE2RowkD_true (K : ∀ d, UNKind d) : UNEMCTE2RowkD (fun _ => True) K ↔ UNEMCTE2Rowk K :=
-  ⟨fun h d hd => h d trivial hd, fun h d _ hd => h d hd⟩
-
-/-- `UNJakUywRowkD` at `fun _ => True` is `UNJakUywRowk`. -/
-theorem UNJakUywRowkD_true (K : ∀ d, UNKind d) (Loc : Prop) :
-    UNJakUywRowkD (fun _ => True) K Loc ↔ UNJakUywRowk K Loc :=
-  ⟨fun h hl hc d hd => h hl ((UNOUClaimskD_true K).2 hc) d trivial hd,
-    fun h hl hc d _ hd => h hl ((UNOUClaimskD_true K).1 hc) d hd⟩
-
-/-- `UNClaimRowkD` at `fun _ => True` is `UNClaimRowk`. -/
-theorem UNClaimRowkD_true (K : ∀ d, UNKind d) : UNClaimRowkD (fun _ => True) K ↔ UNClaimRowk K :=
-  ⟨fun h a d hd => h (fun d _ hd => a d hd) d trivial hd, fun h a d _ hd => h (fun d hd => a d trivial hd) d hd⟩
-
-/-- `UNG1RowkD` at `fun _ => True` is `UNG1Rowk`. -/
-theorem UNG1RowkD_true (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d)) (ML Loc Que : Prop) :
-    UNG1RowkD (fun _ => True) K P ML Loc Que ↔ UNG1Rowk K P ML Loc Que :=
-  ⟨fun h a b c d hd => h a b c d trivial hd, fun h a b c d _ hd => h a b c d hd⟩
-
-/-- The band reading of `UNLocAvgk` (`UNLocAvgk_band`, `PinsK:554`) at the filter `fun _ => True`: `UNLocAvgBand`. -/
-theorem band_locAvg : UNLocAvgkD (fun _ => True) (fun d => UNKind.band d) ↔ UNLocAvgBand :=
-  (UNLocAvgkD_true _).trans UNLocAvgk_band
-
-/-- The band reading of `UNOURowk` (`UNOURowk_band`, `PinsK:560`) at the filter `fun _ => True`: `UNOURow`. -/
-theorem band_ouRow :
-    UNOURowkD (fun _ => True) (fun d => UNKind.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand ↔ UNOURow :=
-  (UNOURowkD_true _ _ _ _).trans UNOURowk_band
-
 /-! ## 3. Compiled nonempty instances
 
 The `Iff`s applied at the band kind `UNKind.band` (the only kind this file may name) with its profile `UNOUProfile.band`
 and the band inputs `UNMLOut`, `UNLocAvgBand`, `UNQueBand`; the two band `Iff`s are themselves at concrete data. -/
-
-section Instances
-
-example : UNQuekD (fun _ => True) (fun d => UNKind.band d) ↔ UNQuek (fun d => UNKind.band d) :=
-  UNQuekD_true _
-
-example : UNLocAvgkD (fun _ => True) (fun d => UNKind.band d) ↔ UNLocAvgk (fun d => UNKind.band d) :=
-  UNLocAvgkD_true _
-
-example : UNOUClaimskD (fun _ => True) (fun d => UNKind.band d) ↔ UNOUClaimsk (fun d => UNKind.band d) :=
-  UNOUClaimskD_true _
-
-example : UNOURowkD (fun _ => True) (fun d => UNKind.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand ↔
-    UNOURowk (fun d => UNKind.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand :=
-  UNOURowkD_true _ _ _ _
-
-example : UNEMCTE2RowkD (fun _ => True) (fun d => UNKind.band d) ↔ UNEMCTE2Rowk (fun d => UNKind.band d) :=
-  UNEMCTE2RowkD_true _
-
-example : UNJakUywRowkD (fun _ => True) (fun d => UNKind.band d) UNLocAvgBand ↔
-    UNJakUywRowk (fun d => UNKind.band d) UNLocAvgBand :=
-  UNJakUywRowkD_true _ _
-
-example : UNClaimRowkD (fun _ => True) (fun d => UNKind.band d) ↔ UNClaimRowk (fun d => UNKind.band d) :=
-  UNClaimRowkD_true _
-
-example : UNG1RowkD (fun _ => True) (fun d => UNKind.band d) (fun d => UNOUProfile.band d) (∀ d : ℕ, UNMLOut d)
-    UNLocAvgBand UNQueBand ↔
-    UNG1Rowk (fun d => UNKind.band d) (fun d => UNOUProfile.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand :=
-  UNG1RowkD_true _ _ _ _ _
-
-example : UNLocAvgkD (fun _ => True) (fun d => UNKind.band d) ↔ UNLocAvgBand := band_locAvg
-
-example : UNOURowkD (fun _ => True) (fun d => UNKind.band d) (∀ d : ℕ, UNMLOut d) UNLocAvgBand UNQueBand ↔ UNOURow :=
-  band_ouRow
-
-end Instances
 
 end RBM.Univ
 

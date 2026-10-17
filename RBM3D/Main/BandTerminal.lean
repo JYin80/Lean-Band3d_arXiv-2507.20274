@@ -83,10 +83,6 @@ theorem unOUQUE_holds : ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : S
     g2bRow d hd 𝔠 𝔡 sz hA τU hτ hle
       (GUEPhase.g1Row unMLOut_holds unLocAvgBand_holds unQueBand_holds d hd 𝔠 𝔡 sz hA τU hτ hle).2
 
-/-- The arithmetic row `UNClaimRowBA` of the block Anderson kind: `unClaimRowk` (`Universality/UnivMain.lean:466`)
-at `K = UNKind.ba` (supervisor 0853 O4). -/
-theorem unClaimRowBA_holds : UNClaimRowBA := unClaimRowk _
-
 /-! ## Bulk universality (Thm 2.4) and the terminal -/
 
 /-- **Thm 2.4 `B_Univ`** from the borrowed `UNL32` only: `bUniv_holds` (`Main/BUnivHolds.lean:227`) at the proved

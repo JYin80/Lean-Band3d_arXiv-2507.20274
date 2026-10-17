@@ -525,22 +525,3 @@ The merged `RBM.Gauss.LWInst.inst_LWtermExpN` (`Graph/LWPins.lean:783`; merged `
 hypothesis (the flow, `0 ≤ t ≤ lemT z`, `LWWindow`, `ℓ ≥ 0`, `ℓ ≤ (log W)^{10} ℓ_t`, `D > 0`) is
 discharged at the data.  The regime `1 - t ≤ ĝ²/L²` is the one that holds at `t₀` (`T2040-prove.md`
 b.7: `n = 0, 5, 500`), so the index set is nonempty. -/
-
-namespace RBM.Gauss.LWTermExpNInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.LWInst
-
-/-- **`lem: EWGn2_N`, second regime, from `lem:LWterm`, instantiated** (`d = 3`, merged data). -/
-theorem inst_lwtermExpN_of_LWterm (h : LWterm 3)
-    (hI : LWInit sz0 (STflowE z0) tEnd (1 / 20) Ψ0)
-    (hL : LWLoopExp sz0 (STflowE z0) tEnd (ℓT tEnd)) (D : ℝ) (hD : 0 < D) :
-    Prec sz0 (U := fun n => {_p : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)) //
-        1 - tEnd n ≤ sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2})
-      (fun n p ω => ‖LWE sz0 n (STflowE z0 n) (tEnd n) p.1.1 p.1.2 ω‖)
-      (fun n p _ => (etaT (STflowE z0 n) (tEnd n))⁻¹ * (sz0.Bctl n (tEnd n)) ^ (1 / 2 : ℝ) *
-        ((((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * tailW 3 (sz0.L n) (sz0.lam n) (tEnd n) (ℓT tEnd n)
-          ((sz0.W n : ℕ) : ℝ) D ((zdistInf 3 (sz0.L n) (p.1.2 0 - p.1.2 1) : ℕ) : ℝ))) :=
-  inst_LWtermExpN (lwtermExpN_of_LWterm 3 h) hI hL D hD
-
-end RBM.Gauss.LWTermExpNInst

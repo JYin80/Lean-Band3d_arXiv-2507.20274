@@ -191,18 +191,4 @@ theorem BATrivialLmax_holds (d : ℕ) : BATrivialLmax d := by
 
 end Trivial
 
-section Instance
-
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-/-- Instance at `d = 3` and the merged data `sz0`, `zSeq` of T2197; the window premise `BAWinBulk` (its `sz0` instance
-belongs to BA-S3) is the only hypothesis. -/
-example (hwin : BAWinBulk sz0 zSeq (1 / 3) (1 / 2)) :
-    STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 - 1 / 3) :=
-  BATrivialLmax_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 sz0_lam_pos (1 / 3) (by norm_num) (by norm_num) hwin zSeq
-    (BAFamZ_main sz0 zSeq (1 / 3) (fun _ => 0))
-
-end Instance
-
 end RBM.BA

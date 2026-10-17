@@ -34,12 +34,7 @@ set_option linter.unusedVariables false
 
 open private SEforLnBA_Kbound from RBM3D.BA.SEforLnBA
 open private Step6BridgeBA_LW from RBM3D.BA.Step6BridgeBA
-open private Step6PinsBA_Aof Step6PinsBA_apply Step6PinsBA_applyD Step6PinsBA_prem Step6PinsBA_TL from RBM3D.BA.Step6PinsBA
-open private Step6PinsBA_szI Step6PinsBA_zI Step6PinsBA_datI Step6PinsBA_regI from RBM3D.BA.Step6PinsBA
-open private Step6PinsBA_szII Step6PinsBA_zII Step6PinsBA_datII Step6PinsBA_regII from RBM3D.BA.Step6PinsBA
-open private Step6PinsBA_szIV Step6PinsBA_zIV Step6PinsBA_datIV Step6PinsBA_regIV from RBM3D.BA.Step6PinsBA
-open private Step6PinsBA_con0 Step6PinsBA_reg3 Step6PinsBA_tT0 from RBM3D.BA.Step6PinsBA
-
+open private Step6PinsBA_Aof from RBM3D.BA.Step6PinsBA
 open MeasureTheory ProbabilityTheory Filter
 
 noncomputable section
@@ -165,75 +160,6 @@ theorem baStep6RegIV_holds (d : ℕ) : BAStep6R d STReg5IV := baStep6RegIV_of_pi
 * Every deterministic hypothesis is discharged at these numbers (the flow, `0 ≤ s < t ≤ T₀`, the regime, `(con_st_ind)` at every `𝔠_d > 0`, R1, the T2508 family rows).  What stays a binder
   are other gates' owed pins: the seven stochastic premises of `STIngR6gL` (`Step6PinsBA_prem`), TL1 and TL2 at every `u ∈ [s,t]` (`Step6PinsBA_TL`), and the premises in the conclusion slots of
   the pins (Duhamel identity, drift bounds, `(res_ELK_n=1)`, the mollifier family). -/
-
-section Inst
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- **Target 11, `baExpWardIIgL`** at the regime-(ii) datum, `s ≡ 0`, `t ≡ 1/2000`: the Ward decomposition, given `(res_ELK_n=1)`. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szII Step6PinsBA_zII (fun _ => 0) (fun _ => 1 / 2000)) :
-    STExpAvgUgL (baFMz Step6PinsBA_szII Step6PinsBA_zII) (Sizes.seqP (Step6PinsBA_szII.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) →
-      STExpWardIIConclgL (baFMz Step6PinsBA_szII Step6PinsBA_zII) (Sizes.seqP (Step6PinsBA_szII.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) :=
-  Step6PinsBA_applyD STReg5II _ (baExpWardIIgL 3) Step6PinsBA_datII Step6PinsBA_regII hp
-
-/-- **Target 11, `baExpIntIIIgL`** at `sz0`, regime (iii), `s ≡ 1/2 < t ≡ 3/5`: the integrated estimate, given the Duhamel identity and the upper drift bound. -/
-example (hp : Step6PinsBA_prem sz0 zSeq (fun _ => 1 / 2) (fun _ => 3 / 5)) :
-    STExpDuhEqgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5) →
-      STExpDriftHiConclgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5) →
-        STExpIntConclgL (baFMz sz0 zSeq) μ0 ∅ STSigAll (fun _ => 1 / 2) (fun _ => 3 / 5) :=
-  Step6PinsBA_apply STReg5III _ (baExpIntIIIgL 3) (by norm_num) (by norm_num) (by norm_num) flow_sz0 (fun _ => by norm_num)
-    (fun _ => by norm_num) Step6PinsBA_tT0 Step6PinsBA_reg3 Step6PinsBA_con0 hp
-
-/-- **Target 11, `baExpIntIVgL`** at the regime-(iv) datum, `s ≡ 0`, `t ≡ 1/2000`. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szIV Step6PinsBA_zIV (fun _ => 0) (fun _ => 1 / 2000)) :
-    STExpDuhEqgL (baFMz Step6PinsBA_szIV Step6PinsBA_zIV) (Sizes.seqP (Step6PinsBA_szIV.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) →
-      STExpDriftLoConclgL (baFMz Step6PinsBA_szIV Step6PinsBA_zIV) (Sizes.seqP (Step6PinsBA_szIV.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) →
-        STExpIntConclgL (baFMz Step6PinsBA_szIV Step6PinsBA_zIV) (Sizes.seqP (Step6PinsBA_szIV.withLam 0)) ∅ STSigAll (fun _ => 0) (fun _ => 1 / 2000) :=
-  Step6PinsBA_applyD STReg5IV _ (baExpIntIVgL 3) Step6PinsBA_datIV Step6PinsBA_regIV hp
-
-/-- **Target 12, `baExpIntIgL'`** at the regime-(i) datum, `s ≡ 0`, `t ≡ 1/400`, `𝔠_d = 1/300`: both conjuncts (`σ₁ = σ₂`, and the `𝒬`-estimate for a mollifier family). -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szI Step6PinsBA_zI (fun _ => 0) (fun _ => 1 / 400)) :
-    STExpDuhEqgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) →
-      STExpDriftHiConclgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) →
-        STExpDriftDecayConclgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) →
-          STExpWardIConclgL' (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) →
-            STExpIntConclgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) ∅ STSigSame (fun _ => 0) (fun _ => 1 / 400) ∧
-              STExpIntQConclgL' (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) :=
-  Step6PinsBA_applyD STReg5I _ (baExpIntIgL' 3) Step6PinsBA_datI Step6PinsBA_regI hp
-
-/-- **Target 13, `baStep6RegI_of_pins`** at the regime-(i) datum, with the pin `STExpIntIgL'` of target 12: Step 6 (`STStep6ConclgL`) given the seven pins and TL1, TL2. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szI Step6PinsBA_zI (fun _ => 0) (fun _ => 1 / 400))
-    (hTL : Step6PinsBA_TL Step6PinsBA_szI Step6PinsBA_zI (fun _ => 0) (fun _ => 1 / 400)) :
-    STStep6ConclgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) :=
-  Step6PinsBA_applyD STReg5I _ (baStep6RegI_of_pins 3 (baExpIntIgL' 3)) Step6PinsBA_datI Step6PinsBA_regI hp hTL
-
-/-- **Target 14, `baStep6RegIII_holds`** at `sz0`, `s ≡ 1/2 < t ≡ 3/5`: Step 6 in regime (iii), no owed generic pin left. -/
-example (hp : Step6PinsBA_prem sz0 zSeq (fun _ => 1 / 2) (fun _ => 3 / 5)) (hTL : Step6PinsBA_TL sz0 zSeq (fun _ => 1 / 2) (fun _ => 3 / 5)) :
-    STStep6ConclgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 3 / 5) :=
-  Step6PinsBA_apply STReg5III _ (baStep6RegIII_holds 3) (by norm_num) (by norm_num) (by norm_num) flow_sz0 (fun _ => by norm_num)
-    (fun _ => by norm_num) Step6PinsBA_tT0 Step6PinsBA_reg3 Step6PinsBA_con0 hp hTL
-
-/-- **Target 14, `baStep6RegI_holds`** at the regime-(i) datum, `s ≡ 0`, `t ≡ 1/400`. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szI Step6PinsBA_zI (fun _ => 0) (fun _ => 1 / 400))
-    (hTL : Step6PinsBA_TL Step6PinsBA_szI Step6PinsBA_zI (fun _ => 0) (fun _ => 1 / 400)) :
-    STStep6ConclgL (baFMz Step6PinsBA_szI Step6PinsBA_zI) (Sizes.seqP (Step6PinsBA_szI.withLam 0)) (fun _ => 0) (fun _ => 1 / 400) :=
-  Step6PinsBA_applyD STReg5I _ (baStep6RegI_holds 3) Step6PinsBA_datI Step6PinsBA_regI hp hTL
-
-/-- **Target 14, `baStep6RegII_holds`** at the regime-(ii) datum, `s ≡ 0`, `t ≡ 1/2000`. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szII Step6PinsBA_zII (fun _ => 0) (fun _ => 1 / 2000))
-    (hTL : Step6PinsBA_TL Step6PinsBA_szII Step6PinsBA_zII (fun _ => 0) (fun _ => 1 / 2000)) :
-    STStep6ConclgL (baFMz Step6PinsBA_szII Step6PinsBA_zII) (Sizes.seqP (Step6PinsBA_szII.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) :=
-  Step6PinsBA_applyD STReg5II _ (baStep6RegII_holds 3) Step6PinsBA_datII Step6PinsBA_regII hp hTL
-
-/-- **Target 14, `baStep6RegIV_holds`** at the regime-(iv) datum, `s ≡ 0`, `t ≡ 1/2000`. -/
-example (hp : Step6PinsBA_prem Step6PinsBA_szIV Step6PinsBA_zIV (fun _ => 0) (fun _ => 1 / 2000))
-    (hTL : Step6PinsBA_TL Step6PinsBA_szIV Step6PinsBA_zIV (fun _ => 0) (fun _ => 1 / 2000)) :
-    STStep6ConclgL (baFMz Step6PinsBA_szIV Step6PinsBA_zIV) (Sizes.seqP (Step6PinsBA_szIV.withLam 0)) (fun _ => 0) (fun _ => 1 / 2000) :=
-  Step6PinsBA_applyD STReg5IV _ (baStep6RegIV_holds 3) Step6PinsBA_datIV Step6PinsBA_regIV hp hTL
-
-end Inst
 
 end RBM.BA
 

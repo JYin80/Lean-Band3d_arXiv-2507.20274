@@ -267,10 +267,6 @@ private def BAS3Close_Iso (P Q : BAPGraph (Fin 2)) : Prop :=
   ∃ (eE : P.E' ≃ Q.E') (eI : P.I' ≃ Q.I'), (∀ a, eE (P.ext a) = Q.ext a) ∧
     Q.g = BAS3Close_rel (Equiv.sumCongr eE eI) P.g
 
-private theorem BAS3Close_iso_refl (P : BAPGraph (Fin 2)) : BAS3Close_Iso P P :=
-  ⟨Equiv.refl _, Equiv.refl _, fun _ => rfl, by
-    rw [Equiv.sumCongr_refl, Equiv.coe_refl, BAS3Close_rel_id]⟩
-
 private theorem BAS3Close_iso_symm {P Q : BAPGraph (Fin 2)} (h : BAS3Close_Iso P Q) : BAS3Close_Iso Q P := by
   obtain ⟨eE, eI, hext, hg⟩ := h
   refine ⟨eE.symm, eI.symm, fun a => by rw [← hext a]; simp, ?_⟩
@@ -595,11 +591,6 @@ private def BAS3Close_CtxG {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] 
     (Γ.solid.filter fun e => decide (e.src ∈ Γ.atom v ∨ e.dst ∈ Γ.atom v)).length = 2 ∧
     Γ.atom v ≠ Γ.atom y ∧ Γ.atom v ≠ Γ.atom y' ∧ Γ.atom y' ≠ Γ.atom y ∧
     ((∀ w ∈ Γ.atom y', w.isRight = true) ∨ (∀ w ∈ Γ.atom y, w.isRight = true))
-
-private instance BAS3Close_CtxG_dec {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : BAGraph E I)
-    (v y y' : E ⊕ I) : Decidable (BAS3Close_CtxG Γ v y y') := by
-  unfold BAS3Close_CtxG BAGraph.Normal
-  infer_instance
 
 private theorem BAS3Close_ctx_iff {P : BAPGraph (Fin 2)} (c : BARCand P) :
     BACtx c ↔ BAS3Close_CtxG P.g c.v c.p.1.dst c.q.1.src := Iff.rfl
@@ -1693,24 +1684,14 @@ private theorem BAS3Close_iso_root (Γ : BAGraph (Fin 2) I) (hd : ∀ e ∈ Γ.d
 private def BAS3Close_MC (Γ : BAGraph (Fin 2) I) : ℤ :=
   Γ.scalingOrder + (if Γ.atom (Sum.inl 0) = Γ.atom (Sum.inl 1) then 2 else 0)
 
-private theorem BAS3Close_M_pk (Γ : BAGraph (Fin 2) I) : BAS3Close_M (BAS3Close_pk Γ) = BAS3Close_MC Γ := rfl
-
 /-- The leaf conditions on a concrete graph. -/
 private def BAS3Close_LeafC (Γ : BAGraph (Fin 2) I) : Prop := 5 ≤ BAS3Close_MC Γ ∧ Γ.nM ≤ 1 ∧ 2 ≤ Γ.nW
-
-private instance BAS3Close_LeafC_dec (Γ : BAGraph (Fin 2) I) : Decidable (BAS3Close_LeafC Γ) := by
-  unfold BAS3Close_LeafC BAS3Close_MC
-  infer_instance
 
 private theorem BAS3Close_leaf_pk (Γ : BAGraph (Fin 2) I) : BAG5Leaf (BAS3Close_pk Γ) ↔ BAS3Close_LeafC Γ := Iff.rfl
 
 /-- The invariants on a concrete graph. -/
 private def BAS3Close_InvC (Γ : BAGraph (Fin 2) I) : Prop :=
   Γ.Normal ∧ Γ.nM ≤ 1 ∧ 1 ≤ Γ.nW ∧ BAS3Close_Even Γ ∧ BAS3Close_Conn Γ
-
-private instance BAS3Close_InvC_dec (Γ : BAGraph (Fin 2) I) : Decidable (BAS3Close_InvC Γ) := by
-  unfold BAS3Close_InvC BAGraph.Normal
-  infer_instance
 
 private theorem BAS3Close_inv_pk {Γ : BAGraph (Fin 2) I} (h : BAS3Close_InvC Γ) : BAS3Close_Inv (BAS3Close_pk Γ) :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
@@ -1732,18 +1713,9 @@ private def BAS3Close_CandC (Γ : BAGraph (Fin 2) I) (p q : SEdge (Fin 2 ⊕ I) 
   p.1.σ = true ∧ p.1.circ = true ∧ q.1.σ = true ∧ q.1.circ = true ∧ p.1.src = q.1.dst ∧
     BAS3Close_CtxG Γ p.1.src p.1.dst q.1.src
 
-private instance BAS3Close_CandC_dec (Γ : BAGraph (Fin 2) I) (p q : SEdge (Fin 2 ⊕ I) × List (SEdge (Fin 2 ⊕ I))) :
-    Decidable (BAS3Close_CandC Γ p q) := by
-  unfold BAS3Close_CandC
-  infer_instance
-
 /-- The existence of a blue `BACtx` candidate on a concrete graph. -/
 private def BAS3Close_CtxExD (Γ : BAGraph (Fin 2) I) : Prop :=
   ∃ p ∈ lwSplit Γ.solid, ∃ q ∈ lwSplit p.2, BAS3Close_CandC Γ p q
-
-private instance BAS3Close_CtxExD_dec (Γ : BAGraph (Fin 2) I) : Decidable (BAS3Close_CtxExD Γ) := by
-  unfold BAS3Close_CtxExD
-  infer_instance
 
 /-- A blue candidate of a trivial pack is concrete candidate data with the `BACtx` conditions, and conversely. -/
 private theorem BAS3Close_ctxEx_pk (Γ : BAGraph (Fin 2) I) :

@@ -913,22 +913,6 @@ def twFold2Prec (d : ℕ) : Prop :=
             (fun c₁ c₂ c₃ c₄ => ρ n p c₁ c₂ c₃ c₄ * X n p c₁ c₂ c₃ c₄ ω) p.2.1‖)
           (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
 
-/-- **Target 7′** (`twFold2PrecDet`): the deterministic weight, `X ≡ 1` (the twelve nodes other than #17, #47); from 7 and 6a. -/
-def twFold2PrecDet (d : ℕ) : Prop :=
-  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
-      STLocalEntrygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t → STLmaxgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t →
-      ∀ (Cρ : ℝ) (ρ : ∀ n, Bool × Zd d (sz.L n) × Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) →
-          Zd d (sz.L n) → ℂ),
-        (∀ᶠ n in atTop, ∀ p, (∀ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ‖ρ n p c₁ c₂ c₃ c₄‖ ≤ Cρ) ∧
-          (∀ c₄, ∑ c₁, ∑ c₂, ∑ c₃, ‖ρ n p c₁ c₂ c₃ c₄‖ ≤ Cρ)) →
-      PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => Bool × Zd d (sz.L n) × Zd d (sz.L n))
-        (fun n p ω => ‖twLoop2X n ((baFMz sz z).GM n (t n) ω) ((baFMz sz z).GM n (t n) ω)
-          (fun (u x : Idx d (sz.L n) (sz.W n)) => (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ *
-            ∑ y ∈ twBlk n p.2.2, (baFMz sz z).GM n (t n) ω u y * twChg ((baFMz sz z).GM n (t n) ω) p.1 y x)
-          (ρ n p) p.2.1‖)
-        (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
-
 theorem twFold2Prec_holds (d : ℕ) : twFold2Prec d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE hLmax Cρ ρ hρ X hX
   have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
@@ -984,83 +968,11 @@ theorem twFold2Prec_holds (d : ℕ) : twFold2Prec d := by
     norm_nonneg _).trans ((hρn (true, 0, 0)).1 0)
   exact TwistFold2_row hκ hflow t ht0 htT n ω c0 Cρ hc0 h6n hCρ (ρ n) hρn X p
 
-theorem twFold2PrecDet_holds (d : ℕ) : twFold2PrecDet d := by
-  intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE hLmax Cρ ρ hρ
-  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
-  have ht1 : ∀ n, t n < 1 := fun n => (ba_G_data hκ sz hflow n (ht0 n) (htT n)).1
-  -- the constant random factor `X ≡ 1` is `≺ W^d Bctl` (S3A-C2)
-  have hX1 := TwistFold2_one_prec hsz (Sizes.seqP (sz.withLam 0)) 𝔡 hflow.1.2.2.2.2 t ht0 (fun n => (ht1 n).le)
-    (fun n _ _ _ _ _ _ => (1 : ℂ)) (fun n p c₁ c₂ c₃ c₄ ω => by simp)
-  have h := twFold2Prec_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE hLmax Cρ ρ hρ
-    (fun n _ _ _ _ _ _ => 1) hX1
-  simpa only [mul_one] using h
-
 /-! ## 10. Compiled nonempty instances of targets 7 and 7′ (`d = 3`, `sz0`, `zSeq`, `t ≡ 1/2`) -/
-
-section Inst
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-/-- The weight of root term #2 of `T3C-tr_0` at `t ≡ 1/2`: `ρ₀(c) = t² 1[c₃ = c₁ ∧ c₄ = c₂] (M^{(B)}_{c₁c₂})²` (Fable §1, §5). -/
-def TwistFold2_rho2 (n : ℕ) :
-    Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → ℂ :=
-  fun _ c₁ c₂ c₃ c₄ => if c₃ = c₁ ∧ c₄ = c₂ then (1 / 2 : ℂ) ^ 2 * twMB (baFMz sz0 zSeq) n c₁ c₂ ^ 2 else 0
-
-/-- `r₁ = r₂ = 1/4` for `ρ₀`, from the `M`-Ward identity `Σ_b |M^{(B)}_{ab}|² = 1` and the symmetry of `M^{(B)}`. -/
-theorem TwistFold2_rho2_bounds (n : ℕ) (p : Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n)) :
-    (∀ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ‖TwistFold2_rho2 n p c₁ c₂ c₃ c₄‖ ≤ 1 / 4) ∧
-      (∀ c₄, ∑ c₁, ∑ c₂, ∑ c₃, ‖TwistFold2_rho2 n p c₁ c₂ c₃ c₄‖ ≤ 1 / 4) := by
-  have hr := BAflow_real _ _ _ _ sz0 zSeq flow_sz0 n
-  have hmB := twMB_ba (sz := sz0) zSeq n hr.1.1
-  have hrow : ∀ a : Zd 3 (sz0.L n), ∑ b, ‖twMB (baFMz sz0 zSeq) n a b‖ ^ 2 = 1 := by
-    intro a; rw [hmB]
-    exact BAMB_row_sq_real 3 (sz0.L n) _ _ _ hr.1 a
-  have hcol : ∀ b : Zd 3 (sz0.L n), ∑ a, ‖twMB (baFMz sz0 zSeq) n a b‖ ^ 2 = 1 := by
-    intro b; rw [← hrow b]
-    refine Finset.sum_congr rfl fun a _ => ?_
-    rw [hmB, BAMB_symm]
-  have hnorm : ∀ c₁ c₂ : Zd 3 (sz0.L n), ‖(1 / 2 : ℂ) ^ 2 * twMB (baFMz sz0 zSeq) n c₁ c₂ ^ 2‖ =
-      1 / 4 * ‖twMB (baFMz sz0 zSeq) n c₁ c₂‖ ^ 2 := by
-    intro c₁ c₂; rw [norm_mul, norm_pow, norm_pow]; norm_num
-  refine ⟨fun c₁ => ?_, fun c₄ => ?_⟩
-  · unfold TwistFold2_rho2
-    simp only [ite_and, apply_ite (fun z : ℂ => ‖z‖), norm_zero, hnorm]
-    simp [Finset.sum_ite_eq', ← Finset.mul_sum, hrow c₁]
-  · unfold TwistFold2_rho2
-    simp only [ite_and, apply_ite (fun z : ℂ => ‖z‖), norm_zero, hnorm]
-    simp [Finset.sum_ite_eq', ← Finset.mul_sum, hcol c₄]
 
 -- Target 7′ (`twFold2PrecDet`) at `d = 3`, `sz0`, `zSeq`, `t ≡ 1/2` for the root-#2 weight `ρ₀`; the two stochastic premises
 -- `STLocalEntrygL`, `STLmaxgL` stay hypotheses, every deterministic hypothesis is discharged (`r₁, r₂ = 1/4` by the `M`-Ward identity)
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hL : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p ω => ‖twLoop2X n ((baFMz sz0 zSeq).GM n (1 / 2) ω) ((baFMz sz0 zSeq).GM n (1 / 2) ω)
-        (fun (u x : Idx 3 (sz0.L n) (sz0.W n)) => (((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹ *
-          ∑ y ∈ twBlk n p.2.2, (baFMz sz0 zSeq).GM n (1 / 2) ω u y * twChg ((baFMz sz0 zSeq).GM n (1 / 2) ω) p.1 y x)
-        (fun c₁ c₂ c₃ c₄ => if c₃ = c₁ ∧ c₄ = c₂ then (1 / 2 : ℂ) ^ 2 * twMB (baFMz sz0 zSeq) n c₁ c₂ ^ 2 else 0) p.2.1‖)
-      (fun n _ _ => (1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  twFold2PrecDet_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hL (1 / 4) TwistFold2_rho2
-    (Eventually.of_forall fun n p => TwistFold2_rho2_bounds n p)
-
 -- Target 7 (`twFold2Prec`) at the same data with the random factor `X ≡ 1` (`‖1‖ ≺ W^d Bctl` by `TwistFold2_one_prec`, target 6a)
-example (hE : STLocalEntrygL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2))
-    (hL : STLmaxgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2)) :
-    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-      (fun n p ω => ‖twLoop2X n ((baFMz sz0 zSeq).GM n (1 / 2) ω) ((baFMz sz0 zSeq).GM n (1 / 2) ω)
-        (fun (u x : Idx 3 (sz0.L n) (sz0.W n)) => (((sz0.W n : ℕ) : ℂ) ^ 3)⁻¹ *
-          ∑ y ∈ twBlk n p.2.2, (baFMz sz0 zSeq).GM n (1 / 2) ω u y * twChg ((baFMz sz0 zSeq).GM n (1 / 2) ω) p.1 y x)
-        (fun c₁ c₂ c₃ c₄ => TwistFold2_rho2 n p c₁ c₂ c₃ c₄ * (fun (_ : ℕ) (_ : Bool × Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
-          (_ _ _ _ : Zd 3 (sz0.L n)) (_ : sz0.SeqΩ) => (1 : ℂ)) n p c₁ c₂ c₃ c₄ ω) p.2.1‖)
-      (fun n _ _ => (1 - (1 / 2 : ℝ))⁻¹ * (sz0.Bctl n (1 / 2)) ^ (5 / 2 : ℝ)) :=
-  twFold2Prec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
-    flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hL (1 / 4) TwistFold2_rho2
-    (Eventually.of_forall fun n p => TwistFold2_rho2_bounds n p) (fun n _ _ _ _ _ _ => 1)
-    (TwistFold2_one_prec (Sizes.tendsto_size sz0 sz0_tendsto) _ (1 / 10) flow_sz0.1.2.2.2.2 (fun _ => 1 / 2)
-      (fun _ => by norm_num) (fun _ => by norm_num) _ (fun _ _ _ _ _ _ _ => (norm_one (α := ℂ)).le))
-
-end Inst
-
 end RBM.BA
 
 end

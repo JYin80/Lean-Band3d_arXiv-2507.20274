@@ -128,16 +128,6 @@ private theorem Step1Good_mV_affine {ι : Type*} [Fintype ι] [DecidableEq ι]
   rw [show ((a * lami - E₀ : ℝ) : ℂ) - w = ((a : ℝ) : ℂ) * lami - (E₀ : ℂ) - w by push_cast; ring,
     hkey, mul_inv]
 
-/-- **Target 1b** `mV_vOU`: the affine dictionary of Step 1, `mV v (w) = a⁻¹ m_N(a⁻¹ (w + E))`,
-`a = e^{-t*/2}`, for `v = vOU = a λ(H) - E` (RBM2D `Step1RegularityB_mV_vOU`, `:147`). -/
-theorem mV_vOU :
-    ∀ {d : ℕ} (sz : Sizes d) (M : UNModel sz) (n : ℕ) (τs E : ℝ) (ω : Sizes.SeqΩ sz) {w : ℂ}, 0 < w.im →
-      mV (vOU sz M n τs E ω) w =
-        ((Real.exp (-(ouTStar sz τs n) / 2) : ℝ) : ℂ)⁻¹ *
-          stieltjesN (M.H n ω) (((Real.exp (-(ouTStar sz τs n) / 2) : ℝ) : ℂ)⁻¹ * (w + E)) := by
-  intro d sz M n τs E ω w hw
-  exact Step1Good_mV_affine (M.herm n ω) (Real.exp_pos _) E hw
-
 /-- The imaginary part of one term `((a : ℂ) - (x + iη))⁻¹`. -/
 private theorem Step1Good_term_im (a x η : ℝ) (_hη : 0 < η) :
     (((a : ℂ) - (⟨x, η⟩ : ℂ))⁻¹).im = η / ((a - x) ^ 2 + η ^ 2) := by
@@ -803,59 +793,6 @@ The data: `RBM.Gauss.SizesInst.sz0` (`d = 3`; `n = 0`: `L = 4`, `W = 32`, `lam =
 `UNNormBandRow` are other gates' pins and stay hypotheses; every deterministic hypothesis is discharged.  The
 conclusions are eventual in `n` (the size conditions hold only for `N ≳ e^{2290}` at these constants: the instances
 do not use a concrete `n`; DECISIONS §56). -/
-
-namespace Step1GoodInst
-
-open RBM.Gauss.SizesInst RBM.Univ.UNInst
-
-/-- `inst_step1Good'_band`: `step1Good'` at the band model (`sz0`, `msc`, `E = 0`, `ρ = rhoSC 0`, `δ = 1/2`), the
-local law from `UNTrLocalBandRow` at `κ = 1`, the norm bound from `UNNormBandRow`, `τ_s = 1/60`, `D = 1`. -/
-theorem inst_step1Good'_band :
-    UNLocAvgBand → UNTrLocalBandRow → UNNormBandRow →
-      ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ ∃ c C : ℝ, 0 < c ∧ ∀ᶠ n in atTop,
-        (UNModel.band sz0).μ {ω | ¬ (IsRegular32 (vOU sz0 (UNModel.band sz0) n (1 / 60) 0 ω)
-              (Nsz sz0 n ^ (-1 + (1 / 60 : ℝ) / 4))
-              (Nsz sz0 n ^ (-(min ((1 / 60 : ℝ) / 4) ((1 - (1 / 60 : ℝ)) / 3)))) c C (CV₀ + 1) ∧
-            ∃ mfc : ℂ → ℂ, IsFreeConv32 (vOU sz0 (UNModel.band sz0) n (1 / 60) 0 ω)
-                (1 - Real.exp (-(ouTStar sz0 (1 / 60) n))) mfc ∧
-              ∃ ρ' : ℝ, Tendsto (fun η : ℝ => (mfc ⟨0, η⟩).im / Real.pi) (𝓝[>] 0) (𝓝 ρ') ∧
-                |ρ' - rhoSC 0| ≤ Nsz sz0 n ^ (-(3 * (1 / 60 : ℝ) / 8)))} ≤
-          ENNReal.ofReal (Nsz sz0 n ^ (-(1 : ℝ))) := by
-  intro hLoc rT rN
-  obtain ⟨CV₀, hCV, hN⟩ := rN 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm
-  refine ⟨CV₀, hCV, ?_⟩
-  exact step1Good' 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0) (fun _ => msc) 0
-    (fun _ => rhoSC 0) (1 / 2) un_dens'_msc_zero
-    (rT hLoc 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm 1 one_pos 0 (by norm_num) (1 / 2) (by norm_num)
-      (by norm_num))
-    CV₀ hCV hN (1 / 60) 1 (by norm_num) (by norm_num) (by norm_num) one_pos
-
-/-- `inst_step1Good'_det_band`: `step1Good'_det` at the same data (`CV₀ = 1`); the event hypotheses on `ω` stay
-hypotheses (they hold only for `N ≳ e^{2290}` at these constants). -/
-theorem inst_step1Good'_det_band :
-    ∃ c C : ℝ, 0 < c ∧ ∀ᶠ n in atTop, ∀ ω : Sizes.SeqΩ sz0,
-      (∀ z : ℂ, |z.re - 0| ≤ 1 / 2 → Nsz sz0 n ^ (-1 + (1 / 60 : ℝ) / 8) ≤ z.im → z.im ≤ 1 →
-        ‖stieltjesN ((UNModel.band sz0).H n ω) z - msc z‖ ≤
-          ((sz0.W n : ℕ) : ℝ) ^ ((1 / 60 : ℝ) / 8) * sz0.Bctl n (1 - z.im)) →
-      (∀ i, |((UNModel.band sz0).herm n ω).eigenvalues i| ≤ Nsz sz0 n ^ (1 : ℝ)) →
-      (IsRegular32 (vOU sz0 (UNModel.band sz0) n (1 / 60) 0 ω) (Nsz sz0 n ^ (-1 + (1 / 60 : ℝ) / 4))
-            (Nsz sz0 n ^ (-(min ((1 / 60 : ℝ) / 4) ((1 - (1 / 60 : ℝ)) / 3)))) c C (1 + 1) ∧
-        ∃ mfc : ℂ → ℂ, IsFreeConv32 (vOU sz0 (UNModel.band sz0) n (1 / 60) 0 ω)
-            (1 - Real.exp (-(ouTStar sz0 (1 / 60) n))) mfc ∧
-          ∃ ρ' : ℝ, Tendsto (fun η : ℝ => (mfc ⟨0, η⟩).im / Real.pi) (𝓝[>] 0) (𝓝 ρ') ∧
-            |ρ' - rhoSC 0| ≤ Nsz sz0 n ^ (-(3 * (1 / 60 : ℝ) / 8))) :=
-  step1Good'_det 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0) (fun _ => msc) 0
-    (fun _ => rhoSC 0) (1 / 2) un_dens'_msc_zero 1 zero_le_one (1 / 60) (by norm_num) (by norm_num)
-    (by norm_num)
-
-/-- `inst_admissible_sz0`: the three `Admissible` facts at `sz0` (`d = 3`, `𝔠 = 1/6`, `𝔡 = 1/10`), from targets
-2a-2c and `sz0_adm` (not by `norm_num`). -/
-theorem inst_admissible_sz0 :
-    (1 / 6 : ℝ) * ((3 : ℕ) : ℝ) < 1 ∧ (1 / 10 : ℝ) ≤ ((3 : ℕ) : ℝ) / 2 ∧ (1 / 6 : ℝ) * (1 / 10) < 1 / 2 :=
-  ⟨un_admissible_c_mul_lt_one sz0 (by norm_num) sz0_adm, un_admissible_d_le_half sz0 sz0_adm,
-    un_admissible_cd_lt_half sz0 (by norm_num) sz0_adm⟩
-
-end Step1GoodInst
 
 end RBM.Univ
 

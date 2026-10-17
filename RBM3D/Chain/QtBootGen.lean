@@ -65,15 +65,6 @@ def STXiRoundgL' {d : ℕ} {sz : Sizes d} (Cf : FlowFM sz) (μ : Measure sz.Seq�
 
 end Texts
 
-section TextBridges
-
-variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ)
-
-/-- The band round pin is the carrier text at the band carrier (the band file is not edited; definitional, as `bandFM_STXiRoundPT''`). -/
-theorem bandFM_STXiRound' : STXiRound' sz E s t ↔ STXiRoundgL' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
-
-end TextBridges
-
 /-! ## 2. The family texts of the hypotheses -/
 
 section Hyps
@@ -466,85 +457,6 @@ Data of the merged band instances (`Induction/Defs.lean:403-440`, `Induction/Ste
 `N = 2^21`), the flow `z0` (`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `(κ, ε, 𝔠, 𝔡) = (1/10, 1/10, 1/6, 1/10)`), `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z0`, `STCaseI`: `sz0_caseI`; `(con_st_ind)`
 for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`.  What stays a hypothesis of an example is another gate's pin: the round pin `STXiRoundgL'` (proved in `Chain/QtXiRoundLiftGen`, the second
 file of this row) and the stochastic premises `STLKgL s`, `STStep2ConclgL` of `STIngRgL` (`STKboundgL`, `STKwardgL` are theorems of the flow). -/
-
-section Instances
-
-namespace QtBootGenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst
-
-/-- **Target 2, the abstract bootstrap `stBoot_roundsg` at the data**: `d = 3`, `sz0`, law `seqP sz0`, the family `ξ ≡ 1` over `Unit` (the endpoint `π ≡ 0`), `R ≡ 2`, `c = 1`, `C₀ = 1`: the crude
-start `1 ≺ N^1` and every round `1 ≺ Y ⇒ 1 ≺ N^{-1} Y + 2` (deterministic, `st6_prec_det_iffg`) give `1 ≺ 2`. -/
-example : PrecL sz0 (Sizes.seqP sz0) (U := fun _ => Unit) (fun _ _ _ => (1 : ℝ)) (fun _ _ _ => (2 : ℝ)) := by
-  have hN1 : ∀ n, (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.one_le_size n
-  refine stBoot_roundsg sz0 (Sizes.seqP sz0) sz0_tendsto (fun _ _ => (0 : ℝ)) (fun _ _ _ => (1 : ℝ)) (fun _ _ => (2 : ℝ))
-    1 1 one_pos zero_le_one (fun _ _ => by norm_num) ?_ ?_
-  · refine (st6_prec_det_iffg sz0 (Sizes.seqP sz0) inferInstance sz0_tendsto (V := fun _ => Unit)
-      (fun _ _ => (1 : ℝ)) (fun n _ => ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ))).2 fun τ hτ => Eventually.of_forall fun n _ => ?_
-    exact one_le_mul_of_one_le_of_one_le (Real.one_le_rpow (hN1 n) hτ.le) (Real.one_le_rpow (hN1 n) zero_le_one)
-  · intro Y hY _
-    refine (st6_prec_det_iffg sz0 (Sizes.seqP sz0) inferInstance sz0_tendsto (V := fun _ => Unit)
-      (fun _ _ => (1 : ℝ)) (fun n _ => ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) * Y n 0 + 2)).2 fun τ hτ => Eventually.of_forall fun n _ => ?_
-    have h1 := Real.one_le_rpow (hN1 n) hτ.le
-    have h2 : 0 ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) * Y n 0 :=
-      mul_nonneg (Real.rpow_nonneg (by linarith [hN1 n]) _) (zero_le_one.trans (hY n 0))
-    nlinarith
-
-/-- **Target 2, `stXiBootgL'_of_round` at the data** (one carrier `bandStep2Mat sz0 (STflowE z0)`, law `seqP sz0`, window `[0, 1/16]`): every deterministic hypothesis is discharged
-(`StepDecompGen_LoopForm`, `‖m‖ = 1`, `DecayGen_Spec` at `κm = √(1/10)/2`, `Admissible`, the range condition `ε/2 = 1/20`, the flow modulus `c = 1`, `STKboundgL` from the flow, `0 ≤ s < t < 1`);
-the round pin at this carrier stays a hypothesis. -/
-example (hround : STXiRoundgL' (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
-    STXiBootgL' (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst := by
-  obtain ⟨hA, hE', ht1, hrange⟩ := Green.v3_premises_of_stFlow sz0 (by norm_num : (0 : ℝ) < 1 / 10)
-    (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 sz0_ht
-  exact stXiBootgL'_of_round (bandStep2Mat sz0 (STflowE z0)) (Sizes.seqP sz0) (E := STflowE z0)
-    (stepDecompGen_loopForm_band sz0 _ fun n => (QtBootGen_flow_abs_le flow_z0 n).trans_lt (by norm_num))
-    (fun n => (norm_mE (by linarith [QtBootGen_flow_abs_le flow_z0 n])).le)
-    (DecayGen_bandSpec sz0 (by norm_num : (0 : ℝ) < 1 / 10) (QtBootGen_flow_abs_le flow_z0)) hA (half_pos (by norm_num : (0 : ℝ) < 1 / 10))
-    (lemDecCalELipG_flowMod_band sz0 (sz0.tendsto_size sz0_tendsto) (STflowE z0) : LemDecCalELipG_FlowMod _ _ 1)
-    (stKbound_of_flow sz0 (by norm_num) (by norm_num) flow_z0) sz0_hs0 sz0_hst ht1 hrange hround
-
-/-- **Target 2, `stXiBootRgL'_of_round` at the band family** (`d = 3`, `R = STCaseI`): the bundle `QtBootGen_Hyp` is `qtBootGen_hyp_band`; the round pin over the band family is the one hypothesis
-(another gate's pin, proved in `Chain/QtXiRoundLiftGen`); the conclusion is the merged `STOeqQtgL'` at the band family. -/
-example (h : STIngRgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n))
-      (fun sz z s t => STXiRoundgL' (bandStep2Mat sz (STflowE z)).toFlowFM (Sizes.seqP sz) s t)) :
-    STOeqQtgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n)) :=
-  stXiBootRgL'_of_round 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (qtBootGen_hyp_band 3) h
-
-/-- **Target 2, the family theorem at the data, conclusion applied**: from the round pin over the band family, the conclusion `STXiBootgL'` at `(sz0, z0, s ≡ 0, t ≡ 1/16)` for `C_d = 1`,
-at `n_ = 2`, `p = 1`, `XL ≡ XLK ≡ 1`: `Ξ̂^{(𝓛-𝒦)}_{v,2} ≺ STbootRHS 1 1 1 B_s 2 1` for every pair `0 ≤ v ≤ u ≤ 1/16` (the pair hypotheses `≺ 1` are other gates' pins). -/
-example (h : STIngRgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => (bandStep2Mat sz (STflowE z)).toFlowFM) (fun _ z n => lemT (z n))
-      (fun sz z s t => STXiRoundgL' (bandStep2Mat sz (STflowE z)).toFlowFM (Sizes.seqP sz) s t))
-    (hLK : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst)
-    (hStep2 : STStep2ConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst 1)
-    (hXp : ∀ m, 1 ≤ m → STlenL 2 1 m →
-      PrecL sz0 (Sizes.seqP sz0) (U := STPair sInst tInst) (fun n q ω => STXiLg (bandFM sz0 (STflowE z0)) n q.1.1 m ω)
-        (fun n q _ => (1 : ℝ)))
-    (hXKp : ∀ m, 1 ≤ m → m + 1 ≤ 2 →
-      PrecL sz0 (Sizes.seqP sz0) (U := STPair sInst tInst) (fun n q ω => STXiLKg (bandFM sz0 (STflowE z0)) n q.1.1 m ω)
-        (fun n q _ => (1 : ℝ))) :
-    PrecL sz0 (Sizes.seqP sz0) (U := STPair sInst tInst) (fun n q ω => STXiLKg (bandFM sz0 (STflowE z0)) n q.1.1 2 ω)
-      (fun n q _ => STbootRHS 1 (fun _ => 1) (fun _ => 1) (sz0.Bctl n (sInst n)) 2 1) := by
-  obtain ⟨𝔠d, h0, -, hC⟩ := stXiBootRgL'_of_round 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (qtBootGen_hyp_band 3) h (by norm_num) (1 / 10) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num) 1 one_pos
-  exact hC (1 / 6) sz0 z0 flow_z0 sInst tInst sz0_hs0 sz0_hst sz0_ht sz0_caseI (stKbound_of_flow sz0 (by norm_num) (by norm_num) flow_z0)
-    ((bandFM_STKward sz0 (STflowE z0)).1 (stKward_of_flow sz0 (by norm_num) (by norm_num) flow_z0)) hLK (sz0_con 𝔠d h0) hStep2 2 1 le_rfl le_rfl
-    (fun _ _ _ => 1) (fun _ _ _ => 1) (fun _ _ _ => le_rfl) (fun _ _ _ => le_rfl) hXp hXKp
-
-/-- **Target 1, the text at the band** (`bandFM_STIngR`): the band round pin is the generic one over the band family. -/
-example : STIngR 3 STCaseI (fun sz E s t => STXiRound' sz E s t) ↔
-    STIngRgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z))
-      (fun _ z n => lemT (z n)) (fun sz z s t => STXiRoundgL' (bandFM sz (STflowE z)) (Sizes.seqP sz) s t) :=
-  bandFM_STIngR 3 STCaseI (fun sz E s t => STXiRound' sz E s t)
-
-end QtBootGenCheck
-
-end Instances
 
 end RBM.BA
 

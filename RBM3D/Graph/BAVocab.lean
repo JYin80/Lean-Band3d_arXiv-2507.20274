@@ -202,9 +202,6 @@ noncomputable def BAPGraph.counters {E : Type} (P : BAPGraph E) : RBM.Graph.Coun
 
 noncomputable def BAPGraph.scalingOrder {E : Type} (P : BAPGraph E) : ℤ := RBM.Graph.ord P.counters
 
-noncomputable def BAPGraph.scalingSize {E : Type} (P : BAPGraph E) (Ψ : ℝ) (W d L : ℕ) : ℝ :=
-  P.counters.scalingSize Ψ W d L
-
 /-- The value of a linear combination of packed graphs. -/
 noncomputable def BAComb.val {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Type} (L : List (BAPGraph E))
     (D : BALData ι) (ℓe : E → ι) : ℂ :=
@@ -235,11 +232,6 @@ noncomputable def BAGraph.scalingOrderG {E I : Type} [Fintype E] [DecidableEq E]
     (Γ : BAGraph E I) : WithTop ℤ :=
   (Γ.partition.map fun P => ((P.scalingOrder : ℤ) : WithTop ℤ)).foldr min ⊤
 
-/-- `size` of a general graph (`B:354`, `(eq_defsizemax)`): the maximum over the partition (`0` if empty). -/
-noncomputable def BAGraph.scalingSizeG {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-    (Γ : BAGraph E I) (Ψ : ℝ) (W d L : ℕ) : ℝ :=
-  (Γ.partition.map fun P => P.scalingSize Ψ W d L).foldr max 0
-
 attribute [instance] BAPGraph.instFE BAPGraph.instDE BAPGraph.instFI BAPGraph.instDI
 
 /-! ## 3. Value (`B:290-297`): `ofLGraph` and `addM` -/
@@ -249,13 +241,6 @@ theorem BAGraph.val_ofLGraph {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fint
     (Γ : RBM.Graph.LGraph E I) (D : BALData ι) (ℓe : E → ι) :
     (BAGraph.ofLGraph Γ).val D ℓe = Γ.val D.toLData ℓe := by
   simp [BAGraph.val, BAGraph.term, BAGraph.ofLGraph, RBM.Graph.LGraph.val]
-
-/-- An `M`-dotted edge multiplies the term by its factor. -/
-theorem BAGraph.term_addM {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
-    (Γ : BAGraph E I) (e : BAMEdge (E ⊕ I)) (D : BALData ι) (ℓ : E ⊕ I → ι) :
-    (Γ.addM e).term D ℓ = Γ.term D ℓ * e.val D ℓ := by
-  simp only [BAGraph.term, BAGraph.addM, List.map_cons, List.prod_cons]
-  ring
 
 /-! ## 4. Atoms and molecules (`B:299-304`): the closure is the reflexive-transitive closure -/
 
@@ -431,32 +416,6 @@ private theorem BAVocab_self_mem_atom (Γ : BAGraph E I) (v : E ⊕ I) : v ∈ �
 private theorem BAVocab_self_mem_mol (Γ : BAGraph E I) (v : E ⊕ I) : v ∈ Γ.mol v := by
   rw [BAGraph.mem_mol_iff]
 
-/-- The number of internal atoms is at most the number of internal vertices. -/
-theorem BAGraph.nA_le_card {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-    (Γ : BAGraph E I) : Γ.nA ≤ Fintype.card I := by
-  unfold BAGraph.nA
-  set T : Finset (E ⊕ I) := Finset.univ.filter
-    (fun v => (∀ w ∈ Γ.atom v, w.isRight = true) ∧ v.isRight = true) with hT
-  have himg : (Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ.atom v, w.isRight = true)).image Γ.atom
-      ⊆ T.image Γ.atom := by
-    intro A hA
-    obtain ⟨v, hv, rfl⟩ := Finset.mem_image.1 hA
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
-    refine Finset.mem_image.2 ⟨v, ?_, rfl⟩
-    simp only [hT, Finset.mem_filter, Finset.mem_univ, true_and]
-    exact ⟨hv, hv v (BAVocab_self_mem_atom Γ v)⟩
-  have hTsub : T ⊆ Finset.univ.image (Sum.inr : I → E ⊕ I) := by
-    intro v hv
-    simp only [hT, Finset.mem_filter, Finset.mem_univ, true_and] at hv
-    rcases v with a | b
-    · simp at hv
-    · exact Finset.mem_image.2 ⟨b, Finset.mem_univ _, rfl⟩
-  calc _ ≤ (T.image Γ.atom).card := Finset.card_le_card himg
-    _ ≤ T.card := Finset.card_image_le
-    _ ≤ (Finset.univ.image (Sum.inr : I → E ⊕ I)).card := Finset.card_le_card hTsub
-    _ = Fintype.card I := by
-      rw [Finset.card_image_of_injective _ Sum.inr_injective, Finset.card_univ]
-
 /-- The number of internal molecules is at most the number of internal atoms: an internal molecule is a
 union of atoms. -/
 theorem BAGraph.nM_le_nA {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
@@ -485,15 +444,6 @@ end AtomMol
 /-! ## 5. Scaling size and the bridge to the vertex-level graphs (`B:318-320`, `B:345-353`) -/
 
 section Scaling
-
-/-- The identity of `7_8:274-275` with `n_A` in place of `n_V`:
-`size(Γ) = (L^d)^{n_M} Ψ^{ord(Γ)} (W^d Ψ²)^{n_A - n_W}`. -/
-theorem BAGraph.scalingSize_eq {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-    (Γ : BAGraph E I) {Ψ : ℝ} (W d L : ℕ) (hΨ : Ψ ≠ 0) :
-    Γ.scalingSize Ψ W d L =
-      ((L : ℝ) ^ d) ^ Γ.nM * Ψ ^ Γ.scalingOrder * ((W : ℝ) ^ d * Ψ ^ 2) ^ ((Γ.nA : ℤ) - Γ.nW) := by
-  unfold BAGraph.scalingSize BAGraph.scalingOrder
-  exact Counters.scalingSize_eq _ W d L hΨ
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
@@ -557,15 +507,6 @@ theorem BAGraph.counters_ofLGraph {E I : Type} [Fintype E] [DecidableEq E] [Fint
   unfold BAGraph.counters RBM.Graph.LGraph.counters
   rw [hA, hM]
   rfl
-
-/-- The scaling order of the block Anderson reading of a graph of `def_graph1` without `=`-dotted
-edges is its scaling order. -/
-theorem BAGraph.scalingOrder_ofLGraph {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
-    [DecidableEq I] (Γ : RBM.Graph.LGraph E I) :
-    (∀ e ∈ Γ.dotted, e.eq = false) → (BAGraph.ofLGraph Γ).scalingOrder = Γ.scalingOrder := by
-  intro h
-  unfold BAGraph.scalingOrder RBM.Graph.LGraph.scalingOrder
-  rw [BAGraph.counters_ofLGraph Γ h]
 
 end Scaling
 
@@ -1175,250 +1116,15 @@ end NormalAgree
 
 /-! ## 10. Compiled instances (the instances of the ticket and one application of every theorem) -/
 
-namespace BAVocabInst
-
-/-- `Ǧ_{y'x} Ǧ_{xy}`, the left side of `GGGamma` (`B:395`): `y', y = inl 0, inl 1`, `x = inr 0`. -/
-def baGGLhs : BAGraph (Fin 2) (Fin 1) where
-  solid := [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inr 0, .inl 1⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-/-- The first sum of `GGGamma` with the D402 coefficient, one term: `M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β}`
-(`x, u, β = inr 0, inr 1, inr 2`). -/
-def baGGT1 : BAGraph (Fin 2) (Fin 3) where
-  solid := []
-  waved := [⟨true, true, .inr 1, .inr 2⟩]
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := [⟨true, .inr 0, .inr 1⟩, ⟨true, .inr 1, .inr 0⟩, ⟨true, .inr 2, .inl 1⟩, ⟨true, .inl 0, .inr 2⟩]
-
-/-- The `δ_{xy}` part of the first term of `lem_lweight` (`B:380`): `M_{xα} S_{αβ} Ǧ_{αx} Ǧ_{ββ}`
-(`x, α, β = inr 0, inr 1, inr 2`). -/
-def baLWT1 : BAGraph (Fin 0) (Fin 3) where
-  solid := [⟨true, true, .inr 1, .inr 0⟩, ⟨true, true, .inr 2, .inr 2⟩]
-  waved := [⟨false, true, .inr 1, .inr 2⟩]
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := [⟨true, .inr 0, .inr 1⟩]
-
-/-- One `G` edge `G_{ax}` (`a = inl 0`, `x = inr 0`): its partition has two terms, `Ǧ_{ax}` and `M_{ax}`. -/
-def baGedge : BAGraph (Fin 1) (Fin 1) where
-  solid := [⟨true, false, .inl 0, .inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-/-- A graph with a `=`-dotted edge between the external `a = inl 0` and the internal `x = inr 0`, a `G`
-edge `G_{ax}`, a weight `G_{xx}` and a `Ψ`-dotted edge `x — a`. -/
-def baEqGraph : BAGraph (Fin 1) (Fin 1) where
-  solid := [⟨true, false, .inl 0, .inr 0⟩, ⟨true, false, .inr 0, .inr 0⟩]
-  waved := []
-  dotted := [⟨true, .inl 0, .inr 0⟩]
-  coeff := 1
-  psi := [⟨.inr 0, .inl 0⟩]
-  mdot := []
-
-/-- Data on the labels `Fin 2` (integer entries, nondegenerate: `M` is not a multiple of the identity). -/
-def baD : BALData (Fin 2) where
-  G := Matrix.of ![![1, 2], ![3, 4]]
-  M := Matrix.of ![![5, 6], ![7, 8]]
-  S := Matrix.of ![![1, 1], ![1, 2]]
-  Sp := Matrix.of ![![0, 1], ![1, 0]]
-  gPsi := Matrix.of ![![2, 1], ![1, 3]]
-
 -- (I1)
-theorem baGGLhs_counters : baGGLhs.counters = ⟨2, 0, 1, 1, 0, 0⟩ := by
-  have h : baGGLhs.nS = 2 ∧ baGGLhs.nW = 0 ∧ baGGLhs.nA = 1 ∧ baGGLhs.nM = 1 := by decide
-  simp only [BAGraph.counters, h.1, h.2.1, h.2.2.1, h.2.2.2]
-
-theorem baGGLhs_ord : baGGLhs.scalingOrder = 0 := by
-  simp [BAGraph.scalingOrder, baGGLhs_counters, ord]
-
 -- (I2) (D402 coefficient)
-theorem baGGT1_counters : baGGT1.counters = ⟨0, 1, 1, 0, 0, 0⟩ := by
-  have h : baGGT1.nS = 0 ∧ baGGT1.nW = 1 ∧ baGGT1.nA = 1 ∧ baGGT1.nM = 0 := by decide
-  simp only [BAGraph.counters, h.1, h.2.1, h.2.2.1, h.2.2.2]
-
-theorem baGGT1_ord : baGGT1.scalingOrder = 0 := by
-  simp [BAGraph.scalingOrder, baGGT1_counters, ord]
-
 -- (I3)
-theorem baLWT1_counters : baLWT1.counters = ⟨2, 1, 2, 1, 0, 0⟩ := by
-  have h : baLWT1.nS = 2 ∧ baLWT1.nW = 1 ∧ baLWT1.nA = 2 ∧ baLWT1.nM = 1 := by decide
-  simp only [BAGraph.counters, h.1, h.2.1, h.2.2.1, h.2.2.2]
-
-theorem baLWT1_ord : baLWT1.scalingOrder = 0 := by
-  simp [BAGraph.scalingOrder, baLWT1_counters, ord]
-
 -- (I4)
-theorem baGedge_ord : baGedge.scalingOrder = -1 := by
-  have h : baGedge.nS = 1 ∧ baGedge.nW = 0 ∧ baGedge.nA = 1 ∧ baGedge.nM = 1 := by decide
-  simp [BAGraph.scalingOrder, BAGraph.counters, ord, h.1, h.2.1, h.2.2.1, h.2.2.2]
-
-theorem baGedge_splitG_length : baGedge.splitG.length = 2 := by decide
-
-theorem baGedge_not_normal : ¬ baGedge.Normal := by
-  intro h
-  have := h.2 ⟨true, false, .inl 0, .inr 0⟩ (by simp [baGedge])
-  simp at this
-
-theorem baGedge_splitG_circ : ∀ Δ ∈ baGedge.splitG, ∀ e ∈ Δ.solid, e.circ = true :=
-  BAGraph.splitG_circ baGedge
-
 -- (I5)
-theorem p2Graph_ba_ord : (BAGraph.ofLGraph p2Graph).scalingOrder = 2 := by
-  rw [BAGraph.scalingOrder_ofLGraph p2Graph (by decide)]
-  exact p2Graph_ord
-
-theorem figGraph_ba_ord : (BAGraph.ofLGraph figGraph).scalingOrder = 4 := by
-  rw [BAGraph.scalingOrder_ofLGraph figGraph (by decide)]
-  exact figGraph_ord
-
-/-- The terms of `splitG` of `baGedge`: `Ǧ_{ax}` and `M_{ax}`. -/
-def baGedge1 : BAGraph (Fin 1) (Fin 1) where
-  solid := [⟨true, true, .inl 0, .inr 0⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := []
-
-def baGedge2 : BAGraph (Fin 1) (Fin 1) where
-  solid := []
-  waved := []
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := [⟨true, .inl 0, .inr 0⟩]
-
-theorem baGedge_splitG : baGedge.splitG = [baGedge1, baGedge2] := rfl
-
-theorem baGedge1_normal : baGedge1.Normal := ⟨by decide, by decide⟩
-
-theorem baGedge2_normal : baGedge2.Normal := ⟨by decide, by decide⟩
-
 -- (I6), order: `ord(Ǧ_{ax}) = -1`, `ord(M_{ax}) = 0`, hence `ord(G_{ax}) = -1`.
-theorem baGedge_ordG : baGedge.scalingOrderG = (((-1 : ℤ)) : WithTop ℤ) := by
-  have h1 : baGedge1.nS = 1 ∧ baGedge1.nW = 0 ∧ baGedge1.nA = 1 ∧ baGedge1.nM = 1 := by decide
-  have h2 : baGedge2.nS = 0 ∧ baGedge2.nW = 0 ∧ baGedge2.nA = 0 ∧ baGedge2.nM = 0 := by decide
-  have e1 : (BAGraph.packMerge baGedge1).scalingOrder = -1 := by
-    unfold BAPGraph.scalingOrder
-    have : (BAGraph.packMerge baGedge1).counters = baGedge1.counters :=
-      BAVocab_merge_counters baGedge1 (by decide)
-    rw [this]
-    simp [BAGraph.counters, ord, h1.1, h1.2.1, h1.2.2.1, h1.2.2.2]
-  have e2 : (BAGraph.packMerge baGedge2).scalingOrder = 0 := by
-    unfold BAPGraph.scalingOrder
-    have : (BAGraph.packMerge baGedge2).counters = baGedge2.counters :=
-      BAVocab_merge_counters baGedge2 (by decide)
-    rw [this]
-    simp [BAGraph.counters, ord, h2.1, h2.2.1, h2.2.2.1, h2.2.2.2]
-  unfold BAGraph.scalingOrderG BAGraph.partition
-  rw [baGedge_splitG]
-  simp only [List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil, e1, e2, min_top_right]
-  exact min_eq_left (by exact_mod_cast (by norm_num : (-1 : ℤ) ≤ 0))
-
-/-- The sum over the labels of one internal vertex. -/
-private theorem BAVocab_val_fin_one {ι E : Type} [Fintype ι] [DecidableEq ι] (Γ : BAGraph E (Fin 1))
-    (D : BALData ι) (ℓe : E → ι) : Γ.val D ℓe = ∑ x : ι, Γ.term D (Sum.elim ℓe fun _ => x) := by
-  unfold BAGraph.val
-  refine Fintype.sum_equiv (Equiv.funUnique (Fin 1) ι) _ _ (fun f => ?_)
-  congr 2
-  funext i
-  rw [Subsingleton.elim i default]
-  rfl
-
 -- (I6), value: at the data `baD`, `ℓ_a = 0`: `G_{ax}` sums to `G_{00} + G_{01} = 3`, `Ǧ_{ax}` to `-8`,
 -- `M_{ax}` to `11`.
-theorem baGedge_val : baGedge.val baD (fun _ => 0) = 3 := by
-  rw [BAVocab_val_fin_one]
-  simp [BAGraph.term, RBM.Graph.LGraph.term, baGedge, SEdge.val, baD, Fin.sum_univ_two]
-  norm_num
-
-theorem baGedge1_val : baGedge1.val baD (fun _ => 0) = -8 := by
-  rw [BAVocab_val_fin_one]
-  simp [BAGraph.term, RBM.Graph.LGraph.term, baGedge1, SEdge.val, baD, Fin.sum_univ_two]
-  norm_num
-
-theorem baGedge2_val : baGedge2.val baD (fun _ => 0) = 11 := by
-  rw [BAVocab_val_fin_one]
-  simp [BAGraph.term, RBM.Graph.LGraph.term, baGedge2, BAMEdge.val, baD, Fin.sum_univ_two]
-  norm_num
-
-/-- The scaling size of `baGGLhs` at `Ψ = 1/2`, `W = 4`, `d = 3`, `L = 8`:
-`(8^3)^1 (1/2)^2 4^{3} = 8192` (`n_M = 1`, `n_S = 2`, `n_W - n_A = -1`). -/
-theorem baGGLhs_size : baGGLhs.scalingSize (1 / 2) 4 3 8 = 8192 := by
-  unfold BAGraph.scalingSize
-  rw [baGGLhs_counters]
-  simp only [Counters.scalingSize]
-  norm_num
-
-/-- The value identity `Γ.val = BAComb.val Γ.partition` at the data `baD`, `ℓ_a = 0`, evaluated:
-the terms `Ǧ_{ax}` and `M_{ax}` of `G_{ax}` give `-8 + 11 = 3`. -/
-theorem baGedge_split_sum : (baGedge.splitG.map fun Δ => Δ.val baD (fun _ => 0)).sum = 3 := by
-  rw [baGedge_splitG]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, baGedge1_val, baGedge2_val]
-  norm_num
-
-theorem baGedge_partition_val : BAComb.val baGedge.partition baD (fun _ => 0) = 3 := by
-  rw [← BAGraph.val_eq_partition, baGedge_val]
-
 /-! One application of every public theorem at concrete data (all deterministic hypotheses
 discharged; `ι = Fin 2`, the graphs above). -/
 
-example := BAGraph.val_ofLGraph p2Graph baD ![0, 1]
-
-example := BAGraph.term_addM baGedge ⟨true, .inl 0, .inr 0⟩ baD (fun _ => 0)
-
-/-- `inr 2` lies in the atom of `inl 0` (joined by the `M`-dotted edge `M_{y'β}`). -/
-example : (Sum.inr 2 : Fin 2 ⊕ Fin 3) ∈ baGGT1.atom (.inl 0) :=
-  (BAGraph.mem_atom_iff _ _ _).2 (Relation.ReflTransGen.single (by decide))
-
-/-- `inr 1` lies in the molecule of `inl 0` (an `M`-dotted edge, then the waved edge `S⁺_{uβ}`) but not
-in its atom. -/
-example : (Sum.inr 1 : Fin 2 ⊕ Fin 3) ∈ baGGT1.mol (.inl 0) :=
-  (BAGraph.mem_mol_iff _ _ _).2 (Relation.ReflTransGen.tail (b := (Sum.inr 2 : Fin 2 ⊕ Fin 3))
-    (Relation.ReflTransGen.single (by decide)) (by decide))
-
-example : (Sum.inr 1 : Fin 2 ⊕ Fin 3) ∉ baGGT1.atom (.inl 0) := by decide
-
-example := BAGraph.atom_subset_mol baGGT1 (.inl 0)
-
-example : baGGT1.nA ≤ Fintype.card (Fin 3) := BAGraph.nA_le_card baGGT1
-
-example : baGGT1.nM ≤ baGGT1.nA := BAGraph.nM_le_nA baGGT1
-
-example := BAGraph.counters_ofLGraph p2Graph (by decide)
-
-example := BAGraph.scalingOrder_ofLGraph figGraph (by decide)
-
-example := BAGraph.scalingSize_eq baGGLhs (Ψ := 1 / 2) 4 3 8 (by norm_num)
-
-example := BAGraph.val_splitG baGedge baD (fun _ => 0)
-
-example := BAGraph.splitG_circ baGedge
-
-example := BAGraph.splitG_edges baGedge
-
-example := BAGraph.val_eq_partition baGedge baD (fun _ => 0)
-
-/-- A graph with a `=`-dotted edge, a `Ψ`-dotted edge and a weight: the partition merges `a` and `x`. -/
-example := BAGraph.val_eq_partition baEqGraph baD (fun _ => 0)
-
-example := BAGraph.partition_normal baEqGraph
-
-example := BAGraph.partition_of_normal baGGLhs ⟨by decide, by decide⟩
-
-example := BAGraph.le_scalingOrderG_iff baGedge (-1)
-
-example := BAGraph.scalingOrderG_of_normal baGGT1 ⟨by decide, by decide⟩
-
-end BAVocabInst
 end RBM.Graph

@@ -998,14 +998,6 @@ theorem ouGeneratorPair_integral_sub_eq (d L W : ℕ) [NeZero L] [NeZero W] (g :
 
 /-! ### The carrier transfer (targets T1, T2, B1, B2) -/
 
-/-- **Target T1.**  The merged band OU matrix is the pair OU matrix of the slice. -/
-theorem ouMat_band_eq_ouPairMat (d : ℕ) (sz : Sizes d) (n : ℕ) (t : ℝ)
-    (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
-    ouMat (UNModel.band sz) n t ω =
-      ouPairMat d (sz.L n) (sz.W n) t
-        (Prod.map (Sizes.slice sz n) (id : Ω d (sz.L n) (sz.W n) → Ω d (sz.L n) (sz.W n)) ω) :=
-  rfl
-
 /-- **Target T2.**  The band carrier pushes forward to the pair carrier at coupling `g = sz.lam n` (the inner
 `this` of `ouSample_law`, `OU.lean:215-220`). -/
 theorem ouP_band_map_pair (d : ℕ) (sz : Sizes d) (n : ℕ) :
@@ -1295,75 +1287,6 @@ Pair carrier: `d = 3`, `L = 3`, `W = 2` (`N = 216`), `g = 1/2`; band carrier: `U
 (`L = 4`, `W = 32`).  `z = ![I, 2 I]` (`Im z = 1, 2 > 0`), `Φ(K) = Im m(K, I) · Im m(K, 2I)`.  Every
 hypothesis is discharged; no external hypothesis occurs. -/
 
-namespace OUGeneratorInst
-
-open RBM.Gauss.SizesInst
-
-variable (d L W : ℕ) [NeZero L] [NeZero W]
-
-/-- `Φ(K) = Im m(K, I) · Im m(K, 2I)` (RBM2D `OUGeneratorCheck.Phi2`, `:1186`). -/
-def Phi2 (K : Matrix (Idx d L W) (Idx d L W) ℂ) : ℂ :=
-  ((∏ i : Fin 2, (stieltjesN K (![Complex.I, 2 * Complex.I] i)).im : ℝ) : ℂ)
-
-theorem zIm_pos : ∀ i : Fin 2, 0 < (![Complex.I, 2 * Complex.I] i).im := by
-  intro i
-  fin_cases i <;> simp
-
-/-- `Phi2` is a `TestFunH` at every size (target S at `z = ![I, 2 I]`). -/
-theorem phi2_testFunH : TestFunH d L W (Phi2 d L W) :=
-  testFunH_stieltjesImProduct d L W 2 ![Complex.I, 2 * Complex.I] zIm_pos
-
-/-- `inst_testFunH`. -/
-theorem inst_testFunH : TestFunH 3 3 2 (Phi2 3 3 2) := phi2_testFunH 3 3 2
-
-/-- `inst_pair_sub_eq` (target P2 at `T = 1`, `g = 1/2`). -/
-theorem inst_pair_sub_eq :
-    (∫ ω, Phi2 3 3 2 (ouPairMat 3 3 2 1 ω) ∂(ouPairP 3 3 2 (1 / 2))) -
-        ∫ ω, Phi2 3 3 2 (ouPairMat 3 3 2 0 ω) ∂(ouPairP 3 3 2 (1 / 2)) =
-      ∫ t in (0 : ℝ)..1, (-(1 / 2 : ℝ) * Real.exp (-t)) • ∑ a : Idx 3 3 2, ∑ b : Idx 3 3 2,
-        (centeredVarianceEntry 3 3 2 (1 / 2) a b : ℂ) *
-          ∫ ω, wirtSecond 3 3 2 (Phi2 3 3 2) (ouPairMat 3 3 2 t ω) a b ∂(ouPairP 3 3 2 (1 / 2)) :=
-  ouGeneratorPair_integral_sub_eq 3 3 2 (1 / 2) _ inst_testFunH 1 zero_le_one
-
-/-- `inst_band_hasDerivAt` (target B1 at `t = 1`). -/
-theorem inst_band_hasDerivAt :
-    HasDerivAt (fun s : ℝ => ∫ ω, Phi2 3 (sz0.L 0) (sz0.W 0) (ouMat (UNModel.band sz0) 0 s ω)
-        ∂(ouP (UNModel.band sz0) 0))
-      ((-(1 / 2 : ℝ) * Real.exp (-1)) •
-        ∑ a : Idx 3 (sz0.L 0) (sz0.W 0), ∑ b : Idx 3 (sz0.L 0) (sz0.W 0),
-          (centeredVarianceEntry 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) a b : ℂ) *
-            ∫ ω, wirtSecond 3 (sz0.L 0) (sz0.W 0) (Phi2 3 (sz0.L 0) (sz0.W 0))
-              (ouMat (UNModel.band sz0) 0 1 ω) a b ∂(ouP (UNModel.band sz0) 0)) 1 :=
-  ouGenerator_hasDerivAt_integral 3 sz0 0 _ (phi2_testFunH 3 (sz0.L 0) (sz0.W 0)) 1 one_pos
-
-/-- `inst_band_sub_eq` (target B2 at `T = ouTStar sz0 (1/2) 0`, the time `UNEMCTE2` reads). -/
-theorem inst_band_sub_eq :
-    (∫ ω, Phi2 3 (sz0.L 0) (sz0.W 0) (ouMat (UNModel.band sz0) 0 (ouTStar sz0 (1 / 2) 0) ω)
-        ∂(ouP (UNModel.band sz0) 0)) -
-        ∫ ω, Phi2 3 (sz0.L 0) (sz0.W 0) (ouMat (UNModel.band sz0) 0 0 ω) ∂(ouP (UNModel.band sz0) 0) =
-      ∫ t in (0 : ℝ)..(ouTStar sz0 (1 / 2) 0), (-(1 / 2 : ℝ) * Real.exp (-t)) •
-        ∑ a : Idx 3 (sz0.L 0) (sz0.W 0), ∑ b : Idx 3 (sz0.L 0) (sz0.W 0),
-          (centeredVarianceEntry 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) a b : ℂ) *
-            ∫ ω, wirtSecond 3 (sz0.L 0) (sz0.W 0) (Phi2 3 (sz0.L 0) (sz0.W 0))
-              (ouMat (UNModel.band sz0) 0 t ω) a b ∂(ouP (UNModel.band sz0) 0) :=
-  ouGenerator_integral_sub_eq 3 sz0 0 _ (phi2_testFunH 3 (sz0.L 0) (sz0.W 0)) _
-    (Real.rpow_nonneg (Nat.cast_nonneg _) _)
-
-end OUGeneratorInst
-
 end RBM.Univ
-
-#print axioms RBM.Univ.TestFunH
-#print axioms RBM.Univ.ouGeneratorPair_hasDerivAt_integral
-#print axioms RBM.Univ.ouGeneratorPair_integral_sub_eq
-#print axioms RBM.Univ.ouMat_band_eq_ouPairMat
-#print axioms RBM.Univ.ouP_band_map_pair
-#print axioms RBM.Univ.ouGenerator_hasDerivAt_integral
-#print axioms RBM.Univ.ouGenerator_integral_sub_eq
-#print axioms RBM.Univ.testFunH_stieltjesImProduct
-#print axioms RBM.Univ.OUGeneratorInst.inst_testFunH
-#print axioms RBM.Univ.OUGeneratorInst.inst_pair_sub_eq
-#print axioms RBM.Univ.OUGeneratorInst.inst_band_hasDerivAt
-#print axioms RBM.Univ.OUGeneratorInst.inst_band_sub_eq
 
 end

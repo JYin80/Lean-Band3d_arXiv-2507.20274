@@ -843,22 +843,6 @@ section Bridges
 variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
   (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (ω : PathΩ sz)
 
-/-- The band `A^Q_j` is `aTrueQNg` at `bandStep2Mat` (`bandStep2_AvecN`). -/
-theorem QGridGen_bandStep2_aTrueQN :
-    RBM.Ind.aTrueQN sz E s t K n ϑ σ j ω = aTrueQNg (bandStep2Mat sz E) s t K n ϑ σ j ω := rfl
-
-/-- The band drift `dGridQN` is `dGridQNg` at `bandStep2Mat` (`bandStep34_ThetaN`, the loops `loopOf = KLloopOf`). -/
-theorem QGridGen_bandStep2_dGridQN :
-    RBM.Ind.dGridQN sz E s t K n ϑ σ j ω = dGridQNg (bandStep2Mat sz E) s t K n ϑ σ j ω := by
-  funext a
-  have h : ∀ (k : ℕ) (σ' : Fin k → Bool) (u : ℝ) (A : (Fin k → Zd d (sz.L n)) → ℂ),
-      Step2Gen_ThetaN (bandStep2Mat sz E).toFlowFM n σ' u A =
-        RBM.ThetaN d (sz.L n) (sz.lam n) (fun i => mSigma (E n) (σ' i)) u A :=
-    fun k σ' u A => Step2Kern_ThetaN_band sz E n k σ' u A
-  unfold RBM.Ind.dGridQN dGridQNg
-  simp only [h]
-  rfl
-
 /-- The band envelope `qErrQN` is `qErrQNg` at `bandFM` (definitional, as `bandFM_stepErrN`). -/
 theorem QGridGen_bandFM_qErrQN (m' : ℕ) (C C₂ Bk : ℝ) :
     RBM.Ind.qErrQN sz E s t K n m' C C₂ Bk j = qErrQNg (bandFM sz E) s t K n m' C C₂ Bk j := rfl
@@ -872,98 +856,6 @@ the band carrier `bandStep2Mat sz0 E0` (`E0 ≡ 0`, `m = i`, `‖m‖ = 1`), `Ψ
 (`Δ = 1/10`), size index `0`, `m = 3` (tensors of `4` indices), `σ = (+,-,+,-)`, the merged mollifier `QopAlgebra_mollifier 3 4 3 (1/64)`.
 Every deterministic hypothesis is discharged (the classes by the band discharges of `HierDriftGen`, the envelope by
 `HierDriftGen_exists_envelope`); nothing is left as a hypothesis. -/
-
-namespace QGridGenCheck
-
-open RBM.Gauss.SizesInst
-
-private abbrev E0 : ℕ → ℝ := fun _ => 0
-private abbrev s0 : ℕ → ℝ := fun _ => 1 / 10
-private abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev K0 : ℕ → ℕ := fun _ => 4
-private abbrev Ψ0 : ∀ n : ℕ, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ := fun _ => 0
-private abbrev Cm0 : Step2Mat sz0 := bandStep2Mat sz0 E0
-
-/-- The alternating sign vector `(+,-,+,-)`. -/
-def QGridGen_sigma4 : Fin (3 + 1) → Bool := ![true, false, true, false]
-
-/-- The sign vector is alternating (`σ_{i+1} ≠ σ_i` cyclically). -/
-theorem QGridGen_sigma4_alternating : STAlternating QGridGen_sigma4 := by
-  unfold STAlternating QGridGen_sigma4
-  decide
-
-/-- The mollifier family at `sz0`, `n = 0`, `m = 3`. -/
-private abbrev moll : ℝ → (Fin (3 + 1) → Zd 3 (sz0.L 0)) → ℂ :=
-  QopAlgebra_mollifier 3 (sz0.L 0) 3 (sz0.lam 0)
-
-private theorem lam_pos : 0 < sz0.lam 0 := by rw [sz0_values.2.2.2]; norm_num
-
-private theorem hE0 : ∀ n, |E0 n| < 2 := fun _ => by norm_num
-private theorem hL0 : StepDecompGen_LoopForm Cm0 E0 := stepDecompGen_loopForm_band sz0 E0 hE0
-private theorem hW0 : StepDecompGen_WalkForm Cm0 sz0.lam Ψ0 := stepDecompGen_walkForm_band sz0 E0
-private theorem hm0 : ‖Cm0.m 0‖ ≤ 1 := (norm_mE (E := E0 0) (by norm_num)).le
-private theorem hs0 : 0 ≤ s0 0 := by norm_num
-private theorem hst0 : s0 0 ≤ t0 0 := by norm_num
-private theorem ht10 : t0 0 < 1 := by norm_num
-private theorem hK0 : K0 0 ≠ 0 := by norm_num
-private theorem hj0 : 0 < K0 0 := by norm_num
-
-/-- The grid data are nondegenerate: `Δ = 1/10`, `u_0 = 1/10`, `u_1 = 1/5 < 1`. -/
-private theorem data : gridStep s0 t0 K0 0 = 1 / 10 ∧ gridTime s0 t0 K0 0 0 = 1 / 10 ∧
-    gridTime s0 t0 K0 0 (0 + 1) = 1 / 5 := by
-  refine ⟨?_, ?_, ?_⟩ <;> norm_num [gridStep, gridTime]
-
-private theorem env4 : ∃ B : ℝ, 0 ≤ B ∧ ∀ w ∈ Set.Icc (0 : ℝ) (gridTime s0 t0 K0 0 (0 + 1)),
-    ∀ J : LoopIdx (Zd 3 (sz0.L 0)), J.WF → 2 ≤ J.length → J.length ≤ 3 + 1 → ‖Cm0.KI 0 w J‖ ≤ B :=
-  HierDriftGen_exists_envelope Cm0 0 (hierDriftGen_kLoop_band sz0 E0 hE0 0)
-    (v := gridTime s0 t0 K0 0 (0 + 1)) (by rw [data.2.2]; norm_num) (by rw [data.2.2]; norm_num) (3 + 1)
-
-/-- **Instance of `gridDriftQNg`** (target 6) at `sz0`, `m = 3`, `σ = (+,-,+,-)`, `j = 0 < 4`: for the merged mollifier and a finite
-envelope `B_4 ≥ 0` of `𝒦` on `[0, u_1]` (it exists), a.e. in the walk, every label `a ∈ ((ℤ_4)^3)^4` satisfies the one-step bound by
-`qErrQNg` (`C = (1 + 40·9) 6^9`, `C₂ = 1000 (1 + 9)²`). -/
-theorem QGridGen_gridDriftQNg_instance :
-    STAlternating QGridGen_sigma4 ∧
-    ∃ Bk : ℝ, 0 ≤ Bk ∧ ∀ᵐ ω ∂(Cm0.Pp), ∀ a : Fin (3 + 1) → Zd 3 (sz0.L 0),
-      ‖MeasureTheory.condExp (filt sz0 0) Cm0.Pp
-            (fun ω' => aTrueQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 (0 + 1) ω' a) ω -
-          Step2Gen_UN Cm0.toFlowFM 0 QGridGen_sigma4 (gridTime s0 t0 K0 0 0) (gridTime s0 t0 K0 0 (0 + 1))
-            (aTrueQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 0 ω) a -
-          (gridStep s0 t0 K0 0 : ℂ) * dGridQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 0 ω a‖ ≤
-        qErrQNg Cm0.toFlowFM s0 t0 K0 0 3 ((1 + 40 * ((3 * 3 : ℕ) : ℝ)) * 6 ^ (3 * 3))
-          (1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2) Bk 0 := by
-  obtain ⟨Bk, hB0, hB⟩ := env4
-  exact ⟨QGridGen_sigma4_alternating, Bk, hB0,
-    gridDriftQNg s0 t0 K0 0 0 QGridGen_sigma4 Bk hL0 hW0 (hierDriftGen_expand_band sz0 E0 hE0 s0 t0 K0 0)
-      (hierDriftGen_kLoop_band sz0 E0 hE0 0) (hierDriftGen_kTwo_band sz0 E0 hE0 0)
-      (hierDriftGen_uStep_band sz0 E0 hE0 0) (hierDriftGen_SB_row sz0 0) (hierDriftGen_kLink_band sz0 E0 0) hm0
-      lam_pos hs0 hst0 ht10 hK0 hj0 (m := 3) (by norm_num) hB0 hB⟩
-
-/-- **Instance of `stoppedDuhamelQNg`** (target 7) at the same data with the stopping index `τ ≡ 3` and the grid index
-`j = 4 = K 0` (so `j ∧ τ = 3`: three genuine Duhamel steps), for every path. -/
-theorem QGridGen_stoppedDuhamelQNg_instance (ω : PathΩ sz0) :
-    STAlternating QGridGen_sigma4 ∧
-    aFrozQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 (fun _ => 3) 4 ω =
-      Step2Gen_UN Cm0.toFlowFM 0 QGridGen_sigma4 (gridTime s0 t0 K0 0 0) (gridTime s0 t0 K0 0 4)
-          (aTrueQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 0 ω) +
-        ∑ i ∈ Finset.range (min 4 ((fun _ : PathΩ sz0 => 3) ω)),
-          Step2Gen_UN Cm0.toFlowFM 0 QGridGen_sigma4 (gridTime s0 t0 K0 0 (i + 1)) (gridTime s0 t0 K0 0 4)
-            ((gridStep s0 t0 K0 0 : ℂ) • dGridQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 i ω +
-              martIncQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 i ω +
-              rGridQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 i ω) :=
-  ⟨QGridGen_sigma4_alternating,
-    stoppedDuhamelQNg Cm0 s0 t0 K0 0 moll QGridGen_sigma4 (fun _ => 3) 4 ω
-      (step2Gen_USemigroup_band sz0 E0 0 (by norm_num)) hs0 hst0 ht10 hK0 (by norm_num)⟩
-
-/-- **Instance of `QGridGen_condExp_aTrueQNg`** (target 5): the same data, `j = 0`, every label. -/
-example (a : Fin (3 + 1) → Zd 3 (sz0.L 0)) :=
-  QGridGen_condExp_aTrueQNg hL0 hW0 s0 t0 K0 0 0 (hierDriftGen_kLink_band sz0 E0 0) hs0 hst0 ht10 hK0 hj0 moll
-    QGridGen_sigma4 a
-
-/-- **Instance of `QGridA_mollifier_taylor2`** at `d = 3`, `L = 4`, `m = 3`, `g = 1/64` (the second-order Taylor input). -/
-example : QGridA_Taylor2 (d := 3) (1000 * (1 + ((3 * 3 : ℕ) : ℝ)) ^ 2) moll :=
-  QGridA_mollifier_taylor2 3 (sz0.L 0) 3 (sz0.three_le_L 0) lam_pos
-
-end QGridGenCheck
 
 end RBM.BA
 

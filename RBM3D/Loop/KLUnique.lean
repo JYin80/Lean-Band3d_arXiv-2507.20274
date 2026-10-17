@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Loop.KLTreeDeriv
-import RBM3D.Loop.TreeThree
+import RBM3D.Loop.Unique
 import RBM3D.Propagator.Prop6Hold
 
 /-!
@@ -112,33 +112,6 @@ def TranslS : Prop :=
 
 /-! ## 2. The pinned theorem `KLK_unique` (section 1, `KLretire_twoLoopBounded`, is in `Loop/Unique.lean`) -/
 
-/-- **Pin `Def_Ktza`, "unique"**: every family of `K`-loops on `[0,1)` is `KLK` (no a priori
-bound on the `2`-loops: it follows from continuity on `[0,t] ⊆ [0,1)`).  The type is the body
-of the pin `KLuniquePin` (`64b58eb:RBM3D/Probe/T2004Pins.lean:762-768`). -/
-theorem KLK_unique :
-    ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 →
-      ∀ K : ℝ → LoopIdx (Zd d L) → ℂ, IsKLoop d L W g (mSigma E) (Set.Ico 0 1) K →
-        ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ I : LoopIdx (Zd d L), I.WF → 1 ≤ I.length →
-          K t I = KLK d L g W E t I := by
-  intro d L W _ g E hL hW hE K hK t ht I hI hI1
-  have hKc := KLK_isKLoop d L W g E hL hW hE
-  rcases hI1.lt_or_eq with h2 | h1
-  · have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun s hs => ⟨hs.1, lt_of_le_of_lt hs.2 ht.2⟩
-    obtain ⟨R, hR0, hR⟩ := KLretire_twoLoopBounded hK t ht.2
-    obtain ⟨R', hR'0, hR'⟩ := KLretire_twoLoopBounded hKc t ht.2
-    refine isKLoop_unique hL (mSigma E) hK hKc hT
-      (R := max R R') (le_trans hR0 (le_max_left _ _)) (fun s hs J hJ hJ2 => ?_) t
-      ⟨ht.1, le_rfl⟩ I hI h2
-    exact ⟨(hR s hs J hJ hJ2).trans (le_max_left _ _),
-      (hR' s hs J hJ hJ2).trans (le_max_right _ _)⟩
-  · obtain ⟨σ, a⟩ := I
-    have ha : a.length = 1 := by simpa [LoopIdx.length] using h1.symm
-    have hσ : σ.length = 1 := hI.trans ha
-    obtain ⟨s, rfl⟩ := List.length_eq_one_iff.1 hσ
-    obtain ⟨x, rfl⟩ := List.length_eq_one_iff.1 ha
-    rw [hK.2.2 t ht s x]
-    exact (hKc.2.2 t ht s x).symm
-
 /-! ## 3. Translation: the shifted family is again a family of `K`-loops -/
 
 section Translation
@@ -217,14 +190,6 @@ private theorem KLUnique_isKLoopS_shift (W : ℕ) (S : Matrix (Zd d L) (Zd d L) 
     exact (hK.2.1 (KLUnique_shift d L c J) (KLUnique_shift_WF d L hJ)
       (by rw [KLUnique_length_shift]; exact h2)).trans (hM c J)
   · exact hK.2.2 r hr s (a + c)
-
-/-- The translated family of a family of `K`-loops is a family of `K`-loops (`KLUnique_isKLoopS_shift` at
-`S = SB d L g`, `M = MLoop`). -/
-private theorem KLUnique_isKLoop_shift (W : ℕ) (g : ℝ) (m : Bool → ℂ) {T : Set ℝ}
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K) (c : Zd d L) :
-    IsKLoop d L W g m T (fun r J => K r (KLUnique_shift d L c J)) :=
-  KLUnique_isKLoopS_shift d L W (SB d L g) (fun a b c => SB_apply_add_right d L g a b c) m
-    (MLoop d L W m) (fun c I => KLUnique_MLoop_shift d L W m c I) hK c
 
 end Translation
 
@@ -739,127 +704,6 @@ the proved `thetaDecayShort_holds`): `KTwoFormula` and `𝒦^{(3)} = kThree` at 
 
 section Instances
 
-/-- `KLK_unique` at a loop of length `1`: `K^{(1)}_{t,+,0} = m(+)` (third clause of `IsKLoop`). -/
-theorem KLUniqueInst_unique_one :
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) (9 / 10) ⟨[true], [0]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true], [0]⟩ :=
-  KLK_unique 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop (9 / 10)
-    ⟨by norm_num, by norm_num⟩ _ rfl (by simp [LoopIdx.length])
-
-/-- `KLK_unique` at a loop of length `2`: charges `(+,-)`, labels `(0, 1)`. -/
-theorem KLUniqueInst_unique_two :
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) (9 / 10) ⟨[true, false], [0, 1]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false], [0, 1]⟩ :=
-  KLK_unique 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop (9 / 10)
-    ⟨by norm_num, by norm_num⟩ _ rfl (by simp [LoopIdx.length])
-
-/-- `KLK_unique` at a loop of length `3`: charges `(+,-,+)`, labels `(0, 1, 2)`. -/
-theorem KLUniqueInst_unique_three :
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩ :=
-  KLK_unique 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop (9 / 10)
-    ⟨by norm_num, by norm_num⟩ _ rfl (by simp [LoopIdx.length])
-
-/-- `KLK_unique` for a family that is not syntactically `𝒦`: `K_c(r, J) = 𝒦(r, shift_c J)`, the
-shift by `e₁ = (1,0,0)` of the labels, is a family of `K`-loops (the merged instance
-`KLTreeDerivInst_isKLoop` through `KLUnique_isKLoop_shift`), so `K_c = 𝒦`; here at `t = 9/10` and the
-loop with charges `(+,-,+)` and labels `(0,0,0), (1,2,3), (4,0,1)`. -/
-theorem KLUniqueInst_unique_shifted :
-    (fun r (J : LoopIdx (Zd 3 5)) =>
-        KLK 3 5 (1 / 2) 2 0 r ⟨J.σ, J.a.map (· + (![1, 0, 0] : Zd 3 5))⟩) (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ :=
-  KLK_unique 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)
-    (fun r (J : LoopIdx (Zd 3 5)) =>
-      KLK 3 5 (1 / 2) 2 0 r ⟨J.σ, J.a.map (· + (![1, 0, 0] : Zd 3 5))⟩)
-    (KLUnique_isKLoop_shift 3 5 2 (1 / 2) (mSigma 0) KLTreeDerivInst_isKLoop (![1, 0, 0] : Zd 3 5))
-    (9 / 10) ⟨by norm_num, by norm_num⟩
-    ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ rfl
-    (by simp [LoopIdx.length])
-
-/-- `KLK_rotate` at `n = 3`: charges `(+,-,+)`, labels `(0, 1, 2)`. -/
-theorem KLUniqueInst_rotate_three :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false, true], (0 : Zd 3 5) :: [1, 2]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[false, true] ++ [true], [1, 2] ++ [(0 : Zd 3 5)]⟩ :=
-  KLK_rotate 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    ⟨by norm_num, by norm_num⟩ true 0 [false, true] [1, 2] rfl
-
-/-- `KLK_rotate` at `n = 4`: charges `(+,-,+,-)`, labels `(0, 1, 2, 3)`. -/
-theorem KLUniqueInst_rotate_four :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false, true, false], (0 : Zd 3 5) :: [1, 2, 3]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
-          ⟨[false, true, false] ++ [true], [1, 2, 3] ++ [(0 : Zd 3 5)]⟩ :=
-  KLK_rotate 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    ⟨by norm_num, by norm_num⟩ true 0 [false, true, false] [1, 2, 3] rfl
-
-/-- `KLK_translate` at `n = 3`: translation by `e₁ = (1,0,0) ∈ Z_5^3` of the loop with charges
-`(+,-,+)` and labels `(0,0,0), (1,2,3), (4,0,1)`. -/
-theorem KLUniqueInst_translate_three :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true],
-          ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5)).map (· + (![1, 0, 0] : Zd 3 5))⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ :=
-  KLK_translate 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
-    ⟨by norm_num, by norm_num⟩ (![1, 0, 0] : Zd 3 5)
-    ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ rfl
-
-/-- `KLretire_twoLoopBounded` at the instance data: the a priori bound of the `2`-loops of `𝒦` on
-every `[0,T₀]`, `T₀ < 1`, is a theorem, not an assumption. -/
-theorem KLUniqueInst_retire_twoLoopBounded :
-    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
-      ∀ I : LoopIdx (Zd 3 5), I.WF → I.length = 2 → ‖KLK 3 5 (1 / 2) 2 0 t I‖ ≤ R :=
-  KLretire_twoLoopBounded (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
-
-/-- `kTwoFormula_of_isKLoop` at the instance data: `(Kn2sol)` for `𝒦`, with `‖m(±)‖ = 1` and no
-bound on the `2`-loops assumed. -/
-theorem KLUniqueInst_kTwoFormula :
-    KTwoFormula 3 5 2 (1 / 2) (mSigma 0) (fun t I => KLK 3 5 (1 / 2) 2 0 t I) :=
-  kTwoFormula_of_isKLoop (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
-    KLTreeDerivInst_isKLoop
-
-/-- `kThree_eq_of_isKLoop` at the instance data, at `t = 9/10`: `𝒦^{(3)}` at charges `(+,-,+)` and
-labels `(0, 1, 2)` is `kThree`. -/
-theorem KLUniqueInst_kThree :
-    (fun t I => KLK 3 5 (1 / 2) 2 0 t I) (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩
-      = kThree 3 5 2 (1 / 2) (mSigma 0) (9 / 10) true false true 0 1 2 :=
-  kThree_eq_of_isKLoop (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
-    KLTreeDerivInst_isKLoop (9 / 10) (by norm_num) (by norm_num) true false true 0 1 2
-
-/-- `Im m(+) > 0` at `E = 0` (`m(+) = i`). -/
-private theorem KLUnique_inst_im : 0 < (mSigma 0 true).im := by
-  simpa [mSigma] using mE_im_pos (E := 0) (by norm_num)
-
-/-- `pureLoop_two_of_isKLoop` at `d = k + 2 = 3` (`k = 1`), `L = 5`, `W = 2`, `g = 1/2`, `E = 0`,
-`σ = +`: the pure `2`-loops of `𝒦` decay exponentially in the distance of their labels.
-`ThetaDecayShort` is the proved `thetaDecayShort_holds`. -/
-theorem KLUniqueInst_pureLoop_two :
-    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 → ∀ a₁ a₂ : Zd (1 + 2) 5,
-      ‖KLK 3 5 (1 / 2) 2 0 t ⟨[true, true], [a₁, a₂]⟩‖
-        ≤ C * ‖(((2 : ℕ) : ℂ) ^ (1 + 2))⁻¹‖
-          * Real.exp (-(c * (zdistD (1 + 2) 5 (a₁ - a₂) : ℝ))) :=
-  pureLoop_two_of_isKLoop (k := 1) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (fun s => norm_mSigma (by norm_num) s)
-    KLUnique_inst_im (thetaDecayShort_holds (1 + 2) (1 / 2) (mSigma 0 true))
-    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
-
-/-- `pureLoop_three` at the same data: the pure `3`-loops of `𝒦` decay exponentially in the diameter
-of their labels. -/
-theorem KLUniqueInst_pureLoop_three :
-    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 →
-      ∀ (a : Fin 3 → Zd (1 + 2) 5) (p q : Fin 3),
-        ‖KLK 3 5 (1 / 2) 2 0 t ⟨[true, true, true], [a 0, a 1, a 2]⟩‖
-          ≤ C * ‖((((2 : ℕ) : ℂ) ^ (1 + 2))⁻¹) ^ 2‖
-            * Real.exp (-(c * (zdistD (1 + 2) 5 (a p - a q) : ℝ))) :=
-  pureLoop_three (k := 1) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-    (fun s => norm_mSigma (by norm_num) s)
-    KLUnique_inst_im (thetaDecayShort_holds (1 + 2) (1 / 2) (mSigma 0 true))
-    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
-
 /-- The hypotheses on `S` of `RotS` and `TranslS` hold at the block Anderson kernel `S = 1`
 (`S^{(B)}(0) = I`, `kernelFacts_one` of the probe `t/T2360`): symmetry, `‖S a b‖ ≤ 1`, translation
 invariance.  Nothing is assumed of `d`, `L` beyond `NeZero L`. -/
@@ -871,64 +715,6 @@ theorem kernel_one_rot_transl {d L : ℕ} [NeZero L] :
   ⟨fun a b => by simp only [Matrix.one_apply]; exact if_congr eq_comm rfl rfl,
     fun a b => by simp only [Matrix.one_apply]; split_ifs <;> simp,
     fun a b c => by simp only [Matrix.one_apply, add_left_inj]⟩
-
-/-- The hypotheses on `S` of `RotS` and `TranslS` hold at the band kernel `S = SB d L g` for `3 ≤ L`. -/
-theorem kernel_SB_rot_transl {d L : ℕ} [NeZero L] (g : ℝ) (hL : 3 ≤ L) :
-    (∀ a b : Zd d L, SB d L g a b = SB d L g b a) ∧ (∀ a b : Zd d L, ‖SB d L g a b‖ ≤ 1) ∧
-    (∀ a b c : Zd d L, SB d L g (a + c) (b + c) = SB d L g a b) :=
-  ⟨fun a b => (show SB d L g b a = SB d L g a b from
-      congrFun (congrFun (SB_transpose d L g) a) b).symm,
-    norm_SB_apply_le g hL, fun a b c => SB_apply_add_right d L g a b c⟩
-
-/-- `uniqS_holds` at the instance data (`S = SB 3 5 (1/2)`, `M = MLoop`) for two different families of
-`K`-loops, `K = 𝒦 ∘ shift_{e₁}` and `K' = 𝒦`, with the `2`-loop bounds of `retireS_holds`; the loop has
-charges `(+,-,+)` and labels `(0,0,0), (1,2,3), (4,0,1)`, `t = 9/10`. -/
-theorem KLUniqueInst_uniqS_shifted :
-    (fun r (J : LoopIdx (Zd 3 5)) =>
-        KLK 3 5 (1 / 2) 2 0 r ⟨J.σ, J.a.map (· + (![1, 0, 0] : Zd 3 5))⟩) (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ := by
-  have hK : IsKLoopS 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) (Set.Ico 0 1)
-      (fun t I => KLK 3 5 (1 / 2) 2 0 t I) := KLTreeDerivInst_isKLoop
-  have hKc := KLUnique_isKLoopS_shift 3 5 2 (SB 3 5 (1 / 2)) (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.2
-    (mSigma 0) (MLoop 3 5 2 (mSigma 0)) (fun c I => KLUnique_MLoop_shift 3 5 2 (mSigma 0) c I) hK
-    (![1, 0, 0] : Zd 3 5)
-  obtain ⟨R, hR0, hR⟩ := retireS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) hK
-    (9 / 10) (by norm_num)
-  obtain ⟨R', hR'0, hR'⟩ := retireS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) hKc
-    (9 / 10) (by norm_num)
-  exact uniqS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
-    (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1 hKc hK (T₀ := 9 / 10) (R := max R R')
-    (fun t ht => ⟨ht.1, by linarith [ht.2]⟩) (le_trans hR0 (le_max_left _ _))
-    (fun r hr J hJ hJ2 => ⟨(hR' r hr J hJ hJ2).trans (le_max_right _ _),
-      (hR r hr J hJ hJ2).trans (le_max_left _ _)⟩) (9 / 10) ⟨by norm_num, by norm_num⟩ _ rfl
-    (by simp [LoopIdx.length])
-
-/-- `rotS_holds` at the instance data (`S = SB 3 5 (1/2)`, `M = MLoop`, `K = 𝒦`): `n = 3`, charges
-`(+,-,+)`, labels `(0, 1, 2)`, `t = 9/10`.  The hypotheses on `S` are `kernel_SB_rot_transl`, the one on `M` is
-`KLUnique_MLoop_rot_cons`. -/
-theorem KLUniqueInst_rotS :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false, true], (0 : Zd 3 5) :: [1, 2]⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[false, true] ++ [true], [1, 2] ++ [(0 : Zd 3 5)]⟩ :=
-  rotS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
-    (kernel_SB_rot_transl (1 / 2) (by norm_num)).1 (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1
-    (KLUnique_MLoop_rot_cons 3 5 2 (mSigma 0)) (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I)
-    KLTreeDerivInst_isKLoop (9 / 10) ⟨by norm_num, by norm_num⟩ true 0 [false, true] [1, 2] rfl
-
-/-- `translS_holds` at the same data: translation by `e₁ = (1,0,0)` of the loop with charges `(+,-,+)` and labels
-`(0,0,0), (1,2,3), (4,0,1)`, `t = 9/10`.  The hypothesis on `M` is `KLUnique_MLoop_shift`. -/
-theorem KLUniqueInst_translS :
-    KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true],
-          ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5)).map (· + (![1, 0, 0] : Zd 3 5))⟩
-      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
-        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ :=
-  translS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
-    (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.2 (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1
-    (fun c I => KLUnique_MLoop_shift 3 5 2 (mSigma 0) c I) (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I)
-    KLTreeDerivInst_isKLoop (9 / 10) ⟨by norm_num, by norm_num⟩ (![1, 0, 0] : Zd 3 5)
-    ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ rfl
 
 end Instances
 

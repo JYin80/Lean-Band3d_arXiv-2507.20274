@@ -54,10 +54,6 @@ open scoped NNReal ENNReal
 `E|h_{xy}|² = e^{-t} S_{xy} + (1 - e^{-t}) N⁻¹` for `𝐇_t`). -/
 def ouZeta (t : ℝ) : ℝ := 1 - Real.exp (-t)
 
-/-- `S̃_{xy} = (1 - ζ) S_{xy} + ζ N⁻¹`, `S = svarF d L W lam`, `N = (W L)^d`. -/
-def Stilde (d L W : ℕ) [NeZero L] [NeZero W] (lam ζ : ℝ) (i j : Idx d L W) : ℝ :=
-  (1 - ζ) * svarF d L W lam i j + ζ / (((W * L) ^ d : ℕ) : ℝ)
-
 /-- The all-ones matrix `J` on `Z_L^d`. -/
 def Jmat (d L : ℕ) : Matrix (Zd d L) (Zd d L) ℂ := Matrix.of fun _ _ => 1
 
@@ -135,8 +131,6 @@ def UNG2bRow : Prop :=
 
 /-! ### ζ -/
 
-theorem ZeroModeProfile_ouZeta_zero : ouZeta 0 = 0 := by simp [ouZeta]
-
 theorem ZeroModeProfile_ouZeta_nonneg {t : ℝ} (ht : 0 ≤ t) : 0 ≤ ouZeta t := by
   unfold ouZeta
   have := Real.exp_le_one_iff.2 (neg_nonpos.2 ht)
@@ -155,74 +149,11 @@ theorem ZeroModeProfile_ouZeta_le (t : ℝ) : ouZeta t ≤ t := by
 
 /-! ### Profile identities -/
 
-theorem Stilde_zero (d L W : ℕ) [NeZero L] [NeZero W] (lam : ℝ) (i j : Idx d L W) :
-    Stilde d L W lam 0 i j = svarF d L W lam i j := by
-  simp [Stilde]
-
-theorem sum_Stilde_row (d L W : ℕ) [NeZero L] [NeZero W] (lam : ℝ) (hL : 3 ≤ L) (ζ : ℝ)
-    (i : Idx d L W) : ∑ j, Stilde d L W lam ζ i j = 1 := by
-  unfold Stilde
-  rw [Finset.sum_add_distrib, ← Finset.mul_sum, Green.IBP_sum_svarF_row lam hL i, Finset.sum_const,
-    Finset.card_univ, RBM.Gauss.card_Idx, nsmul_eq_mul]
-  have hN : (((W * L) ^ d : ℕ) : ℝ) ≠ 0 := by
-    have : 0 < W * L := Nat.mul_pos (NeZero.pos W) (NeZero.pos L)
-    positivity
-  field_simp
-  ring
-
-theorem ouVar_eq_Stilde (d L W : ℕ) [NeZero L] [NeZero W] (lam t : ℝ) (ht : 0 ≤ t)
-    (c : CoordF d L W) :
-    (ouVar d L W lam t c : ℝ) =
-      if c.1 = c.2.1 then Stilde d L W lam (ouZeta t) c.1 c.2.1
-      else Stilde d L W lam (ouZeta t) c.1 c.2.1 / 2 := by
-  have he : Real.exp (-t) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
-  have hN : (((W * L) ^ d : ℕ) : ℝ) ≠ 0 := by
-    have : 0 < W * L := Nat.mul_pos (NeZero.pos W) (NeZero.pos L)
-    positivity
-  unfold ouVar
-  simp only [NNReal.coe_add, NNReal.coe_mul, Real.coe_toNNReal _ (Real.exp_pos _).le,
-    Real.coe_toNNReal _ (sub_nonneg.2 he)]
-  have hg : (gvarF d L W lam c : ℝ) = if c.1 = c.2.1 then svarF d L W lam c.1 c.2.1
-      else svarF d L W lam c.1 c.2.1 / 2 := rfl
-  unfold gueVar
-  by_cases hc : c.1 = c.2.1
-  · simp only [hc, ite_true, hg, Stilde, ouZeta, NNReal.coe_inv, NNReal.coe_natCast]
-    ring_nf
-  · simp only [hc, ite_false, hg, Stilde, ouZeta, NNReal.coe_inv, NNReal.coe_mul,
-      NNReal.coe_natCast, NNReal.coe_ofNat]
-    field_simp
-    ring_nf
-
-theorem Stilde_eq_SBtilde_mul (d L W : ℕ) [NeZero L] [NeZero W] (lam ζ : ℝ) (i j : Idx d L W) :
-    (Stilde d L W lam ζ i j : ℂ) =
-      SBtilde d L lam ζ (split d L W i).1 (split d L W j).1 * (((W : ℂ) ^ d)⁻¹) := by
-  have hW : (W : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne W)
-  have hL : (L : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne L)
-  have h1 : ((svarF d L W lam i j : ℝ) : ℂ) = SB d L lam (split d L W i).1 (split d L W j).1 *
-      (((W : ℂ) ^ d)⁻¹) := by
-    simp only [svarF, SB_eq_map_SBR, Matrix.map_apply]
-    push_cast
-    ring
-  unfold Stilde SBtilde Jmat
-  push_cast
-  rw [h1]
-  simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.of_apply, smul_eq_mul]
-  field_simp
-  simp only [mul_pow]
-  ring
-
 /-! ## §2 The zero-mode profile on `Z_L^d` and `Θ̃_ξ = (1 - ξ S̃^(B))⁻¹` -/
 
 section ThetaTilde
 
 variable (d L : ℕ) [NeZero L]
-
-private theorem ZeroModeProfile_SBtilde_zero (lam : ℝ) : SBtilde d L lam 0 = SB d L lam := by
-  simp [SBtilde]
-
-/-- Extreme input `ζ = 0`: `Θ̃ = Θ`. -/
-theorem ThetaTilde_zero (lam : ℝ) (ξ : ℂ) : ThetaTilde d L lam 0 ξ = Theta d L lam ξ := by
-  simp [ThetaTilde, Theta, ZeroModeProfile_SBtilde_zero]
 
 private theorem ZeroModeProfile_SB_mul_Jmat (lam : ℝ) (hL : 3 ≤ L) :
     SB d L lam * Jmat d L = Jmat d L := by
@@ -518,13 +449,6 @@ theorem profTilde_rowDiff :
     have := hnorm _ hξ _ _ (hdiff true)
     simpa only [profPPTilde, xiQ, ite_true] using this
 
-/-- Extreme input `ζ = 0`: the profiles with `Θ̃` are the merged `profPM`, `profPP`. -/
-theorem profPMTilde_zero {d : ℕ} (sz : Sizes d) (n : ℕ) (z : ℂ) (a b : Zd d (sz.L n)) :
-    profPMTilde sz n 0 z a b = profPM sz n z a b ∧ profPPTilde sz n 0 z a b = profPP sz n z a b := by
-  refine ⟨?_, ?_⟩
-  · simp only [profPMTilde, profPM, ThetaPM, ThetaTilde_zero]
-  · simp only [profPPTilde, profPP, ThetaPP, ThetaTilde_zero]
-
 /-! ## §3 The `τ_U` constraint of the layer -/
 
 theorem ouTauMax_pos {𝔠 𝔡 : ℝ} (h𝔠 : 0 < 𝔠) (h𝔡 : 0 < 𝔡) : 0 < ouTauMax 𝔠 𝔡 := by
@@ -723,84 +647,5 @@ theorem ouRow_of_pins : UNG1Row → UNG2bRow → UNOURow := by
   exact ⟨r2b d hd 𝔠 𝔡 sz hA τU hτ hle h1.2, ouDiag_of_ouLL h1.1⟩
 
 /-! ## §7 Compiled instances (`d = 3`, `L = 4`, `W = 2`, `lam = 1/2`; the owed pins stay hypotheses) -/
-
-namespace ZeroModeProfileInst
-
-open RBM.Gauss.SizesInst
-
-/-- Row sums of `S̃` at `d = 3`, `L = 4`, `W = 2`, `lam = 1/2`, `ζ = ζ(1) = 1 - e^{-1}`. -/
-theorem inst_sum_Stilde_row (i : Idx 3 4 2) : ∑ j, Stilde 3 4 2 (1 / 2) (ouZeta 1) i j = 1 :=
-  sum_Stilde_row 3 4 2 (1 / 2) (by norm_num) (ouZeta 1) i
-
-/-- The OU variance is the coordinate family of `S̃` at `t = 1` (a diagonal coordinate). -/
-theorem inst_ouVar_eq_Stilde (i : Idx 3 4 2) :
-    (ouVar 3 4 2 (1 / 2) 1 (i, i, true) : ℝ) = Stilde 3 4 2 (1 / 2) (ouZeta 1) i i := by
-  have h := ouVar_eq_Stilde 3 4 2 (1 / 2) 1 zero_le_one (i, i, true)
-  simpa using h
-
-/-- The zero-mode identity at `ξ = 1/2`, `ζ = 1/100`. -/
-theorem inst_ThetaTilde_eq :
-    ThetaTilde 3 4 (1 / 2) (1 / 100) (1 / 2 : ℂ) =
-      Theta 3 4 (1 / 2) ((1 / 2 : ℂ) * (1 - (((1 / 100 : ℝ)) : ℂ))) +
-        ((1 / 2 : ℂ) * ((1 / 100 : ℝ) : ℂ) /
-          ((4 : ℂ) ^ 3 * (1 - (1 / 2 : ℂ) * (1 - (((1 / 100 : ℝ)) : ℂ))) * (1 - (1 / 2 : ℂ)))) •
-          Jmat 3 4 := by
-  have h := ThetaTilde_eq 3 4 (1 / 2) (by norm_num) (ξ := (1 / 2 : ℂ)) (by norm_num)
-    (ζ := 1 / 100) (by norm_num) (by norm_num)
-  simpa using h
-
-/-- Target 2.4 at `d = 3`, `𝔡 = κ = 1/10`: the constant `C` is obtained and applied at `L = 4`,
-`lam = 1/2`, `z = 1/2 + i/2`, `ζ = 1/2`, both `σ`, `u = 0`, `v = (1, 0, 0)`. -/
-theorem inst_norm_ThetaTilde_sub_le : ∃ C : ℝ, 0 < C ∧ ∀ σ : Bool,
-    ‖ThetaTilde 3 4 (1 / 2) (1 / 2) (xiQ ((1 / 2 : ℂ) + Complex.I / 2) σ) 0 (fun i => if i = 0 then 1 else 0) -
-      ThetaTilde 3 4 (1 / 2) (1 / 2) (xiQ ((1 / 2 : ℂ) + Complex.I / 2) σ) 0 0‖ ≤
-        C * ((1 / 2 : ℝ) ^ 2)⁻¹ := by
-  obtain ⟨C, hC, H⟩ := norm_ThetaTilde_sub_le 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-  refine ⟨C, hC, fun σ => ?_⟩
-  refine H 4 (by norm_num) (1 / 2) (by norm_num) (by norm_num) ((1 / 2 : ℂ) + Complex.I / 2)
-    (by norm_num) (by norm_num) (by norm_num) (1 / 2) (by norm_num) (by norm_num) σ 0 _
-
-/-- Target 2.5 along the preflight sequence `sz0`, `n = 0` (`L = 4`, `W = 32`, `lam = 1/64`). -/
-theorem inst_profTilde_rowDiff : ∃ C : ℝ, 0 < C ∧ ∀ a b b' : Zd 3 (sz0.L 0),
-    ‖profPMTilde sz0 0 (1 / 2) ((1 / 2 : ℂ) + Complex.I / 2) a b -
-        profPMTilde sz0 0 (1 / 2) ((1 / 2 : ℂ) + Complex.I / 2) a b'‖ ≤
-      C * (sz0.lam 0 ^ 2)⁻¹ / ((sz0.W 0 : ℕ) : ℝ) ^ 3 := by
-  obtain ⟨C, hC, H⟩ := profTilde_rowDiff 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-  refine ⟨C, hC, fun a b b' => (H sz0 0 ?_ ?_ ((1 / 2 : ℂ) + Complex.I / 2) (by norm_num)
-    (by norm_num) (by norm_num) (1 / 2) (by norm_num) (by norm_num) a b b').1⟩
-  · simp [sz0]
-  · norm_num [sz0]
-
-/-- `ζ = 0` at `sz0`. -/
-theorem inst_profPMTilde_zero (a b : Zd 3 (sz0.L 0)) (z : ℂ) :
-    profPMTilde sz0 0 0 z a b = profPM sz0 0 z a b ∧ profPPTilde sz0 0 0 z a b = profPP sz0 0 z a b :=
-  profPMTilde_zero sz0 0 z a b
-
-/-- `ouTauMax (1/6) (1/10) = 1/720`. -/
-theorem inst_ouTauMax : ouTauMax (1 / 6) (1 / 10) = 1 / 720 := by
-  unfold ouTauMax
-  norm_num [min_def]
-
-/-- The chosen `τ_U = 1/1000` is below `ouTauMax` and its slack inequalities hold. -/
-theorem inst_ouTauMax_slack :
-    12 * (1 / 1000 : ℝ) ≤ 1 / 6 ∧ 12 * (1 / 1000 : ℝ) ≤ 1 / 6 * (1 / 10) ∧
-      (1 / 1000 : ℝ) < 1 / 6 * (1 / 10) ∧ 3 * (1 / 1000 : ℝ) / 2 < 2 * (1 / 6 * (1 / 10)) / 3 :=
-  ouTauMax_slack (by norm_num) (by norm_num) (by rw [inst_ouTauMax]; norm_num)
-
-/-- `ouDiag_of_ouLL` at `sz0`, `τ_U = 1/1000`: the pin `UNOULL` (another gate's) stays a hypothesis. -/
-theorem inst_ouDiag : UNOULL sz0 (1 / 1000) → UNOUDiag sz0 (1 / 1000) :=
-  ouDiag_of_ouLL
-
-/-- `UNG1Row` at `sz0` (admissible at `𝔠 = 1/6`, `𝔡 = 1/10`), `τ_U = 1/1000 ≤ ouTauMax`. -/
-theorem inst_g1 (r1 : UNG1Row) (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULL sz0 (1 / 1000) ∧ UNOUEq747 sz0 (1 / 10) (1 / 1000) :=
-  r1 hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 1000) (by norm_num)
-    (by rw [inst_ouTauMax]; norm_num)
-
-/-- `ouRow_of_pins` applied (the rows `UNG1Row`, `UNG2bRow` are other gates' pins). -/
-theorem inst_ouRow (r1 : UNG1Row) (r2b : UNG2bRow) : UNOURow :=
-  ouRow_of_pins r1 r2b
-
-end ZeroModeProfileInst
 
 end RBM.Univ

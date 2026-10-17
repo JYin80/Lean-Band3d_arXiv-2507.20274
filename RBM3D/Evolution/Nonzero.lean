@@ -186,42 +186,4 @@ theorem ekSumDecayNonzero_holds (d n : ℕ) (Λ κ : ℝ) : EKSumDecayNonzero d 
 
 /-! ### Instances (nonempty application of `ekSumDecayNonzero_holds`) -/
 
-section Instances
-
-/-- the point mass `δ₀` on `n`-index tensors -/
-noncomputable def ekDelta0 (n d L : ℕ) : (Fin n → Zd d L) → ℂ := fun a => if a = 0 then 1 else 0
-
-/-- `d = 3`, `n = 2`, `Λ = 1`, `κ = 1/2`, `L = 5`, `g = 1/2`, `s = 995/1000 ≥ 1 - g²/L² = 99/100`,
-`t = 999/1000`, `m = i`, `σ = (+,-)`, `A = univ`, `𝒜 = δ₀`; both pins are discharged by their proofs. -/
-example :
-    haveI : NeZero 5 := ⟨by norm_num⟩
-    ∃ C : ℝ, 0 < C ∧ ekDelta0 2 3 5 0 ≠ 0 ∧
-      ‖zeroModeSet 3 5 (Finset.univ : Finset (Fin 2))
-          (UN 3 5 (1 / 2 : ℝ) (EKsgn Complex.I ![true, false]) (995 / 1000) (999 / 1000)
-            (ekDelta0 2 3 5))‖ ≤ C * ‖ekDelta0 2 3 5‖ := by
-  obtain ⟨C, hC, H⟩ := ekSumDecayNonzero_holds 3 2 1 (1 / 2) (prop5Short_holds 3 1 (1 / 2))
-    (prop8ZeroMode_holds 3 1 (1 / 2)) le_rfl le_rfl one_pos (by norm_num)
-  refine ⟨C, hC, by simp [ekDelta0], ?_⟩
-  exact H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (995 / 1000) (999 / 1000)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) Complex.I Complex.norm_I
-    (by rw [Complex.I_im]; norm_num) ![true, false] Finset.univ (fun i _ => Finset.mem_univ i)
-    (ekDelta0 2 3 5)
-
-/-- `n = 3`, `σ = (+,+,-)`, `A = {1, 2}` the two sign-change indices (index `0` is same-sign). -/
-example :
-    haveI : NeZero 5 := ⟨by norm_num⟩
-    ∃ C : ℝ, 0 < C ∧ ekDelta0 3 3 5 0 ≠ 0 ∧
-      ‖zeroModeSet 3 5 ({1, 2} : Finset (Fin 3))
-          (UN 3 5 (1 / 2 : ℝ) (EKsgn Complex.I ![true, true, false]) (995 / 1000) (999 / 1000)
-            (ekDelta0 3 3 5))‖ ≤ C * ‖ekDelta0 3 3 5‖ := by
-  obtain ⟨C, hC, H⟩ := ekSumDecayNonzero_holds 3 3 1 (1 / 2) (prop5Short_holds 3 1 (1 / 2))
-    (prop8ZeroMode_holds 3 1 (1 / 2)) le_rfl (by norm_num) one_pos (by norm_num)
-  refine ⟨C, hC, by simp [ekDelta0], ?_⟩
-  exact H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) (995 / 1000) (999 / 1000)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) Complex.I Complex.norm_I
-    (by rw [Complex.I_im]; norm_num) ![true, true, false] ({1, 2} : Finset (Fin 3))
-    (by decide) (ekDelta0 3 3 5)
-
-end Instances
-
 end RBM

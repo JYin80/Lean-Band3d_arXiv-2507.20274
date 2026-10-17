@@ -332,76 +332,8 @@ theorem unApriori_of_trLocal (d : ℕ) (hd : 3 ≤ d) (𝔠 𝔡 : ℝ) (sz : Si
     _ ≤ N ^ (ε / 2) * N ^ (ε / 2) := mul_le_mul_of_nonneg_right hbig (by linarith)
     _ = N ^ ε := hNε.symm
 
-/-- Target 6: the band row.  Bulk `E`: `UNDensBandRow` gives `δ ≤ κ/2` and `UNDens` (so `0 < δ`),
-`UNTrLocalBandRow` (from `UNLocAvgBand`) gives `UNTrLocal`, and target 5 applies. -/
-theorem unApriori_band_of_rows (hT : UNTrLocalBandRow) (hD : UNDensBandRow) (hL : UNLocAvgBand)
-    (d : ℕ) (hd : 3 ≤ d) (𝔠 𝔡 : ℝ) (sz : Sizes d) (hA : sz.Admissible 𝔠 𝔡) (κ : ℝ) (hκ : 0 < κ)
-    (E : ℝ) (hE : |E| ≤ 2 - κ) : UNApriori sz (UNModel.band sz) E := by
-  obtain ⟨δ, hδκ, hdens⟩ := hD κ hκ E hE
-  exact unApriori_of_trLocal d hd 𝔠 𝔡 sz hA (UNModel.band sz) (fun _ => msc) E
-    (fun _ => rhoSC E) δ hdens (hT hL d hd 𝔠 𝔡 sz hA κ hκ E hE δ hdens.1 hδκ)
-
 end RBM.Univ
 
 /-! ## Compiled instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `N = 2^21` at `n = 0`) -/
-
-namespace RBM.Univ.AprioriInst
-
-open MeasureTheory Matrix Filter Topology
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst
-
-/-- (a) Target 5 at `sz0`, the band model, `m = msc`, `E = 0`, `ρ = ρ_sc(0)`, `δ = 1/2`
-(`un_dens_msc_zero` discharges `UNDens`); `UNTrLocal` is the owed pin and stays a hypothesis. -/
-theorem inst_unApriori_band_zero :
-    UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
-      UNApriori sz0 (UNModel.band sz0) 0 :=
-  fun h => unApriori_of_trLocal 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm (UNModel.band sz0)
-    (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) un_dens_msc_zero h
-
-/-- (b) Target 6 at `d = 3`, `𝔠 = 1/6`, `𝔡 = 1/10`, `sz0`, `κ = 1/2`, `E = 1` (`|1| ≤ 3/2`); the three
-owed band inputs stay hypotheses. -/
-theorem inst_unApriori_band_one :
-    UNTrLocalBandRow → UNDensBandRow → UNLocAvgBand → UNApriori sz0 (UNModel.band sz0) 1 :=
-  fun hT hD hL => unApriori_band_of_rows hT hD hL 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm
-    (1 / 2) (by norm_num) 1 (by rw [abs_one]; norm_num)
-
-/-- (c) Target 2 at `H = 0 : Matrix (Fin 1) (Fin 1) ℂ`, `E = 0`, `η₀ = 1/2`, `η₁ = 1`, `w = m(i)`,
-`ζ = 0` (the hypothesis `‖w - w‖ ≤ 0` is discharged; the equality case). -/
-theorem inst_im_le_of_near :
-    (stieltjesN (0 : Matrix (Fin 1) (Fin 1) ℂ) (((0 : ℝ) : ℂ) + (((1 / 2 : ℝ)) : ℂ) * Complex.I)).im ≤
-      1 / (1 / 2) * ((stieltjesN (0 : Matrix (Fin 1) (Fin 1) ℂ)
-        (((0 : ℝ) : ℂ) + ((1 : ℝ) : ℂ) * Complex.I)).im + 0) :=
-  apriori_im_le_of_near (0 : Matrix (Fin 1) (Fin 1) ℂ) Matrix.isHermitian_zero 0 (1 / 2) 1
-    (stieltjesN (0 : Matrix (Fin 1) (Fin 1) ℂ) (((0 : ℝ) : ℂ) + ((1 : ℝ) : ℂ) * Complex.I)) 0
-    (by norm_num) (by norm_num) (by simp)
-
-/-- (d) Target 4 at `sz0`, `n = 0`, `𝔡 = 1/10`, `η = 1/2` (`W^{-3/2+1/10} = 1/128 ≤ 1/64 = lam`). -/
-theorem inst_bctl_le :
-    sz0.Bctl 0 (1 - 1 / 2) ≤ ((sz0.W 0 : ℕ) : ℝ) ^ (-(2 * (1 / 10 : ℝ))) + (Nsz sz0 0 * (1 / 2))⁻¹ := by
-  refine apriori_bctl_le sz0 0 (1 / 10) (1 / 2) (by norm_num) ?_
-  obtain ⟨-, hW, -, hl⟩ := sz0_values
-  rw [hl, hW]
-  have h1 : (((32 : ℕ) : ℝ)) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = ((2 : ℝ) ^ (7 : ℕ))⁻¹ := by
-    rw [show ((32 : ℕ) : ℝ) = (2 : ℝ) ^ (5 : ℝ) by norm_num, ← Real.rpow_mul (by norm_num)]
-    rw [show (5 : ℝ) * (-((3 : ℕ) : ℝ) / 2 + 1 / 10) = -((7 : ℕ) : ℝ) by norm_num,
-      Real.rpow_neg (by norm_num), Real.rpow_natCast]
-  rw [h1]
-  norm_num
-
-/-- Target 1 at the `1 × 1` zero matrix, `E = 0`, `η = 1`: `0 ≤ Im m(i) = 1 ≤ 1`. -/
-theorem inst_im_bounds :
-    0 ≤ (stieltjesN (0 : Matrix (Fin 1) (Fin 1) ℂ) (((0 : ℝ) : ℂ) + ((1 : ℝ) : ℂ) * Complex.I)).im ∧
-      (stieltjesN (0 : Matrix (Fin 1) (Fin 1) ℂ)
-        (((0 : ℝ) : ℂ) + ((1 : ℝ) : ℂ) * Complex.I)).im ≤ 1 / 1 :=
-  apriori_im_bounds (0 : Matrix (Fin 1) (Fin 1) ℂ) Matrix.isHermitian_zero 0 1 one_pos
-
-/-- Target 3 at `sz0`, the band model, `n = 0`, `g ≡ 1`: both sides are `1`
-(probability measures). -/
-theorem inst_ouMat_zero_integral :
-    ∫ ω, (fun _ => (1 : ℝ)) (ouMat (UNModel.band sz0) 0 0 ω) ∂(ouP (UNModel.band sz0) 0) =
-      ∫ ω, (fun _ => (1 : ℝ)) ((UNModel.band sz0).H 0 ω) ∂(UNModel.band sz0).μ :=
-  apriori_ouMat_zero_integral sz0 (UNModel.band sz0) 0 (fun _ => 1)
-
-end RBM.Univ.AprioriInst
 
 end

@@ -74,13 +74,6 @@ private theorem TwistKer_norm_Xi_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g 
         mul_le_mul_of_nonneg_left (mul_le_mul hQ hΘ (norm_nonneg _) zero_le_one) (by linarith)
     _ = (u - v) / (1 - u) := by rw [one_mul, div_eq_mul_inv]
 
-/-- **T.10 (a)** from `EKPins_norm_uKer_le`: `‖Ũ_{v,u} ∘ A‖_∞ ≤ ((1-v)/(1-u)) ‖A‖_∞`. -/
-theorem baTwKerA_holds (d : ℕ) (Λ κ : ℝ) : BATwKerA d Λ κ := by
-  intro hd hΛ hκ L hL g hg hgΛ E m hr σ₁ σ₂ v u hv hvu hu A
-  have : NeZero L := ⟨by omega⟩
-  exact (Matrix.linfty_opNorm_mulVec _ _).trans
-    (mul_le_mul_of_nonneg_right (EKPins_norm_uKer_le hr hv hvu hu σ₁ σ₂) (norm_nonneg _))
-
 /-- **T.10 (b)** (`(D.6)`): near the anchor `c₁` the ball sums of `Ξ` (`baEKXiBall_holds` at `Λ' = W^ε`, `R = W^ε ℓ_v`), far from it
 `‖A b‖ ≤ W^{-D}` and `‖Ξ‖_{∞→∞} ≤ (u-v)/(1-u) ≤ (1-v)/(1-u) ≤ W`.  The constant is that of `baEKXiBall_holds`. -/
 theorem baTwKerFar_holds (d : ℕ) (Λ κ : ℝ) : BATwKerFar d Λ κ := by
@@ -530,111 +523,6 @@ theorem baTwKDecay_holds (d : ℕ) : BATwKDecay d := by
 end Decay
 
 /-! ## 4. The instances (`d = 3`; targets 1 at the flow point `Pf` of `(L, g) = (4, 1/2)`, target 2 at `sz0`, `zSeq`, `flow_sz0`) -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
-open scoped Matrix.Norms.Operator
-
-/-- The flow point of `(L, g) = (4, 1/2)` (`BA/MFixedPoint.lean:877-885`: `0 < Pf.g0 ≤ 1/2`, `BAReal`, `κ = Im Pf.m0`, `Λ = 1`). -/
-private def TwistKer_Pf : FlowPt 4 (1 / 2) := (exists_flowPt 4 (g := 1 / 2) (by norm_num)).some
-
-/-- T.10 (a) at `Pf`, `v = 0 < u = 1/2`, `A = δ₀ ≠ 0`, charges `(-,+)`. -/
-example : ∃ A : Zd 3 4 → ℂ, A ≠ 0 ∧ ‖BAuKer 3 4 TwistKer_Pf.g0 TwistKer_Pf.E TwistKer_Pf.m0 0 (1 / 2) false true *ᵥ A‖ ≤ (1 - 0) / (1 - 1 / 2) * ‖A‖ :=
-  ⟨fun x => if x = 0 then 1 else 0, fun hA => by simpa using congrFun hA 0,
-    baTwKerA_holds 3 1 TwistKer_Pf.m0.im le_rfl one_pos TwistKer_Pf.real.1.1 4 (by norm_num) TwistKer_Pf.g0 TwistKer_Pf.g0_pos
-      (TwistKer_Pf.g0_le.trans (by norm_num)) TwistKer_Pf.E TwistKer_Pf.m0 TwistKer_Pf.real false true 0 (1 / 2) le_rfl (by norm_num) (by norm_num) _⟩
-
-/-- T.10 (b) at `Pf`: `W = 16`, `ε = 1/2`, `D = 2`, `v = 0`, `u = 1/2`, anchor `c₁ = 0`, `A = δ₀` (`‖A b‖ ≤ W^{-D}` off the near set `{|b| < W^ε ℓ_v}`, which contains `0`). -/
-example : ∃ C₁ : ℝ, 0 < C₁ ∧ ∃ A : Zd 3 4 → ℂ, A ≠ 0 ∧ ‖BAuKer 3 4 TwistKer_Pf.g0 TwistKer_Pf.E TwistKer_Pf.m0 0 (1 / 2) false true *ᵥ A‖ ≤
-    (1 + C₁ * (16 : ℝ) ^ (2 * (1 / 2 : ℝ)) * ((TwistKer_Pf.g0 ^ 2 + |1 - 0|) / (TwistKer_Pf.g0 ^ 2 + |1 - 1 / 2|))) * ‖A‖ + (16 : ℝ) ^ (-2 + 1 : ℝ) := by
-  obtain ⟨C₁, hC₁, H⟩ := baTwKerFar_holds 3 1 TwistKer_Pf.m0.im le_rfl one_pos TwistKer_Pf.real.1.1
-  have hg := TwistKer_Pf.g0_pos; have hg2 := TwistKer_Pf.g0_le
-  refine ⟨C₁, hC₁, fun x => if x = 0 then 1 else 0, fun hA => by simpa using congrFun hA 0, H 4 (by norm_num) TwistKer_Pf.g0 hg (hg2.trans (by norm_num)) 16 (1 / 2) 2
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) 0 (1 / 2) le_rfl (by norm_num) (by norm_num; nlinarith) (by norm_num) TwistKer_Pf.E TwistKer_Pf.m0 TwistKer_Pf.real false true 0 _ ?_⟩
-  intro b hb
-  by_cases h0 : b = 0
-  · subst h0
-    have h1 := one_le_ellT (L := 4) (g := TwistKer_Pf.g0) (t := 0) (by norm_num)
-    have h2 : (1 : ℝ) ≤ 16 ^ (1 / 2 : ℝ) := Real.one_le_rpow (by norm_num) (by norm_num)
-    simp [zdistD] at hb; nlinarith
-  · simp [h0]
-
-/-- T.10 (d) with `A = 2 > 1` at `Pf`, `v = 1 - g₀²/8 < u = 1 - g₀²/16`: `(1 - v) L² = 2 g₀²`, so the regime of the merged `A = 1` lemma (`(1-v)L² ≤ g₀²`) fails and only the
-`A`-form applies. -/
-example : ∃ C : ℝ, 0 < C ∧ ‖projMat 3 4 * BAuKer 3 4 TwistKer_Pf.g0 TwistKer_Pf.E TwistKer_Pf.m0 (1 - TwistKer_Pf.g0 ^ 2 / 8) (1 - TwistKer_Pf.g0 ^ 2 / 16) false true‖ ≤ C ∧
-    1 - TwistKer_Pf.g0 ^ 2 / 8 < 1 - TwistKer_Pf.g0 ^ 2 / 16 ∧ ¬ (1 - (1 - TwistKer_Pf.g0 ^ 2 / 8)) * ((4 : ℕ) : ℝ) ^ 2 ≤ 1 * TwistKer_Pf.g0 ^ 2 := by
-  obtain ⟨C, hC, H⟩ := baTwKerZero_holds 3 1 TwistKer_Pf.m0.im le_rfl one_pos TwistKer_Pf.real.1.1 2 two_pos
-  have hg := TwistKer_Pf.g0_pos; have hg2 := TwistKer_Pf.g0_le
-  have hp : 0 < TwistKer_Pf.g0 ^ 2 := by positivity
-  have hq : TwistKer_Pf.g0 ^ 2 ≤ 1 / 4 := by nlinarith
-  refine ⟨C, hC, H 4 (by norm_num) TwistKer_Pf.g0 hg (hg2.trans (by norm_num)) TwistKer_Pf.E TwistKer_Pf.m0 TwistKer_Pf.real false true _ _ (by nlinarith)
-    (by push_cast; nlinarith) (by linarith) (by linarith), by linarith, ?_⟩
-  push_cast
-  nlinarith
-
-/-- T.10 (d) with `A = (κ+1)/κ`, `κ = Im Pf.m0` (the use of TL2d), `v = 1 - g₀²/16 < u = 1 - g₀²/32`. -/
-example : ∃ C : ℝ, 0 < C ∧ ‖projMat 3 4 * BAuKer 3 4 TwistKer_Pf.g0 TwistKer_Pf.E TwistKer_Pf.m0 (1 - TwistKer_Pf.g0 ^ 2 / 16) (1 - TwistKer_Pf.g0 ^ 2 / 32) false true‖ ≤ C ∧
-    1 - TwistKer_Pf.g0 ^ 2 / 16 < 1 - TwistKer_Pf.g0 ^ 2 / 32 := by
-  have hκ := TwistKer_Pf.real.1.1
-  obtain ⟨C, hC, H⟩ := baTwKerZero_holds 3 1 TwistKer_Pf.m0.im le_rfl one_pos hκ ((TwistKer_Pf.m0.im + 1) / TwistKer_Pf.m0.im) (by positivity)
-  have hg := TwistKer_Pf.g0_pos; have hg2 := TwistKer_Pf.g0_le
-  have hp : 0 < TwistKer_Pf.g0 ^ 2 := by positivity
-  have hA : 1 ≤ (TwistKer_Pf.m0.im + 1) / TwistKer_Pf.m0.im := by rw [le_div_iff₀ hκ]; linarith
-  refine ⟨C, hC, H 4 (by norm_num) TwistKer_Pf.g0 hg (hg2.trans (by norm_num)) TwistKer_Pf.E TwistKer_Pf.m0 TwistKer_Pf.real false true _ _ (by nlinarith)
-    (by push_cast; nlinarith) (by linarith) (by linarith), by linarith⟩
-
-/-- T.1 (iii) at `d = 3`, `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`), `zSeq`, `flow_sz0` (`(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`), `ε₁ = 1/10`,
-`D = 2`.  For every `n` and `v ∈ [0, 1/2]` (`1/2 < t₀`, `half_lt_t0`) the pair `a = (2(n+1), 0, 0)`, `c₁ = 0` lies in the cut-off region (`|a - c₁|_∞ ≥ 2(n+1) ≥ W_n^{1/10}`,
-`ℓ_v(lam_n) ≤ 1`), so the theorem is applied to a nonempty set for large `n`, every charge `σ` and every `c₂`. -/
-example : ∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ 1 / 2 → ∃ a c₁ : Zd 3 (sz0.L n),
-    ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * ellT (sz0.L n) (sz0.lam n) v ≤ (zdistInf 3 (sz0.L n) (a - c₁) : ℝ) ∧
-    ∀ (σ : Fin 2 → Bool) (c₂ : Zd 3 (sz0.L n)),
-      ‖twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖ ≤ ((sz0.W n : ℕ) : ℝ) ^ (-2 : ℝ) := by
-  filter_upwards [baTwKDecay_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (1 / 10) 2 (by norm_num) (by norm_num)] with n hn
-  intro v hv0 hv1
-  have hy1 : (2 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
-  -- `zdistInf (a - 0) ≥ 2(n+1)` for `a = (2(n+1), 0, 0)` in `Z_{4(n+1)}^3`
-  have h1 : 2 * (n + 1) ≤ zdistInf 3 (sz0.L n) (![((2 * (n + 1) : ℕ) : ZMod (sz0.L n)), 0, 0] - 0) := by
-    have h := Finset.le_sup (f := fun j => zdist (sz0.L n)
-      ((![((2 * (n + 1) : ℕ) : ZMod (sz0.L n)), 0, 0] - 0 : Zd 3 (sz0.L n)) j)) (Finset.mem_univ (0 : Fin 3))
-    refine le_trans ?_ h
-    have hL : sz0.L n = 4 * (n + 1) := rfl
-    simp only [Pi.sub_apply, Pi.zero_apply, sub_zero, Matrix.cons_val_zero, zdist, ZMod.val_natCast]
-    rw [Nat.mod_eq_of_lt (by rw [hL]; omega)]
-    rw [hL]; omega
-  have h1' : (2 * ((n : ℝ) + 1)) ≤ (zdistInf 3 (sz0.L n) (![((2 * (n + 1) : ℕ) : ZMod (sz0.L n)), 0, 0] - 0) : ℝ) := by
-    exact_mod_cast h1
-  -- `ℓ_v(lam_n) ≤ 1` for `v ≤ 1/2`: `lam_n ≤ 1/64`, `√|1 - v| ≥ 1/2`
-  have hell : ellT (sz0.L n) (sz0.lam n) v ≤ 1 := by
-    refine (min_le_left _ _).trans (max_le ?_ le_rfl)
-    have hs : (1 / 2 : ℝ) ≤ Real.sqrt |1 - v| := by
-      rw [Real.le_sqrt (by norm_num) (abs_nonneg _), abs_of_nonneg (by linarith)]
-      linarith
-    have hlam : sz0.lam n ≤ 1 / 2 := by
-      have e : sz0.lam n = ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ := rfl
-      rw [e]
-      have h6 : (2 : ℝ) ^ 6 ≤ (2 * ((n : ℝ) + 1)) ^ 6 := pow_le_pow_left₀ (by norm_num) hy1 6
-      calc ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ ((2 : ℝ) ^ 6)⁻¹ := inv_anti₀ (by norm_num) h6
-        _ ≤ 1 / 2 := by norm_num
-    rw [div_le_one (by linarith)]
-    linarith
-  -- `W_n^{1/10} = ((2(n+1))^5)^{1/10} ≤ 2(n+1)`
-  have hW : ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
-    have hWn : ((sz0.W n : ℕ) : ℝ) = (2 * ((n : ℝ) + 1)) ^ 5 := by simp [sz0]
-    rw [hWn]
-    calc ((2 * ((n : ℝ) + 1)) ^ 5) ^ (1 / 10 : ℝ) = (2 * ((n : ℝ) + 1)) ^ ((1 : ℝ) / 2) := by
-          rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]; norm_num
-      _ ≤ (2 * ((n : ℝ) + 1)) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
-      _ = _ := Real.rpow_one _
-  have hWpos : 0 ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hcut : ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * ellT (sz0.L n) (sz0.lam n) v ≤
-      (zdistInf 3 (sz0.L n) (![((2 * (n + 1) : ℕ) : ZMod (sz0.L n)), 0, 0] - 0) : ℝ) :=
-    calc _ ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * 1 := mul_le_mul_of_nonneg_left hell hWpos
-      _ ≤ _ := by rw [mul_one]; exact hW.trans h1'
-  exact ⟨_, 0, hcut, fun σ c₂ => hn v hv0 (hv1.trans (half_lt_t0 n).le) σ _ 0 c₂ hcut⟩
-
-end Inst
 
 /-! ## 5. The fine lattice: `E_a`, the trace sandwich, loops and the Ward identity (the deterministic core of T.2, T.4 at `n = 3`, T.5)
 

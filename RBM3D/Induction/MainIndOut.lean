@@ -139,14 +139,6 @@ the horizon `stHorizon_band`). -/
 theorem unMLOut_of_mainInd (d : ℕ) (hmain : STMainInd d) : UNMLOut d :=
   (unMLOut_iff d).2 (stMLOutG_of_mainIndG d _ _ _ _ ((STMainInd_iff d).1 hmain) (stHorizon_band d) (stBase_band d))
 
-/-- **Route G**: `UNMLOutBA` is `STMLOutG` at the block Anderson data (`Iff.rfl`); it follows from the BA instances
-of the three pins (owed to BA-V). -/
-theorem unMLOutBA_of_pins (d : ℕ)
-    (hmain : STMainIndG d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0)
-    (hhor : STHorizonG d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAflowT0)
-    (hbase : STBaseG d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz) :
-    UNMLOutBA d := stMLOutG_of_mainIndG d _ _ _ _ hmain hhor hbase
-
 end RBM.Univ
 
 /-! ## 5. `STMainInd` from the two owed LW pins, and the ST-6 output from them -/
@@ -175,49 +167,3 @@ theorem unMLOut_of_LW (d : ℕ) (hLW : LWterm d) (hLWE : LWtermExp d) : UNMLOut 
 end RBM.Univ
 
 /-! ## 6. Compiled nonempty instances (`d = 3`, merged data `sz0`, `z0`, `zSeq`) -/
-
-namespace RBM.Gauss.MainIndInst
-
-open RBM.BA RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-
-/-- `stMLOutG_of_mainIndG` at the band data and the time sequence `t ≡ 0`, the class `t_n = 0` that the mixing
-handles (`t'_n = lemT z_n/2`): the six conclusions are the base case (R1) mixed with the chain to `t'` (R2).  The pin
-`STMainInd 3` (`lem:main_ind`, owed) is a hypothesis; `STHorizonG` and `STBaseG` are proved. -/
-example (hmain : STMainInd 3) : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) ∧
-    STLmaxgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) ∧
-    STDecaygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) ∧
-    STExp2gL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) ∧
-    STLocalEntrygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun _ => 0) :=
-  stMLOutG_of_mainIndG 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) ((STMainInd_iff 3).1 hmain) (stHorizon_band 3)
-    (stBase_band 3) (by norm_num) (1 / 10) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num) (by norm_num) sz0 z0
-    flow_z0 _ (fun _ => le_rfl) (fun n => (lemT_pos (z0_im_pos n)).le)
-
-/-- `unMLOut_of_mainInd` at `sz0`, `z0`, `t = lemT z/2`: with the one hypothesis `STMainInd 3` (`lem:main_ind`, owed),
-`STLK`. -/
-example (hmain : STMainInd 3) : sz0.STLK (STflowE z0) (fun n => lemT (z0 n) / 2) :=
-  (RBM.Univ.unMLOut_of_mainInd 3 hmain (by norm_num) (1 / 10) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num)
-    (by norm_num) sz0 z0 flow_z0 _ (fun n => (half_pos (lemT_pos (z0_im_pos n))).le)
-    (fun n => by linarith [lemT_pos (z0_im_pos n)])).1
-
-/-- `unMLOutBA_of_pins` at the block Anderson data `sz0`, `zSeq` (`BAFlow` by `flow_sz0`, `t_n = 1/2 ≤ 2/3 ≤ t₀_n` by
-`t0_sz0`): the three BA pins (`STMainIndG`, `STHorizonG`, `STBaseG` at the BA data, owed to BA-V) are hypotheses. -/
-example
-    (hmain : STMainIndG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0)
-    (hhor : STHorizonG 3 (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAflowT0)
-    (hbase : STBaseG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz) :
-    STLKgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) :=
-  (RBM.Univ.unMLOutBA_of_pins 3 hmain hhor hbase (by norm_num) (1 / 2) (1 / 10) (1 / 10) (1 / 6) (by norm_num)
-    (by norm_num) (by norm_num) sz0 zSeq flow_sz0 _ (fun _ => by norm_num)
-    (fun n => (by norm_num : (1 / 2 : ℝ) ≤ 2 / 3).trans (t0_sz0 n))).1
-
-/-- `stMainInd_of_LW` and `unMLOut_of_LW` at `sz0`, `z0`, `t = lemT z/2`: the two owed LW pins (`LWterm 3`, `LWtermExp 3`,
-LW-01) are the only hypotheses. -/
-example (hLW : LWterm 3) (hLWE : LWtermExp 3) : STMainInd 3 := stMainInd_of_LW 3 hLW hLWE
-
-example (hLW : LWterm 3) (hLWE : LWtermExp 3) : sz0.STLK (STflowE z0) (fun n => lemT (z0 n) / 2) :=
-  (RBM.Univ.unMLOut_of_LW 3 hLW hLWE (by norm_num) (1 / 10) (1 / 10) (1 / 10) (1 / 6) (by norm_num) (by norm_num)
-    (by norm_num) sz0 z0 flow_z0 _ (fun n => (half_pos (lemT_pos (z0_im_pos n))).le)
-    (fun n => by linarith [lemT_pos (z0_im_pos n)])).1
-
-end RBM.Gauss.MainIndInst

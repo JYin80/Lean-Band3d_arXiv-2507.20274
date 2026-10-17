@@ -455,16 +455,6 @@ private theorem KSymbol_dir_ge_explicit (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (h
       (by have := pow_le_pow_left₀ hRpos.le hRR0 8; linarith)
   exact h3.trans h1
 
-/-- **Target 4** (P3a): the per-direction neighbour bound `K_{0,±e_i} ≥ c g²`, uniformly in `L` and
-`g ∈ (0, Λ]` (paper-delta D614: no source in the paper for `g ≥ (2C)⁻¹`). -/
-theorem BAK_dir_ge : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ c : ℝ, 0 < c ∧
-    ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
-      ∀ (i : Fin d) (s : Bool), c * g ^ 2 ≤ BAK d L g E m 0 (unitVec d L (i, s)) := by
-  intro d hd Λ κ hΛ hκ
-  refine ⟨κ ^ 2 / (4 * (4 * (d : ℝ) * Λ + 3) ^ 8), by positivity, ?_⟩
-  intro L _ hL g E m hg hgΛ hr i s
-  exact KSymbol_dir_ge_explicit d L hL hd Λ g κ E m hg hgΛ hκ hr i s
-
 end Direction
 
 /-! ## 4. The symbol of `K` on the dual torus (targets 5-7) -/
@@ -495,9 +485,6 @@ private def KSymbol_phi (k a : Zd d L) : ℝ :=
 
 private theorem KSymbol_Khat_eq (g E : ℝ) (m : ℂ) (k : Zd d L) :
     BAKhat d L g E m k = ∑ a, BAK d L g E m 0 a * Real.cos (KSymbol_phi d L k a) := rfl
-
-private theorem KSymbol_phi_zero (k : Zd d L) : KSymbol_phi d L k 0 = 0 := by
-  simp [KSymbol_phi]
 
 /-- `θ_k · (-a) + θ_k · a ∈ 2π ℤ`: `(-a)_j.val = L - a_j.val` for `a_j ≠ 0`. -/
 private theorem KSymbol_phi_neg (k a : Zd d L) :
@@ -562,25 +549,6 @@ theorem BAKhat_eq : ∀ (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (k : Zd d L
   rw [← Finset.sum_mul, ← Complex.ofReal_sum, ← Complex.ofReal_sum, KSymbol_sin_sum, KSymbol_Khat_eq]
   push_cast
   simp
-
-/-- **Target 7** (P3b): laziness `1 + K̂(θ) ≥ 2κ²`. -/
-theorem BAK_lazy : ∀ (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ), 0 < κ → BAReal d L g κ E m →
-    ∀ k : Zd d L, 2 * κ ^ 2 ≤ 1 + BAKhat d L g E m k := by
-  intro d L _ g κ E m hκ hr k
-  have hrow := BAK_row_sum d L g E m hr.1 0
-  have h1 : 1 + BAKhat d L g E m k = ∑ a, BAK d L g E m 0 a * (1 + Real.cos (KSymbol_phi d L k a)) := by
-    rw [KSymbol_Khat_eq]
-    simp only [mul_add, mul_one, Finset.sum_add_distrib, hrow]
-  rw [h1]
-  have h2 : BAK d L g E m 0 0 * (1 + Real.cos (KSymbol_phi d L k 0))
-      ≤ ∑ a, BAK d L g E m 0 a * (1 + Real.cos (KSymbol_phi d L k a)) :=
-    Finset.single_le_sum (f := fun a => BAK d L g E m 0 a * (1 + Real.cos (KSymbol_phi d L k a)))
-      (fun a _ => mul_nonneg (BAK_nonneg d L g E m 0 a) (by linarith [Real.neg_one_le_cos (KSymbol_phi d L k a)]))
-      (Finset.mem_univ 0)
-  refine le_trans ?_ h2
-  rw [KSymbol_phi_zero, Real.cos_zero]
-  have := (BAK_diag_bounds d L g κ E m hκ hr 0).1
-  linarith
 
 end Symbol
 
@@ -693,136 +661,6 @@ end Gap
 
 /-! ## 6. The second moment (target 8) -/
 
-section SecondMoment
-
-/-- **Target 8** (P3b): the second moment `Σ_a K_{0a} |a|² ≤ C g²`, uniformly in `L` and `g ∈ (0, Λ]`
-(`r² ≤ (2/μ²) e^{μ r}` and `BAK_exp_moment_le`, the diagonal term cancelling). -/
-theorem BAK_second_moment : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
-    ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
-      ∑ a : Zd d L, BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2 ≤ C * g ^ 2 := by
-  intro d hd Λ κ hΛ hκ
-  have hd0 : 0 < d := by omega
-  set μ : ℝ := BAct_rate d Λ κ with hμ
-  have hμpos : 0 < μ := BAct_rate_pos d Λ κ hd0 hΛ hκ
-  set C0 : ℝ := 2 / μ ^ 2 * (BAp5s_A d Λ κ * BAp5s_S d Λ κ) with hC0
-  refine ⟨max C0 1, lt_of_lt_of_le one_pos (le_max_right _ _), ?_⟩
-  intro L _ hL g E m hg hgΛ hr
-  have hmom := BAK_exp_moment_le d L hL hd Λ g κ E m hΛ hg hgΛ hκ hr μ hμpos.le le_rfl 0
-  have hsplit : ∀ f : Zd d L → ℝ, ∑ b, f b = f 0 + ∑ b ∈ Finset.univ.erase 0, f b := fun f =>
-    (Finset.add_sum_erase _ _ (Finset.mem_univ 0)).symm
-  have hdiag : BAK d L g E m 0 0 = ‖m‖ ^ 2 := BAK_diag d L g E m hr.1 0
-  -- pointwise: `r² ≤ (2/μ²) e^{μ r}`
-  have hpt : ∀ a : Zd d L, BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2
-      ≤ 2 / μ ^ 2 * (BAK d L g E m 0 a * Real.exp (μ * (zdistD d L (0 - a) : ℝ))) := by
-    intro a
-    rw [zero_sub, zdistD_neg]
-    have hr0 : (0 : ℝ) ≤ (zdistD d L a : ℝ) := Nat.cast_nonneg _
-    have he := Real.quadratic_le_exp_of_nonneg (mul_nonneg hμpos.le hr0)
-    have h2 : (zdistD d L a : ℝ) ^ 2 ≤ 2 / μ ^ 2 * Real.exp (μ * (zdistD d L a : ℝ)) := by
-      rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
-      nlinarith [he, mul_nonneg hμpos.le hr0]
-    calc BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2
-        ≤ BAK d L g E m 0 a * (2 / μ ^ 2 * Real.exp (μ * (zdistD d L a : ℝ))) :=
-          mul_le_mul_of_nonneg_left h2 (BAK_nonneg d L g E m 0 a)
-      _ = _ := by ring
-  have hsum : ∑ a ∈ Finset.univ.erase (0 : Zd d L), BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2
-      ≤ 2 / μ ^ 2 * ∑ a ∈ Finset.univ.erase (0 : Zd d L),
-          BAK d L g E m 0 a * Real.exp (μ * (zdistD d L (0 - a) : ℝ)) := by
-    rw [Finset.mul_sum]
-    exact Finset.sum_le_sum fun a _ => hpt a
-  -- the `a = 0` term of the left side vanishes and that of the right side is `|m|²`
-  have hL0 : BAK d L g E m 0 0 * (zdistD d L 0 : ℝ) ^ 2 = 0 := by simp
-  have hR0 : BAK d L g E m 0 0 * Real.exp (μ * (zdistD d L (0 - 0) : ℝ)) = ‖m‖ ^ 2 := by
-    rw [sub_self, zdistD_zero, hdiag]; simp
-  have hmom' : ∑ b, BAK d L g E m 0 b * Real.exp (μ * (zdistD d L (0 - b) : ℝ))
-      ≤ ‖m‖ ^ 2 + BAp5s_A d Λ κ * g ^ 2 * BAp5s_S d Λ κ := hmom
-  rw [hsplit (fun a => BAK d L g E m 0 a * Real.exp (μ * (zdistD d L (0 - a) : ℝ))), hR0] at hmom'
-  have hrest : ∑ b ∈ Finset.univ.erase (0 : Zd d L), BAK d L g E m 0 b * Real.exp (μ * (zdistD d L (0 - b) : ℝ))
-      ≤ BAp5s_A d Λ κ * g ^ 2 * BAp5s_S d Λ κ := by linarith
-  have h1 : ∑ a ∈ Finset.univ.erase (0 : Zd d L), BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2
-      ≤ 2 / μ ^ 2 * (BAp5s_A d Λ κ * g ^ 2 * BAp5s_S d Λ κ) :=
-    le_trans hsum (mul_le_mul_of_nonneg_left (by linarith) (by positivity))
-  calc ∑ a, BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2
-      = BAK d L g E m 0 0 * (zdistD d L 0 : ℝ) ^ 2
-        + ∑ a ∈ Finset.univ.erase (0 : Zd d L), BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2 :=
-        hsplit (fun a => BAK d L g E m 0 a * (zdistD d L a : ℝ) ^ 2)
-    _ ≤ C0 * g ^ 2 := by
-        rw [hL0, zero_add, hC0]
-        calc _ ≤ 2 / μ ^ 2 * (BAp5s_A d Λ κ * g ^ 2 * BAp5s_S d Λ κ) := h1
-          _ = _ := by ring
-    _ ≤ max C0 1 * g ^ 2 := mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)
-
-end SecondMoment
-
 /-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, data `P` of `KKernelInst`) -/
-
-namespace KSymbolInst
-
-open RBM.BA.MFixedPointInst
-
-/-- Target 1 at `P`: `2dg²/R⁴ ≤ 1 - |m|²`. -/
-theorem inst_var_lower :
-    2 * (3 : ℝ) * P.g0 ^ 2 / (2 * (3 : ℝ) * P.g0 + ‖(P.E : ℂ) + P.m0‖) ^ 4 ≤ 1 - ‖P.m0‖ ^ 2 := by
-  have h := BAvar_lower 3 4 (by norm_num) (by norm_num) P.g0 P.m0.im P.E P.m0 P.g0_pos P.real.1.1 P.real
-  simpa using h
-
-/-- Target 2 at the transposition `(0 1)` of the coordinates, entry `(e₁, e₂)`. -/
-theorem inst_perm :
-    BAMB 3 4 P.g0 (P.E : ℂ) P.m0 (fun j => (![1, 0, 0] : Zd 3 4) (Equiv.swap (0 : Fin 3) 1 j))
-        (fun j => (![0, 1, 0] : Zd 3 4) (Equiv.swap (0 : Fin 3) 1 j))
-      = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 ![1, 0, 0] ![0, 1, 0] :=
-  BAMB_perm 3 4 (Equiv.swap 0 1) P.g0 (P.E : ℂ) P.m0 ![1, 0, 0] ![0, 1, 0]
-
-/-- Target 3 at `P`: the weight of `e₁` is the average over the six neighbours of `0`. -/
-theorem inst_dir_eq :
-    BAK 3 4 P.g0 P.E P.m0 0 (unitVec 3 4 (0, true)) =
-      (2 * (3 : ℝ))⁻¹ * ∑ b ∈ Finset.univ.filter (fun b : Zd 3 4 => Adj 3 4 0 b), BAK 3 4 P.g0 P.E P.m0 0 b :=
-  BAK_dir_eq 3 4 (by norm_num) (by norm_num) P.g0 P.E P.m0 0 true
-
-/-- Target 4 at `P`, `Λ = 10`: a positive `c` with `c g² ≤ K_{0,-e₂}`. -/
-theorem inst_dir_ge :
-    ∃ c : ℝ, 0 < c ∧ c * P.g0 ^ 2 ≤ BAK 3 4 P.g0 P.E P.m0 0 (unitVec 3 4 (1, false)) := by
-  obtain ⟨c, hc, h⟩ := BAK_dir_ge 3 (by norm_num) 10 P.m0.im (by norm_num) P.real.1.1
-  exact ⟨c, hc, h 4 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real 1 false⟩
-
-/-- Target 5 at `P`, `k = (1, 0, 0)`. -/
-theorem inst_Khat_eq :
-    (∑ a : Zd 3 4, (BAK 3 4 P.g0 P.E P.m0 0 a : ℂ) *
-      Complex.exp (2 * Real.pi * Complex.I / (4 : ℕ) * ∑ j, (((![1, 0, 0] : Zd 3 4) j).val : ℂ) * ((a j).val : ℂ))) =
-      (BAKhat 3 4 P.g0 P.E P.m0 ![1, 0, 0] : ℂ) :=
-  BAKhat_eq 3 4 P.g0 P.E P.m0 ![1, 0, 0]
-
-/-- `|θ_k|² > 0` at `k = (1, 0, 0)` (nondegenerate momentum). -/
-theorem inst_thetaSq_pos : 0 < BAthetaSq 3 4 ![1, 0, 0] := by
-  unfold BAthetaSq
-  refine Finset.sum_pos' (fun j _ => by positivity) ⟨0, Finset.mem_univ _, ?_⟩
-  have h1 : zdist 4 ((![1, 0, 0] : Zd 3 4) 0) = 1 := by decide
-  rw [h1]
-  positivity
-
-/-- Target 6 at `P`, `Λ = 10`, `k = (1, 0, 0)`: the gap. -/
-theorem inst_gap :
-    ∃ c : ℝ, 0 < c ∧ c * P.g0 ^ 2 * BAthetaSq 3 4 ![1, 0, 0] ≤ 1 - BAKhat 3 4 P.g0 P.E P.m0 ![1, 0, 0] := by
-  obtain ⟨c, hc, h⟩ := BAK_gap 3 (by norm_num) 10 P.m0.im (by norm_num) P.real.1.1
-  exact ⟨c, hc, h 4 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real ![1, 0, 0]⟩
-
-/-- Target 7 at `P`, `k = (1, 0, 0)`: laziness. -/
-theorem inst_lazy :
-    2 * P.m0.im ^ 2 ≤ 1 + BAKhat 3 4 P.g0 P.E P.m0 ![1, 0, 0] :=
-  BAK_lazy 3 4 P.g0 P.m0.im P.E P.m0 P.real.1.1 P.real ![1, 0, 0]
-
-/-- Target 8 at `P`, `Λ = 10`: the second moment. -/
-theorem inst_second_moment :
-    ∃ C : ℝ, 0 < C ∧ ∑ a : Zd 3 4, BAK 3 4 P.g0 P.E P.m0 0 a * (zdistD 3 4 a : ℝ) ^ 2 ≤ C * P.g0 ^ 2 := by
-  obtain ⟨C, hC, h⟩ := BAK_second_moment 3 (by norm_num) 10 P.m0.im (by norm_num) P.real.1.1
-  exact ⟨C, hC, h 4 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real⟩
-
-/-- `K̂(0) = 1` at `P` (the row sum). -/
-theorem inst_Khat_zero : BAKhat 3 4 P.g0 P.E P.m0 0 = 1 := by
-  have h := BAK_row_sum 3 4 P.g0 P.E P.m0 P.real.1 0
-  rw [KSymbol_Khat_eq]
-  simpa [KSymbol_phi] using h
-
-end KSymbolInst
 
 end RBM.BA

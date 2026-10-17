@@ -77,10 +77,6 @@ theorem Step2EventsGenTw_baGrid {d : ℕ} (sz : Sizes d) (l E : ℕ → ℝ) :
     fun n u x y => (walk_measurable_Gres_apply (ztOf (BAmF sz l E n) (E n) u) true x y).sub measurable_const,
     Step2EventsGenTw_baLaw sz l E⟩
 
-/-- The `FlowFM` part of the BA family `baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)` is `baFMz sz z`. -/
-theorem Step2EventsGenTw_toFlowFM {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) :
-    (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).toFlowFM = baFMz sz z := rfl
-
 /-! ## 2. Statement-level instances at the BA family
 
 The family is `(law, Flow, mk, T0) = (fun sz => seqP (sz.withLam 0), BAFlow, fun sz z => baStep2Mat sz (BAflowLam0 sz z)
@@ -88,83 +84,7 @@ The family is `(law, Flow, mk, T0) = (fun sz => seqP (sz.withLam 0), BAFlow, fun
 F9 (`Step2EventsGenTw_baGrid`) are discharged; the stage-L pin `BASTLWT` and the merged `baSTEMn2Exp` are the two light-weight pins,
 and Step 1, `STScaleInvgL`, the `Bctl` bounds and the scale cap stay hypotheses (other gates' pins, T1-BA). -/
 
-section BAInst
-
-/-- (E3) at the BA family. -/
-example {d : ℕ} (hd : 3 ≤ d) (hLWT : BASTLWT d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε)
-    (h𝔡 : 0 < 𝔡) (h : BAFlow sz κ ε 𝔠 𝔡 z) (s t T : ℕ → ℝ) (K : ℕ → ℕ) (cB c : ℝ) (Kf : ℕ → ℝ → ℝ)
-    (hs : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
-    (hS1W : STStep1WeakgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t) (hcB : 0 < cB) (hc : 0 < c)
-    (hBd : ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ t n →
-      cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u ∧ sz.Bctl n u ≤ ((sz.size n : ℕ) : ℝ) ^ (-c))
-    (hKcap : ∀ᶠ n in atTop, ∀ u, s n ≤ u → u ≤ t n →
-      0 ≤ Kf n u ∧ Kf n u ≤ (Real.log ((sz.W n : ℕ) : ℝ)) ^ 10 * ellT (sz.L n) (sz.lam n) u)
-    (hinv : STScaleInvgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Kf)
-    (hsT : ∀ n, s n ≤ T n) (hTt : ∀ n, T n ≤ t n) (hK : ∀ n, K n ≠ 0) {C₁ : ℝ} (hC₁ : 0 ≤ C₁)
-    (hcard : ∀ᶠ n in atTop, ((((K n + 1) * Fintype.card (STLab sz n) : ℕ)) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ C₁)
-    {ε₁ : ℝ} (hε₁ : 0 < ε₁) {Λ : ℕ → ℝ} (hΛ : ∀ n, ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤ Λ n) {D : ℝ} (hD : 0 < D) :
-    STEvLWg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s T K D Kf Λ :=
-  ST_event_lwg d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 (Step2EventsGenTw_baFlow d) hLWT (baSTEMn2Exp d hd)
-    (by omega) sz κ ε 𝔡 𝔠 κ z hκ hε h𝔡 h ⟨hκ, fun n => (EMn2BA_mF_data sz h n).1, fun n t => rfl⟩
-    (Step2EventsGenTw_baGrid sz _ _) s t T K cB c Kf hs htT hS1W hcB hc hBd hKcap hinv hsT hTt hK C₁ hC₁ hcard ε₁ hε₁ Λ hΛ D hD
-
-/-- (E4) at the BA family. -/
-example {d : ℕ} (hd : 3 ≤ d) (hLWT : BASTLWT d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε)
-    (h𝔡 : 0 < 𝔡) (h : BAFlow sz κ ε 𝔠 𝔡 z) (s t T : ℕ → ℝ) (K : ℕ → ℕ) (cB c : ℝ) (Kf : ℕ → ℝ → ℝ)
-    (hs : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
-    (hS1W : STStep1WeakgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t) (hcB : 0 < cB) (hc : 0 < c)
-    (hBd : ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ t n →
-      cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u ∧ sz.Bctl n u ≤ ((sz.size n : ℕ) : ℝ) ^ (-c))
-    (hKcap : ∀ᶠ n in atTop, ∀ u, s n ≤ u → u ≤ t n →
-      0 ≤ Kf n u ∧ Kf n u ≤ (Real.log ((sz.W n : ℕ) : ℝ)) ^ 10 * ellT (sz.L n) (sz.lam n) u)
-    (hinv : STScaleInvgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Kf)
-    (hsT : ∀ n, s n ≤ T n) (hTt : ∀ n, T n ≤ t n) (hK : ∀ n, K n ≠ 0) {C₁ : ℝ} (hC₁ : 0 ≤ C₁)
-    (hcard : ∀ᶠ n in atTop, ((((K n + 1) * Fintype.card (Fin 2 × STLab sz n) : ℕ)) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ C₁)
-    {ε₁ : ℝ} (hε₁ : 0 < ε₁) {Λ : ℕ → ℝ} (hΛ : ∀ n, 2 * ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤ Λ n) {D : ℝ} (hD : 0 < D) :
-    STEvMGg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s T K D Kf Λ :=
-  ST_event_mgg d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 (Step2EventsGenTw_baFlow d) hLWT (baSTEMn2Exp d hd)
-    (by omega) sz κ ε 𝔡 𝔠 κ z hκ hε h𝔡 h ⟨hκ, fun n => (EMn2BA_mF_data sz h n).1, fun n t => rfl⟩
-    (Step2EventsGenTw_baGrid sz _ _) s t T K cB c Kf hs htT hS1W hcB hc hBd hKcap hinv hsT hTt hK C₁ hC₁ hcard ε₁ hε₁ Λ hΛ D hD
-
-/-- (E1) at the BA family: F9 at BA, Step 1 and the small-entry bound stay hypotheses. -/
-example {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t T : ℕ → ℝ) (K : ℕ → ℕ) (hs : ∀ n, 0 ≤ s n) (hsT : ∀ n, s n ≤ T n)
-    (hTt : ∀ n, T n ≤ t n) (hK : ∀ n, K n ≠ 0) {C₁ : ℝ} (hC₁ : 0 ≤ C₁)
-    (hcard : ∀ᶠ n in atTop, ((((K n + 1) *
-      Fintype.card (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) : ℕ)) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ C₁)
-    (hS1W : STStep1WeakgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t) {ε₁ δ₀ : ℝ} (hε₁ : 0 < ε₁)
-    (hsmall : ∀ᶠ n in atTop, ∀ u, s n ≤ u → u ≤ t n → ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n u) ^ (1 / 4 : ℝ) ≤ δ₀) :
-    STEvWeakg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s T K δ₀ :=
-  ST_event_weakg d sz (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (Sizes.seqP (sz.withLam 0))
-    (Step2EventsGenTw_baGrid sz _ _) s t T K hs hsT hTt hK C₁ hC₁ hcard hS1W ε₁ δ₀ hε₁ hsmall
-
-/-- Target 11 at the BA family: `BALWterm 3 → BASTLWB 3` and `BALWtermExp 3 → BASTLWT 3`, with `3 ≤ 3`, F1 (`BAFlow`) and F7
-(`Step2EventsGenTw_baRot3` through `baFMz sz z = baFM sz (BAflowLam0 sz z) (BAflowEs sz z)`) discharged. -/
-example (h : BALWterm 3) : BASTLWB 3 :=
-  stLWBgL_of_LWtermG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAflowT0 baFMz
-    (by norm_num) (fun _ _ _ _ _ _ h => h.1) (fun sz z => Step2EventsGenTw_baRot3 sz _ _) h
-
-example (h : BALWtermExp 3) : BASTLWT 3 :=
-  stLWTgL_of_LWtermExpG 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAflowT0 baFMz
-    (by norm_num) (fun _ _ _ _ _ _ h => h.1) (fun sz z => Step2EventsGenTw_baRot3 sz _ _) h
-
-end BAInst
-
 /-! ## 3. The closed band instance of target 11 -/
-
-/-- **Target 11 closed at the band**: `stLWBgL_of_LWtermG` applied to the merged `band_LWtermG` (`lwterm_holds 3`); no hypothesis is
-left open.  This is `band_STLWBgL` (`BA/LWPinsBA.lean`) re-derived through the generic bridge. -/
-theorem Step2EventsGenTw_band_STLWBgL : bandPin STLWBgL 3 :=
-  stLWBgL_of_LWtermG 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n))
-    (fun sz z => bandFM sz (STflowE z)) (by norm_num) (fun _ _ _ _ _ _ h => h.1)
-    (fun sz z => Step2EventsGen_bandRot3 sz _) band_LWtermG
-
-/-- **Target 11 closed at the band**: `stLWTgL_of_LWtermExpG` applied to the merged `band_LWtermExpG` (`lwtermExp_holds 3`). -/
-theorem Step2EventsGenTw_band_STLWTgL : bandPin STLWTgL 3 :=
-  stLWTgL_of_LWtermExpG 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n))
-    (fun sz z => bandFM sz (STflowE z)) (by norm_num) (fun _ _ _ _ _ _ h => h.1)
-    (fun sz z => Step2EventsGen_bandRot3 sz _) band_LWtermExpG
 
 end RBM.BA
 

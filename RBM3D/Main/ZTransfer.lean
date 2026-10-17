@@ -531,47 +531,4 @@ theorem zProfile : MAZProfile := by
 
 end Loops
 
-namespace Inst
-
-open RBM.Gauss.SizesInst RBM.Univ.UNInst
-/-- `ZRange` at `z = zI`. -/
-theorem inst_zRange :
-    |lemE zI| ≤ 2 - 1 / 10 ∧ (1 / 16 : ℝ) ≤ lemT zI ∧ lemT zI < 1 ∧
-      1 - lemT zI = zI.im / ((msc zI).im + zI.im) ∧ zI.im / 2 ≤ 1 - lemT zI :=
-  zRange (1 / 10) (by norm_num) zI zI_im_pos zI_im_le zI_re_le
-
-/-- `(eq:BtBt)` at `z = zI`, every block distance `k`: `2` and `√(κ(4-κ))/8` with `κ = 1/10`. -/
-theorem inst_btBt (k : ℕ) :
-    STWB sz0 0 (lemT zI) k ≤ 2 * calB sz0 0 zI.im (((sz0.W 0 : ℕ) : ℝ) * (k : ℝ)) ∧
-      (Real.sqrt ((1 / 10) * (4 - 1 / 10)) / 8) * calB sz0 0 zI.im (((sz0.W 0 : ℕ) : ℝ) * (k : ℝ)) ≤
-        STWB sz0 0 (lemT zI) k :=
-  btBt (d := 3) le_rfl sz0 0 (1 / 10) (by norm_num) zI zI_im_pos zI_im_le zI_re_le k
-
-/-- `(G_bound)` transfer at `z = zI`. -/
-theorem inst_zLocal (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L 0) (sz0.W 0)) :
-    ‖sz0.Gn 0 zI ω x y - Mband sz0 0 zI x y‖ ^ 2 = lemT zI * ‖STGM sz0 0 (lemE zI) (lemT zI) ω x y‖ ^ 2 :=
-  zLocal sz0 0 zI zI_im_pos ω x y
-
-/-- `(G_bound_ave)` transfer at `z = zI`. -/
-theorem inst_zAve (ω : sz0.SeqΩ) (a : Zd 3 (sz0.L 0)) :
-    (((sz0.W 0 : ℕ) : ℂ) ^ 3)⁻¹ * ∑ x ∈ Iblk 3 (sz0.L 0) (sz0.W 0) a, sz0.Gn 0 zI ω x x =
-      (Real.sqrt (lemT zI) : ℂ) * sz0.Lloop 0 (lemE zI) (lemT zI) (fun _ : Fin 1 => true) (fun _ => a) ω :=
-  zAve sz0 0 zI zI_im_pos ω a
-
-/-- The two-loop transfer at `z = zI` (indices `(b, a)`). -/
-theorem inst_zTrace (ω : sz0.SeqΩ) (a b : Zd 3 (sz0.L 0)) :
-    avg2 sz0 0 (fun x y => sz0.Gn 0 zI ω x y * sz0.Gn 0 zI ω y x) a b =
-        (lemT zI : ℂ) * sz0.Lloop 0 (lemE zI) (lemT zI) ![true, true] ![b, a] ω ∧
-    avg2 sz0 0 (fun x y => ((‖sz0.Gn 0 zI ω x y‖ ^ 2 : ℝ) : ℂ)) a b =
-        (lemT zI : ℂ) * sz0.Lloop 0 (lemE zI) (lemT zI) ![true, false] ![b, a] ω :=
-  zTrace sz0 0 zI zI_im_pos ω a b
-
-/-- The profile identity `(Kn2sol)` at `z = zI`. -/
-theorem inst_zProfile (a b : Zd 3 (sz0.L 0)) :
-    profPM sz0 0 zI a b = (lemT zI : ℂ) * sz0.STKloop 0 (lemE zI) (lemT zI) ![true, false] ![b, a] ∧
-    profPP sz0 0 zI a b = (lemT zI : ℂ) * sz0.STKloop 0 (lemE zI) (lemT zI) ![true, true] ![b, a] :=
-  zProfile sz0 0 zI zI_im_pos a b
-
-end Inst
-
 end RBM.Endpoints

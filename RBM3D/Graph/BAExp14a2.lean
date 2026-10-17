@@ -69,13 +69,6 @@ def LWCutExpG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
           (fun n p _ => ‖∫ ω, LWcutg (mk sz z) n (t n) p.1.1.1 p.1.1.2 p.1.2.1 p.1.2.2 ω ∂(law sz)‖)
           (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
 
-/-- The band cut pin is the generic one at the band carrier (`Iff.rfl`). -/
-theorem LWCutExp_iff (d : ℕ) : LWCutExp d ↔ bandPin LWCutExpG d := Iff.rfl
-
-/-- The generic cut pin at the band carrier is the merged band theorem `lwCutExp_holds` (`LWExpTerm6.lean:617`), transported by the bridge (as
-`band_LWtermEXPG`, `BA/LWPinsBA.lean:59`). -/
-theorem band_LWCutExpG : bandPin LWCutExpG 3 := (LWCutExp_iff 3).1 (lwCutExp_holds 3)
-
 /-- **The BA cut pin under R1** (D3, the assembly of L4a2): the five premises of `LWCutExpG` at the block Anderson data (law
 `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz`, horizon `BAflowT0`) and the twisted laws TL1 (`BATwistAvgLaw`), TL2
 (`BATwistLoopLaw`) as premises 6-7 (owed pins of the TL stage); the conclusion of `LWCutExpG`. -/
@@ -332,74 +325,6 @@ theorem baLWtermEXPTw_of_S2 : ∀ d : ℕ, BALWtermEXPTwOfS2 d :=
 `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`): every deterministic hypothesis is discharged (`3 ≤ 3`, `0 < 1/2`, `0 < 1/10`, `flow_sz0`, `0 ≤ t`,
 `t ≤ BAflowT0`).  What stays a hypothesis of the examples is the five Step 1/2 pins, TL2 and, where marked, TL1 and S2 (owed by other
 gates: `Test/Axioms.lean:192-193`, L4b2 = T2489). -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
-
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- Instance of `baLWCutExpTw_of_S2` (target 3): S2, the five Step 1/2 pins, TL1 and TL2 as hypotheses. -/
-example (hS2 : BAExp14bS2 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  baLWCutExpTw_of_S2 3 hS2 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD hT1 hT2
-
-/-- Instance of `baLWtermEXPTw_of_cut` (target 2): the cut pin `BALWCutExpTw 3`, the five pins, TL1 and TL2 as hypotheses. -/
-example (hcut : BALWCutExpTw 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  baLWtermEXPTw_of_cut 3 hcut le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD hT1 hT2
-
-/-- Instance of `baLWtermEXPTw_of_S2` (target 4): `BALWtermEXPTw 3` from S2, at the same data. -/
-example (hS2 : BAExp14bS2 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  baLWtermEXPTw_of_S2 3 hS2 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD hT1 hT2
-
-/-- Instance 6 (c): the assembly `baLWCutExpTw_of_S2` with **TL1 discharged by name**, `baTwistAvgProd_holds 3` (`BA/TwistAvgB.lean:451`) applied
-to `hA`, `hM`; only S2, TL2 and the five pins stay hypotheses.  The terminal (or V1-BA) drops the TL1 premise in one line. -/
-example (hS2 : BAExp14bS2 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  baLWCutExpTw_of_S2 3 hS2 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD
-    (baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-      (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM) hT2
-
-/-- Instance 6 (c), shape of the check `T2490-check.lean`: the R1 cut pin `BALWCutExpTw 3` at the same data with TL1 produced from `hA`, `hM`. -/
-example (hcut : BALWCutExpTw 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
-    (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
-  hcut le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD
-    (baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
-      (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM) hT2
-
-end Inst
-
-section BandInst
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.LWInst
-
-/-- Instance 6 (d): `band_LWCutExpG` (target 1 (a)) at the merged band data (`d = 3`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `sz0`, `z0`, `flow_z0`,
-`tInst ≡ 1/16 ≤ lemT z0`): every deterministic hypothesis is discharged; the band local laws (other gates' pins) stay hypotheses. -/
-example (h1 : STLocalEntrygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst)
-    (h2 : LWAvgLawgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) (h3 : STLmaxgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst)
-    (h4 : STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) (h5 : STDecaygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst) :=
-  band_LWCutExpG le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst
-    tInst_range.1 tInst_range.2 h1 h2 h3 h4 h5
-
-/-- The bridge `LWCutExp_iff` at `d = 3`: the merged band theorem `lwCutExp_holds 3` read through `band_LWCutExpG`. -/
-example : LWCutExp 3 := (LWCutExp_iff 3).2 band_LWCutExpG
-
-end BandInst
 
 end RBM.BA
 

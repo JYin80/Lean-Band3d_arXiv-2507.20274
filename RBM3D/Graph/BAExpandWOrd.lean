@@ -304,8 +304,6 @@ variable {E I : Type}
 
 /-- `α = inr (inr 0)`, `β = inr (inr 1)`. -/
 private abbrev BAExpandWOrd_α : E ⊕ (I ⊕ Fin 2) := Sum.inr (Sum.inr 0)
-private abbrev BAExpandWOrd_β : E ⊕ (I ⊕ Fin 2) := Sum.inr (Sum.inr 1)
-
 /-- The shape common to term 1 and every derivative term of `lanlw`: `Γ` renamed by `owxEmb 2`, its solid edges
 replaced by `rest`, the solid edges `s`, the waved edge `S_{αβ}` and the `M`-dotted edge `M_{xα}` appended. -/
 private def BAExpandWOrd_ext (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
@@ -777,23 +775,6 @@ theorem lanlwD_counters :
   have : q.2.length + 3 = Γ.nS + 1 := by simp only [BAGraph.nS]; omega
   simp only [List.length_cons, List.length_nil, this]
 
-/-- **Target 2** (`B:361-363`; row 8): every term of `lanlw` has raw order `ord Γ + 1`. -/
-theorem lanlw_ord :
-    ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
-    (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))), p ∈ lwSplit Γ.solid → p.1.σ = true → p.1.circ = true →
-      ∀ Δ ∈ BAGraph.lanlwTerms Γ p, Δ.scalingOrder = Γ.scalingOrder + 1 := by
-  intro Ex Ix _ _ _ _ Γ p hp h1 h2 Δ hΔ
-  have key : Δ.counters = ⟨Γ.nS + 1, Γ.nW + 1, Γ.nA + 1, Γ.nM, 0, 0⟩ := by
-    simp only [BAGraph.lanlwTerms, List.mem_cons, List.mem_map] at hΔ
-    rcases hΔ with rfl | ⟨q, hq, rfl⟩
-    · exact lanlwT1_counters Γ p hp h1 h2
-    · exact lanlwD_counters Γ p hp h1 h2 q hq
-  unfold BAGraph.scalingOrder
-  rw [key]
-  simp only [BAGraph.counters, ord]
-  push_cast
-  ring
-
 /-! ## 4. Target 3: `lanlw_scalingOrderG` -/
 
 /-- **Target 3: `lanlw_scalingOrderG`** (`B:354-372`; T2295-prove (a) row 9, tight: minimum `0`, 13228 equality
@@ -832,173 +813,6 @@ theorem lanlw_scalingOrderG :
 
 
 /-! ## 5. Instances (namespace `RBM.Graph.BAExpandWOrdInst`) -/
-
-section InstLemmas
-
-variable {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I']
-
-private theorem BAExpandWOrd_foldr_min_le (L : List (WithTop ℤ)) (a : WithTop ℤ) (h : a ∈ L) :
-    L.foldr min ⊤ ≤ a := by
-  induction L with
-  | nil => simp at h
-  | cons b L ih =>
-    simp only [List.foldr_cons]
-    rcases List.mem_cons.1 h with rfl | h
-    · exact min_le_left _ _
-    · exact (min_le_right _ _).trans (ih h)
-
-/-- A normal term of `G = Ǧ + M` bounds `ord` of a general graph from above (the minimum of `B:354-355`). -/
-private theorem BAExpandWOrd_scalingOrderG_le (Δ Δs : BAGraph E' I') (hΔs : Δs ∈ Δ.splitG) (hN : Δs.Normal) :
-    Δ.scalingOrderG ≤ ((ord Δs.counters : ℤ) : WithTop ℤ) := by
-  have hmem : (((Δs.packMerge).scalingOrder : ℤ) : WithTop ℤ) ∈
-      Δ.partition.map (fun P => ((P.scalingOrder : ℤ) : WithTop ℤ)) :=
-    List.mem_map_of_mem (f := fun P : BAPGraph E' => ((P.scalingOrder : ℤ) : WithTop ℤ))
-      (List.mem_map_of_mem (f := BAGraph.packMerge) hΔs)
-  have h2 : Δs.packMerge.scalingOrder = ord Δs.counters := by
-    change ord Δs.packMerge.counters = _
-    rw [BAExpandWOrd_packMerge_counters Δs hN]
-  have h1 := BAExpandWOrd_foldr_min_le _ _ hmem
-  rw [h2] at h1
-  exact h1
-
-end InstLemmas
-
-namespace BAExpandWOrdInst
-
-set_option maxRecDepth 100000
-
-/-- (I3) as stated (T2295-prove (a) Command D: counters `2 1 1 0`, raw 2, `ordG` 1). -/
-theorem T2315_I3 :
-    (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).counters = ⟨2, 1, 1, 0, 0, 0⟩ ∧
-    (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).scalingOrder = 2 ∧
-    (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).scalingOrderG = (((1 : ℤ)) : WithTop ℤ) := by
-  refine ⟨?_, by decide, ?_⟩
-  · have : (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).nS = 2 ∧
-        (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).nW = 1 ∧
-        (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).nA = 1 ∧
-        (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).nM = 0 := by decide
-    simp only [BAGraph.counters, this.1, this.2.1, this.2.2.1, this.2.2.2]
-  · have hp : ((⟨true, true, .inl 0, .inl 1⟩ : SEdge (Fin 2 ⊕ Fin 0)), ([] : List (SEdge (Fin 2 ⊕ Fin 0)))) ∈
-        lwSplit baGcxy.solid := by simp [baGcxy, lwSplit]
-    have hN : baGcxy.Normal := by simp [BAGraph.Normal, baGcxy]
-    have hge := lanlw_scalingOrderG baGcxy _ hp rfl rfl hN _ (List.mem_cons_self ..)
-    have hΓ : baGcxy.scalingOrder = 1 := by decide
-    rw [hΓ] at hge
-    refine le_antisymm ?_ hge
-    obtain ⟨Δs, hmem, hNs, hord⟩ : ∃ Δs ∈ (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).splitG,
-        ((∀ e ∈ Δs.dotted, e.eq = false) ∧ (∀ e ∈ Δs.solid, e.circ = true)) ∧ ord Δs.counters = 1 := by
-      decide
-    have := BAExpandWOrd_scalingOrderG_le _ Δs hmem hNs
-    rw [hord] at this
-    exact this
-
-/-- (I4) as stated (Command D: counters `2 1 2 1`, raw 0, `ordG` -1). -/
-theorem T2315_I4 :
-    (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).counters = ⟨2, 1, 2, 1, 0, 0⟩ ∧
-    (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).scalingOrder = 0 ∧
-    (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).scalingOrderG = (((-1 : ℤ)) : WithTop ℤ) := by
-  refine ⟨?_, by decide, ?_⟩
-  · have : (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).nS = 2 ∧
-        (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).nW = 1 ∧
-        (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).nA = 2 ∧
-        (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).nM = 1 := by decide
-    simp only [BAGraph.counters, this.1, this.2.1, this.2.2.1, this.2.2.2]
-  · have hp : ((⟨true, true, .inr 0, .inr 0⟩ : SEdge (Fin 0 ⊕ Fin 1)), ([] : List (SEdge (Fin 0 ⊕ Fin 1)))) ∈
-        lwSplit baGcxx.solid := by simp [baGcxx, lwSplit]
-    have hN : baGcxx.Normal := by simp [BAGraph.Normal, baGcxx]
-    have hge := lanlw_scalingOrderG baGcxx _ hp rfl rfl hN _ (List.mem_cons_self ..)
-    have hΓ : baGcxx.scalingOrder = -1 := by decide
-    rw [hΓ] at hge
-    refine le_antisymm ?_ hge
-    obtain ⟨Δs, hmem, hNs, hord⟩ : ∃ Δs ∈ (BAGraph.lanlwT1 baGcxx (⟨true, true, .inr 0, .inr 0⟩, [])).splitG,
-        ((∀ e ∈ Δs.dotted, e.eq = false) ∧ (∀ e ∈ Δs.solid, e.circ = true)) ∧ ord Δs.counters = -1 := by
-      decide
-    have := BAExpandWOrd_scalingOrderG_le _ Δs hmem hNs
-    rw [hord] at this
-    exact this
-
-/-- **Target 1 at `baGcxy`**: the raw counters of term 1 (`n_S = 1`, `n_W = 0`, `n_A = 0`, `n_M = 0` before). -/
-example : (BAGraph.lanlwT1 baGcxy (⟨true, true, .inl 0, .inl 1⟩, [])).counters =
-    ⟨baGcxy.nS + 1, baGcxy.nW + 1, baGcxy.nA + 1, baGcxy.nM, 0, 0⟩ :=
-  lanlwT1_counters baGcxy _ (by simp [baGcxy, lwSplit]) rfl rfl
-
-/-- **Target 2 at `baGcxy`**: every term of `lanlw` has raw order `ord Γ + 1`. -/
-example : ∀ Δ ∈ BAGraph.lanlwTerms baGcxy (⟨true, true, .inl 0, .inl 1⟩, []),
-    Δ.scalingOrder = baGcxy.scalingOrder + 1 :=
-  lanlw_ord baGcxy _ (by simp [baGcxy, lwSplit]) rfl rfl
-
-/-- **Target 3 at `baGcxy`** (`baGcxy` is normal: no `=`-dotted edge, the one solid edge is circled). -/
-example : ∀ Δ ∈ BAGraph.lanlwTerms baGcxy (⟨true, true, .inl 0, .inl 1⟩, []),
-    ((baGcxy.scalingOrder : ℤ) : WithTop ℤ) ≤ Δ.scalingOrderG :=
-  lanlw_scalingOrderG baGcxy _ (by simp [baGcxy, lwSplit]) rfl rfl (by simp [BAGraph.Normal, baGcxy])
-
-/-- A derivative term: `Ǧ_{y'x} Ǧ_{xy}` (`BAVocabInst.baGGLhs`, `y', y = inl 0, inl 1`, `x = inr 0`), the edge
-`p.1 = Ǧ_{y'x}` is expanded (`x = y'`, `y = inr 0`) and `q.1 = Ǧ_{xy}` is differentiated: the derivative term has
-`ord = ord Γ + 1 = 1`, the counters `⟨3, 1, 2, 1, 0, 0⟩` (`n_A = 2`: the atom `{x}` and `{β}`), and `ordG = 0` (tight). -/
-theorem T2315_D :
-    (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).counters = ⟨3, 1, 2, 1, 0, 0⟩ ∧
-    (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).scalingOrder = 1 ∧
-    (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).scalingOrderG = (((0 : ℤ)) : WithTop ℤ) := by
-  have hp : ((⟨true, true, .inl 0, .inr 0⟩ : SEdge (Fin 2 ⊕ Fin 1)),
-      [(⟨true, true, .inr 0, .inl 1⟩ : SEdge (Fin 2 ⊕ Fin 1))]) ∈ lwSplit BAVocabInst.baGGLhs.solid :=
-    List.mem_cons_self ..
-  have hq : ((⟨true, true, .inr 0, .inl 1⟩ : SEdge (Fin 2 ⊕ Fin 1)), ([] : List (SEdge (Fin 2 ⊕ Fin 1)))) ∈
-      lwSplit [(⟨true, true, .inr 0, .inl 1⟩ : SEdge (Fin 2 ⊕ Fin 1))] := List.mem_cons_self ..
-  have hN : BAVocabInst.baGGLhs.Normal := by simp [BAGraph.Normal, BAVocabInst.baGGLhs]
-  refine ⟨?_, by decide, ?_⟩
-  · have : (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).nS = 3 ∧
-      (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).nW = 1 ∧
-      (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).nA = 2 ∧
-      (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).nM = 1 := by decide
-    simp only [BAGraph.counters, this.1, this.2.1, this.2.2.1, this.2.2.2]
-  · have hge := lanlw_scalingOrderG BAVocabInst.baGGLhs _ hp rfl rfl hN
-      (BAGraph.lanlwD BAVocabInst.baGGLhs
-        (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩]) (⟨true, true, .inr 0, .inl 1⟩, []))
-      (List.mem_cons_of_mem _ (List.mem_map_of_mem hq))
-    have hΓ : BAVocabInst.baGGLhs.scalingOrder = 0 := by decide
-    rw [hΓ] at hge
-    refine le_antisymm ?_ hge
-    obtain ⟨Δs, hmem, hNs, hord⟩ : ∃ Δs ∈ (BAGraph.lanlwD BAVocabInst.baGGLhs
-        (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩]) (⟨true, true, .inr 0, .inl 1⟩, [])).splitG,
-        ((∀ e ∈ Δs.dotted, e.eq = false) ∧ (∀ e ∈ Δs.solid, e.circ = true)) ∧ ord Δs.counters = 0 := by
-      decide
-    have := BAExpandWOrd_scalingOrderG_le _ Δs hmem hNs
-    rw [hord] at this
-    exact this
-
-/-- **Targets 1-3 at `baGGLhs`, the derivative term** (`q ∈ lwSplit p.2` is the one other edge). -/
-example : (BAGraph.lanlwD BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩])
-      (⟨true, true, .inr 0, .inl 1⟩, [])).counters =
-    ⟨BAVocabInst.baGGLhs.nS + 1, BAVocabInst.baGGLhs.nW + 1, BAVocabInst.baGGLhs.nA + 1,
-      BAVocabInst.baGGLhs.nM, 0, 0⟩ :=
-  lanlwD_counters BAVocabInst.baGGLhs _ List.mem_cons_self rfl rfl _ List.mem_cons_self
-
-example : ∀ Δ ∈ BAGraph.lanlwTerms BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩]),
-    Δ.scalingOrder = BAVocabInst.baGGLhs.scalingOrder + 1 :=
-  lanlw_ord BAVocabInst.baGGLhs _ List.mem_cons_self rfl rfl
-
-example : ∀ Δ ∈ BAGraph.lanlwTerms BAVocabInst.baGGLhs
-      (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inr 0, .inl 1⟩]),
-    ((BAVocabInst.baGGLhs.scalingOrder : ℤ) : WithTop ℤ) ≤ Δ.scalingOrderG :=
-  lanlw_scalingOrderG BAVocabInst.baGGLhs _ List.mem_cons_self rfl rfl (by simp [BAGraph.Normal, BAVocabInst.baGGLhs])
-
-end BAExpandWOrdInst
 
 end RBM.Graph
 

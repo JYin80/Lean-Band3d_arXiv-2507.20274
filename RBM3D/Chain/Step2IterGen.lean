@@ -89,15 +89,6 @@ def Step2IterGen_OneLoop {d : ℕ} {sz : Sizes d} (C : FlowFM sz) : Prop :=
 
 section Band
 
-/-- `lam > 0`, `lam ≤ 𝔡⁻¹` and `|E_n| ≤ 2 - κ` eventually along a flow (the premises of `stNewKLK_holds`). -/
-private theorem Step2IterGen_flow_data {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
-    (hflow : STFlow sz κ ε 𝔠 𝔡 z) :
-    ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ ∧ |STflowE z n| ≤ 2 - κ := by
-  filter_upwards [hflow.1.2.2.2.2] with n hn
-  have him := ST_flow_im_pos sz hflow n
-  exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1, hn.2,
-    (abs_lemE_le him).trans (hflow.2 n).1⟩
-
 /-- **Band discharge of `Step2IterGen_NewKLKAtN`** (one size index): `STNewKLKAt` (the band pin, proved as `stNewKLK_holds`) at the energy
 `E n` gives the class at `bandStep2Mat sz E` and the index `n` (`bandStep2Mat sz (fun _ => E n)` and `bandStep2Mat sz E` agree at
 index `n`; the `Θ`-term through `bandStep2_STthetaOp`). -/
@@ -110,27 +101,10 @@ theorem step2IterGen_newKLKAtN_band {d : ℕ} {κ 𝔡 C δ₀ : ℝ} (hnew : ST
   have h1 := h.1
   rwa [bandStep2_STthetaOp sz E n u σ _ a] at h1
 
-/-- **Band discharge of `Step2IterGen_NewKLK`** (`stNewKLK_holds`, `Induction/NewKLK.lean:1198`; `WO` gives `lam > 0` and `lam ≤ 𝔡⁻¹`
-eventually, `|STflowE z n| ≤ 2 - κ` as in `ST_K2e_of_flow`). -/
-theorem step2IterGen_newKLK_band (d : ℕ) :
-    Step2IterGen_NewKLK d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandStep2Mat sz (STflowE z)) := by
-  intro hd κ 𝔡 hκ h𝔡
-  obtain ⟨C, δ₀, hC, hδ₀, hnew⟩ := stNewKLK_holds d hd κ 𝔡 hκ h𝔡
-  refine ⟨C, δ₀, hC, hδ₀, fun ε 𝔠 sz z hflow => ?_⟩
-  filter_upwards [Step2IterGen_flow_data hflow] with n hn
-  exact step2IterGen_newKLKAtN_band hnew sz (STflowE z) n hn.1 hn.2.1 hn.2.2
-
 /-- **Band discharge of `Step2IterGen_K2`** (`ST_K2e_of_flow`, `Induction/Step2Iterate.lean:1800`). -/
 theorem step2IterGen_K2_band (d : ℕ) :
     Step2IterGen_K2 d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandStep2Mat sz (STflowE z)) :=
   fun hd3 _ _ _ _ hκ h𝔡 _ _ hflow _ _ hs ht1 => ST_K2e_of_flow hd3 hκ h𝔡 hflow hs ht1
-
-/-- **Band discharge of `Step2IterGen_OneLoop`** (`ST_Kloop_one`, `ST_Lloop_one_false`, `Induction/Step2Iterate.lean:1218, 1237`). -/
-theorem step2IterGen_oneLoop_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : Step2IterGen_OneLoop (bandFM sz E) := by
-  refine ⟨Eventually.of_forall fun n u _ _ σ a => ?_, fun n u a ω => ST_Lloop_one_false sz n (E n) u a ω⟩
-  change STKloop sz n (E n) u (fun _ : Fin 1 => σ) (fun _ => a) = _
-  rw [ST_Kloop_one sz n (E n) u σ a]
-  cases σ <;> simp [mSigma, bandFM]
 
 end Band
 
@@ -451,10 +425,6 @@ def STSelfImpgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ)
       (fun n p ω => ‖C.L n (p.1 : ℝ) p.2.1 p.2.2 ω - C.K n (p.1 : ℝ) p.2.1 p.2.2‖)
       (fun n p _ => ((1 - s n) / (1 - (p.1 : ℝ))) ^ Cd * (sz.Bctl n (p.1 : ℝ)) ^ (1 / 5 : ℝ) *
         STprof sz n (p.1 : ℝ) D (Kf n (p.1 : ℝ)) (p.2.2 0) (p.2.2 1))
-
-/-- Band bridge of target 3 (`Iff.rfl`). -/
-theorem bandFM_STSelfImp {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (Cd : ℝ) (s t : ℕ → ℝ) (Kf : ℕ → ℝ → ℝ) :
-    STSelfImp sz Cd E s t Kf ↔ STSelfImpgL (bandFM sz E) (Sizes.seqP sz) Cd s t Kf := Iff.rfl
 
 /-- Enlarging the control pointwise (eventually in `n`, for all sample points) preserves `PrecPTL` (band `ST_PT_mono_eventually`,
 `Step2Iterate.lean:65`). -/
@@ -1087,176 +1057,6 @@ Data: the band carrier `bandStep2Mat sz0 (STflowE z0)` (`d = 3`, `sz0`: `L_n = 4
 privates of `Induction/Step2Core.lean` are opened by `open private` (precedent `Chain/DecayGen.lean:45-47`).  What stays a hypothesis of
 an example is another gate's pin or a stochastic premise (`STLWTgL`, `STEMn2ExpgL`, `STGridMartgL`, `STDecaygL`, `STStep1WeakgL`,
 `STScaleInvgL`, `STSelfImpgL`, `STGridMartgL`, the class `Step2IterGen_NewKLKAtN` at `C = 1`, the good event `STGoodAtg`). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step2DefsInst RBM.Gauss.Step2IterateInst
-
-open private sI tI KI lam_pos one_le_L100 core_small r_bounds gt_eq gt_le Bctl_small a0 a0_nonneg mE_zero_im
-  from RBM3D.Induction.Step2Core
-
-example : ∃ C δ₀ : ℝ, 0 < C ∧ 0 < δ₀ ∧ ∀ᶠ n in atTop, Step2IterGen_NewKLKAtN (bandStep2Mat sz0 (STflowE z0)) n C δ₀ := by
-  obtain ⟨C, δ₀, hC, hδ₀, h⟩ := step2IterGen_newKLK_band 3 (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
-  exact ⟨C, δ₀, hC, hδ₀, h (1 / 10) (1 / 6) sz0 z0 flow_z0⟩
-
-example : ∃ C_K : ℝ, 0 < C_K ∧ ∀ᶠ n in atTop, ∀ (u D : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L n)),
-    sInst n ≤ u → u ≤ tInst n → 0 ≤ D →
-    ‖(bandStep2Mat sz0 (STflowE z0)).K n u σ a‖ ≤ C_K * STprof sz0 n u D ((sz0.L n : ℕ) : ℝ) (a 0) (a 1) :=
-  step2IterGen_K2_band 3 (by norm_num) (1 / 10) (1 / 10) (1 / 6) (1 / 10) (by norm_num) (by norm_num) sz0 z0 flow_z0
-    sInst tInst hs0 ht1
-
-example : Step2IterGen_OneLoop (bandFM sz0 (STflowE z0)) := step2IterGen_oneLoop_band sz0 (STflowE z0)
-
-
-/-- **Target 2 (`ST_good_engineg`)** at the band carrier `bandStep2Mat sz0 (fun _ => 0)`: `d = 3`, `n = 100` (`L = 404`,
-`W = 202^5`, `lam = 202^{-6}`), `E = 0` (`m = i`, `Im m = 1`), `s ≡ 0`, `t ≡ 1/16`, `K ≡ 16`, `D = 1/2`, `Kf ≡ 1`, `Λ = C = 1`,
-`q = 1/10`.  F3 is `DecayGen_bandSpec`, the Hermitian walk is `pathH_isHermitian`; the class `Step2IterGen_NewKLKAtN` at
-`(C, δ₀) = (1, δ₀)` and the good event `STGoodAtg` stay hypotheses. -/
-example (δ₀ : ℝ) (ω : PathΩ sz0) (hNew : Step2IterGen_NewKLKAtN (bandStep2Mat sz0 (fun _ => 0)) 100 1 δ₀)
-    (hg : STGoodAtg (bandStep2Mat sz0 (fun _ => 0)) sI tI KI 100 (1 / 2) (fun _ => 1) 1 δ₀ a0 a0 (a0 ^ 2)
-      (fun _ _ _ => 0) (fun _ _ _ => 0) ω) :=
-  ST_good_engineg sz0 (bandStep2Mat sz0 (fun _ => 0)) sI tI KI 100 (1 / 2) (fun _ _ => 1)
-    (Real.sqrt (1 / 10) / 2) 1 δ₀ 1 a0 a0 (a0 ^ 2) (1 / 10)
-    (by norm_num [KI]) (by norm_num [sI]) (by norm_num [sI, tI]) (by norm_num [tI]) (by norm_num)
-    (DecayGen_bandSpec sz0 (E := fun _ => 0) (κ := 1 / 10) (by norm_num) (fun n => by norm_num))
-    (lam_pos 100).le le_rfl (by norm_num) a0_nonneg a0_nonneg (sq_nonneg _) hNew
-    (fun _ _ => by norm_num) (fun _ _ => one_le_L100)
-    (fun j k hjk hk => by
-      refine ST_tailT_mono_time one_le_L100 (lam_pos 100).le ?_ ?_ (by norm_num)
-      · rw [gt_eq, gt_eq]
-        have : (j : ℝ) ≤ k := by exact_mod_cast hjk
-        linarith
-      · have := gt_le hk; linarith)
-    (by
-      have := Bctl_small (c := tI 100) (by norm_num [tI])
-      refine this.trans ?_
-      norm_num)
-    (by norm_num) le_rfl le_rfl le_rfl
-    (fun k hk => by
-      have hrb := r_bounds hk
-      have hb := Bctl_small (c := gridTime sI tI KI 100 k) (gt_le hk)
-      have hb0 : 0 < sz0.Bctl 100 (gridTime sI tI KI 100 k) :=
-        Sizes.STBctl_pos sz0 100 (by have := gt_le hk; linarith)
-      rw [gt_eq] at hb hb0
-      have h := core_small hb0 hb hrb.1 hrb.2
-      change (3 + 3 * ((mE 0).im)⁻¹) * 1 ^ 2 * (1 + 1 / 10 + Real.log ((1 - sI 100) / (1 - gridTime sI tI KI 100 k))) *
-        ((1 - sI 100) / (1 - gridTime sI tI KI 100 k)) ^ (3 * (1 : ℝ)) * (sz0.Bctl 100 (gridTime sI tI KI 100 k)) ^ (1 / 30 : ℝ) < 1
-      rw [mE_zero_im]
-      simp only [sI]
-      rw [gt_eq]
-      simpa using h)
-    (fun _ _ _ => 0) (fun _ _ _ => 0) ω (fun j _ => pathH_isHermitian sz0 sI tI KI 100 j ω) hg
-
-
-/-- **Target 3, `ST_nextg`** at the band carrier `(sz0, z0, [0, 1/16])`: the step from `Kseq0 0` to `Kseq0 1`; the deterministic `𝒦^{(2)}`
-bound, the closure arithmetic and the scale family are discharged (`ST_K2e_of_flow`, `ST_hq_of_data`, `stScaleExists_holds`); the
-stochastic premise `STSelfImpgL` stays a hypothesis. -/
-example (h : STSelfImpgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (3 * 1 + 1) sInst tInst (Kseq0 0)) :
-    STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (Kseq0 1) :=
-  ST_nextg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sz0_tendsto hst CK0_pos (Kseq0 0) (Kseq0 1) hK2_sz0
-    (Kseq0_adm.2.2.1 0) (Kseq0_adm.2.2.2.1 0) hq_sz0 h
-
-/-- **Target 3, `ST_decay_of_finalg`** at the band carrier: the last self-improving bound at `Kseq0 M` (the `M(D)` of the admissible
-family) gives `(Eq:Gdecay_w)` per time; `hqW`, `hq0` are discharged from `hq_sz0`. -/
-example (hself : ∀ M : ℕ, STSelfImpgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (3 * 1 + 1) sInst tInst (Kseq0 M)) :
-    STStep2DecayPTgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (3 * 1 + 1) sInst tInst := by
-  refine ST_decay_of_finalg (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun D hD => ?_) ?_ ?_
-  · obtain ⟨M, hM⟩ := Kseq0_adm.2.2.2.2 D hD
-    refine ⟨Kseq0 M, hself M, ?_⟩
-    filter_upwards [hM, Kseq0_adm.2.2.1 M] with n hn hr u hsu hut
-    exact ⟨(hr u hsu hut).1, hn u hsu hut⟩
-  · filter_upwards [hq_sz0] with n hn u hsu hut
-    obtain ⟨h1, h2, h3⟩ := hn u hsu hut
-    have hW : (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := by exact_mod_cast sz0.W_pos n
-    have hWd : (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (one_le_pow₀ hW)
-    calc ((1 - sInst n) / (1 - u)) ^ (3 * (1 : ℝ) + 1) * (sz0.Bctl n u) ^ (1 / 5 : ℝ) *
-          (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ 1 * 1 :=
-          mul_le_mul (h1.trans h3) hWd (inv_nonneg.mpr (pow_nonneg (by linarith) 3)) zero_le_one
-      _ = 1 := one_mul 1
-  · filter_upwards [hq_sz0] with n hn u hsu hut using (hn u hsu hut).2.1
-
-/-- **Target 3, `ST_selfImprove_sectiong`** at the band carrier `(sz0, z0, [0, 1/16])`, the scale `Kseq0 0`, the time section
-`tt ≡ 1/32`, `D = 1`, `C = 1`, `δ₀ = 1/10`, `𝔠_d = 1/240`.  F1-F2, F3, F9, the Hermitian walk, the size data, `(con_st_ind)` and
-the scale family are discharged; the pins `STLWTgL`, `STEMn2ExpgL`, the class `Step2IterGen_NewKLKAtN` (eventually, `C = 1`),
-`STGridMartgL` and the stochastic premises `STDecaygL`, `STStep1WeakgL`, `STScaleInvgL` stay hypotheses. -/
-example (hLWT : bandPin STLWTgL 3) (hEMe : bandPin STEMn2ExpgL 3)
-    (hnew : ∀ᶠ n in atTop, Step2IterGen_NewKLKAtN (bandStep2Mat sz0 (STflowE z0)) n 1 (1 / 10))
-    (hmart : STGridMartgL 3 (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandStep2Mat sz (STflowE z))
-      (fun _ z n => lemT (z n)))
-    (hDec : STDecaygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst)
-    (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hinv : STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (Kseq0 0)) :=
-  ST_selfImprove_sectiong 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow 3) hLWT hEMe
-    (by norm_num) (sz := sz0) (κ := 1 / 10) (ε := 1 / 10) (𝔡 := 1 / 10) (𝔠 := 1 / 6)
-    (κm := Real.sqrt (1 / 10) / 2) (by norm_num) (by norm_num) (by norm_num) (z := z0) flow_z0
-    (DecayGen_bandSpec sz0 (E := STflowE z0) (κ := 1 / 10) (by norm_num) fun n =>
-      (abs_lemE_le (ST_flow_im_pos sz0 flow_z0 n)).trans (flow_z0.2 n).1)
-    (Step2EventsGen_bandGrid sz0 _) (fun s t K n k ω => pathH_isHermitian sz0 s t K n k ω) hs0 htT
-    (C := 1) (δ₀ := 1 / 10) (𝔠d := 1 / 240) one_pos (by norm_num) hnew hmart
-    (by norm_num) (by norm_num) hDec (conStInd_inst (by norm_num)) hS1W bdata_spec.1 bdata_spec.2.1
-    bdata_spec.2.2 (Kseq0 0) (Kseq0_adm.2.1 0) hinv
-    (fun n => ⟨1 / 32, by simp only [sInst, tInst, Set.mem_Icc]; norm_num⟩) 1 one_pos
-
-/-- **Target 3, `ST_selfImproveg`** (all time sections) at the same data. -/
-example (hLWT : bandPin STLWTgL 3) (hEMe : bandPin STEMn2ExpgL 3)
-    (hnew : ∀ᶠ n in atTop, Step2IterGen_NewKLKAtN (bandStep2Mat sz0 (STflowE z0)) n 1 (1 / 10))
-    (hmart : STGridMartgL 3 (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandStep2Mat sz (STflowE z))
-      (fun _ z n => lemT (z n)))
-    (hDec : STDecaygL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst)
-    (hS1W : STStep1WeakgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst)
-    (hinv : STScaleInvgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst (Kseq0 0)) :
-    STSelfImpgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (3 * 1 + 1) sInst tInst (Kseq0 0) :=
-  ST_selfImproveg 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow 3) hLWT hEMe
-    (by norm_num) (sz := sz0) (κ := 1 / 10) (ε := 1 / 10) (𝔡 := 1 / 10) (𝔠 := 1 / 6)
-    (κm := Real.sqrt (1 / 10) / 2) (by norm_num) (by norm_num) (by norm_num) (z := z0) flow_z0
-    (DecayGen_bandSpec sz0 (E := STflowE z0) (κ := 1 / 10) (by norm_num) fun n =>
-      (abs_lemE_le (ST_flow_im_pos sz0 flow_z0 n)).trans (flow_z0.2 n).1)
-    (Step2EventsGen_bandGrid sz0 _) (fun s t K n k ω => pathH_isHermitian sz0 s t K n k ω) hs0 hst htT
-    (C := 1) (δ₀ := 1 / 10) (𝔠d := 1 / 240) one_pos (by norm_num) hnew hmart
-    (by norm_num) (by norm_num) hDec (conStInd_inst (by norm_num)) hS1W bdata_spec.1 bdata_spec.2.1
-    bdata_spec.2.2 (Kseq0 0) (Kseq0_adm.2.1 0) hinv
-
-/-- **Band re-derivation of target 2**: the statement of `ST_good_engine` (`Step2Core.lean:997`) from `ST_good_engineg` at the carrier
-`bandStep2Mat sz (fun _ => Efun n)` (it agrees with `bandStep2Mat sz Efun` at the index `n`); F3 is `Im m > 0` (`hmI`), the good event is
-`Step2EventsGen_bandGoodAt`, the class is `step2IterGen_newKLKAtN_band`, the Hermitian walk `pathH_isHermitian`. -/
-example : type_of% @RBM.Gauss.Sizes.ST_good_engine := by
-  intro d sz s t K n Efun D Kf Λ δ₀ C a₀ r₀ ρ₁ q κ 𝔡 hK hs0 hst ht1 hD hmI hΛ hC ha₀ hr₀ hρ₁ hlam hlam' hE hNew hKf0 hKfL
-    hTmono hb1 hq0 ha hr hρ hsmall Mart Rem ω hg
-  have hSpec : DecayGen_Spec (bandStep2Mat sz (fun _ => Efun n)).toFlowFM ((mE (Efun n)).im) :=
-    ⟨hmI, fun _ => le_rfl, fun _ _ => rfl⟩
-  exact ST_good_engineg sz (bandStep2Mat sz (fun _ => Efun n)) s t K n D Kf ((mE (Efun n)).im) Λ δ₀ C a₀ r₀ ρ₁ q hK hs0 hst
-    ht1 hD hSpec hlam.le hΛ hC ha₀ hr₀ hρ₁ (step2IterGen_newKLKAtN_band hNew sz (fun _ => Efun n) n hlam hlam' hE)
-    hKf0 hKfL hTmono hb1 hq0 ha hr hρ hsmall Mart Rem ω (fun j _ => pathH_isHermitian sz s t K n j ω)
-    ((Step2EventsGen_bandGoodAt sz (fun _ => Efun n) s t K n D (fun j => Kf n (gridTime s t K n j)) Λ δ₀ a₀ r₀ ρ₁ Mart
-      Rem ω).1 hg)
-
-/-- **Band re-derivation of target 3**: the statement of `ST_selfImprove` (`Step2Iterate.lean:700`) from `ST_selfImproveg` at the band
-carrier family. -/
-example : type_of% @RBM.Gauss.Sizes.ST_selfImprove := by
-  intro d sz hLWT hEMe hd κ ε 𝔡 𝔠 hκ hε h𝔡 z hflow s t hs hst htT C δ₀ C₀ 𝔠d hC hδ₀ hC₀ hnew hmart h𝔠d h3 hDec hCon hS1W cB c
-    hcB hc hBd Kf hKok hinv
-  exact ST_selfImproveg d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (Step2EventsGen_bandFlow d)
-    ((bandFM_STLWT d).1 hLWT) ((bandFM_STEMn2Exp d).1 hEMe) hd hκ hε h𝔡 hflow
-    (DecayGen_bandSpec sz hκ fun n => (abs_lemE_le (ST_flow_im_pos sz hflow n)).trans (hflow.2 n).1)
-    (Step2EventsGen_bandGrid sz (STflowE z)) (fun s t K n k ω => pathH_isHermitian sz s t K n k ω) hs hst htT hC hδ₀
-    (by
-      filter_upwards [Step2IterGen_flow_data hflow] with n hn
-      exact step2IterGen_newKLKAtN_band hnew sz (STflowE z) n hn.1 hn.2.1 hn.2.2)
-    ⟨C₀, hC₀, (bandStep2_STGridMartAt C₀).1 hmart⟩ h𝔠d h3 hDec hCon hS1W hcB hc hBd Kf hKok hinv
-
-/-- **Band re-derivation of the step lemmas of target 3** (`ST_next`, `ST_decay_of_final`). -/
-example : type_of% @RBM.Gauss.Sizes.ST_next := by
-  intro d sz hsz E s t hst Cd C_K hCK Kf Kf' hK2 hrange hstep hq h
-  exact ST_nextg (bandFM sz E) (Sizes.seqP sz) hsz hst hCK Kf Kf' hK2 hrange hstep hq h
-
-example : type_of% @RBM.Gauss.Sizes.ST_decay_of_final := by
-  intro d sz E s t Cd h hqW hq0
-  exact ST_decay_of_finalg (bandFM sz E) (Sizes.seqP sz) h hqW hq0
-
-end Instances
 
 end RBM.BA
 

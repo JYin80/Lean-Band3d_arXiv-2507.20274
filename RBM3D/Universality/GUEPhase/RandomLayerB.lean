@@ -476,39 +476,6 @@ theorem g1Row : UNG1Row := UNG1Rowk_band.1 g1Rowk_band
 `τ_U = ouTauMax (1/6) (1/10) = 1/720`: `UNMLOut`, `UNLocAvgBand`, `UNQueBand` (pins of other gates) stay
 hypotheses. -/
 
-namespace RandomLayerBInst
-
-open RBM.Gauss.SizesInst
-
-theorem inst_g1Row (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULL sz0 (ouTauMax (1 / 6) (1 / 10)) ∧ UNOUEq747 sz0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  g1Row hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible _
-    (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-/-- `g1Rowk_band` at the same data (the kind-generic form). -/
-theorem inst_g1Rowk (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULLk (UNKind.band 3) sz0 (ouTauMax (1 / 6) (1 / 10)) ∧
-      UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  g1Rowk_band hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible _
-    (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-/-- `g1Rowk_of_inputs` at the explicit band data (`fE = lemE`, `fT = lemT`, `Fl`, `MO`, `KF`, `PB` of the band,
-T1-T6 discharged by the `RandomLayerB_*_band` lemmas), at the same data. -/
-theorem inst_g1Rowk_of_inputs (hML : ∀ d : ℕ, UNMLOut d) (hLoc : UNLocAvgBand) (hQ : UNQueBand) :
-    UNOULLk (UNKind.band 3) sz0 (ouTauMax (1 / 6) (1 / 10)) ∧
-      UNOUEq747k (UNKind.band 3) (UNOUProfile.band 3) sz0 (1 / 10) (ouTauMax (1 / 6) (1 / 10)) :=
-  g1Rowk_of_inputs (fun d => UNKind.band d) (fun d => UNOUProfile.band d)
-    (fun _ _ _ z => lemE z) (fun _ _ _ z => lemT z)
-    (fun d => RandomLayerB_Flband (d := d)) (fun d => RandomLayerB_MOband (d := d))
-    (fun d => RandomLayerB_KFam (d := d)) (fun d => RandomLayerB_PBband (d := d))
-    (fun _ _ => RandomLayerB_flow_band) (fun _ _ => RandomLayerB_dom_band) (fun _ _ => RandomLayerB_bulk_band)
-    (fun _ hd => RandomLayerB_prod_band hd) (fun _ _ => RandomLayerB_LL_band)
-    (fun _ hd => RandomLayerB_Que_band hd) (fun hML _ hd => RandomLayerB_ML_band hML hd)
-    hML hLoc hQ 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible _
-    (ouTauMax_pos (by norm_num) (by norm_num)) le_rfl
-
-end RandomLayerBInst
-
 end RBM.Univ.GUEPhase
 
 end

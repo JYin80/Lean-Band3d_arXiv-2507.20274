@@ -106,20 +106,6 @@ def YMomentBoundsNg (Cm : Step2Mat sz) {n k : ℕ} (σ : Fin k → Bool) (u : �
     ∫ ω, (stoppedEdgeNg Cm σ u (u m) τ Y b j ω).re ^ 4 ∂Cm.Pp ≤ w j ∧
     ∫ ω, (stoppedEdgeNg Cm σ u (u m) τ Y b j ω).im ^ 4 ∂Cm.Pp ≤ w j
 
-/-- `YMomentsConclN` over the carrier. -/
-def YMomentsConclNg (Cm : Step2Mat sz) (s t : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ) (σ : Fin k → Bool) : Prop :=
-  ∃ C_P : ℝ, 0 ≤ C_P ∧
-    ∀ᶠ n : ℕ in atTop, ∃ P : ℝ, 0 ≤ P ∧ P ≤ ((sz.size n : ℕ) : ℝ) ^ C_P ∧
-      ∀ τ : PathΩ sz → ℕ, (∀ j, MeasurableSet[filt sz j] {ω | j < τ ω}) →
-        YMomentBoundsNg Cm σ (gridTime s t K n) τ (K n) (fun j ω => YvecNg Cm s t K n j σ ω)
-          (fun _ => gridStep s t K n ^ 2 * P) (fun _ => gridStep s t K n ^ 4 * P ^ 2)
-
-/-- `YMomentsN` over the carrier: `0 < κ`, `|E n| ≤ 2 - κ` become `DecayGen_Spec` (`κm ≤ Im m`, `η = (1 - t) Im m`). -/
-def YMomentsNg (Cm : Step2Mat sz) (κm τ' : ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) : Prop :=
-  DecayGen_Spec Cm.toFlowFM κm → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
-  (∀ n, K n ≠ 0) → sz.SizeTendsto → sz.RangeCond τ' t →
-  ∀ (k : ℕ) (σ : Fin k → Bool), YMomentsConclNg Cm s t K k σ
-
 /-- `GridAssemblyHypN` (`GridAssemblyN:183`) over the carrier: the field `hE : |E| ≤ 2` becomes `hKer` (T2471's K1-K4,
 one text; K3 gives the coarse bound), the kernel is `Step2Gen_UN Cm.toFlowFM n`. -/
 structure GridAssemblyHypNg (Cm : Step2Mat sz) {n k : ℕ} (σ : Fin k → Bool) (u : ℕ → ℝ)
@@ -414,19 +400,6 @@ private theorem GridAssemblyGen_azuma_UN (Cm : Step2Mat sz) [IsProbabilityMeasur
     rw [h]
   rw [hset]
   exact gridAsm_azuma_step (μ := Cm.Pp) (ℱ := filt sz) hX hsubG hx
-
-/-- **Target 7, `stoppedAzumaZNg`** (the pin `StoppedAzumaZNg`; band `stoppedAzumaZN`, `GridAssemblyN:1014`): the stopped
-Azuma bound for the first-chaos part `ZvecNg`, real and imaginary parts sub-Gaussian with the common proxy `c j` (input
-`SubGaussStopNg`, the output of `azumaSubGNg`).  The measurability input of `azuma_complex` is
-`GridAssemblyGen_stronglyMeasurable_ZvecNg` (`LoopForm` and `WalkForm`); the window premises of the pin are not needed.  This
-is a conditional adapter: the sub-Gaussian hypothesis is an input of the pin. -/
-theorem stoppedAzumaZNg (Cm : Step2Mat sz) [IsProbabilityMeasure Cm.Pp] {E lam' : ℕ → ℝ}
-    {Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-    (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ) (s t : ℕ → ℝ) (K : ℕ → ℕ) :
-    StoppedAzumaZNg Cm s t K := by
-  intro _hs0 _hst _ht1 _hK n k σ τ hτ m _hmK a c hsubG x hx
-  exact GridAssemblyGen_azuma_UN Cm σ (gridTime s t K n) hτ m
-    (fun j _ => GridAssemblyGen_stronglyMeasurable_ZvecNg hL hW s t K n j σ) a c hsubG hx
 
 end StoppedAzuma
 
@@ -841,25 +814,6 @@ section BandBridge
 
 variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
 
-/-- **`qvFormNg` band bridge** (proved, not `rfl`): the pairing of `STeeUMg` is the conjugate pairing of the band `qvFormN`
-under K4 (`gridRepTailGen_ker_band`); the hypotheses `|E n| ≤ 2`, `0 ≤ w < 1` are the band window of the kernel class. -/
-theorem bandStep2_qvFormN (n : ℕ) (hE : |E n| ≤ 2) {v w : ℝ} (hw0 : 0 ≤ w) (hw1 : w < 1) {k : ℕ}
-    (σ : Fin k → Bool) (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (a : Fin k → Zd d (sz.L n)) :
-    RBM.Ind.qvFormN sz n (E n) v w σ M a = qvFormNg (bandStep2Mat sz E) n v w σ M a := by
-  have hK4 := (gridRepTailGen_ker_band sz E n hE).2.2.2
-  unfold RBM.Ind.qvFormN qvFormNg STeeUMg
-  refine congrArg Complex.re (Finset.sum_congr rfl fun b _ => Finset.sum_congr rfl fun b' _ => ?_)
-  have hconj : ∏ i : Fin k, Step2Gen_uKer (bandStep2Mat sz E).toFlowFM n (!σ i) (!σ (finRotate k i)) v w (a i) (b' i) =
-      (starRingEnd ℂ) (∏ i : Fin k, Step2Gen_uKer (bandStep2Mat sz E).toFlowFM n (σ i) (σ (finRotate k i)) v w
-        (a i) (b' i)) := by
-    rw [map_prod]
-    exact Finset.prod_congr rfl fun i _ => hK4 _ _ v w hw0 hw1 _ _
-  rw [hconj]
-  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
-  simp only [hfm, Step2Kern_uKer_band]
-  rfl
-
 /-- `YMomentBoundsN` is `YMomentBoundsNg` at `bandStep2Mat` (`stoppedEdgeN = stoppedEdgeNg`; the law `pathP sz` is `Cm.Pp`). -/
 theorem bandStep2_YMomentBoundsN {n k : ℕ} (σ : Fin k → Bool) (u : ℕ → ℝ) (τ : PathΩ sz → ℕ) (K : ℕ)
     (Y : ℕ → PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ) (v w : ℕ → ℝ) :
@@ -911,286 +865,14 @@ theorem bandStep2_GridAssemblyHypN {n k : ℕ} {σ : Fin k → Bool} {u : ℕ �
       hstepErr0 := h.hstepErr0
       hR := h.hR }
 
-/-- **Band corollary of `stoppedAzumaZNg`**: the merged band pin `StoppedAzumaZN` (`GridAssemblyN:87`) from the generic
-theorem at `bandStep2Mat sz E` (`LoopForm`, `WalkForm` by `stepDecompGen_loopForm_band`, `stepDecompGen_walkForm_band`;
-`ZvecN = ZvecNg`, `Ugen = Step2Gen_UN`). -/
-theorem stoppedAzumaZN_of_Ng (s t : ℕ → ℝ) (K : ℕ → ℕ) : RBM.Ind.StoppedAzumaZN sz E s t K := by
-  intro hE hs hst ht1 hK n k σ τ hτ m hm a c hsub x hx
-  have hZ : (fun j ω => RBM.Ind.ZvecN sz E s t K n j σ ω) =
-      fun j ω => ZvecNg (bandStep2Mat sz E) s t K n j σ ω :=
-    funext fun j => funext fun ω => bandStep2_ZvecN sz E s t K n j σ ω
-  have h := stoppedAzumaZNg (bandStep2Mat sz E) (stepDecompGen_loopForm_band sz E hE)
-    (stepDecompGen_walkForm_band sz E) s t K hs hst ht1 hK n k σ τ hτ m hm a c (fun j hj => by
-      rw [← hZ]
-      exact (bandStep2_SubGaussStopN sz E σ (gridTime s t K n) τ _ m a j (c j)).1 (hsub j hj)) x hx
-  have e : ∀ ω : PathΩ sz, ∑ j ∈ Finset.range (min m (τ ω)), RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (RBM.Ind.ZvecN sz E s t K n j σ ω) a =
-      ∑ j ∈ Finset.range (min m (τ ω)), Step2Gen_UN (bandStep2Mat sz E).toFlowFM n σ
-        (gridTime s t K n (j + 1)) (gridTime s t K n m) (ZvecNg (bandStep2Mat sz E) s t K n j σ ω) a :=
-    fun ω => Finset.sum_congr rfl fun j _ => by rw [bandStep2_Ugen, bandStep2_ZvecN]; rfl
-  simp only [e]
-  exact h
-
-/-- **Band corollary of `assembledNg`** at `bandStep2Mat sz E`: the band pin `AssembledN` (`GridAssemblyN:227`) with the energy
-fixed to the sequence `E` (inside `∀ᶠ n` the band pin quantifies `E : ℝ`; the generic pin is per carrier, so this is its
-`E n`-slice).  The bundle is converted by `bandStep2_GridAssemblyHypN`, the sub-Gaussian input by `bandStep2_SubGaussStopN`,
-the conclusion is unchanged (`A` is the same function). -/
-example : sz.SizeTendsto → ∀ (k : ℕ) (ε : ℝ), 0 < ε → ∀ (D D₁ C_P C_K : ℝ), 0 ≤ C_K →
-    D₁ + 4 * D + (k : ℝ) + 2 * C_P + 8 ≤ C_K →
-    ∀ᶠ n : ℕ in atTop, ∀ (K : ℕ) (σ : Fin k → Bool) (u : ℕ → ℝ) (τ : PathΩ sz → ℕ)
-      (Δ : ℝ) (Cls : ℕ → ℝ → ((Fin k → Zd d (sz.L n)) → ℂ) → Prop)
-      (A0 : PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ)
-      (A : ℕ → PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ)
-      (Dr Z Y R : ℕ → PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ)
-      (κ εK : ℕ → ℕ → ℝ) (δ0 : ℝ) (dDrift δD : ℕ → PathΩ sz → ℝ)
-      (c : ℕ → (Fin k → Zd d (sz.L n)) → ℕ → ℝ≥0) (v w stepErr : ℕ → ℝ) (P : ℝ),
-      1 ≤ K → K ≤ ⌈((sz.size n : ℕ) : ℝ) ^ C_K⌉₊ →
-      Δ ≤ ((sz.size n : ℕ) : ℝ) ^ (-C_K) → (K : ℝ) * Δ ≤ 1 →
-      0 ≤ P → P ≤ ((sz.size n : ℕ) : ℝ) ^ C_P →
-      (∀ j < K, v j ≤ Δ ^ 2 * P) → (∀ j < K, w j ≤ Δ ^ 4 * P ^ 2) →
-      (∀ j, MeasurableSet[filt sz j] {ω | j < τ ω}) →
-      (∀ j, StronglyMeasurable[filt sz (j + 1)] (Z j)) →
-      (∀ m ≤ K, ∀ (a : Fin k → Zd d (sz.L n)) (j : ℕ), j < m →
-        RBM.Ind.SubGaussStopN sz (E n) σ u τ Z m a j (c m a j)) →
-      RBM.Ind.GridAssemblyHypN sz (E n) σ u τ Δ K Cls A0 A Dr Z Y R κ εK δ0 dDrift δD c v w stepErr →
-      ∃ G : Set (PathΩ sz), (pathP sz).real Gᶜ ≤ ((sz.size n : ℕ) : ℝ) ^ (-D₁) ∧
-        ∀ ω ∈ G, 0 < τ ω → ∀ m ≤ K, ∀ a : Fin k → Zd d (sz.L n),
-          ‖A m ω a‖ ≤
-            κ 0 m * (Finset.univ.sup' Finset.univ_nonempty (fun b => ‖A0 ω b‖)) + εK 0 m * δ0 +
-            Δ * ∑ j ∈ Finset.range m, (κ (j + 1) m * dDrift j ω + εK (j + 1) m * δD j ω) +
-            ((sz.size n : ℕ) : ℝ) ^ ε * Real.sqrt (∑ j ∈ Finset.range m, (c m a j : ℝ)) +
-            ((sz.size n : ℕ) : ℝ) ^ (-D) +
-            ∑ j ∈ Finset.range m, (1 + (1 - u m)⁻¹) ^ k * stepErr j := by
-  intro hS k ε hε D D₁ C_P C_K hC hCK
-  filter_upwards [assembledNg (bandStep2Mat sz E) hS k ε hε D D₁ C_P C_K hC hCK] with n hn
-  intro K σ u τ Δ Cls A0 A Dr Z Y R κ εK δ0 dDrift δD c v w stepErr P hK1 hK hΔ hKΔ hP0 hP hv hw hτ hZ hsub h
-  exact hn K σ u τ Δ Cls A0 A Dr Z Y R κ εK δ0 dDrift δD c v w stepErr P hK1 hK hΔ hKΔ hP0 hP hv hw hτ hZ
-    (fun m hm a j hj => (bandStep2_SubGaussStopN sz E σ u τ Z m a j (c m a j)).1 (hsub m hm a j hj))
-    (bandStep2_GridAssemblyHypN sz E h)
-
 end BandBridge
 
 /-! ## 8. Compiled nonempty instances (`d = 3`, `sz0`, the band carrier at `E ≡ 1/2`) -/
-
-section Inst
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.GridGoodNInst RBM.Ind.GridAssemblyNInst
-
-/-- The band carrier at the instance energy `E ≡ 1/2` (`gridAsm_E`) on the merged sizes `sz0`. -/
-private abbrev GridAssemblyGen_Cm : Step2Mat sz0 := bandStep2Mat sz0 gridAsm_E
-
-private theorem GridAssemblyGen_hL : StepDecompGen_LoopForm GridAssemblyGen_Cm gridAsm_E :=
-  stepDecompGen_loopForm_band sz0 gridAsm_E gridAsm_E_abs_lt
-
-private theorem GridAssemblyGen_hW : StepDecompGen_WalkForm GridAssemblyGen_Cm sz0.lam (fun _ => 0) :=
-  stepDecompGen_walkForm_band sz0 gridAsm_E
-
-/-- Instance of `GridAssemblyGen_stronglyMeasurable_ZvecNg` and `_YvecNg` at `n = 0`, `j = 2`, `σ = (+,+,-)`, the window
-`(0, 1/16)` with `K_n = N_n^{17}`: `LoopForm` and `WalkForm` are the band lemmas. -/
-example : StronglyMeasurable[filt sz0 (2 + 1)]
-      (fun ω => ZvecNg GridAssemblyGen_Cm sInst tInst gridAsm_K 0 2 ![true, true, false] ω) ∧
-    StronglyMeasurable[filt sz0 (2 + 1)]
-      (fun ω => YvecNg GridAssemblyGen_Cm sInst tInst gridAsm_K 0 2 ![true, true, false] ω) :=
-  ⟨GridAssemblyGen_stronglyMeasurable_ZvecNg GridAssemblyGen_hL GridAssemblyGen_hW _ _ _ 0 2 _,
-    GridAssemblyGen_stronglyMeasurable_YvecNg GridAssemblyGen_hL GridAssemblyGen_hW _ _ _ 0 2 _⟩
-
-/-- **Instance of `stoppedAzumaZNg`** at the band carrier, `n = 0` (`L = 4`, `W = 32`, `N = 2097152`), the merged grid
-`(sInst, vg, Kg)` (`Kg 0 = 4` steps), `k = 3`, `σ = (+,+,-)`, label `a = 0`, `τ ≡ m ≡ 4`, a constant proxy `C > 0` and the
-threshold `x = 4 √(4 C)`: the tail is `< 1` (it is at most `4 e^{-4}`, `gridAsm_stoppedAzumaZN_bound_lt_one`).  Every
-deterministic hypothesis is discharged; only the sub-Gaussian family for `ZvecNg` (the output of `azumaSubGNg`, row T4s2c)
-stays a hypothesis. -/
-example (C : ℝ≥0) (hC : 0 < C)
-    (hsub : ∀ j < Kg 0, SubGaussStopNg GridAssemblyGen_Cm ![true, true, false] (gridTime sInst vg Kg 0) (fun _ => Kg 0)
-      (fun j ω => ZvecNg GridAssemblyGen_Cm sInst vg Kg 0 j ![true, true, false] ω) (Kg 0) (fun _ => 0) j C) :
-    GridAssemblyGen_Cm.Pp.real {ω | 4 * Real.sqrt ((Kg 0 : ℝ) * (C : ℝ)) ≤
-        ‖∑ j ∈ Finset.range (min (Kg 0) (Kg 0)), Step2Gen_UN GridAssemblyGen_Cm.toFlowFM 0 ![true, true, false]
-          (gridTime sInst vg Kg 0 (j + 1)) (gridTime sInst vg Kg 0 (Kg 0))
-          (ZvecNg GridAssemblyGen_Cm sInst vg Kg 0 j ![true, true, false] ω) (fun _ => 0)‖} < 1 := by
-  have h := stoppedAzumaZNg GridAssemblyGen_Cm GridAssemblyGen_hL GridAssemblyGen_hW sInst vg Kg
-    (fun n => by simp [sInst]) (fun n => by norm_num [sInst, vg]) (fun n => by norm_num [vg])
-    (fun n => by simp [Kg]) 0 3 ![true, true, false] (fun _ => Kg 0) (fun j => MeasurableSet.const _)
-    (Kg 0) le_rfl (fun _ => 0) (fun _ => C) hsub (4 * Real.sqrt ((Kg 0 : ℝ) * (C : ℝ))) (by positivity)
-  simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul] at h
-  exact lt_of_le_of_lt h (gridAsm_stoppedAzumaZN_bound_lt_one 0 hC)
-
-/-- **`assembledNg` at the instance data, with an arbitrary first-chaos increment `Z`**: `k = 3`, any `ε > 0`, `D`, `D₁`, `C_P`
-with `D₁ + 4D + 3 + 2C_P + 8 ≤ C_K = 17`, the window `(0, 1/16)`, the grid `K_n = N_n^{17}` (`gridAsm_K`) with `τ ≡ K n`,
-`Δ = gridStep`, `P = 1` (`v = Δ²`, `w = Δ⁴`), `A_0 ≡ 1`, `Dr = Y = R = 0`, `A` the process
-`𝒰_{u_0,u_m} A_0 + Σ_{j<m∧τ} 𝒰_{u_{j+1},u_m} Z_j`.  Discharged: `SizeTendsto` (`sz0_tendsto`), the grid, the stopping-time
-measurability, the bundle (the band `gridAsm_bundle` through `bandStep2_GridAssemblyHypN`: the kernel class `hKer` is
-`gridRepTailGen_ker_band`).  Given any strongly measurable `Z` with the sub-Gaussian input at a constant proxy `cc > 0`,
-eventually in `n` there is an event `G` of probability at least `1 - N^{-D₁}` on which the assembled bound holds. -/
-private theorem GridAssemblyGen_assembled_instance_gen (ε : ℝ) (hε : 0 < ε) (D D₁ C_P : ℝ)
-    (hCK : D₁ + 4 * D + ((3 : ℕ) : ℝ) + 2 * C_P + 8 ≤ 17) (hCP : 0 ≤ C_P) :
-    ∀ᶠ n : ℕ in atTop, ∀ (σ : Fin 3 → Bool)
-      (Z : ℕ → PathΩ sz0 → (Fin 3 → Zd 3 (sz0.L n)) → ℂ) (cc : ℝ≥0), 0 < cc →
-      (∀ j, StronglyMeasurable[filt sz0 (j + 1)] (Z j)) →
-      (∀ m ≤ gridAsm_K n, ∀ (a : Fin 3 → Zd 3 (sz0.L n)) (j : ℕ), j < m →
-        SubGaussStopNg GridAssemblyGen_Cm σ (gridTime sInst tInst gridAsm_K n) (fun _ => gridAsm_K n) Z m a j cc) →
-      ∃ G : Set (PathΩ sz0), GridAssemblyGen_Cm.Pp.real Gᶜ ≤ ((sz0.size n : ℕ) : ℝ) ^ (-D₁) ∧
-        ∀ ω ∈ G, ∀ m ≤ gridAsm_K n, ∀ a : Fin 3 → Zd 3 (sz0.L n),
-          ‖Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n σ (gridTime sInst tInst gridAsm_K n 0)
-              (gridTime sInst tInst gridAsm_K n m) (fun _ => (1 : ℂ)) a +
-            ∑ j ∈ Finset.range m, Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n σ
-              (gridTime sInst tInst gridAsm_K n (j + 1)) (gridTime sInst tInst gridAsm_K n m) (Z j ω) a‖ ≤
-            (1 + (1 - gridTime sInst tInst gridAsm_K n m)⁻¹) ^ 3 +
-              ((sz0.size n : ℕ) : ℝ) ^ ε * Real.sqrt (m * cc) +
-              ((sz0.size n : ℕ) : ℝ) ^ (-D) := by
-  filter_upwards [assembledNg GridAssemblyGen_Cm sz0_tendsto 3 ε hε D D₁ C_P 17 (by norm_num) hCK] with n hn
-  intro σ Z cc hcc hZmeas hsub
-  have hΔ0 : 0 ≤ gridStep sInst tInst gridAsm_K n := (gridAsm_step_pos n).le
-  obtain ⟨hK1, hK, hΔ, hKΔ⟩ := gridAsm_grid_data n
-  have hN1 : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast gridAsm_size_pos n
-  have hu0 : ∀ i ≤ gridAsm_K n, 0 ≤ gridTime sInst tInst gridAsm_K n i := fun i hi =>
-    (gridAsm_gridTime_bounds n hi).1
-  have hu1 : ∀ i ≤ gridAsm_K n, gridTime sInst tInst gridAsm_K n i < 1 := fun i hi =>
-    (gridAsm_gridTime_bounds n hi).2.trans_lt (by norm_num)
-  obtain ⟨G, hG, hb⟩ := hn (gridAsm_K n) σ (gridTime sInst tInst gridAsm_K n)
-    (fun _ => gridAsm_K n) (gridStep sInst tInst gridAsm_K n) (fun _ _ _ => True)
-    (fun _ _ => 1)
-    (fun m ω => RBM.Ind.Ugen 3 (sz0.L n) (sz0.lam n) (gridAsm_E n) σ (gridTime sInst tInst gridAsm_K n 0)
-        (gridTime sInst tInst gridAsm_K n m) (fun _ => (1 : ℂ)) +
-      ∑ j ∈ Finset.range (min m ((fun _ : PathΩ sz0 => gridAsm_K n) ω)),
-        RBM.Ind.Ugen 3 (sz0.L n) (sz0.lam n) (gridAsm_E n) σ (gridTime sInst tInst gridAsm_K n (j + 1))
-          (gridTime sInst tInst gridAsm_K n m) (Z j ω))
-    (fun _ _ _ => 0) Z (fun _ _ _ => 0) (fun _ _ _ => 0)
-    (fun _ m => (1 + (1 - gridTime sInst tInst gridAsm_K n m)⁻¹) ^ 3) (fun _ _ => 0) 0
-    (fun _ _ => 0) (fun _ _ => 0) (fun _ _ _ => cc)
-    (fun _ => gridStep sInst tInst gridAsm_K n ^ 2) (fun _ => gridStep sInst tInst gridAsm_K n ^ 4)
-    (fun _ => 0) 1 hK1 hK hΔ (by rw [hKΔ]; norm_num) zero_le_one
-    (Real.one_le_rpow hN1 hCP)
-    (fun _ _ => by simp) (fun _ _ => by simp)
-    (fun j => MeasurableSet.const _) hZmeas hsub
-    (bandStep2_GridAssemblyHypN sz0 gridAsm_E
-      (gridAsm_bundle n σ Z cc hcc (gridTime sInst tInst gridAsm_K n) (gridAsm_E n)
-        (gridAsm_E_abs_lt n).le hu0 hu1 (fun _ => gridAsm_K n) _ hΔ0
-        (fun _ => gridStep sInst tInst gridAsm_K n ^ 2) (fun _ => gridStep sInst tInst gridAsm_K n ^ 4)
-        (fun _ => by positivity) (fun _ => by positivity)))
-  refine ⟨G, hG, fun ω hω m hm a => ?_⟩
-  have := hb ω hω (gridAsm_K_pos n) m hm a
-  have hfm : GridAssemblyGen_Cm.toFlowFM = bandFM sz0 gridAsm_E := rfl
-  simpa [hfm, min_eq_left hm, bandStep2_Ugen] using this
-
-/-- **Nondegenerate instance of `assembledNg`** (all hypotheses discharged, no unproved pin): the witness
-`Z_j = √Δ · Re tr X_{j+1}` (a genuinely random Gaussian increment, `gridAsm_witZ_ne_zero`), whose sub-Gaussian input is
-proved by the band `gridAsm_witSubGaussStop` (through `bandStep2_SubGaussStopN`), `d = 3`, `sz0`, `k = 3`, `σ = (+,+,-)`,
-`E ≡ 1/2`, `ε = 1`, `D = D₁ = 1`, `C_P = 0`, `C_K = 17` (exponent count `1 + 4 + 3 + 0 + 8 = 16 ≤ 17`), the window
-`(0, 1/16)` and the grid `K_n = N_n^{17}`.  Eventually in `n`, on an event of probability at least `1 - N^{-1}`, for every
-`m ≤ K n` and label `a` the assembled process is bounded as stated. -/
-example : ∀ᶠ n : ℕ in atTop, ∃ G : Set (PathΩ sz0),
-    GridAssemblyGen_Cm.Pp.real Gᶜ ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) ∧
-    ∀ ω ∈ G, ∀ m ≤ gridAsm_K n, ∀ a : Fin 3 → Zd 3 (sz0.L n),
-      ‖Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n ![true, true, false] (gridTime sInst tInst gridAsm_K n 0)
-          (gridTime sInst tInst gridAsm_K n m) (fun _ => (1 : ℂ)) a +
-        ∑ j ∈ Finset.range m, Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n ![true, true, false]
-          (gridTime sInst tInst gridAsm_K n (j + 1)) (gridTime sInst tInst gridAsm_K n m)
-          (gridAsm_witZvec n j ω) a‖ ≤
-        (1 + (1 - gridTime sInst tInst gridAsm_K n m)⁻¹) ^ 3 +
-          ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) * Real.sqrt (m * gridAsm_witProxy n) +
-          ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
-  filter_upwards [GridAssemblyGen_assembled_instance_gen 1 one_pos 1 1 0 (by norm_num) le_rfl] with n hn
-  exact hn ![true, true, false] (gridAsm_witZvec n) (gridAsm_witProxy n) (gridAsm_witProxy_pos n)
-    (fun j => gridAsm_stronglyMeasurable_witZvec n j)
-    (fun m hm a j hj => (bandStep2_SubGaussStopN sz0 gridAsm_E _ _ _ _ m a j _).1
-      (gridAsm_witSubGaussStop n _ m hm a j hj))
-
-/-- **Instance of `assembledNg` with `Z = ZvecNg`** (the paper's first-chaos part; `hZmeas` from
-`GridAssemblyGen_stronglyMeasurable_ZvecNg`) at the same data, `ε = 1/100`, `D = D₁ = 1`, `C_P = 0`: the sub-Gaussian family
-for `ZvecNg` (the output of `azumaSubGNg`, row T4s2c) stays a hypothesis, at an arbitrary constant proxy `cc > 0`. -/
-example : ∀ᶠ n : ℕ in atTop, ∀ (σ : Fin 3 → Bool) (cc : ℝ≥0), 0 < cc →
-    (∀ m ≤ gridAsm_K n, ∀ (a : Fin 3 → Zd 3 (sz0.L n)) (j : ℕ), j < m →
-      SubGaussStopNg GridAssemblyGen_Cm σ (gridTime sInst tInst gridAsm_K n) (fun _ => gridAsm_K n)
-        (fun j ω => ZvecNg GridAssemblyGen_Cm sInst tInst gridAsm_K n j σ ω) m a j cc) →
-    ∃ G : Set (PathΩ sz0), GridAssemblyGen_Cm.Pp.real Gᶜ ≤ ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) ∧
-      ∀ ω ∈ G, ∀ m ≤ gridAsm_K n, ∀ a : Fin 3 → Zd 3 (sz0.L n),
-        ‖Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n σ (gridTime sInst tInst gridAsm_K n 0)
-            (gridTime sInst tInst gridAsm_K n m) (fun _ => (1 : ℂ)) a +
-          ∑ j ∈ Finset.range m, Step2Gen_UN GridAssemblyGen_Cm.toFlowFM n σ
-            (gridTime sInst tInst gridAsm_K n (j + 1)) (gridTime sInst tInst gridAsm_K n m)
-            (ZvecNg GridAssemblyGen_Cm sInst tInst gridAsm_K n j σ ω) a‖ ≤
-          (1 + (1 - gridTime sInst tInst gridAsm_K n m)⁻¹) ^ 3 +
-            ((sz0.size n : ℕ) : ℝ) ^ (1 / 100 : ℝ) * Real.sqrt (m * cc) +
-            ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
-  filter_upwards [GridAssemblyGen_assembled_instance_gen (1 / 100) (by norm_num) 1 1 0 (by norm_num)
-    le_rfl] with n hn
-  intro σ cc hcc hsub
-  exact hn σ (fun j ω => ZvecNg GridAssemblyGen_Cm sInst tInst gridAsm_K n j σ ω) cc hcc
-    (fun j => GridAssemblyGen_stronglyMeasurable_ZvecNg GridAssemblyGen_hL GridAssemblyGen_hW _ _ _ n j σ) hsub
-
-/-- The `qvFormNg` bridge at the instance data (`n = 0`, `E ≡ 1/2`, `v = 0`, `w = 1/16`). -/
-example (σ : Fin 3 → Bool) (M : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
-    (a : Fin 3 → Zd 3 (sz0.L 0)) :
-    RBM.Ind.qvFormN sz0 0 (gridAsm_E 0) 0 (1 / 16) σ M a = qvFormNg GridAssemblyGen_Cm 0 0 (1 / 16) σ M a :=
-  bandStep2_qvFormN sz0 gridAsm_E 0 (gridAsm_E_abs_lt 0).le (by norm_num) (by norm_num) σ M a
-
-/-- The coarse row bound at the band carrier, for `v = 1/16 > w = 1/32` (no order between the two times). -/
-example (X : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ) (a : Fin 3 → Zd 3 (sz0.L 0)) (hX : ∀ b, ‖X b‖ ≤ 1) :
-    ‖Step2Gen_UN GridAssemblyGen_Cm.toFlowFM 0 ![true, true, false] (1 / 16) (1 / 32) X a‖ ≤
-      (1 + (1 - (1 / 32 : ℝ))⁻¹) ^ 3 * 1 :=
-  GridAssemblyGen_norm_UN_coarse (gridRepTailGen_ker_band sz0 gridAsm_E 0 (gridAsm_E_abs_lt 0).le) _
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) zero_le_one hX a
 
 /-! The stopped Azuma instance with **no open hypothesis** (below, the last `example`): `m = 1`, step `j = 0` (where `H_0 = 0`
 makes the walk deterministic), the carrier `bandStep2Mat sz0 (fun _ => 0)`, the window `(0, 1/2)` with `K = 4` (`Δ = 1/8`),
 `σ = (+,-,+)`, label `0`, `τ ≡ 4`; the sub-Gaussian input is T2474's `subGaussStopNg_zvecNg` with the proxy `c3` of the loop
 family (`Δ · linTrVar` of `AbCN` and of `(-I) • AbCN`, `AbCN` independent of `ω` at `H_0 = 0`). -/
-
-namespace GridAssemblyGenCheck
-
-open RBM.Ind (AbCN)
-
-private abbrev E0 : ℕ → ℝ := fun _ => 0
-private abbrev s0 : ℕ → ℝ := fun _ => 0
-private abbrev t0 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev K0 : ℕ → ℕ := fun _ => 4
-private abbrev Ψ0 : ∀ n : ℕ, Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ := fun _ => 0
-private abbrev Cm0 : Step2Mat sz0 := bandStep2Mat sz0 E0
-private abbrev σ3 : Fin 3 → Bool := ![true, false, true]
-private abbrev b3 : Fin 3 → Zd 3 (sz0.L 0) := ![0, 0, 0]
-
-private theorem hL0 : StepDecompGen_LoopForm Cm0 E0 :=
-  stepDecompGen_loopForm_band sz0 E0 (fun _ => by norm_num)
-private theorem hW0 : StepDecompGen_WalkForm Cm0 sz0.lam Ψ0 := stepDecompGen_walkForm_band sz0 E0
-
-private abbrev U3 : (Fin 3 → Zd 3 (sz0.L 0)) → (Fin 3 → Zd 3 (sz0.L 0)) → ℂ :=
-  fun a b => ∏ i : Fin 3, Step2Gen_uKer Cm0.toFlowFM 0 (σ3 i) (σ3 (finRotate 3 i))
-    (gridTime s0 t0 K0 0 (0 + 1)) (gridTime s0 t0 K0 0 1) (a i) (b i)
-
-private theorem hΔ : 0 ≤ gridStep s0 t0 K0 0 := by norm_num [gridStep]
-
-private def A₀3 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ :=
-  AbCN (sz0.withLam sz0.lam) s0 t0 K0 0 0 (loopFamNgShift Cm0 Ψ0 s0 t0 K0 0 0 σ3) U3 b3 (fun _ => 0)
-
-private theorem AbCN_eq (ω : PathΩ sz0) :
-    AbCN (sz0.withLam sz0.lam) s0 t0 K0 0 0 (loopFamNgShift Cm0 Ψ0 s0 t0 K0 0 0 σ3) U3 b3 ω = A₀3 := by
-  simp [A₀3, AbCN, pathH, s0]
-
-private def c3 : ℝ :=
-  max (gridStep s0 t0 K0 0 * linTrVar 0 A₀3) (gridStep s0 t0 K0 0 * linTrVar 0 ((-Complex.I) • A₀3))
-
-private theorem c3_nonneg : 0 ≤ c3 := le_max_of_le_left (mul_nonneg hΔ (linTrVar_nonneg 0 _))
-
-example (x : ℝ) (hx : 0 ≤ x) :
-    Cm0.Pp.real {ω | x ≤ ‖∑ j ∈ Finset.range (min 1 ((fun _ : PathΩ sz0 => K0 0) ω)),
-        Step2Gen_UN Cm0.toFlowFM 0 σ3 (gridTime s0 t0 K0 0 (j + 1)) (gridTime s0 t0 K0 0 1)
-          (ZvecNg Cm0 s0 t0 K0 0 j σ3 ω) b3‖} ≤
-      4 * Real.exp (-x ^ 2 / (4 * ∑ _j ∈ Finset.range 1, ((⟨c3, c3_nonneg⟩ : ℝ≥0) : ℝ))) := by
-  have hτ : ∀ j, MeasurableSet[filt sz0 j] {ω : PathΩ sz0 | j < (fun _ : PathΩ sz0 => K0 0) ω} :=
-    fun j => MeasurableSet.const _
-  have hsub : ∀ j < 1, SubGaussStopNg Cm0 σ3 (gridTime s0 t0 K0 0) (fun _ => K0 0)
-      (fun j ω => ZvecNg Cm0 s0 t0 K0 0 j σ3 ω) 1 b3 j ⟨c3, c3_nonneg⟩ := by
-    intro j hj
-    obtain rfl : j = 0 := by omega
-    exact subGaussStopNg_zvecNg hL0 hW0 s0 t0 K0 0 0 (by norm_num) (by norm_num) (by norm_num) σ3 (fun _ => K0 0)
-      (hτ 0) 1 b3 c3 c3_nonneg (fun ω _ => by rw [AbCN_eq]; exact le_max_left _ _)
-      (fun ω _ => by rw [AbCN_eq]; exact le_max_right _ _)
-  have h := stoppedAzumaZNg Cm0 hL0 hW0 s0 t0 K0 (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) 0 3 σ3 (fun _ => K0 0) hτ 1 (by norm_num) b3 (fun _ => ⟨c3, c3_nonneg⟩) hsub x hx
-  exact h
-
-end GridAssemblyGenCheck
-
-end Inst
 
 end RBM.BA
 

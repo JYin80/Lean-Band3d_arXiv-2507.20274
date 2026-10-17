@@ -35,8 +35,6 @@ set_option linter.style.longLine false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 
-open private Step6Gen_STthetaOp_eq from RBM3D.Chain.Step6Gen
-
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
@@ -72,26 +70,6 @@ def STExpWardIgL' (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
   STIngR6gL d STReg5I law Flow mk T0 (fun sz z s t =>
     STExpAvgUgL (mk sz z) (law sz) s t → STExpWardIConclgL' (mk sz z) (law sz) s t)
-
-section Bridges
-
-variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ)
-
-/-- Band `STExpWardIConcl'` is `STExpWardIConclgL'` at `bandFM`: through the bridge of `Θ^{(2)}` (`Step2Kern_ThetaN_band`), nothing else. -/
-theorem bandFM_STExpWardIConcl' :
-    STExpWardIConcl' sz E s t ↔ STExpWardIConclgL' (bandFM sz E) (Sizes.seqP sz) s t := by
-  unfold STExpWardIConcl' STExpWardIConclgL'
-  simp only [Step6Gen_STthetaOp_eq]
-  exact Iff.rfl
-
-end Bridges
-
-/-- Band `STExpWardI'` is `STExpWardIgL'` at the band tuple `(seqP, STFlow, bandFM ∘ STflowE, lemT)`. -/
-theorem STExpWardI'_iff_gL' (d : ℕ) :
-    STExpWardI' d ↔ STExpWardIgL' d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  Step6Gen_ingR6_iff_congr d STReg5I (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl' sz E s t) _
-    (fun sz z s t => imp_congr (bandFM_STExpAvgU sz (STflowE z) s t) (bandFM_STExpWardIConcl' sz (STflowE z) s t))
 
 /-- The unprimed conclusion implies the primed one (the extra hypotheses `0 < Cq`, `0 < c` are dropped; band `expWI_concl_prime`, `ExpWardI:428`). -/
 theorem expWIg_concl_prime {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ)
@@ -454,127 +432,11 @@ theorem stExpWardIgL'_of {d : ℕ} {law : ∀ sz : Sizes d, Measure sz.SeqΩ}
 
 /-! ## 5. The band re-derivations -/
 
-/-- **Band `stExpWardI_holds` re-derived** (`ExpWardI:441`) from `stExpWardIgL_of` through `STExpWardI_iff_gL` (`Step6Gen`): the premises at the band tuple are the merged
-`step5CasesGen_flowFacts_band`, `cltRepg_band`, `b45Gen_facts_band` and `step2IterGen_oneLoop_band`. -/
-theorem stExpWardI_gen_band (d : ℕ) : STExpWardI d :=
-  (STExpWardI_iff_gL d).2 (stExpWardIgL_of (fun sz => inferInstance) (step5CasesGen_flowFacts_band d)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => ⟨fun _ => 0, sz.lam, STflowE z, cltRepg_band sz (STflowE z)⟩) (b45Gen_facts_band d)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => (step2IterGen_oneLoop_band sz (STflowE z)).1))
-
-/-- **Band `stExpWardI'_holds` re-derived** (`ExpWardI:448`) from `stExpWardIgL'_of` through `STExpWardI'_iff_gL'`. -/
-theorem stExpWardI'_gen_band (d : ℕ) : STExpWardI' d :=
-  (STExpWardI'_iff_gL' d).2 (stExpWardIgL'_of (fun sz => inferInstance) (step5CasesGen_flowFacts_band d)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => ⟨fun _ => 0, sz.lam, STflowE z, cltRepg_band sz (STflowE z)⟩) (b45Gen_facts_band d)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => (step2IterGen_oneLoop_band sz (STflowE z)).1))
-
 /-! ## 6. Compiled nonempty instances at `d = 3` (regime (i) data of the band: `szB`, `zB`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `(s, t) = (7/8, 15/16)`)
 
 `szB`: `L = 4`, `W_n = n + 4`, `lam = 1`; `1/16 = lam²/L² ≤ 1 - t = 1/16 ≤ 1 - s = 1/8 ≤ lam² = 1`.  Discharged: flow, times, regime, admissibility, probability law, flow facts,
 `CltRepg` (`cltRepg_band`, `H₀ = 0`, `g' = lam`), the class `B45Gen_Facts` (`b45Gen_facts_band`, `K₆ = 1` there), `𝒦^{(1)}_σ = m_σ` at both charges
 (`step2IterGen_oneLoop_band`).  What stays a hypothesis is `STExpAvgUgL` at the instance (`(res_ELK_n=1)`, the conclusion of `STImproveExpAvergL`, row c of T2502). -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Step34Inst RBM.Gauss.Step5Inst RBM.Gauss.Step6Inst
-
-/-- The kernel facts of the band flow `zB` at `K₆`: the Ward text, constant column sums and the row and column bounds of `Step2Gen_thetaKer` (`b45Gen_facts_band`). -/
-private theorem ExpWardIGen_bandData :
-    ∃ K₆ : ℝ, 0 < K₆ ∧ ZeroModeGen_WardCls szB (bandFM szB (STflowE zB)) ∧
-      (∀ n, ZeroModeGen_KerSums (bandFM szB (STflowE zB)) n) ∧
-      (∀ (n : ℕ) (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd 3 (szB.L n),
-        ∑ b : Zd 3 (szB.L n), ‖Step2Gen_thetaKer (bandFM szB (STflowE zB)) n σ σ' t a b‖ ≤ K₆ / (1 - t)) ∧
-      (∀ (n : ℕ) (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ b : Zd 3 (szB.L n),
-        ‖∑ a : Zd 3 (szB.L n), Step2Gen_thetaKer (bandFM szB (STflowE zB)) n σ σ' t a b‖ ≤ K₆ / (1 - t)) := by
-  obtain ⟨K₆, hK₆, G⟩ := b45Gen_facts_band 3 (1 / 10) (by norm_num)
-  obtain ⟨hward, -, -, hker, hsums⟩ := G szB (1 / 10) (1 / 6) (1 / 10) zB flow_zB
-  exact ⟨K₆, hK₆, hward, hker, fun n σ σ' t h0 h1 a => (hsums n σ σ' t h0 h1).1 a,
-    fun n σ σ' t h0 h1 b => (hsums n σ σ' t h0 h1).2 b⟩
-
-/-- **Target 9**: the bridge of the conclusion and the bridge of the pin at the band data. -/
-example (h : STExpWardIConcl' szB (STflowE zB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  (bandFM_STExpWardIConcl' szB (STflowE zB) _ _).1 h
-
-example (h : STExpWardIConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  expWIg_concl_prime _ _ _ _ h
-
-example (h : STExpWardIgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) :
-    InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl' sz E s t) szB zB
-      (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ ((STExpWardI'_iff_gL' 3).2 h) szB_reg5I
-
-/-- **Target 10, `expWI_Psum_eqg`** at `szB`, `n = 0`, `u = 7/8`, `σ = (+, -)`, `a₁ = 0` (band carrier at `zB`, law `seqP szB`): Ward's identity in expectation; every hypothesis
-is discharged. -/
-example :
-    STPsum (d := 3) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) 0 (7 / 8) ![true, false] b)
-        (0 : Zd 3 (szB.L 0)) =
-      (2 * Complex.I * ((szB.W 0 : ℕ) : ℂ) ^ 3 * ((bandFM szB (STflowE zB)).eta 0 (7 / 8) : ℂ))⁻¹ *
-        (((∫ ω, (bandFM szB (STflowE zB)).L 0 (7 / 8) (fun _ : Fin 1 => true) (fun _ => (0 : Zd 3 (szB.L 0))) ω ∂(Sizes.seqP szB)) -
-            (bandFM szB (STflowE zB)).K 0 (7 / 8) (fun _ : Fin 1 => true) (fun _ => (0 : Zd 3 (szB.L 0)))) -
-          ((∫ ω, (bandFM szB (STflowE zB)).L 0 (7 / 8) (fun _ : Fin 1 => false) (fun _ => (0 : Zd 3 (szB.L 0))) ω ∂(Sizes.seqP szB)) -
-            (bandFM szB (STflowE zB)).K 0 (7 / 8) (fun _ : Fin 1 => false) (fun _ => (0 : Zd 3 (szB.L 0))))) := by
-  obtain ⟨K₆, hK₆, hward, -⟩ := ExpWardIGen_bandData
-  exact expWI_Psum_eqg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance hward (cltRepg_band szB (STflowE zB))
-    (κ := Real.sqrt (2 * (1 / 10)) / 2) (by positivity) 0 (st6_mE_im_ge (by norm_num) (st6_flowE_le szB flow_zB 0))
-    (by norm_num) (by norm_num) ![true, false] (by decide) 0
-
-/-- **Target 10, `expWI_Psum_precg`** at `(szB, zB, 7/8, 15/16)`: the premise `(res_ELK_n=1)` stays a hypothesis. -/
-example (hAvg : STExpAvgUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    PrecL szB (Sizes.seqP szB) (U := fun n => TimeIcc (fun _ => (7 / 8 : ℝ)) (fun _ => 15 / 16) n ×
-        {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × Zd 3 (szB.L n))
-      (fun n q _ => ‖STPsum (d := 3) (fun b => STExpErrg (bandFM szB (STflowE zB)) (Sizes.seqP szB) n (q.1 : ℝ) q.2.1.1 b)
-        q.2.2‖)
-      (fun n q _ => (((szB.W n : ℕ) : ℝ) ^ 3 * (bandFM szB (STflowE zB)).eta n (q.1 : ℝ))⁻¹ * (szB.Bctl n (q.1 : ℝ)) ^ 2) := by
-  obtain ⟨K₆, hK₆, hward, -⟩ := ExpWardIGen_bandData
-  exact expWI_Psum_precg (bandFM szB (STflowE zB)) (Sizes.seqP szB) inferInstance szB_tendsto hward
-    (cltRepg_band szB (STflowE zB)) (κ := Real.sqrt (2 * (1 / 10)) / 2) (by positivity)
-    (fun n => st6_mE_im_ge (by norm_num) (st6_flowE_le szB flow_zB n)) (fun n t => rfl)
-    (step2IterGen_oneLoop_band szB (STflowE zB)).1 (fun _ => by norm_num) (fun _ => by norm_num) hAvg
-
-/-- **Target 11, `expWI_coreg`** at `(szB, zB, 7/8, 15/16)`: the Ward terms of regime (i), unprimed and primed; the premise `(res_ELK_n=1)` stays a hypothesis. -/
-example (hAvg : STExpAvgUgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16)) :
-    STExpWardIConclgL (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) ∧
-      STExpWardIConclgL' (bandFM szB (STflowE zB)) (Sizes.seqP szB) (fun _ => 7 / 8) (fun _ => 15 / 16) := by
-  obtain ⟨K₆, hK₆, hward, hker, hrow, hcol⟩ := ExpWardIGen_bandData
-  have h := expWI_coreg (bandFM szB (STflowE zB)) (Sizes.seqP szB) (by norm_num) (κm := Real.sqrt (2 * (1 / 10)) / 2)
-    (by positivity) hK₆.le szB_admissible inferInstance (cltRepg_band szB (STflowE zB))
-    (fun n => st6_mE_im_ge (by norm_num) (st6_flowE_le szB flow_zB n)) (fun n t => rfl) hward
-    (step2IterGen_oneLoop_band szB (STflowE zB)).1 hker hrow hcol (fun _ => by norm_num) (fun _ => by norm_num)
-    (fun _ => by norm_num) szB_reg5I hAvg
-  exact ⟨h, expWIg_concl_prime _ _ _ _ h⟩
-
-/-- The class of mollifiers read by the conclusion is nonempty at the data (`st6_mollifier_familyg`, `0 < Cq`, `0 < c`, `STMollifierProps` eventually). -/
-example : ∃ (Cq c : ℝ), 0 < Cq ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd 3 (szB.L n)) → ℂ,
-    ∀ᶠ n in atTop, STMollifierProps (d := 3) (szB.lam n) Cq c (ϑ n) :=
-  st6_mollifier_familyg szB (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) szB_WO
-
-/-- **Target 11, the pins at the band tuple, `d = 3`**: every family premise is discharged (probability law, flow facts, `cltRepg_band`, `b45Gen_facts_band`,
-`step2IterGen_oneLoop_band`); no hypothesis remains. -/
-example : STExpWardIgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpWardIgL_of (fun sz => inferInstance) (step5CasesGen_flowFacts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => ⟨fun _ => 0, sz.lam, STflowE z, cltRepg_band sz (STflowE z)⟩) (b45Gen_facts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => (step2IterGen_oneLoop_band sz (STflowE z)).1)
-
-example : STExpWardIgL' 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  stExpWardIgL'_of (fun sz => inferInstance) (step5CasesGen_flowFacts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => ⟨fun _ => 0, sz.lam, STflowE z, cltRepg_band sz (STflowE z)⟩) (b45Gen_facts_band 3)
-    (fun sz κ ε 𝔠 𝔡 z _ _ => (step2IterGen_oneLoop_band sz (STflowE z)).1)
-
-/-- **The band re-derivations** `stExpWardI_gen_band`, `stExpWardI'_gen_band`, read at the data of regime (i) `(szB, zB, 7/8, 15/16)` through the merged
-`inst_ing6_I`; the stochastic premises of `STIngR6` are the hypotheses of the produced statements. -/
-example : InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl sz E s t) szB zB
-    (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ (stExpWardI_gen_band 3) szB_reg5I
-
-example : InstIng6Concl (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl' sz E s t) szB zB
-    (fun _ => 7 / 8) (fun _ => 15 / 16) :=
-  inst_ing6_I STReg5I _ (stExpWardI'_gen_band 3) szB_reg5I
-
-end Instances
 
 end RBM.BA
 

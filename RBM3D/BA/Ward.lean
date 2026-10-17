@@ -154,13 +154,6 @@ end Ward
 
 /-! ## 2. The pins `BAWard`, `BAPropM12` -/
 
-/-- **`BAWard`** is proved: the merged pin (`MFixedPoint.lean`, `(eq:WardM)`, `7_8:1864-1869`). -/
-theorem baWard_holds (d : ℕ) : BAWard d := by
-  intro L hL g hg z m
-  have : NeZero L := ⟨by omega⟩
-  intro hz hs
-  exact ⟨BAMB_shift d L g z m, BAMB_diag_eq d L g z m hs, BAMB_ward_row d L g z m hz hs⟩
-
 section PropM12
 
 variable (d : ℕ)
@@ -267,161 +260,10 @@ theorem BAoffDiag_scalar (κ t : ℝ) (m : ℂ) (hκ : 0 < κ) (hκm : κ ≤ m.
 theorem BAMss_pp_apply (d L : ℕ) [NeZero L] (M : Matrix (Zd d L) (Zd d L) ℂ) (a b : Zd d L) :
     BAMss d L M true true a b = M b a * M a b := rfl
 
-section OffDiag
-
-variable (d L : ℕ) [NeZero L]
-
-/-- The left side of `(eq:off_diagM)` is exactly `1 - |m|²` at a real energy. -/
-theorem BAoffDiag_row_sum (g E : ℝ) (m : ℂ) (h : BASelf d L g (E : ℂ) m) :
-    ∑ a ∈ Finset.univ.erase (0 : Zd d L), ‖BAMss d L (BAMB d L g (E : ℂ) m) true true 0 a‖
-      = 1 - ‖m‖ ^ 2 := by
-  have h1 : ∀ a : Zd d L, ‖BAMss d L (BAMB d L g (E : ℂ) m) true true 0 a‖
-      = ‖BAMB d L g (E : ℂ) m 0 a‖ ^ 2 := by
-    intro a
-    rw [BAMss_pp_apply, BAMB_symm d L g (E : ℂ) m a 0, norm_mul, sq]
-  simp only [h1]
-  have h2 := Finset.add_sum_erase (Finset.univ : Finset (Zd d L))
-    (fun a => ‖BAMB d L g (E : ℂ) m 0 a‖ ^ 2) (Finset.mem_univ 0)
-  rw [BAMB_row_sq_real d L g E m h 0, BAMB_diag_eq d L g (E : ℂ) m h 0] at h2
-  linarith
-
-/-- `(eq:off_diagM)` with the explicit `ε = κ²/4` at one datum. -/
-theorem BAoffDiag_of_real (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (t : ℝ)
-    (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
-    κ ^ 2 / 4 ≤ ‖1 - (t : ℂ) * m ^ 2‖ ∧
-      ∑ a ∈ Finset.univ.erase (0 : Zd d L), ‖BAMss d L (BAMB d L g (E : ℂ) m) true true 0 a‖
-        ≤ (1 - κ ^ 2 / 4) * ‖1 - (t : ℂ) * m ^ 2‖ := by
-  have hn := BAm_norm_le_one d L g (E : ℂ) m (by simp) hr.1
-  obtain ⟨h1, h2⟩ := BAoffDiag_scalar κ t m hκ hr.2 hn ht0 ht1
-  refine ⟨h1, ?_⟩
-  rw [BAoffDiag_row_sum d L g E m hr.1]
-  exact h2
-
-end OffDiag
-
-/-- **`BAoffDiag`** is proved with `ε = κ²/4` (the premises `3 ≤ d`, `0 < Λ`, `g ≤ Λ` are unused). -/
-theorem baOffDiag_holds (d : ℕ) (Λ κ : ℝ) : BAoffDiag d Λ κ := by
-  intro _ _ hκ
-  refine ⟨κ ^ 2 / 4, by positivity, ?_⟩
-  intro L hL g hg hgΛ E m hr t ht0 ht1
-  have : NeZero L := ⟨by omega⟩
-  exact BAoffDiag_of_real d L g κ E m hκ hr t ht0 ht1
-
 /-! ## 4. Compiled nonempty instances (`d = 3`, `L = 4`, `card (Zd 3 4) = 64`)
 
 The merged data of T2189: the complex point `(z_S, m_S)` of `(L, g) = (4, 10)` (`Im z_S > 0`) and the
 flow point `P` (`g = P.g0`, a real energy `P.E`, `m = P.m0`, `BAReal 3 4 P.g0 (Im P.m0) P.E P.m0`). -/
-namespace WardInst
-
-open RBM.BA.MFixedPointInst
-
-/-- `baWard_holds` at the complex point `(z_S, m_S)`, `g = 10`, `Im z_S > 0`. -/
-example :
-    (∀ a b r : Zd 3 4, BAMB 3 4 10 (zS 4 10) (mS 4 10) (a + r) (b + r) = BAMB 3 4 10 (zS 4 10) (mS 4 10) a b) ∧
-    (∀ a : Zd 3 4, BAMB 3 4 10 (zS 4 10) (mS 4 10) a a = mS 4 10) ∧
-    ∀ a : Zd 3 4, ((mS 4 10).im + (zS 4 10).im) * ∑ b, ‖BAMB 3 4 10 (zS 4 10) (mS 4 10) a b‖ ^ 2
-      = (mS 4 10).im :=
-  baWard_holds 3 4 (by norm_num) 10 (by norm_num) (zS 4 10) (mS 4 10) (zS_im_pos 4 10).le (selfS 4 10)
-
-/-- `baWard_holds` at the real-axis flow point `P`. -/
-example :
-    (∀ a b r : Zd 3 4, BAMB 3 4 P.g0 (P.E : ℂ) P.m0 (a + r) (b + r) = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b) ∧
-    (∀ a : Zd 3 4, BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a a = P.m0) ∧
-    ∀ a : Zd 3 4, (P.m0.im + ((P.E : ℂ)).im) * ∑ b, ‖BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b‖ ^ 2 = P.m0.im :=
-  baWard_holds 3 4 (by norm_num) P.g0 P.g0_pos (P.E : ℂ) P.m0 (by simp) P.real.1
-
-/-- `baPropM12_holds` at the flow point `P`. -/
-example :
-    (∀ a b r : Zd 3 4, BAMB 3 4 P.g0 (P.E : ℂ) P.m0 (a + r) (b + r) = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b) ∧
-    (∀ a : Zd 3 4, BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a a = P.m0) ∧
-    (∀ a : Zd 3 4, ∑ b, ‖BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b‖ ^ 2 = 1) ∧ ‖P.m0‖ ≤ 1 :=
-  baPropM12_holds 3 4 (by norm_num) P.g0 P.g0_pos P.E P.m0 P.real.1
-
-/-- The row-wise pieces at `P`: symmetry, transpose, `M_aa = m`, Ward row, `|m| ≤ 1`. -/
-example (a b : Zd 3 4) : BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 b a :=
-  BAMB_symm 3 4 P.g0 (P.E : ℂ) P.m0 a b
-
-example : Matrix.transpose (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 :=
-  BAMB_transpose 3 4 P.g0 (P.E : ℂ) P.m0
-
-example (a b r : Zd 3 4) :
-    BAMB 3 4 P.g0 (P.E : ℂ) P.m0 (a + r) (b + r) = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b :=
-  BAMB_shift 3 4 P.g0 (P.E : ℂ) P.m0 a b r
-
-example (a : Zd 3 4) : BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a a = P.m0 :=
-  BAMB_diag_eq 3 4 P.g0 (P.E : ℂ) P.m0 P.real.1 a
-
-example (a : Zd 3 4) :
-    ∑ b, ‖BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b‖ ^ 2 = 1 :=
-  BAMB_row_sq_real 3 4 P.g0 P.E P.m0 P.real.1 a
-
-example : ‖P.m0‖ ≤ 1 := BAm_norm_le_one 3 4 P.g0 (P.E : ℂ) P.m0 (by simp) P.real.1
-
-/-- `BAMB_ward_row` at the complex point `(z_S, m_S)`: factor `Im m + Im z > 0`. -/
-example (a : Zd 3 4) :
-    ((mS 4 10).im + (zS 4 10).im) * ∑ b, ‖BAMB 3 4 10 (zS 4 10) (mS 4 10) a b‖ ^ 2 = (mS 4 10).im :=
-  BAMB_ward_row 3 4 10 (zS 4 10) (mS 4 10) (zS_im_pos 4 10).le (selfS 4 10) a
-
-/-- `BAoffDiag_row_sum` at `P`. -/
-example : ∑ a ∈ Finset.univ.erase (0 : Zd 3 4),
-      ‖BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) true true 0 a‖ = 1 - ‖P.m0‖ ^ 2 :=
-  BAoffDiag_row_sum 3 4 P.g0 P.E P.m0 P.real.1
-
-/-- `BAoffDiag_of_real` at `P`, `κ = Im m₀`, `t = 1/2`. -/
-example :
-    P.m0.im ^ 2 / 4 ≤ ‖1 - (((1 / 2 : ℝ)) : ℂ) * P.m0 ^ 2‖ ∧
-      ∑ a ∈ Finset.univ.erase (0 : Zd 3 4), ‖BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) true true 0 a‖
-        ≤ (1 - P.m0.im ^ 2 / 4) * ‖1 - (((1 / 2 : ℝ)) : ℂ) * P.m0 ^ 2‖ :=
-  BAoffDiag_of_real 3 4 P.g0 P.m0.im P.E P.m0 P.real.1.1 P.real (1 / 2) (by norm_num) (by norm_num)
-
-/-- `baOffDiag_holds` at `d = 3`, `Λ = 10`, `κ = Im m₀`, applied at `L = 4`, `g = P.g0 ≤ 10`, `P.E`, `P.m0`,
-`t = 1/2`: the `ε` is explicit, quantified before the data. -/
-example : ∃ ε : ℝ, 0 < ε ∧
-    (ε ≤ ‖1 - (((1 / 2 : ℝ)) : ℂ) * P.m0 ^ 2‖ ∧
-      ∑ a ∈ Finset.univ.erase (0 : Zd 3 4), ‖BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) true true 0 a‖
-        ≤ (1 - ε) * ‖1 - (((1 / 2 : ℝ)) : ℂ) * P.m0 ^ 2‖) := by
-  obtain ⟨ε, hε, h⟩ := baOffDiag_holds 3 10 P.m0.im (le_refl 3) (by norm_num) P.real.1.1
-  exact ⟨ε, hε, h 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num)
-    (by norm_num)⟩
-
-/-- `BAnorm_one_sub_tm2_sq` at `m = (3/5) i`, `t = 1/2`. -/
-example : ‖1 - (((1 / 2 : ℝ)) : ℂ) * ((3 / 5 : ℂ) * Complex.I) ^ 2‖ ^ 2
-    = (1 - (1 / 2 : ℝ) * ‖(3 / 5 : ℂ) * Complex.I‖ ^ 2) ^ 2
-      + 4 * (1 / 2 : ℝ) * ((3 / 5 : ℂ) * Complex.I).im ^ 2 :=
-  BAnorm_one_sub_tm2_sq (1 / 2) _
-
-/-- `BAoffDiag_scalar` at `κ = 1/2`, `m = (3/5) i` (`Im m = 3/5`, `|m| = 3/5`), `t = 0` and `t = 1`. -/
-theorem ward_scalar_inst_norm : ‖(3 / 5 : ℂ) * Complex.I‖ ≤ 1 := by
-  rw [norm_mul, Complex.norm_I, mul_one]
-  have : ‖(3 / 5 : ℂ)‖ = 3 / 5 := by
-    have h : (3 / 5 : ℂ) = ((3 / 5 : ℝ) : ℂ) := by push_cast; ring
-    rw [h, Complex.norm_real, Real.norm_eq_abs]; norm_num
-  rw [this]; norm_num
-
-theorem ward_scalar_inst_im : (1 / 2 : ℝ) ≤ ((3 / 5 : ℂ) * Complex.I).im := by
-  have : ((3 / 5 : ℂ) * Complex.I).im = 3 / 5 := by simp [Complex.mul_im]
-  rw [this]; norm_num
-
-example : (1 / 2 : ℝ) ^ 2 / 4 ≤ ‖1 - ((0 : ℝ) : ℂ) * ((3 / 5 : ℂ) * Complex.I) ^ 2‖ ∧
-    1 - ‖(3 / 5 : ℂ) * Complex.I‖ ^ 2
-      ≤ (1 - (1 / 2 : ℝ) ^ 2 / 4) * ‖1 - ((0 : ℝ) : ℂ) * ((3 / 5 : ℂ) * Complex.I) ^ 2‖ :=
-  BAoffDiag_scalar (1 / 2) 0 _ (by norm_num) ward_scalar_inst_im ward_scalar_inst_norm le_rfl
-    (by norm_num)
-
-example : (1 / 2 : ℝ) ^ 2 / 4 ≤ ‖1 - ((1 : ℝ) : ℂ) * ((3 / 5 : ℂ) * Complex.I) ^ 2‖ ∧
-    1 - ‖(3 / 5 : ℂ) * Complex.I‖ ^ 2
-      ≤ (1 - (1 / 2 : ℝ) ^ 2 / 4) * ‖1 - ((1 : ℝ) : ℂ) * ((3 / 5 : ℂ) * Complex.I) ^ 2‖ :=
-  BAoffDiag_scalar (1 / 2) 1 _ (by norm_num) ward_scalar_inst_im ward_scalar_inst_norm
-    (by norm_num) le_rfl
-
-/-- `BAMss_pp_apply` at `P`. -/
-example (a b : Zd 3 4) :
-    BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) true true a b
-      = BAMB 3 4 P.g0 (P.E : ℂ) P.m0 b a * BAMB 3 4 P.g0 (P.E : ℂ) P.m0 a b :=
-  BAMss_pp_apply 3 4 _ a b
-
-end WardInst
-
 end RBM.BA
 
 end

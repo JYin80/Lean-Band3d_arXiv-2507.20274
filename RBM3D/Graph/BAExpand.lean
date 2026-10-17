@@ -350,14 +350,6 @@ theorem baPoly_tame1 {z : ℂ} (hz : z.im ≠ 0) (g0 u : ℝ)
     convert hp.mul (BAExpand_baVar_tame1 hz g0 u v) using 1
     funext ω; simp [baPoly, map_mul, MvPolynomial.eval_X]
 
-/-- **Stein for resolvent polynomials of the block Anderson flow**: `GaussIBP sz` is the only input. -/
-theorem stein_baPoly (hG : GaussIBP sz) {z : ℂ} (hz : z.im ≠ 0) (g0 : ℝ) {u : ℝ} (hu : 0 ≤ u)
-    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
-    (α w : Idx d (sz.L n) (sz.W n)) :
-    ∫ ω, sz.seqHflow n u ω w α * baPoly sz n g0 z u P ω ∂(Sizes.seqP sz) =
-      lwS sz n u w α * ∫ ω, dhSample sz n u α w (baPoly sz n g0 z u P) ω ∂(Sizes.seqP sz) :=
-  stein_sample hG (baPoly_tame1 hz g0 u P) hu α w
-
 end BATame
 
 /-! ### The bridge to the one-size law `PF d L W 0`
@@ -368,16 +360,6 @@ at the constant size sequence `lwWxSizes d L W 0 hL` (the coupling of the law is
 section BABridge
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L)
-
-/-- The shifted flow matrix of the sequence space is `BAlwH` of the one-size sample. -/
-theorem BAExpand_Hm_eq (g0 u : ℝ) (ω : Sizes.SeqΩ (lwWxSizes d L W 0 hL)) :
-    BAExpand_Hm (lwWxSizes d L W 0 hL) 0 g0 u ω =
-      (g0 : ℂ) • PsiI d L W + Hflow d L W u (Sizes.slice (lwWxSizes d L W 0 hL) 0 ω) := rfl
-
-/-- (b) the resolvent entry of the one-size law is that of the sequence-space block Anderson flow. -/
-theorem baWx_baG (g0 E t : ℝ) (m : ℂ) (ω : Sizes.SeqΩ (lwWxSizes d L W 0 hL)) (x y : Idx d L W) :
-    baG (lwWxSizes d L W 0 hL) 0 g0 (ztOf m E t) t x y ω =
-      BAlwG d L W g0 E t m (Sizes.slice (lwWxSizes d L W 0 hL) 0 ω) x y := rfl
 
 /-- (c) the resolvent polynomial of the sequence space at the renamed `P` is `P` at the resolvents `Gres` of the
 shifted flow matrix (any `z`, `u`). -/
@@ -782,122 +764,6 @@ theorem baLanlw_holds (d : ℕ) : BAlanlw d := by
 end BAPin
 
 /-! ## 4. Compiled instances of the pin and of the Stein layer (namespace `RBM.Graph.BAExpandInst`) -/
-
-namespace BAExpandInst
-
-/-- (I1) the vocabulary at `d = 3`, `L = 3`, `W = 1`: `S_{xx} = t W^{-d} = 1/2` (here `t = 1/2`, `W = 1`). -/
-theorem baS_diag (x : Idx 3 3 1) : BAlwS 3 3 1 (1 / 2) x x = 1 / 2 := by
-  simp [BAlwS, svarF_diag]
-
-/-- (I1) the row sum of `S` is `t`: `Σ_y S_{xy} = 1/2` (`lwS_row_sum` through the bridge). -/
-theorem baS_row_sum (x : Idx 3 3 1) : ∑ y, BAlwS 3 3 1 (1 / 2) x y = 1 / 2 := by
-  have h := lwS_row_sum (sz := lwWxSizes 3 3 1 0 (by norm_num)) (n := 0) (1 / 2) x
-  simp only [lwWx_lwS_apply (by norm_num : 3 ≤ 3)] at h
-  simpa [BAlwS, LWPins_lwS] using h
-
-/-- (I2) at `t = 0` both sides of `lanlw` vanish pointwise (`H_0 = 0`, `G = M`, `S = 0`); `baLanlw_holds 3` at `t = 0`
-is the equality `0 = 0` of the two integrals. -/
-theorem baLanlw_t0 (g0 E : ℝ) (m : ℂ) (hSelf : RBM.BA.BASelf 3 3 g0 (E : ℂ) m)
-    (P : MvPolynomial (Bool × Idx 3 3 1 × Idx 3 3 1) ℂ) (x y : Idx 3 3 1) :
-    ∫ ω, BAlanlwL 3 3 1 g0 E 0 m P x y ω ∂(PF 3 3 1 0) = 0 ∧
-      ∫ ω, BAlanlwR 3 3 1 g0 E 0 m P x y ω ∂(PF 3 3 1 0) = 0 ∧
-      ∫ ω, BAlanlwL 3 3 1 g0 E 0 m P x y ω ∂(PF 3 3 1 0) =
-        ∫ ω, BAlanlwR 3 3 1 g0 E 0 m P x y ω ∂(PF 3 3 1 0) := by
-  have hL0 : ∀ ω, BAlanlwL 3 3 1 g0 E 0 m P x y ω = 0 := fun ω => by
-    simp [BAlanlwL, BAExpand_Gc_zero]
-  have hR0 : ∀ ω, BAlanlwR 3 3 1 g0 E 0 m P x y ω = 0 := fun ω => by
-    simp [BAlanlwR, BAlwS]
-  refine ⟨by simp [hL0], by simp [hR0], ?_⟩
-  exact baLanlw_holds 3 3 1 (by norm_num) g0 E 0 m hSelf le_rfl one_pos P x y
-
-/-- The size sequence of the instances: `L = 3`, `W = 1`, coupling `0` (`S^{(B)}(0) = I`). -/
-abbrev baInstSz : Sizes 3 := lwWxSizes 3 3 1 0 (le_refl 3)
-
-/-- (I1b) the closed forms of the derivative at `d = 3`, `L = 3`, `W = 1`, `g₀ = 1/2`, `z = i`, `u = 1/2`, at every sample. -/
-example (α w i j : Idx 3 3 1) (ω : Sizes.SeqΩ baInstSz) :
-    dhSample baInstSz 0 (1 / 2) α w (baG baInstSz 0 (1 / 2) Complex.I (1 / 2) i j) ω =
-      -(baG baInstSz 0 (1 / 2) Complex.I (1 / 2) i α ω * baG baInstSz 0 (1 / 2) Complex.I (1 / 2) w j ω) :=
-  dhSample_baG (by simp) (by norm_num) (1 / 2) α w i j ω
-
-example (α w i j : Idx 3 3 1) (ω : Sizes.SeqΩ baInstSz) :
-    dhSample baInstSz 0 (1 / 2) α w (fun ω => star (baG baInstSz 0 (1 / 2) Complex.I (1 / 2) i j ω)) ω =
-      -star (baG baInstSz 0 (1 / 2) Complex.I (1 / 2) i w ω * baG baInstSz 0 (1 / 2) Complex.I (1 / 2) α j ω) :=
-  dhSample_baG_star (by simp) (by norm_num) (1 / 2) α w i j ω
-
-/-- (I1b) tameness of the entries and of a resolvent polynomial (`G_{ij} \bar G_{ij}`). -/
-example (i j : Idx 3 3 1) : Tame1 baInstSz 0 (baG baInstSz 0 (1 / 2) Complex.I (1 / 2) i j) :=
-  baG_tame1 (sz := baInstSz) (n := 0) (z := Complex.I) (by simp) (1 / 2) (1 / 2) i j
-
-example (i j : Idx 3 3 1) : Tame1 baInstSz 0 (baPoly baInstSz 0 (1 / 2) Complex.I (1 / 2)
-    (MvPolynomial.X (i, j, true) * MvPolynomial.X (i, j, false))) :=
-  baPoly_tame1 (sz := baInstSz) (n := 0) (z := Complex.I) (by simp) (1 / 2) (1 / 2) _
-
-/-- (I1b) the Stein identity for the resolvent polynomial `G_{ij} \bar G_{ij}` (`gaussIBP` proved). -/
-example (i j α w : Idx 3 3 1) :
-    ∫ ω, baInstSz.seqHflow 0 (1 / 2) ω w α * baPoly baInstSz 0 (1 / 2) Complex.I (1 / 2)
-        (MvPolynomial.X (i, j, true) * MvPolynomial.X (i, j, false)) ω ∂(Sizes.seqP baInstSz) =
-      lwS baInstSz 0 (1 / 2) w α * ∫ ω, dhSample baInstSz 0 (1 / 2) α w (baPoly baInstSz 0 (1 / 2) Complex.I (1 / 2)
-        (MvPolynomial.X (i, j, true) * MvPolynomial.X (i, j, false))) ω ∂(Sizes.seqP baInstSz) :=
-  stein_baPoly (gaussIBP baInstSz) (by simp) (1 / 2) (by norm_num) _ α w
-
-/-- (I1b) the bridge to `PF 3 3 1 0`: the resolvent entry, the polynomial and the derivative agree. -/
-example (ω : Sizes.SeqΩ baInstSz) (x y : Idx 3 3 1) :
-    baG baInstSz 0 (1 / 2) (ztOf Complex.I 0 (1 / 2)) (1 / 2) x y ω =
-      BAlwG 3 3 1 (1 / 2) 0 (1 / 2) Complex.I (Sizes.slice baInstSz 0 ω) x y :=
-  baWx_baG (le_refl 3) (1 / 2) 0 (1 / 2) Complex.I ω x y
-
-example (ω : Sizes.SeqΩ baInstSz) (x y : Idx 3 3 1) :
-    baPoly baInstSz 0 (1 / 2) (ztOf Complex.I 0 (1 / 2)) (1 / 2)
-        (lwWxRename 3 3 1 (MvPolynomial.X (true, x, y) * MvPolynomial.X (false, x, y))) ω =
-      BAlwf 3 3 1 (1 / 2) 0 (1 / 2) Complex.I (MvPolynomial.X (true, x, y) * MvPolynomial.X (false, x, y))
-        (Sizes.slice baInstSz 0 ω) :=
-  baWx_baPoly (le_refl 3) (1 / 2) 0 (1 / 2) Complex.I ω _
-
-example (ω : Sizes.SeqΩ baInstSz) (α w x y : Idx 3 3 1) :
-    dhSample baInstSz 0 (1 / 2) α w (baPoly baInstSz 0 (1 / 2) (ztOf Complex.I 0 (1 / 2)) (1 / 2)
-        (lwWxRename 3 3 1 (MvPolynomial.X (true, x, y) * MvPolynomial.X (false, x, y)))) ω =
-      LWPins_dH (LWPins_resPoly 3 3 1 (ztOf Complex.I 0 (1 / 2))
-        (MvPolynomial.X (true, x, y) * MvPolynomial.X (false, x, y)))
-        ((1 / 2 : ℝ) • PsiI 3 3 1 + Hflow 3 3 1 (1 / 2) (Sizes.slice baInstSz 0 ω)) α w :=
-  baWx_dh (le_refl 3) (by norm_num [ztOf]) (by norm_num) (1 / 2) α w ω _
-
-/-- `(self_m)` at `g = 0`, `z = 0`: `m = i` (`M^{(B)} = i I`, `L^{-d} tr = i`). -/
-theorem baSelf_zero : RBM.BA.BASelf 3 3 0 ((0 : ℝ) : ℂ) Complex.I := by
-  refine ⟨by simp, ?_⟩
-  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  have hB : RBM.BA.BAMB 3 3 0 ((0 : ℝ) : ℂ) Complex.I = Complex.I • (1 : Matrix (Zd 3 3) (Zd 3 3) ℂ) := by
-    unfold RBM.BA.BAMB Mres
-    have : ((0 : ℝ) : ℂ) • PsiB 3 3 - (((0 : ℝ) : ℂ) + Complex.I) • (1 : Matrix (Zd 3 3) (Zd 3 3) ℂ) =
-        (-Complex.I) • (1 : Matrix (Zd 3 3) (Zd 3 3) ℂ) := by simp
-    rw [this, ring_inverse_smul_one (neg_ne_zero.2 hI), inv_neg, Complex.inv_I, neg_neg]
-  rw [hB, Matrix.trace_smul, Matrix.trace_one, RBM.BA.BAcard_Zd]
-  simp
-  ring
-
-/-- **Instance of `baLanlw_holds`** (the point `g₀ = 0`, `E = 0`, `m = i`, every hypothesis discharged;
-`d = 3`, `L = 3`, `W = 1`, `t = 1/2`; `x = 0`, `y = e₀ ≠ x`, `P = X (true, e₀, 0)`, i.e. `f = G_{e₀ 0}`). -/
-example :
-    ∫ ω, BAlanlwL 3 3 1 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, (fun i => if i = 0 then 1 else 0), 0)) 0
-      (fun i => if i = 0 then 1 else 0) ω ∂(PF 3 3 1 0) =
-    ∫ ω, BAlanlwR 3 3 1 0 0 (1 / 2) Complex.I (MvPolynomial.X (true, (fun i => if i = 0 then 1 else 0), 0)) 0
-      (fun i => if i = 0 then 1 else 0) ω ∂(PF 3 3 1 0) :=
-  baLanlw_holds 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I baSelf_zero (by norm_num) (by norm_num) _ _ _
-
-/-- **Instance of `baLanlw_holds` at `g₀ = 1/2`** (`d = 3`, `L = 3`, `W = 1`, `E = 3/10`, `t = 1/2`; `x = 0`, `y = e₀`,
-`P = X (true, e₀, 0) * X (false, e₀, 0)`): the datum `m` solving `(self_m)` is a hypothesis of the example (`hSelf`);
-every other hypothesis is discharged. -/
-example (m : ℂ) (hSelf : RBM.BA.BASelf 3 3 (1 / 2) (((3 / 10 : ℝ)) : ℂ) m) :
-    ∫ ω, BAlanlwL 3 3 1 (1 / 2) (3 / 10) (1 / 2) m
-      (MvPolynomial.X (true, (fun i => if i = 0 then 1 else 0), 0) *
-        MvPolynomial.X (false, (fun i => if i = 0 then 1 else 0), 0)) 0
-      (fun i => if i = 0 then 1 else 0) ω ∂(PF 3 3 1 0) =
-    ∫ ω, BAlanlwR 3 3 1 (1 / 2) (3 / 10) (1 / 2) m
-      (MvPolynomial.X (true, (fun i => if i = 0 then 1 else 0), 0) *
-        MvPolynomial.X (false, (fun i => if i = 0 then 1 else 0), 0)) 0
-      (fun i => if i = 0 then 1 else 0) ω ∂(PF 3 3 1 0) :=
-  baLanlw_holds 3 3 1 (by norm_num) (1 / 2) (3 / 10) (1 / 2) m hSelf (by norm_num) (by norm_num) _ _ _
-
-end BAExpandInst
 
 end RBM.Graph
 

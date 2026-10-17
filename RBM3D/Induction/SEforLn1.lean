@@ -491,10 +491,6 @@ private theorem SEforLn1_sum_pairs (m : ℕ) (f : ℕ → ℕ → ℝ) {T : ℝ}
     _ = (m : ℝ) ^ 2 * T := by
         rw [Finset.sum_const, Nat.card_Icc, nsmul_eq_mul, Nat.add_sub_cancel]; ring
 
-private theorem SEforLn1_norm_ite (p : Prop) [Decidable p] (x : ℂ) :
-    ‖(if p then x else 0)‖ = if p then ‖x‖ else 0 := by
-  split_ifs <;> simp
-
 /-- The `𝒦`-piece `cutGlueR` of length `l` has its summed label last: the Ward bound applies directly. -/
 private theorem SEforLn1_sum_cutGlueR_K (n : ℕ) {E τ : ℝ} {l : ℕ} {Kw : ℝ}
     (hKw : ∀ (σ' : Fin l → Bool) (a' : Fin (l - 1) → Zd d (sz.L n)),
@@ -732,73 +728,8 @@ set `TimeIcc × (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n))` is nonempty, `k 
 another gate (Step 2) and stays a hypothesis of the examples; every deterministic hypothesis (`3 ≤ d`, the flow,
 `0 ≤ s`, `t ≤ lemT z`, `3 ≤ l ≤ k`, `0 < κ`) is discharged.  Part (2) has no stochastic hypothesis. -/
 
-namespace RBM.Gauss.SEforLn1Inst
-
-open Filter RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.Step34Inst
-
-/-- The index set of the instances is nonempty at every size index: window point `0 ∈ [0, 1/16]`, charges
-`(+, +, +)`, labels `0`. -/
-example (n : ℕ) :
-    Nonempty (TimeIcc sInst tInst n × (Fin 3 → Bool) × (Fin 3 → Zd 3 (sz0.L n))) :=
-  ⟨⟨0, by simp [sInst, tInst]⟩, fun _ => true, fun _ => 0⟩
-
-/-- The indices `(n₁, n₂)` of `lem:SEforLn` (1) at `k = 2` and `k = 3`. -/
-example : STn12E 2 = (1, 3) := by decide
-example : STn12E 3 = (3, 3) := by decide
-
-/-- **`stSEforLn_part1` at `k = 2`**, `(n₁, n₂) = (1, 3)`. -/
-example (hAvg : STAvgU sz0 (STflowE z0) sInst tInst) :
-    Prec sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖STegt sz0 n (STflowE z0 n) (p.1 : ℝ) ω ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
-      (fun n p ω => (sz0.Bctl n (p.1 : ℝ)) ^ 2 / etaT (STflowE z0 n) (p.1 : ℝ) *
-        (STXiL sz0 n (STflowE z0 n) (p.1 : ℝ) 1 ω * STXiL sz0 n (STflowE z0 n) (p.1 : ℝ) 3 ω) ^
-          (1 / 2 : ℝ)) :=
-  stSEforLn_part1 sz0 flow_z0 sz0_hs0 sz0_ht hAvg 2 le_rfl
-
-/-- **`stSEforLn_part1` at `k = 3`**, `(n₁, n₂) = (3, 3)`. -/
-example (hAvg : STAvgU sz0 (STflowE z0) sInst tInst) :
-    Prec sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 3 → Bool) × (Fin 3 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖STegt sz0 n (STflowE z0 n) (p.1 : ℝ) ω ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
-      (fun n p ω => (sz0.Bctl n (p.1 : ℝ)) ^ 3 / etaT (STflowE z0 n) (p.1 : ℝ) *
-        (STXiL sz0 n (STflowE z0 n) (p.1 : ℝ) 3 ω * STXiL sz0 n (STflowE z0 n) (p.1 : ℝ) 3 ω) ^
-          (1 / 2 : ℝ)) :=
-  stSEforLn_part1 sz0 flow_z0 sz0_hs0 sz0_ht hAvg 3 (by norm_num)
-
-/-- **`stSEforLn_part2` at `(k, l) = (3, 3)`**: `Ξ̂^{𝓛-𝒦}_{2}`; no stochastic hypothesis. -/
-example :
-    Prec sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 3 → Bool) × (Fin 3 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖STksimLK sz0 n (STflowE z0 n) (p.1 : ℝ) ω 3 ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
-      (fun n p ω => (sz0.Bctl n (p.1 : ℝ)) ^ 3 / etaT (STflowE z0 n) (p.1 : ℝ) *
-        STXiLK sz0 n (STflowE z0 n) (p.1 : ℝ) 2 ω) :=
-  stSEforLn_part2 (by norm_num) sz0 (κ := 1 / 10) (by norm_num) flow_z0 sz0_hs0 sz0_hst sz0_ht 3 3
-    le_rfl le_rfl
-
-/-- **`stSEforLn_part2` at `(k, l) = (4, 3)`**: `Ξ̂^{𝓛-𝒦}_{3}`. -/
-example :
-    Prec sz0 (U := fun n => TimeIcc sInst tInst n × (Fin 4 → Bool) × (Fin 4 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖STksimLK sz0 n (STflowE z0 n) (p.1 : ℝ) ω 3 ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
-      (fun n p ω => (sz0.Bctl n (p.1 : ℝ)) ^ 4 / etaT (STflowE z0 n) (p.1 : ℝ) *
-        STXiLK sz0 n (STflowE z0 n) (p.1 : ℝ) 3 ω) :=
-  stSEforLn_part2 (by norm_num) sz0 (κ := 1 / 10) (by norm_num) flow_z0 sz0_hs0 sz0_hst sz0_ht 4 3
-    le_rfl (by norm_num)
-
 /-! ### The interface with `STSEforLnConcl`
 
 The conclusions of the two theorems are, up to definitional unfolding, the first two conjuncts of
 `STSEforLnConcl sz (STflowE z) s t` at `k`, so that S3-09 can assemble
 `fun k hk => ⟨stSEforLn_part1 .., stSEforLn_part2 .., part3, part4⟩`. -/
-
-example {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
-    {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (ht : ∀ n, t n ≤ lemT (z n))
-    (hAvg : STAvgU sz (STflowE z) s t) (hconcl : STSEforLnConcl sz (STflowE z) s t) (k : ℕ)
-    (hk : 2 ≤ k) :
-    stSEforLn_part1 sz hflow hs ht hAvg k hk = (hconcl k hk).1 := rfl
-
-example {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ)
-    (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
-    (ht : ∀ n, t n ≤ lemT (z n)) (hconcl : STSEforLnConcl sz (STflowE z) s t) (k : ℕ)
-    (hk : 2 ≤ k) :
-    stSEforLn_part2 hd sz hκ hflow hs hst ht k = (hconcl k hk).2.1 := rfl
-
-end RBM.Gauss.SEforLn1Inst

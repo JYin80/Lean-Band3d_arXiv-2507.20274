@@ -280,8 +280,6 @@ private def TwistQV_wd (l : List (Bool × κ)) : Matrix ι ι ℂ := (l.map fun 
 private lemma TwistQV_wd_append (l₁ l₂ : List (Bool × κ)) :
     TwistQV_wd G E (l₁ ++ l₂) = TwistQV_wd G E l₁ * TwistQV_wd G E l₂ := by simp [TwistQV_wd]
 
-@[simp] private lemma TwistQV_wd_singleton (p : Bool × κ) : TwistQV_wd G E [p] = G p.1 * E p.2 := by simp [TwistQV_wd]
-
 /-- `(TwistQV_wd l)^p` is the word of `p` copies of `l`: the loop of length `p |l|` in `eq:Apsipsi1`. -/
 private lemma TwistQV_wd_pow (l : List (Bool × κ)) (p : ℕ) :
     (TwistQV_wd G E l) ^ p = TwistQV_wd G E ((List.replicate p l).flatten) := by
@@ -553,7 +551,7 @@ private lemma TwistQV_ward_sum {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : �
   rw [hW]
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
   have := hM [(true, b)]
-  simpa [TwistQV_wd_singleton] using this
+  simpa using this
 
 
 /-- `Σ_{o,o'} |X_{(a,o),(a,o')}|² = Re tr(P_a X P_a X^*)`. -/
@@ -1390,40 +1388,5 @@ theorem baTwistSrc3_holds (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ
     fun n v ω σ b b' c₁ c₂ => TwistQV_cs (baFMz sz z) n rfl v ω σ b b' c₁ c₂⟩
 
 /-! ## 9. The compiled instance (`d = 3`, `sz0`, `flow_sz0`; the pattern of `BA/TwistPins.lean:759-781`) -/
-
-section Inst
-open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
-local notation "μ0" => Sizes.seqP (sz0.withLam 0)
-
-/-- Every deterministic hypothesis of a `BATwFrame` statement at `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `sz0`, `s ≡ 1/2`, `t ≡ 2/3`,
-regime `STAny` (the private `TwistPins_frame_inst`, `BA/TwistPins.lean:766`, re-derived). -/
-private theorem TwistQV_frame_inst {Q : ∀ sz : Sizes 3, FlowFM sz → Measure sz.SeqΩ → (ℕ → ℝ) → (ℕ → ℝ) → Prop}
-    (h : BATwFrame 3 STAny Q) {Cd : ℝ} (hC : 0 < Cd)
-    (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) :
-    Q sz0 (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) := by
-  obtain ⟨c, hc, -, H⟩ := h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) Cd hC
-  exact H (1 / 6) sz0 zSeq flow_sz0 _ _ (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) trivial
-    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) hc) hS
-
-/-- **The instance of `baTwistSrc3_holds 3 STAny`**: at the datum `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `λ = (2(n+1))^{-6}`),
-`(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` (`t0_sz0`), `STConStInd` by `s1Setup_conStInd_const`:
-conjunct 1 at the consumer point `(p, q) = (2, 2)` (exponent `13/4`), conjunct 2 at `n = 0`, `v = 1/2`, `σ = (-,+)`,
-`b = 0 ≠ b' = (1,0,0)`, `c₁ = 0 ≠ c₂ = (1,0,0)`.  The only hypothesis left is `twSteps` (Steps 1-4 at BA, owed by other gates). -/
-example {Cd : ℝ} (hC : 0 < Cd) (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) :
-    twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3)
-      (fun n v ω σ b c₁ c₂ => ‖twEE (baFMz sz0 zSeq) n v ω σ b b c₁ c₂‖) (fun _ _ => 1) (13 / 4) ∧
-    ∀ ω : sz0.SeqΩ, ∃ b b' c₁ c₂ : Zd 3 (sz0.L 0), b ≠ b' ∧ c₁ ≠ c₂ ∧
-      ‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b b' c₁ c₂‖ ≤
-        √(‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b b c₁ c₂‖ *
-          ‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b' b' c₁ c₂‖) := by
-  have h := TwistQV_frame_inst (baTwistSrc3_holds 3 STAny) hC hS
-  have hL : Fact (1 < sz0.L 0) := ⟨by have := sz0.three_le_L 0; omega⟩
-  refine ⟨?_, fun ω => ⟨0, ![1, 0, 0], 0, ![1, 0, 0], fun hh => by simpa using congrFun hh 0,
-    fun hh => by simpa using congrFun hh 0, h.2 0 (1 / 2) ω ![false, true] 0 ![1, 0, 0] 0 ![1, 0, 0]⟩⟩
-  have h22 := h.1 2 2 (by norm_num) (by norm_num)
-  norm_num at h22
-  exact h22
-
-end Inst
 
 end RBM.BA

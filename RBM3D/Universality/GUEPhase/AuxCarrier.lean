@@ -242,24 +242,7 @@ def auxHG (v : CoordF d L W → ℝ≥0) (ω : Sizes.SeqΩ (auxSizes d)) :
     Matrix (Idx d L W) (Idx d L W) ℂ :=
   Xmat d L W (auxT d L W v ω)
 
-/-- **The auxiliary matrix has the law of the Gaussian Hermitian matrix with coordinate variances
-`v`** (RBM1D `gueEntry_law_HG`): the carrier is a *proof device*, no statement is moved. -/
-theorem auxHG_law (v : CoordF d L W → ℝ≥0) :
-    (Sizes.seqP (auxSizes d)).map (auxHG d L W v)
-      = (Measure.infinitePi (fun c : CoordF d L W => gaussianReal 0 (v c))).map (Xmat d L W) := by
-  have hXm : Measurable (Xmat d L W) :=
-    measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => measurable_Xentry d L W i j
-  rw [← auxT_law d L W v, Measure.map_map hXm (auxT_measurable d L W v)]
-  rfl
-
 end Aux
-
-/-- **Every variance family on one size is realised by a continuous map from a sequence carrier**
-(the auxiliary carrier `auxSizes d` and `auxT`; RBM2D `auxT_law`, `AuxCarrier.lean:203`). -/
-theorem exists_seqP_map_eq_gaussLaw (d L W : ℕ) [NeZero L] [NeZero W] (v : CoordF d L W → ℝ≥0) :
-    ∃ (sz : Sizes d) (T : Sizes.SeqΩ sz → Ω d L W), Continuous T ∧
-      (Sizes.seqP sz).map T = Measure.infinitePi (fun c : CoordF d L W => gaussianReal 0 (v c)) :=
-  ⟨auxSizes d, auxT d L W v, continuous_auxT d L W v, auxT_law d L W v⟩
 
 /-! ## §3 The variance families and profiles of the GUE phase and of the OU marginal -/
 
@@ -274,8 +257,6 @@ def gaussLaw (v : CoordF d L W → ℝ≥0) : Measure (Ω d L W) :=
 /-- `gueP` is `gaussLaw` of the GUE variances; `PF` is `gaussLaw` of the band variances. -/
 theorem gueP_eq_gaussLaw : gueP d L W = gaussLaw d L W (gueVar d L W) := rfl
 
-theorem PF_eq_gaussLaw (g : ℝ) : PF d L W g = gaussLaw d L W (gvarF d L W g) := rfl
-
 /-- The coordinate variance family of `√a X_band(g) + √b X_GUE` (independent): `a gvarF g + b gueVar`.
 It is the family of the GUE-phase grid path and, with `(a, b) = (e^{-t}, 1 - e^{-t})`, the merged
 `ouVar` (`mixVar_exp_eq_ouVar`).  The coupling `g` is the profile coupling (`UNKind.lamV`). -/
@@ -286,9 +267,6 @@ def mixVar (g a b : ℝ) (c : CoordF d L W) : ℝ≥0 :=
 `N = (W L)^d` (`ζ = b / (a + b)`: `(a + b) · S̃`). -/
 def Smix (g a b : ℝ) (i j : Idx d L W) : ℝ :=
   a * svarF d L W g i j + b / (((W * L) ^ d : ℕ) : ℝ)
-
-theorem mixVar_exp_eq_ouVar (g t : ℝ) (c : CoordF d L W) :
-    mixVar d L W g (Real.exp (-t)) (1 - Real.exp (-t)) c = ouVar d L W g t c := rfl
 
 theorem Smix_symm (g a b : ℝ) (i j : Idx d L W) :
     Smix d L W g a b i j = Smix d L W g a b j i := by
@@ -315,21 +293,11 @@ theorem sum_Smix_col (hL : 3 ≤ L) (g a b : ℝ) (j : Idx d L W) :
   simp_rw [Smix_symm d L W g a b _ j]
   exact sum_Smix_row d L W hL g a b j
 
-theorem mixVar_zero_right (g a : ℝ) (c : CoordF d L W) :
-    mixVar d L W g a 0 c = a.toNNReal * gvarF d L W g c := by
-  simp [mixVar]
-
-theorem mixVar_zero_left (g b : ℝ) (c : CoordF d L W) :
-    mixVar d L W g 0 b c = b.toNNReal * gueVar d L W c := by
-  simp [mixVar]
-
 /-- Tag-free variance family: the real and imaginary coordinates of an entry have the same
 variance (true for `mixVar`, `gvarF` and `gueVar`). -/
 def TagFree (v : CoordF d L W → ℝ≥0) : Prop := ∀ i j : Idx d L W, v (i, j, true) = v (i, j, false)
 
 theorem gueVar_tagFree : TagFree d L W (gueVar d L W) := fun _ _ => rfl
-
-theorem gvarF_tagFree (g : ℝ) : TagFree d L W (gvarF d L W g) := fun _ _ => rfl
 
 /-- The mixture family is tag-free (RBM2D `EntryTail.lean:279`, moved here). -/
 theorem mixVar_tagFree (g a b : ℝ) : TagFree d L W (mixVar d L W g a b) := fun _ _ => rfl
@@ -976,20 +944,6 @@ theorem gue_quad_tail {z : ℂ} (hz : z.im ≠ 0) (i : Idx d L W) {lam : ℝ} (h
   simp only [e1, ← Finset.mul_sum, ← Finset.sum_mul]
   constructor <;> intro hh <;> convert hh using 2 <;> ring
 
-/-- **The model-class form of the quadratic LDE** (DECISIONS §57 (2)): for a model class `K`, the
-mixture law `a S(K.lamV) + b N⁻¹` (`mixVar`) with the shift `(K.M sz).mean n`, i.e. the matrix `μ + X`
-of the GUE-phase path and of the centred OU marginal `ouMatC`.  Band: `lamV = sz.lam`, mean `0`. -/
-theorem kind_quad_tail (K : UNKind d) (sz : Sizes d) (n : ℕ) (a b : ℝ) {z : ℂ} (hz : z.im ≠ 0)
-    (i : Idx d (sz.L n) (sz.W n)) {lam : ℝ} (hlam : 0 < lam) (q : ℕ) :
-    gaussLaw d (sz.L n) (sz.W n) (mixVar d (sz.L n) (sz.W n) (K.lamV sz n) a b)
-      {s | lam * quadVqS d (sz.L n) (sz.W n) (mixVar d (sz.L n) (sz.W n) (K.lamV sz n) a b)
-          ((K.M sz).mean n) z i s <
-        ‖quadQS d (sz.L n) (sz.W n) (mixVar d (sz.L n) (sz.W n) (K.lamV sz n) a b)
-          ((K.M sz).mean n) z i s‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst q / lam ^ (q + 1)) :=
-  gaussLaw_quad_tail (mixVar_tagFree d (sz.L n) (sz.W n) (K.lamV sz n) a b)
-    ((K.M sz).mean_herm n) hz i hlam q
-
 end AuxRowChaos
 
 /-! ## The rank-one row chaos on the auxiliary carrier (port of RBM1D `gueEntryLinChaos`)
@@ -1208,157 +1162,5 @@ end AuxLin
 Every deterministic hypothesis is discharged: `3 ≤ L` is `3 ≤ 3`, tag-freeness is `rfl`, `A` is
 `0` or `1` (Hermitian), `z.im ≠ 0`, `0 < lam`, `1 < Λ`.  No `decide` over `Idx`.  The bounds are
 `A_0 / 4 = 1/2` and `A_0 / (3 - 1)² = 1/2` (`inst_bounds`), so no conclusion is trivially true. -/
-
-namespace AuxCarrierCheck
-
-open RBM.Green
-
-/-- Two points of one block of `Idx 3 3 2` (`W = 2`: the coordinates `0` and `1` of `Z_6` are in
-block `0`) have a positive variance, at any coupling (here `1/2`). -/
-theorem inst_svarF_pos_of_block_eq :
-    0 < svarF 3 3 2 (1 / 2) (0 : Idx 3 3 2) (![1, 0, 0] : Idx 3 3 2) :=
-  svarF_pos_of_block_eq 3 3 2 (1 / 2) _ _ (by
-    funext k
-    fin_cases k <;> decide)
-
-/-- **The auxiliary carrier at `d = 3`**: the auxiliary variance is positive on the image of the
-embedding (two points of `Idx 3 3 2`). -/
-theorem inst_aux_pos :
-    0 < svarF 3 ((auxSizes 3).L (auxSlot 3 2)) ((auxSizes 3).W (auxSlot 3 2)) 0
-      (auxEmb 3 3 2 (0 : Idx 3 3 2)) (auxEmb 3 3 2 (![1, 2, 3] : Idx 3 3 2)) :=
-  svarF_aux_pos 3 3 2 _ _
-
-/-- **Realisation of the GUE variances** by the auxiliary carrier at `d = 3`, `L = 3`, `W = 2`. -/
-theorem inst_auxT_law :
-    (Sizes.seqP (auxSizes 3)).map (auxT 3 3 2 (gueVar 3 3 2))
-      = Measure.infinitePi (fun c : CoordF 3 3 2 => gaussianReal 0 (gueVar 3 3 2 c)) :=
-  auxT_law 3 3 2 (gueVar 3 3 2)
-
-/-- The auxiliary matrix has the law of the GUE matrix at `d = 3`, `L = 3`, `W = 2`. -/
-theorem inst_auxHG_law :
-    (Sizes.seqP (auxSizes 3)).map (auxHG 3 3 2 (gueVar 3 3 2))
-      = (gueP 3 3 2).map (Xmat 3 3 2) :=
-  auxHG_law 3 3 2 (gueVar 3 3 2)
-
-/-- The realisation theorem at a mixture family (`mixVar` at the profile coupling `1/2`). -/
-theorem inst_exists_seqP_map_eq_gaussLaw :
-    ∃ (sz : Sizes 3) (T : Sizes.SeqΩ sz → Ω 3 3 2), Continuous T ∧
-      (Sizes.seqP sz).map T = gaussLaw 3 3 2 (mixVar 3 3 2 (1 / 2) (1 / 2) (1 / 2)) :=
-  exists_seqP_map_eq_gaussLaw 3 3 2 (mixVar 3 3 2 (1 / 2) (1 / 2) (1 / 2))
-
-/-- **The generic tail `chaos_tail`** for the quadratic row chaos of the auxiliary matrix at
-`d = 3`, `L = 3`, `W = 2`, `v = gueVar 3 3 2`, `A = 0`, `z = i`, row `0`, `λ = 4`, `q = 0`
-(bound `1/2`). -/
-theorem inst_chaos_tail :
-    (Sizes.seqP (auxSizes 3)) {ω | 4 * (auxQuadChaos 3 3 2 (gueVar 3 3 2) (A := 0)
-        Matrix.isHermitian_zero (z := Complex.I) (by simp) (0 : Idx 3 3 2)).Vq ω <
-      ‖(auxQuadChaos 3 3 2 (gueVar 3 3 2) (A := 0) Matrix.isHermitian_zero
-        (z := Complex.I) (by simp) (0 : Idx 3 3 2)).chaos ω‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / 4 ^ (0 + 1)) :=
-  chaos_tail (auxQuadChaos 3 3 2 (gueVar 3 3 2) (A := 0) Matrix.isHermitian_zero
-    (z := Complex.I) (by simp) (0 : Idx 3 3 2)) (by norm_num) 0
-
-/-- **The GUE quadratic LDE** (`gue_quad_tail`) at `d = 3`, `L = 3`, `W = 2` (`N = 216`),
-`z = i`, row `0`, `λ = 4`, `q = 0`. -/
-theorem inst_gue_quad_tail :
-    gueP 3 3 2 {s | 4 * ((((((2 * 3) ^ 3 : ℕ) : ℝ))⁻¹) ^ 2 *
-        ∑ k : {a : Idx 3 3 2 // a ≠ 0}, ∑ l : {a : Idx 3 3 2 // a ≠ 0},
-          ‖green ((Xmat 3 3 2 s).submatrix Subtype.val Subtype.val) Complex.I k l‖ ^ 2) <
-      ‖(∑ k : {a : Idx 3 3 2 // a ≠ 0}, ∑ l : {a : Idx 3 3 2 // a ≠ 0},
-          Xmat 3 3 2 s 0 k.1 *
-            green ((Xmat 3 3 2 s).submatrix Subtype.val Subtype.val) Complex.I k l *
-            Xmat 3 3 2 s l.1 0) -
-        ((((2 * 3) ^ 3 : ℕ) : ℝ))⁻¹ * ∑ k : {a : Idx 3 3 2 // a ≠ 0},
-          green ((Xmat 3 3 2 s).submatrix Subtype.val Subtype.val) Complex.I k k‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / 4 ^ (0 + 1)) :=
-  gue_quad_tail (d := 3) (L := 3) (W := 2) (z := Complex.I) (by simp) 0 (lam := 4)
-    (by norm_num) 0
-
-/-- The same estimate for the band variances `v = gvarF 3 3 2 (1/2)` (`A = 0`) through the
-auxiliary carrier. -/
-theorem inst_band_quad_tail :
-    gaussLaw 3 3 2 (gvarF 3 3 2 (1 / 2)) {s | 4 * quadVqS 3 3 2 (gvarF 3 3 2 (1 / 2)) 0
-        Complex.I 0 s <
-      ‖quadQS 3 3 2 (gvarF 3 3 2 (1 / 2)) 0 Complex.I 0 s‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / 4 ^ (0 + 1)) :=
-  gaussLaw_quad_tail (d := 3) (L := 3) (W := 2) (v := gvarF 3 3 2 (1 / 2))
-    (gvarF_tagFree 3 3 2 (1 / 2)) Matrix.isHermitian_zero (z := Complex.I) (by simp) 0
-    (lam := 4) (by norm_num) 0
-
-/-- **The shifted LDE** at the mixture family `mixVar 3 3 2 0 (1/2) (1/2)` (profile coupling `0`,
-the BA profile) and the deterministic Hermitian shift `A = 1`, `λ = 4`, `q = 0`. -/
-theorem inst_shift_quad_tail :
-    gaussLaw 3 3 2 (mixVar 3 3 2 0 (1 / 2) (1 / 2)) {s |
-        4 * quadVqS 3 3 2 (mixVar 3 3 2 0 (1 / 2) (1 / 2)) 1 Complex.I 0 s <
-      ‖quadQS 3 3 2 (mixVar 3 3 2 0 (1 / 2) (1 / 2)) 1 Complex.I 0 s‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / 4 ^ (0 + 1)) :=
-  gaussLaw_quad_tail (d := 3) (L := 3) (W := 2) (v := mixVar 3 3 2 0 (1 / 2) (1 / 2))
-    (mixVar_tagFree 3 3 2 0 (1 / 2) (1 / 2)) (Matrix.isHermitian_one) (z := Complex.I)
-    (by simp) 0 (lam := 4) (by norm_num) 0
-
-/-- **The model-class form** at the band kind `UNKind.band 3` over the preflight sequence
-`SizesInst.sz0` (`n = 0`: `(L, W) = (4, 32)`, `N = 2^21`), `a = b = 1/2`, `z = i`, `λ = 4`,
-`q = 0`; the size index `n` and the row `i : Idx 3 (sz0.L n) (sz0.W n)` are variables. -/
-theorem inst_kind_quad_tail_band (n : ℕ) (i : Idx 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)) :
-    gaussLaw 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-        (mixVar 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-          ((UNKind.band 3).lamV SizesInst.sz0 n) (1 / 2) (1 / 2))
-      {s | 4 * quadVqS 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-          (mixVar 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-            ((UNKind.band 3).lamV SizesInst.sz0 n) (1 / 2) (1 / 2))
-          (((UNKind.band 3).M SizesInst.sz0).mean n) Complex.I i s <
-        ‖quadQS 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-          (mixVar 3 (SizesInst.sz0.L n) (SizesInst.sz0.W n)
-            ((UNKind.band 3).lamV SizesInst.sz0 n) (1 / 2) (1 / 2))
-          (((UNKind.band 3).M SizesInst.sz0).mean n) Complex.I i s‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / 4 ^ (0 + 1)) :=
-  kind_quad_tail (UNKind.band 3) SizesInst.sz0 n (1 / 2) (1 / 2) (z := Complex.I) (by simp) i
-    (lam := 4) (by norm_num) 0
-
-/-- At `n = 0` the size of `inst_kind_quad_tail_band` is `N = 2^21`, `(L, W) = (4, 32)`. -/
-theorem inst_kind_quad_tail_band_size :
-    SizesInst.sz0.L 0 = 4 ∧ SizesInst.sz0.W 0 = 32 ∧ SizesInst.sz0.size 0 = 2 ^ 21 := by
-  obtain ⟨h1, h2, h3, -⟩ := SizesInst.sz0_values
-  exact ⟨h1, h2, by rw [h3]; norm_num⟩
-
-/-- **The rank-one tail** `aux_lin_tail` at `d = 3`, `L = 3`, `W = 2` (`N = 216`),
-`v = gueVar 3 3 2`, row `0`, `c ≡ 1`, `C_b = 1`, `Λ = 3`, `q = 0`: with `Y = |∑_k H_{0k}|²` and
-`R = ∑_k σ_{0k}`, `P(3 R < Y) ≤ A_0 / ((3 - 1)²)^1 = 1/2`. -/
-theorem inst_aux_lin_tail :
-    (Sizes.seqP (auxSizes 3)) {ω | 3 * (∑ k : {a : Idx 3 3 2 // a ≠ 0},
-          sigRow 3 3 2 (gueVar 3 3 2) 0 k.1 * ‖(1 : ℂ)‖ ^ 2) <
-        ‖∑ k : {a : Idx 3 3 2 // a ≠ 0}, auxHG 3 3 2 (gueVar 3 3 2) ω 0 k.1 * (1 : ℂ)‖ ^ 2}
-      ≤ ENNReal.ofReal (hwConst 0 / ((3 - 1) ^ 2) ^ (0 + 1)) :=
-  aux_lin_tail
-    (auxLinChaos 3 3 2 (gueVar 3 3 2) (0 : Idx 3 3 2) (fun _ _ => 1) (fun _ => continuous_const) 1
-      (fun _ _ => by simp) (fun _ _ _ => rfl))
-    (fun ω => ‖∑ k : {a : Idx 3 3 2 // a ≠ 0}, auxHG 3 3 2 (gueVar 3 3 2) ω 0 k.1 * (1 : ℂ)‖ ^ 2)
-    (fun _ => ∑ k : {a : Idx 3 3 2 // a ≠ 0}, sigRow 3 3 2 (gueVar 3 3 2) 0 k.1 * ‖(1 : ℂ)‖ ^ 2)
-    (fun _ => Finset.sum_nonneg fun k _ =>
-      mul_nonneg (by unfold sigRow; positivity) (by positivity))
-    (fun ω => auxLin_chaos (gueVar_tagFree 3 3 2) 0 _ _ 1 _ _ ω)
-    (fun ω => auxLin_Vq 0 _ _ 1 _ _ ω) (by norm_num) 0
-
-/-- **The row sums of the mixture profile** at `d = 3`, `L = 3`, `W = 2` (`3 ≤ 3`), `g = 1/2`,
-`a = b = 1/2`, row `0`: `∑_j S_{0j} = a + b`. -/
-theorem inst_sum_Smix_row :
-    ∑ j : Idx 3 3 2, (1 / 2 * svarF 3 3 2 (1 / 2) (0 : Idx 3 3 2) j +
-      (1 / 2) / ((((2 * 3) ^ 3 : ℕ)) : ℝ)) = 1 / 2 + 1 / 2 :=
-  sum_Smix_row 3 3 2 (by norm_num) (1 / 2) (1 / 2) (1 / 2) 0
-
-/-- The merged `ouVar` is `mixVar g (e^{-t}) (1 - e^{-t})` (`rfl`), at `d = 3`, `L = 3`, `W = 2`. -/
-theorem inst_mixVar_exp_eq_ouVar (t : ℝ) (c : CoordF 3 3 2) :
-    mixVar 3 3 2 (1 / 2) (Real.exp (-t)) (1 - Real.exp (-t)) c = ouVar 3 3 2 (1 / 2) t c :=
-  mixVar_exp_eq_ouVar 3 3 2 (1 / 2) t c
-
-/-- The instance bounds are nontrivial (`1/2 < 1`): `A_0 / 4 = 1/2` (`inst_chaos_tail`,
-`inst_gue_quad_tail`, `inst_shift_quad_tail`, `inst_kind_quad_tail_band`) and
-`A_0 / (3 - 1)² = 1/2` (`inst_aux_lin_tail`). -/
-theorem inst_bounds :
-    hwConst 0 / (4 : ℝ) ^ (0 + 1) = 1 / 2 ∧
-      hwConst 0 / (((3 : ℝ) - 1) ^ 2) ^ (0 + 1) = 1 / 2 := by
-  norm_num [hwConst]
-
-end AuxCarrierCheck
 
 end RBM.Univ

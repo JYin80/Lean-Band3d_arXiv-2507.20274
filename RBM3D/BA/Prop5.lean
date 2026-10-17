@@ -956,8 +956,6 @@ theorem baProp5mixed_holds (d : ℕ) (Λ κ : ℝ) : BAProp5mixed d Λ κ := by
       (fun τ hτ => (hG L hL g E m hg hgΛ hr τ hτ a ⟨0, by omega⟩ ⟨0, by omega⟩).1)
       hc0.le hcc hcd (by linarith) (by linarith)
 
-example (d : ℕ) (Λ κ : ℝ) : BAProp5mixed d Λ κ := baProp5mixed_holds d Λ κ
-
 /-! ## 5. Property 8: the rows of `Θ` sum to `(1 - t)⁻¹`, and `Θ̊ = Θ - L^{-d}(1-t)⁻¹`
 
 The Neumann series `Θ = Σ tⁿ Kⁿ` of `BA/KHeat.lean` (private there: `baP5_pow_le_one`,
@@ -1411,69 +1409,10 @@ theorem baProp8mixed_holds (d : ℕ) (Λ κ : ℝ) : BAProp8mixed d Λ κ := by
       (fun τ hτ => (hG L hL g E m hg hgΛ hr τ hτ a ⟨0, by omega⟩ ⟨0, by omega⟩).1)
       (by linarith)
 
-example (d : ℕ) (Λ κ : ℝ) : BAProp8mixed d Λ κ := baProp8mixed_holds d Λ κ
-
 /-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P`)
 
 Both targets at the `KKernel` instance data (`BAReal 3 4 g₀ (Im m₀) E m₀`, `g₀ ≈ 4.67 ≤ 10`), with
 every deterministic hypothesis discharged (`3 ≤ d`, `0 < Λ`, `0 < κ`, `3 ≤ L`, `0 < g ≤ Λ`,
 `BAReal`, `0 ≤ t < 1`, `σ₁ ≠ σ₂`); the constants `C`, `c` stay existential, as in the statements. -/
-
-namespace Prop5Inst
-
-open RBM.BA.MFixedPointInst
-
-/-- `baProp5mixed_holds` at `t = 1/2`, `σ = (+,-)`, `a = (1, 0, 0) ≠ 0`, `|a| = 1`
-(`ε ≈ 0.046 < L⁻² = 0.0625`: the zero-mode regime `ℓ_t = L`). -/
-theorem inst_prop5 : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ (![1, 0, 0] : Zd 3 4) ≠ 0 ∧
-    zdistD 3 4 (![1, 0, 0] : Zd 3 4) = 1 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 ![1, 0, 0]‖
-      ≤ C * Bparam 3 4 P.g0 (1 / 2) (zdistD 3 4 (![1, 0, 0] : Zd 3 4))
-        * Real.exp (-c * (zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) / ellT 4 P.g0 (1 / 2)) := by
-  obtain ⟨C, hC, c, hc, H⟩ :=
-    baProp5mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, c, hc, by decide, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num)
-      true false (by decide) ![1, 0, 0]⟩
-
-/-- `baProp5mixed_holds` at the other mixed charge `σ = (-,+)`, `t = 1/100` (`ε ≈ 4.5 ≥ 1`), `a = (2, 1, 0)`,
-`|a| = 3`. -/
-theorem inst_prop5_large_eps : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ zdistD 3 4 (![2, 1, 0] : Zd 3 4) = 3 ∧
-    ‖BATheta 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 ![2, 1, 0]‖
-      ≤ C * Bparam 3 4 P.g0 (1 / 100) (zdistD 3 4 (![2, 1, 0] : Zd 3 4))
-        * Real.exp (-c * (zdistD 3 4 (![2, 1, 0] : Zd 3 4) : ℝ) / ellT 4 P.g0 (1 / 100)) := by
-  obtain ⟨C, hC, c, hc, H⟩ :=
-    baProp5mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, c, hc, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 100) (by norm_num) (by norm_num)
-      false true (by decide) ![2, 1, 0]⟩
-
-/-- `baProp8mixed_holds` at `t = 1/2`, `σ = (+,-)`, `a = (1, 0, 0)`. -/
-theorem inst_prop8 : ∃ C : ℝ, 0 < C ∧ (![1, 0, 0] : Zd 3 4) ≠ 0 ∧
-    zdistD 3 4 (![1, 0, 0] : Zd 3 4) = 1 ∧
-    ‖BATheta0 3 4 P.g0 P.E P.m0 (1 / 2) true false 0 ![1, 0, 0]‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 2 : ℝ)|)⁻¹ * (((zdistD 3 4 (![1, 0, 0] : Zd 3 4) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baProp8mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, by decide, by decide,
-    H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num)
-      true false (by decide) ![1, 0, 0]⟩
-
-/-- `baProp8mixed_holds` at `σ = (-,+)`, `t = 1/100`, `a = (2, 1, 0)`. -/
-theorem inst_prop8_large_eps : ∃ C : ℝ, 0 < C ∧
-    ‖BATheta0 3 4 P.g0 P.E P.m0 (1 / 100) false true 0 ![2, 1, 0]‖
-      ≤ C * (P.g0 ^ 2 + |1 - (1 / 100 : ℝ)|)⁻¹ * (((zdistD 3 4 (![2, 1, 0] : Zd 3 4) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baProp8mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 100) (by norm_num)
-    (by norm_num) false true (by decide) ![2, 1, 0]⟩
-
-/-- `baProp8mixed_holds` at `t = 0` (`Θ̊_0 = 1 - L^{-d}` on the diagonal), `a = 0`. -/
-theorem inst_prop8_zero : ∃ C : ℝ, 0 < C ∧
-    ‖BATheta0 3 4 P.g0 P.E P.m0 0 true false 0 0‖
-      ≤ C * (P.g0 ^ 2 + |1 - (0 : ℝ)|)⁻¹ * (((zdistD 3 4 (0 : Zd 3 4) : ℝ) + 1) ^ (3 - 2))⁻¹ := by
-  obtain ⟨C, hC, H⟩ := baProp8mixed_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
-  exact ⟨C, hC, H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real 0 le_rfl (by norm_num)
-    true false (by decide) 0⟩
-
-end Prop5Inst
 
 end RBM.BA

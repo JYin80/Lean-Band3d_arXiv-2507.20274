@@ -111,12 +111,6 @@ theorem Xblock_eq_sum_coordinates (ω : Ω d L W) :
   simp [coordinateBlock, blockMat, Matrix.submatrix_apply, Matrix.sum_apply,
     Matrix.smul_apply]
 
-/-- The merged `blockMat` is RBM2D's `submatrix` reindexing, by definition (this is the whole
-difference between the statements below and the RBM2D ones). -/
-example (ω : Ω d L W) :
-    blockMat d L W (Xmat d L W ω) =
-      (Xmat d L W ω).submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm := rfl
-
 /-- The directional map at one Gaussian coordinate equals its established derivative.
 `RBM2D/Gauss/LoopFlowCoordinateChain.lean:80` (`wordDirectionMap_coordinate`). -/
 theorem wordDirectionMap_coordinate (u : ℝ) (ω : Ω d L W)
@@ -233,32 +227,6 @@ theorem loop_flow_derivative_coordinate_chain (ω : Ω d L W)
   rw [(hasDerivAt_gloop_HflowBlock_spectralZ d L W ω hE hu hu1 I hwf).deriv]
   rw [loopWordDeriv_split, Matrix.trace_add]
   rw [trace_wordDirectionMap_time_eq_coordinate_sum d L W ω hu]
-
-/-- **The coordinate chain rule for `v ↦ 𝓛_v`**: the same identity with each actual
-Gaussian-coordinate derivative displayed.
-`RBM2D/Gauss/LoopFlowCoordinateChain.lean:193` (`loop_flow_derivative_actual_coordinate_chain`). -/
-theorem loop_flow_derivative_actual_coordinate_chain (ω : Ω d L W)
-    {E u : ℝ} (hE : |E| < 2) (hu : 0 < u) (hu1 : u < 1)
-    (I : Loop.LoopIdx (Zd d L)) (hwf : I.WF) :
-    deriv (fun v : ℝ =>
-      loopL d L W (HflowBlock d L W v ω) (zt E v) I) u =
-      (1 / (2 * u)) • ∑ c : CoordF d L W,
-        (ω c) • deriv (fun t : ℝ =>
-          loopL d L W (HflowBlock d L W u (Function.update ω c t))
-            (zt E u) I) (ω c) +
-      Matrix.trace (spectralWordDeriv d L W ω E u (I.σ.zip I.a)) := by
-  have hz : (zt E u).im ≠ 0 := by
-    rw [spectralZ_im]
-    exact ne_of_gt (mul_pos (by linarith) (spectralM_im_pos hE))
-  have hcoord (c : CoordF d L W) :
-      deriv (fun t : ℝ =>
-        loopL d L W (HflowBlock d L W u (Function.update ω c t))
-          (zt E u) I) (ω c) =
-        Matrix.trace
-          (coordinateWordDeriv d L W u ω c (zt E u) (I.σ.zip I.a)) :=
-    (hasDerivAt_gloop_update d L W u ω c hz I hwf).deriv
-  have h := loop_flow_derivative_coordinate_chain d L W ω hE hu hu1 I hwf
-  simpa only [← hcoord] using h
 
 /-! ## 2. The expected samplewise derivative: Stein on the coordinate sum
 
@@ -614,12 +582,6 @@ constant plus a finite weighted sum of absolute Gaussian coordinates. -/
 `RBM2D/Gauss/LoopFlowDerivativeEnvelope.lean:24` (`flowWindow`). -/
 def flowWindow (u : ℝ) : Set ℝ := Set.Icc (u / 2) ((1 + u) / 2)
 
-/-- `RBM2D/Gauss/LoopFlowDerivativeEnvelope.lean:26` (`flowWindow_mem`). -/
-theorem flowWindow_mem (u : ℝ) (hu : 0 < u) (hu1 : u < 1) :
-    u ∈ flowWindow u := by
-  simp only [flowWindow, Set.mem_Icc]
-  constructor <;> linarith
-
 /-- `RBM2D/Gauss/LoopFlowDerivativeEnvelope.lean:31` (`flowWindow_strict`). -/
 theorem flowWindow_strict (u : ℝ) (hu : 0 < u) (hu1 : u < 1) :
     u / 2 < u ∧ u < (1 + u) / 2 := by
@@ -893,116 +855,5 @@ Every deterministic hypothesis is discharged at `E = 3/10` (`|E| < 2`), `u = 1/2
 `g = 1` and the well-formed 2-loop with charges `(+, -)` and distinct block labels `(0,0,0)`,
 `(1,2,0)` of `Z_3^3` (27 blocks of `W^d = 8` sites each, `216` vertices, `46656` real
 coordinates). -/
-
-section Instances
-
-/-- A 2-loop with charges `(+, -)` and two distinct block labels of `Z_3^3`. -/
-private def loopFlowSteinLoop : Loop.LoopIdx (Zd 3 3) :=
-  ⟨[true, false], [![0, 0, 0], ![1, 2, 0]]⟩
-
-private theorem loopFlowSteinLoop_wf : loopFlowSteinLoop.WF := rfl
-
-/-- The off-diagonal real coordinate `(i, j, true)`, `i = (0,0,0)`, `j = (1,0,0)` of `Z_6^3`. -/
-private def loopFlowSteinCoord : CoordF 3 3 2 := (![0, 0, 0], ![1, 0, 0], true)
-
-/-- **Instance of `loop_flow_derivative_actual_coordinate_chain`** (target T1), at every sample:
-`∂_v 𝓛_v |_{v=1/2} = (1/(2u)) Σ_c ω_c ∂_c 𝓛 + tr(spectral drift)`. -/
-example (ω : Ω 3 3 2) :
-    deriv (fun v : ℝ => loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v)
-      loopFlowSteinLoop) (1 / 2) =
-      (1 / (2 * (1 / 2 : ℝ))) • ∑ c : CoordF 3 3 2,
-        (ω c) • deriv (fun t : ℝ =>
-          loopL 3 3 2 (HflowBlock 3 3 2 (1 / 2) (Function.update ω c t))
-            (zt (3 / 10) (1 / 2)) loopFlowSteinLoop) (ω c) +
-      Matrix.trace (spectralWordDeriv 3 3 2 ω (3 / 10) (1 / 2)
-        (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a)) :=
-  loop_flow_derivative_actual_coordinate_chain 3 3 2 ω (E := 3 / 10) (u := 1 / 2)
-    (by norm_num [abs_lt]) (by norm_num) (by norm_num) loopFlowSteinLoop
-    loopFlowSteinLoop_wf
-
-/-- **Instance of `norm_samplewise_loop_flow_derivative_le_envelope`** (target T2), at the right
-end `v = 3/4 = (1+u)/2` of the window `[1/4, 3/4]` (where the resolvent gap `η` is tight) and at
-every sample. -/
-example (ω : Ω 3 3 2) :
-    ‖deriv (fun t : ℝ => loopL 3 3 2 (HflowBlock 3 3 2 t ω) (zt (3 / 10) t)
-      loopFlowSteinLoop) (3 / 4)‖ ≤
-      flowDerivativeEnvelope 3 3 2 (3 / 10) (1 / 2) loopFlowSteinLoop ω :=
-  norm_samplewise_loop_flow_derivative_le_envelope 3 3 2 (E := 3 / 10) (u := 1 / 2)
-    (by norm_num [abs_lt]) (by norm_num) (by norm_num) loopFlowSteinLoop
-    loopFlowSteinLoop_wf (v := 3 / 4) (by simp only [flowWindow, Set.mem_Icc]; norm_num) ω
-
-/-- The envelope is integrable under `PF 3 3 2 1`, and the window contains the centre `u = 1/2`. -/
-example : Integrable (flowDerivativeEnvelope 3 3 2 (3 / 10) (1 / 2) loopFlowSteinLoop)
-    (PF 3 3 2 1) ∧ (1 / 2 : ℝ) ∈ flowWindow (1 / 2) :=
-  ⟨integrable_flowDerivativeEnvelope 3 3 2 1 (3 / 10) (1 / 2) loopFlowSteinLoop,
-    flowWindow_mem _ (by norm_num) (by norm_num)⟩
-
-/-- **Instance of `expected_samplewise_loop_flow_derivative`** (target T3) under `PF 3 3 2 1`. -/
-example :
-    Integrable (fun ω : Ω 3 3 2 => deriv (fun v : ℝ =>
-      loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) loopFlowSteinLoop) (1 / 2))
-      (PF 3 3 2 1) ∧
-    (∫ ω : Ω 3 3 2, deriv (fun v : ℝ =>
-      loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) loopFlowSteinLoop) (1 / 2)
-        ∂(PF 3 3 2 1)) =
-      (1 / (2 * (1 / 2 : ℝ))) • ∫ ω : Ω 3 3 2,
-        ∑ c : CoordF 3 3 2, (gvarF 3 3 2 1 c : ℝ) •
-          Matrix.trace (coordinateSecondWordDeriv 3 3 2 (1 / 2) ω c
-            (zt (3 / 10) (1 / 2)) (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a))
-          ∂(PF 3 3 2 1) +
-      ∫ ω : Ω 3 3 2,
-        Matrix.trace (spectralWordDeriv 3 3 2 ω (3 / 10) (1 / 2)
-          (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a)) ∂(PF 3 3 2 1) :=
-  expected_samplewise_loop_flow_derivative 3 3 2 1 (E := 3 / 10) (u := 1 / 2)
-    (by norm_num [abs_lt]) (by norm_num) (by norm_num) loopFlowSteinLoop
-    loopFlowSteinLoop_wf
-
-/-- **Instance of `deriv_integral_gloop_HflowBlock_spectralZ`** (target T4):
-`d/du E 𝓛_u |_{u=1/2}` under `PF 3 3 2 1`. -/
-example :
-    deriv (fun v : ℝ => ∫ ω : Ω 3 3 2,
-      loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) loopFlowSteinLoop
-        ∂(PF 3 3 2 1)) (1 / 2) =
-      (1 / (2 * (1 / 2 : ℝ))) • ∫ ω : Ω 3 3 2,
-        ∑ c : CoordF 3 3 2, (gvarF 3 3 2 1 c : ℝ) •
-          Matrix.trace (coordinateSecondWordDeriv 3 3 2 (1 / 2) ω c
-            (zt (3 / 10) (1 / 2)) (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a))
-          ∂(PF 3 3 2 1) +
-      ∫ ω : Ω 3 3 2,
-        Matrix.trace (spectralWordDeriv 3 3 2 ω (3 / 10) (1 / 2)
-          (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a)) ∂(PF 3 3 2 1) :=
-  deriv_integral_gloop_HflowBlock_spectralZ 3 3 2 1 (E := 3 / 10) (u := 1 / 2)
-    (by norm_num [abs_lt]) (by norm_num) (by norm_num) loopFlowSteinLoop
-    loopFlowSteinLoop_wf
-
-/-- The expected loop is differentiable at `u = 1/2` with the expected samplewise derivative as
-derivative (the differentiation under the integral used for target T4). -/
-example :
-    HasDerivAt (fun v : ℝ => ∫ ω : Ω 3 3 2,
-      loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) loopFlowSteinLoop ∂(PF 3 3 2 1))
-      (∫ ω : Ω 3 3 2, deriv (fun v : ℝ =>
-        loopL 3 3 2 (HflowBlock 3 3 2 v ω) (zt (3 / 10) v) loopFlowSteinLoop) (1 / 2)
-        ∂(PF 3 3 2 1)) (1 / 2) :=
-  hasDerivAt_integral_gloop_HflowBlock_spectralZ 3 3 2 1 (E := 3 / 10) (u := 1 / 2)
-    (by norm_num [abs_lt]) (by norm_num) (by norm_num) loopFlowSteinLoop
-    loopFlowSteinLoop_wf
-
-/-- The Stein step at one coordinate: `E[ω_c ∂_c 𝓛] = gvarF_c E[∂_c² 𝓛]`, at the off-diagonal
-coordinate `(i, j, true)`, `z = 3/10 + (1/2)(1 - ·)`-type spectral point `zt (3/10) (1/2)`. -/
-example :
-    ∫ ω : Ω 3 3 2, ω loopFlowSteinCoord • Matrix.trace
-        (coordinateWordDeriv 3 3 2 (1 / 2) ω loopFlowSteinCoord (zt (3 / 10) (1 / 2))
-          (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a)) ∂(PF 3 3 2 1) =
-      (gvarF 3 3 2 1 loopFlowSteinCoord : ℝ) • ∫ ω : Ω 3 3 2, Matrix.trace
-        (coordinateSecondWordDeriv 3 3 2 (1 / 2) ω loopFlowSteinCoord (zt (3 / 10) (1 / 2))
-          (loopFlowSteinLoop.σ.zip loopFlowSteinLoop.a)) ∂(PF 3 3 2 1) :=
-  stein_gloop_first_coordinate_derivative 3 3 2 1 (1 / 2) loopFlowSteinCoord
-    (z := zt (3 / 10) (1 / 2))
-    (by
-      rw [spectralZ_im]
-      exact ne_of_gt (mul_pos (by norm_num) (spectralM_im_pos (by norm_num [abs_lt]))))
-    loopFlowSteinLoop loopFlowSteinLoop_wf
-
-end Instances
 
 end RBM.Gauss

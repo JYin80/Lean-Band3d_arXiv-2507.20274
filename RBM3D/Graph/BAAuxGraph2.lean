@@ -89,10 +89,6 @@ theorem BAAuxGraph2_zdistInf_neg (d L : ℕ) [NeZero L] (x : Zd d L) :
   unfold zdistInf
   exact Finset.sup_congr rfl fun i _ => by simp [zdist_neg]
 
-theorem BAAuxGraph2_zdistInf_zero (d L : ℕ) : zdistInf d L (0 : Zd d L) = 0 := by
-  unfold zdistInf
-  exact Nat.eq_zero_of_le_zero (Finset.sup_le fun i _ => by simp)
-
 theorem BAAuxGraph2_zdistInf_add_le (d L : ℕ) [NeZero L] (x y : Zd d L) :
     zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
   unfold zdistInf
@@ -113,13 +109,6 @@ theorem BAAuxGraph2_zdistInf_sub_comm (d L : ℕ) [NeZero L] (x y : Zd d L) :
 theorem BAAuxGraph2_zdistInf_tri_real (d L : ℕ) [NeZero L] (x y w : Zd d L) :
     (zdistInf d L (x - w) : ℝ) ≤ (zdistInf d L (x - y) : ℝ) + (zdistInf d L (y - w) : ℝ) := by
   exact_mod_cast BAAuxGraph2_zdistInf_tri d L x y w
-
-/-- `zdistInf (a - A) ≤ R` from `zdistD (A - a) ≤ R`. -/
-theorem BAAuxGraph2_zdistInf_le_of_zdistD (d L : ℕ) [NeZero L] (A a : Zd d L) {R : ℝ}
-    (h : (zdistD d L (A - a) : ℝ) ≤ R) :
-    (zdistInf d L (a - A) : ℝ) ≤ R := by
-  rw [BAAuxGraph2_zdistInf_sub_comm]
-  exact (by exact_mod_cast zdistInf_le_zdistD d L (A - a) : (zdistInf d L (A - a) : ℝ) ≤ zdistD d L (A - a)).trans h
 
 theorem BAAuxGraph2_zdistInf_le_L (d L : ℕ) [NeZero L] (x : Zd d L) : zdistInf d L x ≤ L := by
   refine Finset.sup_le fun i _ => ?_
@@ -187,21 +176,6 @@ theorem baZetaVar_symm (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
       BAAuxGraph2_L_two_swap sz z n false true b₁ b₂ ω (t n)]
     ring
   · rw [BAAuxGraph2_zdistInf_sub_comm]
-
-/-- **The variables are not void**: `W^{-d} + W^{-D₁} ≤ ζ([a],[a])²` (`0 ≤ ρ`). -/
-theorem baZetaSq_ge_W (hρ : 0 ≤ ρ n) (a : Zd d (sz.L n)) (ω : sz.SeqΩ) :
-    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ + ((sz.W n : ℕ) : ℝ) ^ (-D₁) ≤ baZetaSq sz z t ρ D₁ n a a ω := by
-  unfold baZetaSq
-  have h1 : 0 ≤ ∑ b₁ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a) : ℝ) ≤ ρ n),
-      ∑ b₂ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a) : ℝ) ≤ ρ n),
-        ∑ σ ∈ ({![true, false], ![false, true]} : Finset (Fin 2 → Bool)),
-          ‖(baFMz sz z).L n (t n) σ ![b₁, b₂] ω‖ :=
-    Finset.sum_nonneg fun b₁ _ => Finset.sum_nonneg fun b₂ _ => Finset.sum_nonneg fun σ _ => norm_nonneg _
-  have h2 : (if (zdistInf d (sz.L n) (a - a) : ℝ) ≤ ρ n then (1 : ℝ) else 0) = 1 := by
-    rw [sub_self, BAAuxGraph2_zdistInf_zero]
-    simp [hρ]
-  rw [h2]
-  linarith
 
 end Basic
 
@@ -1039,74 +1013,10 @@ def LWXigL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t :
     PrecL sz μ (U := fun n => Zd d (sz.L n)) (fun n α ω => ∑ β, ξ n α β ω ^ 2)
       (fun n _ _ => ((((sz.W n : ℕ) : ℝ) ^ d) * C.eta n (t n))⁻¹)
 
-/-- *Proved (`Iff.rfl`).* At the band carrier and the band law the carrier form is the merged `LWXi`
-(`Prec sz = PrecL sz (seqP sz)`, `bandFM.eta = etaT`). -/
-theorem LWXigL_bandFM {d : ℕ} (sz : Sizes d) (E t : ℕ → ℝ) (Φ : ℕ → ℝ → ℝ)
-    (ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ) :
-    LWXigL (bandFM sz E) (Sizes.seqP sz) t Φ ξ ↔ LWXi sz E t Φ ξ := Iff.rfl
-
 /-! ## 5. Compiled nonempty instances (targets 1 and 2)
 
 `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `t ≡ 1/2 ≤ T₀`), the radius `ρ_n = log W_n`
 and the floor exponent `D₁ = 12`.  Every deterministic hypothesis is discharged; the Ward hypothesis `hA` is met by `A = Σ_{xy} ‖(G_t - M)_{xy}‖`. -/
-
-section Instances
-
-open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
-
-private theorem BAAuxGraph2_one_le_W (n : ℕ) : (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := Nat.one_le_cast.2 (sz0.W_pos n)
-
-/-- The radius `ρ_n = log W_n`. -/
-private def BAAuxGraph2_ρ0 : ℕ → ℝ := fun n => Real.log ((sz0.W n : ℕ) : ℝ)
-
-private theorem BAAuxGraph2_ρ0_nonneg (n : ℕ) : 0 ≤ BAAuxGraph2_ρ0 n := Real.log_nonneg (BAAuxGraph2_one_le_W n)
-
-/-- Every entry of `G - M` is at most the sum of all entries (to discharge `hA` at a concrete bound). -/
-private theorem BAAuxGraph2_entry_le_sum (n : ℕ) (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L n) (sz0.W n)) :
-    ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y‖ ≤ ∑ x', ∑ y', ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x' y'‖ :=
-  (Finset.single_le_sum (f := fun y' => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y'‖)
-    (fun _ _ => norm_nonneg _) (Finset.mem_univ y)).trans (Finset.single_le_sum
-    (f := fun x' => ∑ y', ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x' y'‖)
-    (fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _) (Finset.mem_univ x))
-
-/-- **Instance 1** (target 1): `W^{-d} + W^{-D₁} ≤ ζ([a],[a])²` and `ζ([a],[a]) > 0` at `n = 0`, every block and sample. -/
-example (a : Zd 3 (sz0.L 0)) (ω : sz0.SeqΩ) :
-    (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ + ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) ≤
-        baZetaSq sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a a ω ∧
-      0 < baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a a ω := by
-  have h := baZetaSq_ge_W sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 (BAAuxGraph2_ρ0_nonneg 0) a ω
-  have hW : (0 : ℝ) < (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ := by
-    have := BAAuxGraph2_one_le_W 0
-    positivity
-  have hF : (0 : ℝ) < ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) :=
-    Real.rpow_pos_of_pos (by linarith [BAAuxGraph2_one_le_W 0]) _
-  exact ⟨h, Real.sqrt_pos.2 (lt_of_lt_of_le (by linarith) h)⟩
-
-/-- **Instance 1** (target 1): the first conjunct of `LWXigL` for `baZetaVar` at `n = 0`. -/
-example (a b : Zd 3 (sz0.L 0)) (ω : sz0.SeqΩ) :
-    0 ≤ baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a b ω ∧
-      baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a b ω =
-        baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 b a ω :=
-  ⟨baZetaVar_nonneg sz0 zSeq _ _ 12 0 a b ω, baZetaVar_symm sz0 zSeq _ _ 12 0 a b ω⟩
-
-/-- **Instance 1** (target 1, the Ward part): `baZeta_ward_sum` at `n = 0`, `A` the sum of the entries of `G_t - M`, every sample and block. -/
-example (ω : sz0.SeqΩ) (a₁ : Zd 3 (sz0.L 0)) :
-    ∑ a₂, baZetaSq sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a₁ a₂ ω ≤
-      2 * (2 * BAAuxGraph2_ρ0 0 + 1) ^ (2 * 3) * ((((sz0.W 0 : ℕ) : ℝ) ^ 3 * (baFMz sz0 zSeq).eta 0 (1 / 2))⁻¹ *
-        (1 + ∑ x, ∑ y, ‖(baFMz sz0 zSeq).GM 0 (1 / 2) ω x y‖)) +
-      (2 * BAAuxGraph2_ρ0 0 + 1) ^ 3 * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ +
-        ((sz0.L 0 : ℕ) : ℝ) ^ 3 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) :=
-  baZeta_ward_sum sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 (κ := 1 / 2) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10)
-    (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 0).le (BAAuxGraph2_ρ0_nonneg 0) ω
-    (fun x y => BAAuxGraph2_entry_le_sum 0 ω x y) a₁
-
-/-- **Instance 2** (target 2, the bridge): at the band carrier of `sz0` the carrier form `LWXigL` is the merged `LWXi`. -/
-example : LWXigL (bandFM sz0 (fun _ => 0)) (Sizes.seqP sz0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)))
-      (fun _ _ _ _ => 1) ↔
-    LWXi sz0 (fun _ => 0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))) (fun _ _ _ _ => 1) :=
-  LWXigL_bandFM sz0 (fun _ => 0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))) (fun _ _ _ _ => 1)
-
-end Instances
 
 end RBM.Graph
 

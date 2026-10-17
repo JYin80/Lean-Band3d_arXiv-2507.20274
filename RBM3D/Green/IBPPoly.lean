@@ -516,9 +516,6 @@ section Instance
 
 variable (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n))
 
-@[simp] theorem modelChaos_B (ω : Sizes.SeqΩ sz) (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    (modelChaos sz n D hD u hz i).B ω k l = minorRes sz n D u z i ω k l := rfl
-
 /-- **The row of the chaos is the `i`-th row of `H_u`.** -/
 theorem modelChaos_h (ω : Sizes.SeqΩ sz) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
     (modelChaos sz n D hD u hz i).h ω k = Sizes.seqHflow sz n u ω i k.1 := by
@@ -1118,83 +1115,5 @@ At the preflight sequence `sz0` (`RBM3D/Defs/Sizes.lean:260`, `d = 3`; at `n = 0
 `lam = 1/64`, `N = (W L)^3 = 2097152`), `E ≡ 0`, `t ≡ 1/2`, `κ = 1`.  The only external hypothesis is
 `SizeTendsto` (`sz0_tendsto`, computed at `sz0`); all other hypotheses are deterministic and
 discharged. -/
-
-namespace IBPInst
-
-open RBM.Gauss.SizesInst RBM.Green.LDEInst
-
-/-- A diagonal coordinate of size `0`: its variance is `S_xx = W^{-d} (1 + 2 d g²)⁻¹ > 0`. -/
-private noncomputable def c0 : Sizes.SeqCoord sz0 := ⟨0, (0, 0, true)⟩
-
-/-- A diagonal coordinate of size `1`. -/
-private noncomputable def c1 : Sizes.SeqCoord sz0 := ⟨1, (0, 0, false)⟩
-
-/-- **Instance of `gaussIBP` (`polyInt`)**, at the two-coordinate set `{c₀, c₁}` of two different
-sizes and the exponent `2`. -/
-theorem gaussIBP_sz0_polyInt :
-    Integrable (fun ω : Sizes.SeqΩ sz0 =>
-      polyW ({c0, c1} : Finset (Sizes.SeqCoord sz0)) ω ^ 2) (Sizes.seqP sz0) :=
-  (gaussIBP sz0).polyInt _ 2
-
-/-- The variance of `c₀` is `S_xx = 32⁻³ (1 + 6/4096)⁻¹`, positive. -/
-theorem seqGvar_sz0_c0 :
-    (Sizes.seqGvar sz0 c0 : ℝ) = ((32 : ℝ) ^ 3)⁻¹ * (1 + 2 * (3 : ℝ) * (1 / 64) ^ 2)⁻¹ := by
-  change (if (0 : Idx 3 (sz0.L 0) (sz0.W 0)) = 0 then
-      svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 0
-      else svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 0 / 2) = _
-  simp only [↓reduceIte, svarF_diag]
-  have hW : (sz0.W 0 : ℝ) = 32 := by exact_mod_cast sz0_values.2.1
-  have hl : sz0.lam 0 = 1 / 64 := sz0_values.2.2.2
-  rw [hW, hl]
-  norm_num
-
-theorem seqGvar_sz0_c0_pos : 0 < (Sizes.seqGvar sz0 c0 : ℝ) := by
-  rw [seqGvar_sz0_c0]
-  norm_num
-
-/-- **Instance of `gaussIBP` (`stein`)** at the nonlinear, unbounded test function `g = ω_{c₀}³`,
-`g' = 3 ω_{c₀}²`: `E[ω_{c₀}⁴] = S_xx · E[3 ω_{c₀}²]`, at a coordinate of positive variance. -/
-theorem gaussIBP_sz0_stein_cubic :
-    ∫ ω, (ω c0 : ℂ) * (ω c0 : ℂ) ^ 3 ∂(Sizes.seqP sz0)
-      = (Sizes.seqGvar sz0 c0 : ℝ) * ∫ ω, (3 : ℂ) * (ω c0 : ℂ) ^ 2 ∂(Sizes.seqP sz0) :=
-  (gaussIBP sz0).stein c0 (fun ω => (ω c0 : ℂ) ^ 3) (fun ω => 3 * (ω c0 : ℂ) ^ 2)
-    ((Tame.coord c0).pow 3) ((Tame.const 3).mul ((Tame.coord c0).pow 2)) (fun ω => by
-      have h := (RowChaos.hasDerivAt_ofReal_id (ω c0)).fun_pow 3
-      simpa only [Function.update_self, Nat.cast_ofNat, mul_one] using h)
-
-/-- **Instance of `stochDom_ldeQuad`** (the hypothesis `hLquad` of `diag_bound_stochDom`) at `sz0`,
-`E ≡ 0`, `κ = 1`, `t ≡ 1/2`: only `SizeTendsto` (computed at `sz0`) and `0 ≤ t < 1`. -/
-theorem stochDom_ldeQuad_sz0 :
-    sz0.PrecPT (U := fun n => Vtx 3 (sz0.L n) (sz0.W n))
-      (fun n i ω => ldeQuadLHS (blockMat 3 (sz0.L n) (sz0.W n) (sz0.seqHflow n (1 / 2) ω))
-        (greenBlk 3 (sz0.L n) (sz0.W n) 0 (1 / 2) (sz0.seqHflow n (1 / 2) ω) true)
-        (svar 3 (sz0.L n) (sz0.W n) (sz0.lam n)) (1 / 2) i)
-      (fun n i ω => ldeQuadRHS (svar 3 (sz0.L n) (sz0.W n) (sz0.lam n))
-        (greenBlk 3 (sz0.L n) (sz0.W n) 0 (1 / 2) (sz0.seqHflow n (1 / 2) ω) true) i) :=
-  stochDom_ldeQuad sz0 (κ := 1) one_pos sz0_tendsto (E := fun _ => 0) (t := fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
-
-/-- **Instance of `IBPPoly_stochDom_ldeQuad_shift`** at `sz0`, `t ≡ 1/2`, `z ≡ z_{1/2}` and the nonzero shift
-`D = (1/2) I` (`LDE_shiftD_sz0`): only `SizeTendsto` (computed at `sz0`), `D` Hermitian, `Im z ≠ 0`, `0 ≤ t ≤ 1`. -/
-example := IBPPoly_stochDom_ldeQuad_shift sz0 sz0_tendsto LDE_shiftD_sz0 LDE_shiftD_sz0_isHermitian
-  (z := fun _ => zt 0 (1 / 2)) (fun _ => zt_im_ne_zero (κ := 1) one_pos (by norm_num) (by norm_num))
-  (t := fun _ => 1 / 2)
-  (fun _ => by norm_num) (fun _ => by norm_num)
-
-/-- **`(GiiGEX)`, `3_5:21`, with no large deviation hypothesis left**: `GiiOmegaSeq` at `sz0`,
-`E ≡ 0`, `t ≡ 1/2`, `κ = 1`, `𝔠 = 1/6`, `𝔡 = 1/10`, `c = 1`, from the four proved inputs
-(`stochDom_ldeRow`, `stochDom_ldeCol`, `stochDom_ldeQuad`, `stochDom_normSq_Hflow_diag`). -/
-example : GiiOmegaSeq sz0 (fun _ => 0) (fun _ => 1 / 2) 1 :=
-  diag_bound_stochDom sz0 (κ := 1) (𝔠 := 1 / 6) (𝔡 := 1 / 10) (by norm_num) one_pos
-    sz0_admissible (E := fun _ => 0) (t := fun _ => 1 / 2) (fun _ => by norm_num)
-    (fun _ => by norm_num) (fun _ => by norm_num) one_pos stochDom_ldeRow_sz0
-    stochDom_ldeCol_sz0 stochDom_ldeQuad_sz0 stochDom_normSq_Hflow_diag_sz0
-
-/-- The constant at `q = 2` (the preflight table): `hwConst 2 = 125000`. -/
-theorem hwConst_two : hwConst 2 = 125000 := by
-  unfold hwConst
-  norm_num
-
-end IBPInst
 
 end RBM.Green

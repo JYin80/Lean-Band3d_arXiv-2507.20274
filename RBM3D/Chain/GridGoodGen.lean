@@ -71,10 +71,6 @@ def STmaxLKMg (n : ℕ) (v : ℝ) (k : ℕ) (H : Matrix (Idx d (sz.L n) (sz.W n)
   Finset.univ.sup' ⟨((fun _ => true), (fun _ => (0 : Zd d (sz.L n)))), Finset.mem_univ _⟩
     (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) => ‖Cm.LM n v H p.1 p.2 - Cm.K n v p.1 p.2‖)
 
-/-- `Ξ̂^{(𝓛)}_{v,k}(H)` (band `STXiLM`, `GridGoodN:76`). -/
-def STXiLMg (n : ℕ) (v : ℝ) (k : ℕ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
-  1 + STmaxLMg Cm n v k H / (sz.Bctl n v) ^ (k - 1)
-
 /-- `Ξ̂^{(𝓛-𝒦)}_{v,k}(H)` (band `STXiLKM`, `GridGoodN:82`). -/
 def STXiLKMg (n : ℕ) (v : ℝ) (k : ℕ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
   1 + STmaxLKMg Cm n v k H / (sz.Bctl n v) ^ k
@@ -91,26 +87,12 @@ theorem GridGoodGen_LM_eq_L {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
   unfold loopFine
   exact loopM_eq_loopL d (sz.L n) (sz.W n) _ _ σ a
 
-/-- `STmaxLMg` at the flow matrix is `STmaxLg` (band `gridGood_STmaxLM_seqHflow`, `rfl`), under the LM compat. -/
-theorem STmaxLMg_Hf (hLM : ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ),
-      Cm.LM n u (Hf n u ω) σ a = Cm.L n u σ a ω) (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
-    STmaxLMg Cm n v k (Hf n v ω) = STmaxLg Cm.toFlowFM n v k ω := by
-  unfold STmaxLMg STmaxLg
-  simp only [hLM]
-
 /-- `STmaxLKMg` at the flow matrix is `STmaxLKg`. -/
 theorem STmaxLKMg_Hf (hLM : ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ),
       Cm.LM n u (Hf n u ω) σ a = Cm.L n u σ a ω) (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
     STmaxLKMg Cm n v k (Hf n v ω) = STmaxLKg Cm.toFlowFM n v k ω := by
   unfold STmaxLKMg STmaxLKg
   simp only [hLM]
-
-/-- `STXiLMg` at the flow matrix is `STXiLg`. -/
-theorem STXiLMg_Hf (hLM : ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ),
-      Cm.LM n u (Hf n u ω) σ a = Cm.L n u σ a ω) (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) :
-    STXiLMg Cm n v k (Hf n v ω) = STXiLg Cm.toFlowFM n v k ω := by
-  unfold STXiLMg STXiLg
-  rw [STmaxLMg_Hf hLM]
 
 /-- `STXiLKMg` at the flow matrix is `STXiLKg` (band `gridGood_STXiLKM_seqHflow`). -/
 theorem STXiLKMg_Hf (hLM : ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ),
@@ -120,18 +102,6 @@ theorem STXiLKMg_Hf (hLM : ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Boo
   rw [STmaxLKMg_Hf hLM]
 
 end Vocab
-
-section VocabBridge
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (v : ℝ) (k : ℕ)
-  (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-
-theorem bandStep2_STmaxLM : STmaxLM sz n (E n) v k H = STmaxLMg (bandStep2Mat sz E) n v k H := rfl
-theorem bandStep2_STmaxLKM : STmaxLKM sz n (E n) v k H = STmaxLKMg (bandStep2Mat sz E) n v k H := rfl
-theorem bandStep2_STXiLM : STXiLM sz n (E n) v k H = STXiLMg (bandStep2Mat sz E) n v k H := rfl
-theorem bandStep2_STXiLKM : STXiLKM sz n (E n) v k H = STXiLKMg (bandStep2Mat sz E) n v k H := rfl
-
-end VocabBridge
 
 /-! ## 2. Target 2: the good set -/
 
@@ -170,17 +140,6 @@ def GoodSetNg (Cm : Step2Mat sz) (n : ℕ) (u : ℝ) (k : ℕ) (Γ Λ Φ τ' D' 
 
 end GoodSet
 
-section GoodSetBridge
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
-
-/-- **Target 2, band bridge** (`Iff.rfl`). -/
-theorem bandStep2_GoodSetN (n : ℕ) (u : ℝ) (k : ℕ) (Γ Λ Φ τ' D' : ℝ)
-    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
-    H ∈ sz.GoodSetN n (E n) u k Γ Λ Φ τ' D' ↔ GoodSetNg (bandStep2Mat sz E) n u k Γ Λ Φ τ' D' H := Iff.rfl
-
-end GoodSetBridge
-
 /-! ## 3. Target 3: the exit times and measurability -/
 
 section ExitTime
@@ -192,10 +151,6 @@ of matrix sets: the first `j ≤ K n` with `H_j ∉ G j`, and `K n` if there is 
 def gridExitTauNg (s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     (G : ℕ → Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) : PathΩ sz → ℕ :=
   firstHit (fun j (ω : PathΩ sz) => (G j)ᶜ.indicator (fun _ => (1 : ℝ)) (Cm.Hpath s v K n j ω)) (1 / 2) (K n)
-
-/-- **Target 3, `goodExitTauNg`** (band `goodExitTauN`): the exit time of the carrier walk from `GoodSetNg`. -/
-def goodExitTauNg (s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' : ℝ) (n : ℕ) : PathΩ sz → ℕ :=
-  gridExitTauNg Cm s v K n (fun j => {H | GoodSetNg Cm n (gridTime s v K n j) k (Γ n) (Λ n) (Φ n) τ' D' H})
 
 variable {Cm} {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ}
   {G : ℕ → Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)}
@@ -391,53 +346,6 @@ theorem measurableGoodSetNg {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
 
 end MeasurableProof
 
-section ExitMeasurable
-
-variable {d : ℕ} {sz : Sizes d}
-
-/-- **Target 3, `GoodExitMeasNg`** (`T2473_GoodExitMeasNg`; band `GoodExitMeasN`, `GridGoodN:411`): for every index, loop length, levels
-and exponents, `{j < goodExitTauNg}` is `filt sz j`-measurable. -/
-def GoodExitMeasNg (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ → ℕ) : Prop :=
-  ∀ (n k : ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' : ℝ) (j : ℕ),
-    MeasurableSet[filt sz j] {ω | j < goodExitTauNg Cm s v K k Γ Λ Φ τ' D' n ω}
-
-/-- **Target 3, `goodExitMeasNg`** (band `goodExitMeasN`, `GridGoodN:423`): `{j < goodExitTauNg}` is `filt sz j`-measurable under
-`LoopForm` (measurability of the good set) and `WalkForm` (adaptedness of the carrier walk). -/
-theorem goodExitMeasNg {Cm : Step2Mat sz} {E lam' : ℕ → ℝ}
-    {Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
-    (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ) (s v : ℕ → ℝ) (K : ℕ → ℕ) :
-    GoodExitMeasNg Cm s v K :=
-  fun n k Γ Λ Φ τ' D' j =>
-    gridExitTauNg_measurableSet hW (fun j => measurableGoodSetNg hL n _ k _ _ _ _ _) j
-
-end ExitMeasurable
-
-section ExitBridge
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
-
-/-- **Target 3, band bridge** of the exit time (`rfl`). -/
-theorem bandStep2_gridExitTauN (s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
-    (G : ℕ → Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) :
-    gridExitTauN sz s v K n G = gridExitTauNg (bandStep2Mat sz E) s v K n G := rfl
-
-/-- **Target 3, band bridge** of the exit time from the good set (`rfl`). -/
-theorem bandStep2_goodExitTauN (s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' : ℝ) (n : ℕ) :
-    goodExitTauN sz E s v K k Γ Λ Φ τ' D' n = goodExitTauNg (bandStep2Mat sz E) s v K k Γ Λ Φ τ' D' n := rfl
-
-/-- **Target 3, band bridge** of the measurability pin (`Iff.rfl`). -/
-theorem bandStep2_GoodExitMeasN (s v : ℕ → ℝ) (K : ℕ → ℕ) :
-    GoodExitMeasN sz E s v K ↔ GoodExitMeasNg (bandStep2Mat sz E) s v K := Iff.rfl
-
-/-- **Target 3, band bridge** of the matrix-level measurability pin: `MeasurableGoodSetN d` is `MeasurableGoodSetNg` at every
-band carrier. -/
-theorem bandStep2_MeasurableGoodSetN :
-    MeasurableGoodSetN d ↔ ∀ (sz : Sizes d) (E : ℕ → ℝ), MeasurableGoodSetNg (bandStep2Mat sz E) :=
-  ⟨fun h sz E n u k Γ Λ Φ τ' D' => h sz n (E n) u k Γ Λ Φ τ' D',
-    fun h sz n E u k Γ Λ Φ τ' D' => h sz (fun _ => E) n u k Γ Λ Φ τ' D'⟩
-
-end ExitBridge
-
 /-! ## 4. Target 4: the pin `GridGoodN` over a carrier -/
 
 section Pin
@@ -475,22 +383,6 @@ def GridGoodNgL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mkM : ∀ (sz : Sizes d) (z : ℕ → ℂ), Step2Mat sz)
     (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
   STIngRgL d STAny law Flow (fun sz z => (mkM sz z).toFlowFM) T0 (fun sz z s t => GridGoodNConclg (mkM sz z) (law sz) s t)
-
-section PinBridge
-
-variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
-
-/-- **Target 4, band bridge** of the conclusion (`Iff.rfl`). -/
-theorem bandStep2_GridGoodNConcl (s t : ℕ → ℝ) :
-    GridGoodNConcl sz E s t ↔ GridGoodNConclg (bandStep2Mat sz E) (Sizes.seqP sz) s t := Iff.rfl
-
-/-- **Target 4, band bridge** of the pin, through `bandFM_STIngR` (`Chain/Step34Gen.lean:447`). -/
-theorem bandStep2_GridGoodN (d : ℕ) :
-    GridGoodN d ↔ GridGoodNgL d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) :=
-  bandFM_STIngR d STAny (fun sz E s t => GridGoodNConcl sz E s t)
-
-end PinBridge
 
 /-! ## 4a. The uniform good event and the grid transfer (private core of target 4)
 
@@ -802,35 +694,6 @@ section Public
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **Target 4 (a), `gridGoodNConclg_of`** (band `gridGoodN_holds`, `GridGoodN:930`, one carrier): the pin `GridGoodNConclg` over a carrier
-`Cm`, from the walk fact `StepDecompGen_WalkForm Cm lam' Ψ` (Hermitian grid walk; `lam'` and `Ψ` occur only there), `LoopForm`, the law of
-the grid state `Step2EventsGen_Law`, `Step34Gen_LCompat`, `DecayGen_Spec`, `Admissible`, `B ≤ 1` on the window and the `≺` inputs. -/
-theorem gridGoodNConclg_of (Cm : Step2Mat sz) (E : ℕ → ℝ) (μ : Measure sz.SeqΩ)
-    (Hf : ∀ n : ℕ, ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (lam' : ℕ → ℝ) (Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
-    (κm 𝔠 𝔡 : ℝ) (s t : ℕ → ℝ)
-    (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ) (hLaw : Step2EventsGen_Law Cm μ Hf)
-    (hC : Step34Gen_LCompat Cm Hf) (hspec : DecayGen_Spec Cm.toFlowFM κm) (hA : sz.Admissible 𝔠 𝔡)
-    (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1)
-    (hB1 : ∀ᶠ n in atTop, ∀ u : ℝ, u ≤ t n → sz.Bctl n u ≤ 1)
-    (hSE : STSEforLnConclgL Cm Hf μ s t) (hU : STDecayLoopUgL Cm.toFlowFM μ s t)
-    (hEK : ∀ k : ℕ, 2 ≤ k → ∀ σ : Fin k → Bool,
-      STEKDecaygL μ s t (m := k) (fun n v ω (a : Fin k → Zd d (sz.L n)) =>
-        STegtg Cm Hf n (v : ℝ) ω ⟨List.ofFn σ, List.ofFn a⟩) ∧
-      (∀ l : ℕ, STEKDecaygL μ s t (m := k) (fun n v ω (a : Fin k → Zd d (sz.L n)) =>
-        STksimLKg Cm Hf n (v : ℝ) ω l ⟨List.ofFn σ, List.ofFn a⟩)) ∧
-      STEKDecaygL μ s t (m := k) (fun n v ω (a : Fin k → Zd d (sz.L n)) =>
-        STelklkg Cm Hf n (v : ℝ) ω ⟨List.ofFn σ, List.ofFn a⟩) ∧
-      STEKDecaygL μ s t (m := k + k) (fun n v ω (b : Fin (k + k) → Zd d (sz.L n)) =>
-        STeeg Cm Hf n (v : ℝ) ω σ (fun i => b (Fin.castAdd k i)) (fun i => b (Fin.natAdd k i)))) :
-    GridGoodNConclg Cm μ s t := by
-  intro v hsv hvt K hK k hk Λ Φ hΛ hΦ hX hY q hq hQ C hC' ε hε τ' hτ' D' hD'
-  have hU' := GridGoodGen_whp_uniform hL hC hspec hA hs0 hst ht1 hB1 hSE hU hk (hEK k hk) hΦ hX hY hq hQ hε hτ' hD'
-  exact GridGoodGen_grid hL hLaw (tendsto_size sz hA.2.2.1) hs0 hsv hvt hK hC'
-    (fun n j => Eventually.of_forall fun ω => by
-      rw [StepDecompGen_Hpath_eq hW]
-      exact (hW.1 n).add (pathH_isHermitian (sz.withLam lam') s v K n j ω)) hU'
-
 /-- **Target 4 (b), `gridGoodNgL_of`** (band `gridGoodN_holds` as a pin, `GridGoodN:930-956`): the family form `GridGoodNgL d law Flow mkM T0`.
 The `≺` inputs are `STSEforLngL` (the pin `lem:SEforLn` over the family), the loop decay from `stDecayLoopUgL_of_step2` (the `STGdecayWgL`
 inside `STStep2ConclgL`), `DecayGen_WardPair`, `STKcalDecaygL` and the `ℰ`-term decays; the carrier facts are per flow (`Step2EventsGen_Flow`
@@ -905,132 +768,12 @@ The size sequence is the merged `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `N_0 = 20
 classes `LoopForm` and `WalkForm` are discharged by the band lemmas.  Target 4 is applied at the window `s ≡ 0`, `t ≡ 1/16`
 (last two examples). -/
 
-section Instances
-
-namespace GridGoodGenCheck
-
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.GridGoodNInst RBM.Gauss.Step34Inst
-
-private abbrev E1 : ℕ → ℝ := fun _ => 1 / 2
-private abbrev Cm1 : Step2Mat sz0 := bandStep2Mat sz0 E1
-
-private theorem hE1 : ∀ n, |E1 n| < 2 := fun _ => by norm_num [E1]
-private theorem hL1 : StepDecompGen_LoopForm Cm1 E1 := stepDecompGen_loopForm_band sz0 E1 hE1
-private theorem hW1 : StepDecompGen_WalkForm Cm1 sz0.lam (fun _ => 0) := stepDecompGen_walkForm_band sz0 E1
-
-/-- The data are nondegenerate: `d = 3`, `L = 4`, `W = 32`, `N = 2097152`, `K + 1 = 5`, `Δ = 1/128`, `u_0 = 0`, `u_1 = 1/128`,
-`u_4 = 1/32`. -/
-example : sz0.L 0 = 4 ∧ sz0.W 0 = 32 ∧ sz0.size 0 = 2097152 ∧ Kg 0 + 1 = 5 :=
-  ⟨sz0_values.1, sz0_values.2.1, sz0_values.2.2.1, rfl⟩
-
-example : gridStep sInst vg Kg 0 = 1 / 128 ∧ gridTime sInst vg Kg 0 0 = 0 ∧ gridTime sInst vg Kg 0 1 = 1 / 128 ∧
-    gridTime sInst vg Kg 0 4 = 1 / 32 := grid_data
-
-/-- **Target 1** at the band carrier and the flow matrix `seqHflow`: the LM compat is discharged by `LoopForm` and
-`bandStep34_LCompat`; the four `_Hf` lemmas give the controls `STmaxLg`, `STmaxLKg`, `STXiLg`, `STXiLKg`. -/
-example (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz0.SeqΩ) :
-    STmaxLMg Cm1 n v k (seqHflow sz0 n v ω) = STmaxLg Cm1.toFlowFM n v k ω ∧
-    STmaxLKMg Cm1 n v k (seqHflow sz0 n v ω) = STmaxLKg Cm1.toFlowFM n v k ω ∧
-    STXiLMg Cm1 n v k (seqHflow sz0 n v ω) = STXiLg Cm1.toFlowFM n v k ω ∧
-    STXiLKMg Cm1 n v k (seqHflow sz0 n v ω) = STXiLKg Cm1.toFlowFM n v k ω :=
-  have hLM := GridGoodGen_LM_eq_L (Hf := fun n u ω => seqHflow sz0 n u ω) hL1 (bandStep34_LCompat sz0 E1)
-  ⟨STmaxLMg_Hf hLM n v k ω, STmaxLKMg_Hf hLM n v k ω, STXiLMg_Hf hLM n v k ω, STXiLKMg_Hf hLM n v k ω⟩
-
-/-- **Target 1, band bridges**: the merged controls at `seqHflow` are the generic ones (`rfl`, via the `_Hf` lemmas). -/
-example (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz0.SeqΩ) :
-    STXiLKM sz0 n (E1 n) v k (seqHflow sz0 n v ω) = STXiLK sz0 n (E1 n) v k ω :=
-  (bandStep2_STXiLKM sz0 E1 n v k _).trans (STXiLKMg_Hf (GridGoodGen_LM_eq_L (Hf := fun n u ω => seqHflow sz0 n u ω) hL1
-    (bandStep34_LCompat sz0 E1)) n v k ω)
-
-/-- **Target 2** at the data: the band good set is `GoodSetNg` at the band carrier (`Iff.rfl`). -/
-example (H : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) :
-    H ∈ sz0.GoodSetN 0 (E1 0) (1 / 32) 2 4 3 1 (1 / 2) 1 ↔ GoodSetNg Cm1 0 (1 / 32) 2 4 3 1 (1 / 2) 1 H :=
-  bandStep2_GoodSetN sz0 E1 0 (1 / 32) 2 4 3 1 (1 / 2) 1 H
-
-/-- **Target 3, `measurableGoodSetNg`** at the data. -/
-example : MeasurableSet {H | GoodSetNg Cm1 0 (1 / 32) 2 4 3 1 (1 / 2) 1 H} :=
-  measurableGoodSetNg hL1 0 (1 / 32) 2 4 3 1 (1 / 2) 1
-
-/-- **Target 3, `goodExitMeasNg`** at `(s, v, K) = (0, 1/32, 4)`, `k = 2`, levels `(4, 3, 1)`, `τ' = 1/2`, `D' = 1`, `n = 0`. -/
-example (j : ℕ) : MeasurableSet[filt sz0 j] {ω | j < goodExitTauNg Cm1 sInst vg Kg 2
-    (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω} :=
-  goodExitMeasNg hL1 hW1 sInst vg Kg 0 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 j
-
-example : GoodExitMeasNg Cm1 sInst vg Kg := goodExitMeasNg hL1 hW1 _ _ _
-
-/-- **Target 3, exit-time lemmas** at the data: the exit time is `≤ K 0 = 4`; it is `4` when the carrier walk stays in the good
-set at every `j ≤ 4`; before the exit the walk is in the good set. -/
-example (ω : PathΩ sz0) : goodExitTauNg Cm1 sInst vg Kg 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω ≤ 4 :=
-  gridExitTauNg_le ω
-
-example (ω : PathΩ sz0)
-    (h : ∀ j ≤ Kg 0, Cm1.Hpath sInst vg Kg 0 j ω ∈ {H | GoodSetNg Cm1 0 (gridTime sInst vg Kg 0 j) 2 4 3 1 (1 / 2) 1 H}) :
-    goodExitTauNg Cm1 sInst vg Kg 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω = 4 :=
-  gridExitTauNg_eq_of_forall_mem h
-
-example (ω : PathΩ sz0) (j : ℕ)
-    (h : j < goodExitTauNg Cm1 sInst vg Kg 2 (fun _ => 4) (fun _ => 3) (fun _ => 1) (1 / 2) 1 0 ω) :
-    Cm1.Hpath sInst vg Kg 0 j ω ∈ {H | GoodSetNg Cm1 0 (gridTime sInst vg Kg 0 j) 2 4 3 1 (1 / 2) 1 H} :=
-  mem_of_lt_gridExitTauNg h
-
-/-- **Target 3, band bridges** of the matrix-level measurability and of the measurability pin at `sz0`. -/
-example : GoodExitMeasN sz0 E1 sInst vg Kg := (bandStep2_GoodExitMeasN sz0 E1 sInst vg Kg).2 (goodExitMeasNg hL1 hW1 _ _ _)
-
-example : MeasurableGoodSetNg Cm1 := measurableGoodSetNg hL1
-
 /-! ### Target 4 at the band carrier
 
 `LoopForm`, `WalkForm` (`lam' = sz0.lam`, `Ψ = 0`), the law `Step2EventsGen_Law`, `Step34Gen_LCompat`, `DecayGen_Spec` (`κ = 1`, `κm = 1/2`),
 `Admissible`, the window `s ≡ 0`, `t ≡ 1/16`, `B ≤ 1` on it and the four `ℰ`-term decays (`stEtermDecay` from the loop decay) are
 discharged.  In (a) the `≺` inputs `STSEforLnConclgL` and `STDecayLoopUgL` (other gates' pins: U2, T1) stay hypotheses; in the family
 form (b) nothing is left open, `STSEforLngL` being the band theorem `stSEforLn_holds`. -/
-
-private theorem hspec1 : DecayGen_Spec Cm1.toFlowFM (Real.sqrt 1 / 2) :=
-  DecayGen_bandSpec sz0 (E := E1) (κ := 1) one_pos (fun n => by norm_num [E1])
-
-private theorem hB1_inst : ∀ᶠ n in Filter.atTop, ∀ u : ℝ, u ≤ tInst n → sz0.Bctl n u ≤ 1 := by
-  filter_upwards [Bctl_tInst_tendsto.eventually (gt_mem_nhds zero_lt_one)] with n hn u hu
-  exact (STBctl_mono sz0 n hu (tInst_lt_one n)).trans hn.le
-
-/-- The energy of a flow is in the bulk: `|E(z)| ≤ |Re z| ≤ 2 - κ` (`abs_lemE_le`). -/
-private theorem flow_abs_le {sz : Sizes 3} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
-    |STflowE z n| ≤ 2 - κ :=
-  (abs_lemE_le (ST_flow_im_pos sz hz n)).trans (hz.2 n).1
-
-/-- **Target 4 (a), `gridGoodNConclg_of`** at `(sz0, E1, s ≡ 0, t ≡ 1/16)`: the pin `GridGoodNConclg` for the band carrier and the law `seqP`;
-the band form follows through `bandStep2_GridGoodNConcl`.  Open: `STSEforLnConclgL`, `STDecayLoopUgL`. -/
-example (hSE : STSEforLnConclgL Cm1 (seqHflow sz0) (Sizes.seqP sz0) sInst tInst)
-    (hU : STDecayLoopUgL Cm1.toFlowFM (Sizes.seqP sz0) sInst tInst) :
-    GridGoodNConclg Cm1 (Sizes.seqP sz0) sInst tInst ∧ GridGoodNConcl sz0 E1 sInst tInst :=
-  have h := gridGoodNConclg_of Cm1 E1 (Sizes.seqP sz0) (seqHflow sz0) sz0.lam (fun _ => 0) (Real.sqrt 1 / 2) (1 / 6) (1 / 10)
-    sInst tInst hL1 hW1 (Step2EventsGen_bandLaw sz0 E1) (bandStep34_LCompat sz0 E1) hspec1 sz0_admissible sz0_hs0
-    (fun n => (sz0_hst n).le) tInst_lt_one hB1_inst hSE hU
-    (fun k hk σ => stEtermDecay (d := 3) le_rfl sz0 (κ := 1) one_pos (fun n => by norm_num [E1]) sz0_admissible sz0_hs0
-      (fun n => (sz0_hst n).le) tInst_lt_one ((bandFM_STDecayLoopU sz0 E1 sInst tInst).2 hU) k hk σ)
-  ⟨h, (bandStep2_GridGoodNConcl sz0 E1 sInst tInst).2 h⟩
-
-/-- **Target 4 (b), `gridGoodNgL_of`** over the band family `(seqP, STFlow, bandStep2Mat · (STflowE ·), lemT)` (`d = 3`): `GridGoodNgL`, and
-through `bandStep2_GridGoodN` the merged pin `GridGoodN 3`, with **no open hypothesis**.  Per flow: `Step2EventsGen_Flow`, the spectral
-`κm = √κ/2` (`|E| ≤ 2 - κ`), `LoopForm`, `WalkForm`, the law, `Step34Gen_LCompat`, `DecayGen_WardPair`, `STKcalDecaygL`
-(`bandFM_STKcalDecay`) and the `ℰ`-term decays (`stEtermDecay`); `STSEforLngL` is `stSEforLn_holds` through `bandFM_STSEforLn`. -/
-example : GridGoodNgL 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) ∧ GridGoodN 3 := by
-  have h := gridGoodNgL_of 3 (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-    (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz z => seqHflow sz) (fun _ z => STflowE z)
-    (fun sz _ => sz.lam) (fun _ _ _ => 0) ((bandFM_STSEforLn 3).1 (stSEforLn_holds 3)) (Step2EventsGen_bandFlow 3)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => ⟨Real.sqrt κ / 2, DecayGen_bandSpec sz hκ (flow_abs_le hz)⟩)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => stepDecompGen_loopForm_band sz _ fun n => (flow_abs_le hz n).trans_lt (by linarith))
-    (fun sz κ ε 𝔠 𝔡 z _ _ => stepDecompGen_walkForm_band sz _)
-    (fun sz z => Step2EventsGen_bandLaw sz _) (fun sz z => bandStep34_LCompat sz _)
-    (fun sz z => DecayGen_bandWardPair sz _)
-    (fun sz κ ε 𝔠 𝔡 z hκ hz => bandFM_STKcalDecay le_rfl sz hκ hz.1 (flow_abs_le hz))
-    (fun sz κ ε 𝔠 𝔡 z hκ hz s t hs hst ht1 hU k hk σ =>
-      stEtermDecay (d := 3) le_rfl sz hκ (flow_abs_le hz) hz.1 hs hst ht1 ((bandFM_STDecayLoopU sz _ s t).2 hU) k hk σ)
-  exact ⟨h, (bandStep2_GridGoodN 3).2 h⟩
-
-end GridGoodGenCheck
-
-end Instances
 
 end RBM.BA
 

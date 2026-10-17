@@ -792,33 +792,6 @@ end RBM.Ind
 
 /-! ## 6. `STConArg d` -/
 
-namespace RBM.Gauss.Sizes
-
-open RBM RBM.Gauss RBM.Path Filter
-
-/-- **`lem_ConArg` (`3_5:42-62`), the merged pin `STConArg d`, for every `d`.**  From `conArg` at
-`E = lemE z`, `c = ε₁`: the hypothesis `STLmax` (`Prec`, union inside `P`) gives the per-time (55) by
-`Path.perTimeOfStochDomAt`; the bulk `|lemE z_n| ≤ 2 - κ` is `lemma28_quant` from
-`z_n ∈ 𝐃_{κ,ε}`; `SizeTendsto` is the third clause of `Admissible`; the per-time conclusion gives
-`Prec` by `Path.stochDomAt_of_perTimeDomAt` (`#((Fin k → Bool) × (Fin k → Zd d L)) ≤ size^{2k}`,
-eventually, as `size → ∞`).  The constants `C = C(ε₁, κ)`, `D = D(k, C, C₀)` do not depend on `W`,
-`L`, `lam` or `d`. -/
-theorem stConArg_holds (d : ℕ) : STConArg d := by
-  intro κ ε 𝔡 ε₁ C₀ hκ hε h𝔡 hε₁ hC₀ 𝔠 sz z hflow s t hs hst ht hL k hk
-  have hz0 : ∀ n, 0 < (z n).im := fun n =>
-    lt_of_lt_of_le (Real.rpow_pos_of_pos (sz.STsize_pos n) _) (hflow.2 n).2.1
-  have hE : ∀ n, |STflowE z n| ≤ 2 - κ := fun n =>
-    (lemma28_quant hκ (hz0 n) (hflow.2 n).2.2 (hflow.2 n).1).1
-  have hsizeT : sz.SizeTendsto := hflow.1.2.2.1
-  have hcon := RBM.Ind.conArg sz κ ε₁ C₀ (STflowE z) s t hκ hE hε₁ hC₀.le hs hst ht hsizeT
-    (fun j hj => Path.perTimeOfStochDomAt (seqP sz) sz.size _ _ (hL j hj)) k (by omega)
-  have hsz2 : ∀ᶠ n : ℕ in atTop, 2 ≤ sz.size n :=
-    (sz.tendsto_size hsizeT).eventually (eventually_ge_atTop 2)
-  exact stochDomAt_of_perTimeDomAt (seqP sz) sz.size (C := ((2 * k : ℕ) : ℝ)) (by positivity)
-    (hsz2.mono fun n hn => RBM.Ind.conArg_card_le sz n k hn) hcon
-
-end RBM.Gauss.Sizes
-
 /-! ## 7. Compiled nonempty instances at `d = 3`
 
 The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
@@ -828,49 +801,5 @@ The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n 
 `ε₁ = c = 1/16`, `C₀ = 2`, `s ≡ 1/16 ≤ t ≡ 1/2 < 1`.  Every deterministic hypothesis (`STFlow`, the bulk,
 the time range, `SizeTendsto`) is discharged; what stays a hypothesis of an instance is the loop bound
 `(eq:loopbound_s)` at `s` (the pin `STLmax`, the ST-6 chain). -/
-
-namespace RBM.Ind.ConArgInst
-
-open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Path Filter
-
-/-- The bulk of the flow energies: `|lemE z0_n| ≤ 2 - 1/10` (`lemma28_quant`). -/
-private theorem bulk_z0 (n : ℕ) : |STflowE z0 n| ≤ 2 - 1 / 10 :=
-  (lemma28_quant (z := z0 n) (κ := 1 / 10) (by norm_num) (z0_im_pos n) (z0_im_le_one n)
-    (z0_locDomain n).1).1
-
-/-- **Instance of `conArg`** (`ConArgPin`): `d = 3`, `sz0`, `E = lemE z0`, `κ = 1/10`, `c = 1/16`,
-`C₀ = 2`, `s ≡ 1/16 ≤ t ≡ 1/2 < 1`, all deterministic hypotheses discharged; (55) at `s` is the
-hypothesis `h55` (per time; it follows from `STLmax` by `perTimeOfStochDomAt`, below). -/
-example (h55 : ∀ k : ℕ, 1 ≤ k →
-      sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-        (fun n p ω => ‖Lloop sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz0.Bctl n ((fun _ => (1 : ℝ) / 16) n)) ^ (k - 1))) :
-    ∀ k : ℕ, 1 ≤ k →
-      sz0.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-        (fun n p ω => STomegaC sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) 2 ω *
-          ‖Lloop sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz0.Bctl n ((fun _ => (1 : ℝ) / 16) n) *
-          (Gauss.etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) /
-            Gauss.etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n))) ^ (k - 1)) :=
-  conArg sz0 (1 / 10) (1 / 16) 2 (STflowE z0) (fun _ => 1 / 16) (fun _ => 1 / 2)
-    (by norm_num) bulk_z0 (by norm_num) (by norm_num) (fun _ => le_rfl)
-    (fun _ => by norm_num) (fun _ => by norm_num) sz0_tendsto h55
-
-/-- **Instance of `stConArg_holds`**: `d = 3`, `sz0`, `z0`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`,
-`ε₁ = 1/16`, `C₀ = 2`, `s ≡ 1/16 ≤ t ≡ 1/2 < 1`; the loop bound `(eq:loopbound_s)` at `s`
-(`STLmax`) stays a hypothesis. -/
-example (hL : STLmax sz0 (STflowE z0) (fun _ => 1 / 16)) :
-    ∀ k : ℕ, 2 ≤ k →
-      Prec sz0 (U := fun n => (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n)))
-        (fun n p ω => STomegaC sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) 2 ω *
-          ‖Lloop sz0 n (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n) p.1 p.2 ω‖)
-        (fun n _ _ => (sz0.Bctl n ((fun _ => (1 : ℝ) / 16) n) *
-          (Gauss.etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 16) n) /
-            Gauss.etaT (STflowE z0 n) ((fun _ => (1 : ℝ) / 2) n))) ^ (k - 1)) :=
-  fun k hk => stConArg_holds 3 (1 / 10) (1 / 10) (1 / 10) (1 / 16) 2 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 (fun _ => 1 / 16)
-    (fun _ => 1 / 2) (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num) hL k hk
-
-end RBM.Ind.ConArgInst
 
 end

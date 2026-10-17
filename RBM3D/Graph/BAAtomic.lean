@@ -251,10 +251,6 @@ section ImgDesc
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-theorem BAGraph.BAAtomic_img_g (Γ : BAGraph E I) : Γ.img.g = (promoteC Γ).merge := rfl
-
-theorem BAGraph.BAAtomic_img_ext (Γ : BAGraph E I) : Γ.img.ext = (promoteC Γ).extMap := rfl
-
 private theorem BAAtomic_decide_atomSetoid (Γ : BAGraph E I) (u v : E ⊕ I) :
     @decide (atomSetoid Γ u v) (Classical.propDecidable _) = Γ.sameAtom u v := by
   rw [Bool.eq_iff_iff]
@@ -275,8 +271,6 @@ theorem BAGraph.BAAtomic_img_solid (Γ : BAGraph E I) :
 
 /-- The waved edges of the image: those of `Γ`, relabelled. -/
 theorem BAGraph.BAAtomic_img_waved (Γ : BAGraph E I) : Γ.img.g.waved = Γ.waved.map (WEdge.map (promoteC Γ).vmap) := rfl
-
-theorem BAGraph.BAAtomic_img_coeff (Γ : BAGraph E I) : Γ.img.g.coeff = Γ.coeff := rfl
 
 /-- The `×`-dotted edges of the image: one for every solid edge of `Γ` between two atoms; there is no `=`-dotted edge. -/
 theorem BAGraph.BAAtomic_img_dotted (Γ : BAGraph E I) :
@@ -331,10 +325,6 @@ theorem BAGraph.img_normal (Γ : BAGraph E I) (hN : Γ.Normal) : Γ.img.g.Normal
     rw [Bool.not_eq_true']
     by_contra hh
     exact hne ((BAAtomic_img_loop_iff Γ).2 (by simpa using hh))
-
-/-- **Map property (m0)** (T2397 probe 108): the atomic image of a BA-normal graph is normal and a solid edge is circled iff it is a loop. -/
-def BAImgNormal : Prop :=
-  ∀ P : BAPGraph (Fin 2), P.g.Normal → (BAPGraph.img P).g.Normal ∧ LGraph.CircIffLoop (BAPGraph.img P).g
 
 end ImgDesc
 
@@ -423,12 +413,6 @@ theorem BAGraph.img_molOf_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
       · have : (promoteC Γ).vmap b = (promoteC Γ).vmap c :=
           (BAAtomic_promoteC_vmap_eq_atom Γ b c).2 ((Γ.mem_atom_iff b c).2 (Relation.ReflTransGen.single hat))
         rw [← this]; exact ih
-
-/-- **Map property (m2)** (T2397 probe 118): the molecules of the image are the molecules of the BA graph (`def_poly`, `B:299`;
-`BAGraph.mol`, `BAVocab.lean:125`). -/
-def BAImgMol : Prop :=
-  ∀ (Q : BAPGraph (Fin 2)) (u v : Q.E' ⊕ Q.I'),
-    (promoteC Q.g).merge.molOf ((promoteC Q.g).vmap u) = (promoteC Q.g).merge.molOf ((promoteC Q.g).vmap v) ↔ v ∈ Q.g.mol u
 
 end Mol
 
@@ -558,10 +542,6 @@ variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 /-- An edge of the image: the end vertices are merged, the circle stays iff the ends lie in one atom. -/
 private def BAAtomic_fm (Γ : BAGraph E I) (e : SEdge (E ⊕ I)) : SEdge ((promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls) :=
   ⟨e.σ, e.circ && Γ.sameAtom e.src e.dst, (promoteC Γ).vmap e.src, (promoteC Γ).vmap e.dst⟩
-
-private theorem BAAtomic_merge_dotted (Γ : BAGraph E I) : (promoteC Γ).merge.dotted =
-    (Γ.solid.filter fun e => !Γ.sameAtom e.src e.dst).map fun e =>
-      ⟨false, (promoteC Γ).vmap e.src, (promoteC Γ).vmap e.dst⟩ := Γ.BAAtomic_img_dotted
 
 theorem BAAtomic_merge_solid (Γ : BAGraph E I) : (promoteC Γ).merge.solid = Γ.solid.map (BAAtomic_fm Γ) := Γ.BAAtomic_img_solid
 
@@ -706,280 +686,9 @@ def BAimg : Prop := ∀ {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [De
 theorem BAimg_holds : BAimg := fun Γ =>
   ⟨Γ.img_counters, Γ.img_nLoops, Γ.img_nPairs, Γ.card_extCls, fun hN => (Γ.img_normal hN).1, fun hN => Γ.img_locStd_iff hN⟩
 
-theorem BAImgNormal_holds : BAImgNormal := fun P hN => P.g.img_normal hN
 theorem BAImgCounters_holds : BAImgCounters := fun Q => Q.g.img_counters
-theorem BAImgMol_holds : BAImgMol := fun Q u v => Q.g.img_molOf_eq_iff u v
-
 /-! ## 9. The other construction (T2395 probe 222-227) is the same map -/
 
-section Img95
-
-variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-
-/-- `Γ` with the `Ψ`- and `M`-dotted edges promoted to `=`-dotted edges (T2395 probe 223-224). -/
-private def BAAtomic_dot95 (Γ : BAGraph E I) : LGraph E I :=
-  { Γ.toLGraph with dotted := Γ.dotted ++ (Γ.psi.map (fun e => ⟨true, e.x, e.y⟩) ++ Γ.mdot.map (fun e => ⟨true, e.x, e.y⟩)) }
-
-/-- **The construction of T2395** (probe 222-227): merge the `Ψ`-, `M`-, `=`-dotted edges by the merged `LGraph.mergeP` first, then rebuild
-the solid edges (circled iff a loop) and put a `×`-dotted edge on every non-loop solid edge.  `BAGraph.img95_equiv` shows that this is the
-map `BAGraph.img` up to relabelling the vertices. -/
-def BAGraph.img95 (Γ : BAGraph E I) : PGraph E :=
-  let P := (BAAtomic_dot95 Γ).mergeP
-  let xs : List (DEdge (P.E' ⊕ P.I')) := (P.g.solid.filter (fun e => e.src ≠ e.dst)).map (fun e => ⟨false, e.src, e.dst⟩)
-  let sol : List (SEdge (P.E' ⊕ P.I')) := P.g.solid.map (fun e => ⟨e.σ, decide (e.src = e.dst), e.src, e.dst⟩)
-  { P with g := ⟨sol, P.g.waved, xs, P.g.coeff⟩ }
-
-private theorem BAAtomic_dot95_eqRel_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
-    (BAAtomic_dot95 Γ).EqRel u v ↔ Γ.atomAdj u v = true := by
-  unfold LGraph.EqRel
-  simp only [BAAtomic_dot95, BAGraph.atomAdj, List.mem_append, List.mem_map, Bool.or_eq_true, List.any_eq_true,
-    Bool.and_eq_true, decide_eq_true_eq]
-  constructor
-  · rintro ⟨e, (he | ⟨e', he', rfl⟩ | ⟨e', he', rfl⟩), h2, h3⟩
-    · exact Or.inl (Or.inl ⟨e, he, h2, h3⟩)
-    · exact Or.inl (Or.inr ⟨e', he', h3⟩)
-    · exact Or.inr ⟨e', he', h3⟩
-  · rintro ((⟨e, he, h1, h3⟩ | ⟨e', he', h3⟩) | ⟨e', he', h3⟩)
-    · exact ⟨e, Or.inl he, h1, h3⟩
-    · exact ⟨⟨true, e'.x, e'.y⟩, Or.inr (Or.inl ⟨e', he', rfl⟩), rfl, h3⟩
-    · exact ⟨⟨true, e'.x, e'.y⟩, Or.inr (Or.inr ⟨e', he', rfl⟩), rfl, h3⟩
-
-private theorem BAAtomic_dot95_eqSetoid (Γ : BAGraph E I) : (BAAtomic_dot95 Γ).eqSetoid = (promoteC Γ).eqSetoid := by
-  have h : (BAAtomic_dot95 Γ).EqRel = (promoteC Γ).EqRel := by
-    funext u v
-    exact propext ((BAAtomic_dot95_eqRel_iff Γ u v).trans (BAAtomic_promoteC_eqRel_iff Γ u v).symm)
-  unfold LGraph.eqSetoid
-  rw [h]
-
-/-- The classes of the two constructions correspond. -/
-private def BAAtomic_eC (Γ : BAGraph E I) : (BAAtomic_dot95 Γ).Cls ≃ (promoteC Γ).Cls :=
-  Quotient.congr (Equiv.refl _) (fun a b => by rw [BAAtomic_dot95_eqSetoid Γ]; exact Iff.rfl)
-
-private theorem BAAtomic_eC_cls (Γ : BAGraph E I) (v : E ⊕ I) : BAAtomic_eC Γ ((BAAtomic_dot95 Γ).cls v) = (promoteC Γ).cls v := rfl
-
-private theorem BAAtomic_isExt_iff (Γ : BAGraph E I) (q : (BAAtomic_dot95 Γ).Cls) :
-    (BAAtomic_dot95 Γ).IsExtCls q ↔ (promoteC Γ).IsExtCls (BAAtomic_eC Γ q) := by
-  constructor
-  · rintro ⟨a, rfl⟩
-    exact ⟨a, rfl⟩
-  · rintro ⟨a, ha⟩
-    exact ⟨a, (BAAtomic_eC Γ).injective ha⟩
-
-private def BAAtomic_eE (Γ : BAGraph E I) : (BAAtomic_dot95 Γ).ExtCls ≃ (promoteC Γ).ExtCls :=
-  Equiv.subtypeEquiv (BAAtomic_eC Γ) (BAAtomic_isExt_iff Γ)
-
-private def BAAtomic_eI (Γ : BAGraph E I) : (BAAtomic_dot95 Γ).IntCls ≃ (promoteC Γ).IntCls :=
-  Equiv.subtypeEquiv (BAAtomic_eC Γ) (fun q => not_congr (BAAtomic_isExt_iff Γ q))
-
-private theorem BAAtomic_vmap95 (Γ : BAGraph E I) (v : E ⊕ I) :
-    Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap v) = (promoteC Γ).vmap v := by
-  unfold LGraph.vmap LGraph.vmapC
-  by_cases h : (BAAtomic_dot95 Γ).IsExtCls ((BAAtomic_dot95 Γ).cls v)
-  · have h' : (promoteC Γ).IsExtCls ((promoteC Γ).cls v) := (BAAtomic_isExt_iff Γ _).1 h
-    simp only [h, h', ↓reduceDIte]
-    rfl
-  · have h' : ¬ (promoteC Γ).IsExtCls ((promoteC Γ).cls v) := fun hh => h ((BAAtomic_isExt_iff Γ _).2 hh)
-    simp only [h, h', ↓reduceDIte]
-    rfl
-
-private theorem BAAtomic_vmap95_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
-    (BAAtomic_dot95 Γ).vmap u = (BAAtomic_dot95 Γ).vmap v ↔ Γ.sameAtom u v = true := by
-  have hinj : Function.Injective (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ)) :=
-    Sum.map_injective.2 ⟨(BAAtomic_eE Γ).injective, (BAAtomic_eI Γ).injective⟩
-  rw [← BAAtomic_promoteC_vmap_eq_sameAtom, ← BAAtomic_vmap95 Γ u, ← BAAtomic_vmap95 Γ v]
-  exact hinj.eq_iff.symm
-
-private theorem BAAtomic_merge95_solid (Γ : BAGraph E I) :
-    (BAAtomic_dot95 Γ).merge.solid = Γ.solid.map (SEdge.map (BAAtomic_dot95 Γ).vmap) := rfl
-
-private theorem BAAtomic_lgraph_ext {E' I' : Type} {G H : LGraph E' I'} (h1 : G.solid = H.solid) (h2 : G.waved = H.waved)
-    (h3 : G.dotted = H.dotted) (h4 : G.coeff = H.coeff) : G = H := by
-  cases G; cases H; simp_all
-
-/-- **The two constructions give the same graph up to relabelling and the circles** (L4-C2; T2417 target 2), for every BA graph: there are
-bijections of the external and of the internal vertices of T2395's `img95` and of the one map `img`, compatible with the maps of the external
-vertices, under which the waved edges, the `×`-dotted edges and the coefficient agree (as lists, in the same order) and the solid edges of
-`img95` are those of `img` with the circle of every edge set to "it is a loop" (T2395 circles every loop; `img` keeps the circle of `Γ` on a loop).
-The packed graphs themselves cannot be equal: their vertex types are quotients of `E ⊕ I` by two relations that agree only propositionally
-(T2397 audit D1). -/
-theorem BAGraph.img95_equiv_gen (Γ : BAGraph E I) :
-    ∃ (eE : Γ.img95.E' ≃ Γ.img.E') (eI : Γ.img95.I' ≃ Γ.img.I'),
-      (∀ a, Γ.img.ext a = eE (Γ.img95.ext a)) ∧
-      Γ.img.g.waved = (Γ.img95.g.relabel (Sum.map eE eI)).waved ∧
-      Γ.img.g.dotted = (Γ.img95.g.relabel (Sum.map eE eI)).dotted ∧
-      Γ.img.g.coeff = (Γ.img95.g.relabel (Sum.map eE eI)).coeff ∧
-      (Γ.img95.g.relabel (Sum.map eE eI)).solid = Γ.img.g.solid.map fun e => { e with circ := decide (e.src = e.dst) } := by
-  refine ⟨BAAtomic_eE Γ, BAAtomic_eI Γ, fun a => rfl, ?_, ?_, rfl, ?_⟩
-  · change (promoteC Γ).merge.waved = (LGraph.relabel
-      ⟨(BAAtomic_dot95 Γ).merge.solid.map (fun e => ⟨e.σ, decide (e.src = e.dst), e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.waved,
-        ((BAAtomic_dot95 Γ).merge.solid.filter (fun e => e.src ≠ e.dst)).map (fun e => ⟨false, e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.coeff⟩
-      (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ))).waved
-    dsimp only [LGraph.relabel]
-    change Γ.waved.map (WEdge.map (promoteC Γ).vmap) = ((Γ.waved.map (WEdge.map (BAAtomic_dot95 Γ).vmap)).map _)
-    rw [List.map_map]
-    apply List.map_congr_left
-    intro e _
-    change WEdge.mk e.col e.σ ((promoteC Γ).vmap e.x) ((promoteC Γ).vmap e.y) =
-      WEdge.mk e.col e.σ (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.x))
-        (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.y))
-    rw [BAAtomic_vmap95, BAAtomic_vmap95]
-  · change (promoteC Γ).merge.dotted = (LGraph.relabel
-      ⟨(BAAtomic_dot95 Γ).merge.solid.map (fun e => ⟨e.σ, decide (e.src = e.dst), e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.waved,
-        ((BAAtomic_dot95 Γ).merge.solid.filter (fun e => e.src ≠ e.dst)).map (fun e => ⟨false, e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.coeff⟩
-      (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ))).dotted
-    dsimp only [LGraph.relabel]
-    rw [BAAtomic_merge_dotted, BAAtomic_merge95_solid, List.filter_map, List.map_map, List.map_map]
-    have hf : ∀ e ∈ Γ.solid, (!Γ.sameAtom e.src e.dst) =
-        decide ((SEdge.map (BAAtomic_dot95 Γ).vmap e).src ≠ (SEdge.map (BAAtomic_dot95 Γ).vmap e).dst) := by
-      intro e _
-      rw [Bool.eq_iff_iff, decide_eq_true_iff]
-      change _ ↔ (BAAtomic_dot95 Γ).vmap e.src ≠ (BAAtomic_dot95 Γ).vmap e.dst
-      rw [ne_eq, BAAtomic_vmap95_eq_iff, Bool.not_eq_true']
-      simp
-    rw [List.filter_congr hf]
-    apply List.map_congr_left
-    intro e _
-    change DEdge.mk false ((promoteC Γ).vmap e.src) ((promoteC Γ).vmap e.dst) =
-      DEdge.mk false (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.src))
-        (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.dst))
-    rw [BAAtomic_vmap95, BAAtomic_vmap95]
-  · change (LGraph.relabel
-      ⟨(BAAtomic_dot95 Γ).merge.solid.map (fun e => ⟨e.σ, decide (e.src = e.dst), e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.waved,
-        ((BAAtomic_dot95 Γ).merge.solid.filter (fun e => e.src ≠ e.dst)).map (fun e => ⟨false, e.src, e.dst⟩), (BAAtomic_dot95 Γ).merge.coeff⟩
-      (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ))).solid = (promoteC Γ).merge.solid.map fun e => { e with circ := decide (e.src = e.dst) }
-    dsimp only [LGraph.relabel]
-    rw [BAAtomic_merge_solid, BAAtomic_merge95_solid, List.map_map, List.map_map, List.map_map]
-    apply List.map_congr_left
-    intro e he
-    have h2 : decide ((BAAtomic_dot95 Γ).vmap e.src = (BAAtomic_dot95 Γ).vmap e.dst) =
-        decide ((promoteC Γ).vmap e.src = (promoteC Γ).vmap e.dst) := by
-      rw [Bool.eq_iff_iff, decide_eq_true_iff, decide_eq_true_iff, BAAtomic_vmap95_eq_iff, BAAtomic_promoteC_vmap_eq_sameAtom]
-    change SEdge.mk e.σ (decide ((BAAtomic_dot95 Γ).vmap e.src = (BAAtomic_dot95 Γ).vmap e.dst))
-        (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.src))
-        (Sum.map (BAAtomic_eE Γ) (BAAtomic_eI Γ) ((BAAtomic_dot95 Γ).vmap e.dst)) =
-      SEdge.mk e.σ (decide ((promoteC Γ).vmap e.src = (promoteC Γ).vmap e.dst)) ((promoteC Γ).vmap e.src) ((promoteC Γ).vmap e.dst)
-    rw [h2, BAAtomic_vmap95, BAAtomic_vmap95]
-
-/-- **The two constructions give the same graph up to relabelling** (L4-C2; T2417 target 2), for a BA-normal graph: there are bijections of
-the external and of the internal vertices of T2395's `img95` and of the one map `img`, compatible with the maps of the external vertices,
-that carry the graph of `img95` onto the graph of `img` (record equality: the lists of solid, waved and `×`-dotted edges, in the same order,
-with the same circles, and the coefficient). -/
-theorem BAGraph.img95_equiv (Γ : BAGraph E I) (hN : Γ.Normal) :
-    ∃ (eE : Γ.img95.E' ≃ Γ.img.E') (eI : Γ.img95.I' ≃ Γ.img.I'),
-      (∀ a, Γ.img.ext a = eE (Γ.img95.ext a)) ∧ Γ.img.g = Γ.img95.g.relabel (Sum.map eE eI) := by
-  obtain ⟨eE, eI, hext, hw, hd, hc, hs⟩ := Γ.img95_equiv_gen
-  refine ⟨eE, eI, hext, BAAtomic_lgraph_ext ?_ hw hd hc⟩
-  rw [hs]
-  conv_lhs => rw [← List.map_id Γ.img.g.solid]
-  refine List.map_congr_left fun e he => ?_
-  have h := (Γ.img_normal hN).2 e he
-  obtain ⟨σ, c, a, b⟩ := e
-  cases c <;> simp_all
-
-end Img95
-
 /-! ## 10. Compiled instances: the K1 case (an `M`-edge inside an atom, one between atoms) -/
-
-section Instances
-
-/-- A concrete BA graph (`E = Fin 2`, `I = Fin 3`; external `x = inl 0`, `y = inl 1`, internal `α, β, γ = inr 0, inr 1, inr 2`): solid
-`blue α→β` (inside the atom `{α, β}`, K1), `blue x→α` (between atoms), `red γ→y` (between atoms), `blue γ→γ` (a self-loop), all circled; waved
-`β — γ`; the original `×`-dot `x — α`; the `M`-dotted edge `M_{αβ}`.  Atoms `{x}, {y}, {α, β}, {γ}`. -/
-private def BAAtomic_G0 : BAGraph (Fin 2) (Fin 3) where
-  solid := [⟨true, true, .inr 0, .inr 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inr 2, .inl 1⟩, ⟨true, true, .inr 2, .inr 2⟩]
-  waved := [⟨false, true, .inr 1, .inr 2⟩]
-  dotted := [⟨false, .inl 0, .inr 0⟩]
-  coeff := 1
-  psi := []
-  mdot := [⟨true, .inr 0, .inr 1⟩]
-
-/-- A concrete locally standard BA graph (`E = Fin 2`, `I = Fin 2`): solid `blue x→α`, `red y→β`, `M_{αβ}`; the internal atom `{α, β}` has the
-two edges `[blue, red]` of charge `+1 - 1 = 0`. -/
-private def BAAtomic_G1 : BAGraph (Fin 2) (Fin 2) where
-  solid := [⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inl 1, .inr 1⟩]
-  waved := []
-  dotted := []
-  coeff := 1
-  psi := []
-  mdot := [⟨true, .inr 0, .inr 1⟩]
-
-/-- `G0` with the K1 edge `α→β` uncircled: not BA-normal; here the two constructions of the image differ in the circle of the loop at
-`[α β]` (T2395 circles every loop, `img` keeps the circle of `Γ`). -/
-private def BAAtomic_G2 : BAGraph (Fin 2) (Fin 3) :=
-  { BAAtomic_G0 with solid := [⟨true, false, .inr 0, .inr 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inr 2, .inl 1⟩,
-    ⟨true, true, .inr 2, .inr 2⟩] }
-
-private theorem BAAtomic_G0_normal : BAAtomic_G0.Normal := by decide
-private theorem BAAtomic_G1_normal : BAAtomic_G1.Normal := by decide
-
-/-- The data are nondegenerate: `n_S = 4`, `n_W = 1`, `n_A = 2`, `n_M = 1`, two atom-level loops (the self-loop and the K1 edge), two
-external atoms; `M_{αβ}` is inside the atom `{α, β}` and the atom of `α` contains `β` but not `γ`. -/
-example : BAAtomic_G0.nS = 4 ∧ BAAtomic_G0.nW = 1 ∧ BAAtomic_G0.nA = 2 ∧ BAAtomic_G0.nM = 1 ∧ BAAtomic_G0.nLoops = 2 ∧
-    BAAtomic_G0.nExt = 2 ∧ BAAtomic_G0.nPairs = 0 ∧ Sum.inr 1 ∈ BAAtomic_G0.atom (Sum.inr 0) ∧
-    Sum.inr 2 ∉ BAAtomic_G0.atom (Sum.inr 0) ∧ Sum.inr 2 ∈ BAAtomic_G0.mol (Sum.inr 0) := by decide
-
-/-- **`BAimg` at `G0`** (every deterministic hypothesis discharged: `Γ.Normal`; `G0` is not locally standard). -/
-example : BAAtomic_G0.img.g.counters = BAAtomic_G0.counters ∧ BAAtomic_G0.img.g.lvl1NLoops = BAAtomic_G0.nLoops ∧
-    BAAtomic_G0.img.g.lvl1NPairs = BAAtomic_G0.nPairs ∧ Fintype.card BAAtomic_G0.img.E' = BAAtomic_G0.nExt ∧
-    (BAAtomic_G0.Normal → BAAtomic_G0.img.g.Normal) ∧ (BAAtomic_G0.Normal → (BAAtomic_G0.LocStd ↔ BAAtomic_G0.img.g.LocStd)) :=
-  BAimg_holds BAAtomic_G0
-
-/-- `G1` is locally standard (so is its image), and the image has two external vertices. -/
-example : BAAtomic_G1.LocStd ∧ BAAtomic_G1.img.g.LocStd ∧ Fintype.card BAAtomic_G1.img.E' = 2 ∧ BAAtomic_G1.nPairs = 1 := by
-  have h : BAAtomic_G1.LocStd := by decide
-  refine ⟨h, (BAimg_holds BAAtomic_G1).2.2.2.2.2 BAAtomic_G1_normal |>.1 h, ?_, by decide⟩
-  rw [(BAimg_holds BAAtomic_G1).2.2.2.1]
-  decide
-
-example : ¬ BAAtomic_G0.LocStd ∧ ¬ BAAtomic_G0.img.g.LocStd :=
-  ⟨by decide, fun h => by
-    have : BAAtomic_G0.LocStd := ((BAimg_holds BAAtomic_G0).2.2.2.2.2 BAAtomic_G0_normal).2 h
-    exact absurd this (by decide)⟩
-
-/-- **(m0), (m1), (m2) at the packed graph `baPG G0`.** -/
-example : (BAPGraph.img (baPG BAAtomic_G0)).g.Normal ∧ LGraph.CircIffLoop (BAPGraph.img (baPG BAAtomic_G0)).g :=
-  BAImgNormal_holds (baPG BAAtomic_G0) BAAtomic_G0_normal
-
-example : (BAPGraph.img (baPG BAAtomic_G0)).g.counters = (baPG BAAtomic_G0).g.counters :=
-  BAImgCounters_holds (baPG BAAtomic_G0)
-
-example (u v : (baPG BAAtomic_G0).E' ⊕ (baPG BAAtomic_G0).I') :
-    (promoteC (baPG BAAtomic_G0).g).merge.molOf ((promoteC (baPG BAAtomic_G0).g).vmap u) =
-      (promoteC (baPG BAAtomic_G0).g).merge.molOf ((promoteC (baPG BAAtomic_G0).g).vmap v) ↔ v ∈ (baPG BAAtomic_G0).g.mol u :=
-  BAImgMol_holds (baPG BAAtomic_G0) u v
-
-/-- (m2) at `G0`, `u = α`, `v = γ`: the molecule of the image vertex of `α` contains the image vertex of `γ` (they are joined through the
-waved edge `β — γ` and the atom `{α, β}`). -/
-example : (promoteC BAAtomic_G0).merge.molOf ((promoteC BAAtomic_G0).vmap (Sum.inr 0)) =
-    (promoteC BAAtomic_G0).merge.molOf ((promoteC BAAtomic_G0).vmap (Sum.inr 2)) :=
-  (BAAtomic_G0.img_molOf_eq_iff _ _).2 (by decide)
-
-/-- Target 2 at `G0`: the two constructions agree up to relabelling. -/
-example : ∃ (eE : BAAtomic_G0.img95.E' ≃ BAAtomic_G0.img.E') (eI : BAAtomic_G0.img95.I' ≃ BAAtomic_G0.img.I'),
-    (∀ a, BAAtomic_G0.img.ext a = eE (BAAtomic_G0.img95.ext a)) ∧
-      BAAtomic_G0.img.g = BAAtomic_G0.img95.g.relabel (Sum.map eE eI) :=
-  BAAtomic_G0.img95_equiv BAAtomic_G0_normal
-
-/-- T2397's `img` (probe 48) is `BAPGraph.img` at `E = Fin 2`, by definition. -/
-example (Q : BAPGraph (Fin 2)) : BAPGraph.img Q = ((promoteC Q.g).mergeP).lvl1Comp Q.ext Q.ext_surj := rfl
-
-/-- (m2) read through `(eq:MolVW)` (`LocalRegular.lean:1778`): the vertices and waved edges of a molecule of the image of a normal graph. -/
-example (c : BAAtomic_G0.img.g.Mol) : BAAtomic_G0.img.g.molNV c ≤ BAAtomic_G0.img.g.molNW c + 1 :=
-  LGraph.molNV_le_molNW_add_one _ (BAAtomic_G0.img_normal BAAtomic_G0_normal).1 c
-
-/-- `G2` is not normal, has the same atoms as `G0`, and the general form of target 2 applies to it (the circles are the only difference). -/
-example : ¬ BAAtomic_G2.Normal ∧ BAAtomic_G2.nLoops = 2 ∧ BAAtomic_G2.nExt = 2 := ⟨by decide, by decide, by decide⟩
-
-example := BAAtomic_G2.img95_equiv_gen
-
-/-- At `G2` the image of the one map has an uncircled loop (the circle of `Γ` is kept), where T2395's `img95` circles every loop. -/
-example : ∃ e ∈ BAAtomic_G2.img.g.solid, e.circ = false ∧ e.src = e.dst := by
-  have hs : BAAtomic_G2.sameAtom (Sum.inr 0) (Sum.inr 1) = true := by decide
-  refine ⟨⟨true, false && BAAtomic_G2.sameAtom (Sum.inr 0) (Sum.inr 1), (promoteC BAAtomic_G2).vmap (Sum.inr 0),
-    (promoteC BAAtomic_G2).vmap (Sum.inr 1)⟩, ?_, by simp, (BAAtomic_promoteC_vmap_eq_sameAtom _ _ _).2 hs⟩
-  rw [BAGraph.BAAtomic_img_solid]
-  exact List.mem_map.2 ⟨⟨true, false, .inr 0, .inr 1⟩, by simp [BAAtomic_G2, BAAtomic_G0], rfl⟩
-
-end Instances
 
 end RBM.Graph

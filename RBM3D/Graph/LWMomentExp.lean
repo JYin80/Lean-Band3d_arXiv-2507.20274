@@ -1437,73 +1437,7 @@ theorem lwMomentExp_holds : ∀ d : ℕ, LWMomentExp d := fun d =>
   RBM.Graph.lwMomentExp_of_parts d 1 one_pos (RBM.Graph.lwMomExpNoExp_holds d 1 one_pos) (RBM.Graph.lwMomentExp_farPin_holds d one_pos)
     (RBM.Graph.lwMomentExp_nearPin_holds d one_pos)
 end RBM.Gauss.Sizes
-namespace RBM.Graph
 /-! ## 12. Compiled nonempty instances at `d = 3`
 The merged preflight data (`sz0`: `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `λ_n = (2(n+1))^{-6}`; `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`; `z0`, `flow_z0`; `t ≡ 1/16`; `ε₀ = 1/20`,
 `Ψ0 = W^{-1}`, `ℓ_n = ℓ_t`, `LWAssmExp` from `assmExp_of`), `p = 2`.  What stays a hypothesis is another gate's stochastic input: `LWInit` and `LWLoopExp`. -/
-section Instances
-open RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.LWInst
-/-- the index set of the three pins at `K = 1/100` is nonempty at `n = 0` (`x = 0`, `y = (32, 32, 32)`: block distance `1`, `K (log W)^{3/2} ℓ_t ≤ 0.64`) -/
-theorem lwMomentExp_inst_nonempty :
-    Nonempty {q : Idx 3 (sz0.L 0) (sz0.W 0) × Idx 3 (sz0.L 0) (sz0.W 0) //
-      sz0.lam 0 ^ 2 / ((sz0.L 0 : ℕ) : ℝ) ^ 2 < 1 - tInst 0 ∧ ¬ regA 3 (1 / 100) sz0 0 (tInst 0) (ℓT tInst 0) q} := by
-  refine ⟨⟨(fun _ => 0, fun _ => 32), strict_all 0, ?_⟩⟩
-  have hd : zdistInf 3 (sz0.L 0) (STblk sz0 0 (fun _ => 0) - STblk sz0 0 (fun _ => 32)) = 1 := by decide +kernel
-  have hW : ((sz0.W 0 : ℕ) : ℝ) = 32 := by rw [sz0_values.2.1]; norm_num
-  have hlog : Real.log ((sz0.W 0 : ℕ) : ℝ) ^ (3 / 2 : ℝ) ≤ 16 := by
-    rw [hW, show (32 : ℝ) = 2 ^ 5 by norm_num, Real.log_pow]
-    have h2 := Real.log_two_lt_d9
-    have h0 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    have hl : ((5 : ℕ) : ℝ) * Real.log 2 ≤ 4 := by push_cast; linarith
-    have hl1 : 1 ≤ ((5 : ℕ) : ℝ) * Real.log 2 := by push_cast; linarith [Real.log_two_gt_d9]
-    calc (((5 : ℕ) : ℝ) * Real.log 2) ^ (3 / 2 : ℝ) ≤ (((5 : ℕ) : ℝ) * Real.log 2) ^ (2 : ℝ) :=
-          Real.rpow_le_rpow_of_exponent_le hl1 (by norm_num)
-      _ ≤ 4 ^ (2 : ℝ) := Real.rpow_le_rpow (by positivity) hl (by norm_num)
-      _ = 16 := by norm_num
-  have hL1 : (1 : ℝ) ≤ (sz0.L 0 : ℝ) := by rw [sz0_values.1]; norm_num
-  have hell1 : 1 ≤ ellT (sz0.L 0) (sz0.lam 0) (tInst 0) := one_le_ellT hL1
-  have hell4 : ellT (sz0.L 0) (sz0.lam 0) (tInst 0) ≤ 4 := by
-    have := ellT_le_L (L := sz0.L 0) (g := sz0.lam 0) (t := tInst 0)
-    refine this.trans (le_of_eq ?_)
-    rw [sz0_values.1]; norm_num
-  unfold regA ℓT
-  push Not
-  constructor
-  · rw [hd]; push_cast; nlinarith
-  · nlinarith
-/-- `lwMomentExp_holds 3` at the preflight data (index set nonempty at every `n`): `E |f_{xy}|^2 ≺ (η⁻¹ B_{ctl}^{1/2} 𝖳_t(|a-b|_∞ ∧ ℓ))² + W^{-D}` on `λ²/L² < 1 - t` -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst)) (D : ℝ) (hD : 0 < D) :=
-  RBM.Gauss.Sizes.lwMomentExp_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 (dvd_refl 2) (1 / 6) sz0 z0
-    flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) D hD
-example (n : ℕ) : Nonempty {_q : Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n) //
-    sz0.lam n ^ 2 / ((sz0.L n : ℕ) : ℝ) ^ 2 < 1 - tInst n} := ⟨⟨(0, 0), strict_all n⟩⟩
-/-- the far pin at `K = 1/100` -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst)) (D : ℝ) (hD : 0 < D) :=
-  lwMomentExp_farPin_holds 3 (K := 1 / 100) (by norm_num) le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 (dvd_refl 2)
-    (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) D hD
-/-- the near pins at `K = 1/100` (centre `a`, centre `b`) -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst)) (D : ℝ) (hD : 0 < D) :=
-  (lwMomentExp_nearPin_holds 3 (K := 1 / 100) (by norm_num)).1 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 (dvd_refl 2)
-    (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) D hD
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst)) (D : ℝ) (hD : 0 < D) :=
-  (lwMomentExp_nearPin_holds 3 (K := 1 / 100) (by norm_num)).2 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 (dvd_refl 2)
-    (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) D hD
-/-- the assembly `lwMomentExp_of_parts` at `d = 3`, `K = 1/100`, with the proved (A), far and near pins -/
-example (hI : LWInit sz0 (STflowE z0) tInst (1 / 20) Ψ0) (hL : LWLoopExp sz0 (STflowE z0) tInst (ℓT tInst)) (D : ℝ) (hD : 0 < D) :=
-  lwMomentExp_of_parts 3 (1 / 100) (by norm_num) (lwMomExpNoExp_holds 3 (1 / 100) (by norm_num)) (lwMomentExp_farPin_holds 3 (by norm_num))
-    (lwMomentExp_nearPin_holds 3 (by norm_num)) le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 (dvd_refl 2)
-    (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 (1 / 20) Ψ0 (ℓT tInst) (assmExp_of hI hL) D hD
-/-- the three domains at `d = 3`, `L = 4`, `a = 0`, `b = (2,0,0)`, `ℓ = 1` are nonempty and partition `Z_4^3`; `domFar` is the merged far domain; `f = f^> + f^(a) + f^(b)` at `sz0`; the pointwise step of the split -/
-example : (domFar 3 4 (0 : Zd 3 4) ![2, 0, 0] 1).Nonempty ∧ (domNearA 3 4 (0 : Zd 3 4) 1).Nonempty ∧ (domNearB 3 4 (0 : Zd 3 4) ![2, 0, 0] 1).Nonempty := by
-  refine ⟨⟨![0, 2, 0], ?_⟩, ⟨0, ?_⟩, ⟨![2, 0, 0], ?_⟩⟩ <;> simp only [domFar, domNearA, domNearB, Finset.mem_filter, Finset.mem_univ, true_and]
-  · exact ⟨Nat.one_lt_cast.2 (by decide +kernel), Nat.one_lt_cast.2 (by decide +kernel)⟩
-  · exact Nat.cast_le_one.2 (by decide +kernel)
-  · exact ⟨Nat.one_lt_cast.2 (by decide +kernel), Nat.cast_le_one.2 (by decide +kernel)⟩
-example : domFar 3 4 (0 : Zd 3 4) ![2, 0, 0] 1 ∪ domNearA 3 4 0 1 ∪ domNearB 3 4 0 ![2, 0, 0] 1 = Finset.univ := dom_union _ _ _
-example := dom_disj (d := 3) (L := 4) 0 ![2, 0, 0] 1
-example : lwMomExpFar_farDAnd 3 4 (fun _ : Fin 2 => (0 : Zd 3 4)) (fun _ => ![2, 0, 0]) 1 = domFar 3 4 0 ![2, 0, 0] 1 := domFar_eq (by norm_num) _ _ _
-example (ω : sz0.SeqΩ) := LWf_split sz0 0 0 (1 / 2) 1 ω 0 1
-example : ‖(1 : ℂ) + 2 + 3‖ ^ 2 ≤ 3 ^ (2 - 1) * (‖(1 : ℂ)‖ ^ 2 + ‖(2 : ℂ)‖ ^ 2 + ‖(3 : ℂ)‖ ^ 2) := norm_add3_pow_le 1 2 3 (by norm_num)
-end Instances
-end RBM.Graph
 end

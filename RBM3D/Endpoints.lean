@@ -271,94 +271,12 @@ theorem inv_size_mul_le_calB (hd : 2 ≤ d) {η K : ℝ} (hη : 0 < η) (hK : 0 
     positivity
   linarith
 
-/-- `𝓑_{η,K}` is nonincreasing in the distance `K ≥ 0`. -/
-theorem calB_antitone (hd : 2 ≤ d) {η K K' : ℝ} (hη : 0 < η) (hK : 0 ≤ K) (hKK : K ≤ K') :
-    calB sz n η K' ≤ calB sz n η K := by
-  have hW := W_pos_real sz n
-  have hlam : 0 < sz.lam n ^ 2 + η := by positivity
-  unfold calB
-  have h1 : 0 < K + ((sz.W n : ℕ) : ℝ) := by linarith
-  have h2 : (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) ≤ (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) :=
-    pow_le_pow_left₀ h1.le (by linarith) _
-  have h3 : 0 < ((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) := by positivity
-  have h4 : ((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) ≤
-      ((sz.W n : ℕ) : ℝ) ^ 2 * (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) :=
-    mul_le_mul_of_nonneg_left h2 (by positivity)
-  have : (sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) ≤
-      (sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) :=
-    div_le_div_of_nonneg_left (by positivity) h3 h4
-  linarith
-
 theorem calB_nonneg {η K : ℝ} (hη : 0 < η) (hK : 0 ≤ K) : 0 ≤ calB sz n η K := by
   have hW := W_pos_real sz n
   have hN : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
   have h1 : 0 < K + ((sz.W n : ℕ) : ℝ) := by linarith
   unfold calB
   positivity
-
-/-- **The `L^∞`/`ℓ¹` conversion of the distance in `𝓑_{η,K}`** (T2001e, `1_2:274`; preflight row 4): if
-`0 ≤ K ≤ K' ≤ d K` then `d^{-(d-2)} 𝓑_{η,K} ≤ 𝓑_{η,K'} ≤ 𝓑_{η,K}` (`K' + W ≤ d (K + W)`; the second term of `𝓑` does not
-depend on `K`). -/
-theorem calB_dist_compare (hd : 2 ≤ d) {η K K' : ℝ} (hη : 0 < η) (hK : 0 ≤ K) (hKK : K ≤ K')
-    (hKd : K' ≤ (d : ℝ) * K) :
-    (((d : ℝ) ^ (d - 2))⁻¹) * calB sz n η K ≤ calB sz n η K' ∧ calB sz n η K' ≤ calB sz n η K := by
-  refine ⟨?_, calB_antitone sz n hd hη hK hKK⟩
-  have hW := W_pos_real sz n
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (by omega : 1 ≤ d)
-  have hlam : 0 < sz.lam n ^ 2 + η := by positivity
-  have hK1 : 0 < K + ((sz.W n : ℕ) : ℝ) := by linarith
-  have hK2 : 0 < K' + ((sz.W n : ℕ) : ℝ) := by linarith
-  have hdd : 0 < (d : ℝ) ^ (d - 2) := by positivity
-  have hdd1 : 1 ≤ (d : ℝ) ^ (d - 2) := one_le_pow₀ hd1
-  have h3 : K' + ((sz.W n : ℕ) : ℝ) ≤ (d : ℝ) * (K + ((sz.W n : ℕ) : ℝ)) := by nlinarith
-  have h4 : (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) ≤ (d : ℝ) ^ (d - 2) * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) := by
-    rw [← mul_pow]; exact pow_le_pow_left₀ hK2.le h3 _
-  have hc : 0 < ((sz.W n : ℕ) : ℝ) ^ 2 * (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) := by positivity
-  have hcb : ((sz.W n : ℕ) : ℝ) ^ 2 * (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) ≤
-      ((sz.W n : ℕ) : ℝ) ^ 2 * ((d : ℝ) ^ (d - 2) * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) :=
-    mul_le_mul_of_nonneg_left h4 (by positivity)
-  have hT : ((d : ℝ) ^ (d - 2))⁻¹ *
-        ((sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2))) ≤
-      (sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K' + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) := by
-    have e : ((d : ℝ) ^ (d - 2))⁻¹ *
-        ((sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2))) =
-        (sz.lam n ^ 2 + η)⁻¹ /
-          (((sz.W n : ℕ) : ℝ) ^ 2 * ((d : ℝ) ^ (d - 2) * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2))) := by
-      have h5 : (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2) ≠ 0 := by positivity
-      have h6 : ((sz.W n : ℕ) : ℝ) ≠ 0 := hW.ne'
-      have h7 : (d : ℝ) ^ (d - 2) ≠ 0 := hdd.ne'
-      field_simp
-    rw [e]
-    exact div_le_div_of_nonneg_left (by positivity) hc hcb
-  have hB : 0 ≤ (((sz.size n : ℕ) : ℝ) * η)⁻¹ := by
-    have : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
-    positivity
-  have hB' : ((d : ℝ) ^ (d - 2))⁻¹ * (((sz.size n : ℕ) : ℝ) * η)⁻¹ ≤ (((sz.size n : ℕ) : ℝ) * η)⁻¹ :=
-    mul_le_of_le_one_left hB (inv_le_one_of_one_le₀ hdd1)
-  unfold calB
-  rw [mul_add]
-  exact add_le_add hT hB'
-
-/-- **The conversion at the freeze**: `distB` is `W |a-b|_∞` (merged `zdistInf`, as `STLocalEntry`); the BA endpoints of
-T2161 keep the `ℓ¹` block distance `W |a-b|_1` (`zdistD`).  The merged `zdistInf_le_zdistD`, `zdistD_le_mul_zdistInf`
-(`Defs/Sizes.lean`) give `K ≤ K' ≤ d K`, so the two thresholds differ by at most `d^{d-2}`, which `W^τ` absorbs. -/
-theorem calB_distB_compare (hd : 2 ≤ d) {η : ℝ} (hη : 0 < η) (a b : Zd d (sz.L n)) :
-    (((d : ℝ) ^ (d - 2))⁻¹) * calB sz n η (distB sz n a b) ≤
-        calB sz n η (((sz.W n : ℕ) : ℝ) * ((zdistD d (sz.L n) (a - b) : ℕ) : ℝ)) ∧
-      calB sz n η (((sz.W n : ℕ) : ℝ) * ((zdistD d (sz.L n) (a - b) : ℕ) : ℝ)) ≤ calB sz n η (distB sz n a b) := by
-  have hW := W_pos_real sz n
-  have h1 : ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ) ≤ ((zdistD d (sz.L n) (a - b) : ℕ) : ℝ) := by
-    exact_mod_cast zdistInf_le_zdistD d (sz.L n) (a - b)
-  have h2 : ((zdistD d (sz.L n) (a - b) : ℕ) : ℝ) ≤ (d : ℝ) * ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ) := by
-    exact_mod_cast zdistD_le_mul_zdistInf d (sz.L n) (a - b)
-  refine calB_dist_compare sz n hd hη (by unfold distB; positivity) ?_ ?_
-  · unfold distB
-    exact mul_le_mul_of_nonneg_left h1 hW.le
-  · unfold distB
-    calc ((sz.W n : ℕ) : ℝ) * ((zdistD d (sz.L n) (a - b) : ℕ) : ℝ)
-        ≤ ((sz.W n : ℕ) : ℝ) * ((d : ℝ) * ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ)) :=
-          mul_le_mul_of_nonneg_left h2 hW.le
-      _ = (d : ℝ) * (((sz.W n : ℕ) : ℝ) * ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ)) := by ring
 
 end Scalars
 
@@ -395,26 +313,6 @@ theorem explicit_of_prec {𝔠 : ℝ} (h𝔠 : 0 < 𝔠) {U : ℕ → Type*} {ξ
     ∀ᶠ n in atTop, Sizes.seqP sz {ω | ∃ u, ((sz.W n : ℕ) : ℝ) ^ τ * ζ n u ω < ξ n u ω} ≤
       ENNReal.ofReal (Nsz sz n ^ (-D)) :=
   explicit_of_stochDomAt sz (Sizes.seqP sz) h𝔠 hζ hb h hτ hD
-
-/-- **Explicit ⟹ `Prec`**: `W^{dτ} ≤ N^τ` (`W_rpow_le`), so the explicit form at `d τ` gives `Prec` at `τ`.  Needs
-no `Bandwidth`: the two forms are equivalent for admissible `sz`. -/
-theorem prec_of_explicit (hd : 0 < d) {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
-    (hζ : ∀ n u ω, 0 ≤ ζ n u ω)
-    (h : ∀ τ D : ℝ, 0 < τ → 0 < D → ∀ᶠ n in atTop,
-      Sizes.seqP sz {ω | ∃ u, ((sz.W n : ℕ) : ℝ) ^ τ * ζ n u ω < ξ n u ω} ≤
-        ENNReal.ofReal (Nsz sz n ^ (-D))) :
-    sz.Prec ξ ζ := by
-  intro τ hτ D hD
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
-  filter_upwards [h ((d : ℝ) * τ) D (by positivity) hD] with n hn
-  refine le_trans (measure_mono ?_) hn
-  rintro ω ⟨u, hu⟩
-  refine ⟨u, lt_of_le_of_lt ?_ hu⟩
-  have h1 := Sizes.W_rpow_le sz hd n (τ := (d : ℝ) * τ) (by positivity)
-  have h2 : ((sz.size n : ℕ) : ℝ) ^ ((d : ℝ) * τ / d) = ((sz.size n : ℕ) : ℝ) ^ τ := by
-    congr 1; field_simp
-  rw [h2] at h1
-  exact mul_le_mul_of_nonneg_right h1 (hζ n u ω)
 
 /-- **Sections ⟹ eventually for all** (the diagonal argument that turns `UNMLOut`, which is stated along
 sequences `z : ℕ → ℂ`, into a statement with `N₀` uniform over `𝐃_{κ,ε}`).  Port of RBM2D
@@ -546,17 +444,6 @@ namespace Inst
 
 open RBM.Gauss.SizesInst RBM.Univ.UNInst
 
-/-- The point `z = 1/2 + i N^{-4/5}` of `𝐃_{1/10,1/10}` at `n = 0` (merged `sz0_locDomain`). -/
-def zI : ℂ := ⟨1 / 2, ((sz0.size 0 : ℕ) : ℝ) ^ (-(4 / 5) : ℝ)⟩
-
-theorem zI_dom : sz0.locDomain (1 / 10) (1 / 10) 0 zI := sz0_locDomain
-
-theorem zI_im_pos : 0 < zI.im := locDomain_im_pos zI_dom
-
-theorem zI_im_le : zI.im ≤ 1 := zI_dom.2.2
-
-theorem zI_re_le : |zI.re| ≤ 2 - 1 / 10 := zI_dom.1
-
 /-- **`decol` (Thm 2.1)** at the instance. -/
 theorem inst_decol (h : decol) :
     ∀ᶠ n in atTop, Sizes.seqP sz0 {ω | decolBad sz0 n (1 / 10) (1 / 10) ω} ≤
@@ -625,174 +512,7 @@ theorem inst_bridge_que (h : QUE) :
 
 /-! ### The `(eq:WO)` edges: `ilambda = W^{-d/2+𝔡}` and `ilambda = 𝔡⁻¹` -/
 
-/-- Blocks `L_n = n + 3`, sides `W_n = (n+2)^6`, `(𝔠, 𝔡) = (1/4, 1/5)`: `W ≥ N^{1/4}`; the coupling is set by `withLam`. -/
-def szE : Sizes 3 where
-  L := fun n => n + 3
-  W := fun n => (n + 2) ^ 6
-  lam := fun _ => 1
-  three_le_L := fun n => by omega
-  W_pos := fun n => by positivity
-
-/-- The lower edge of `(eq:WO)`: `ilambda_n = W_n^{-d/2+𝔡}` (`𝔡 = 1/5`, `ilambda → 0`). -/
-def szLo : Sizes 3 := szE.withLam fun n => ((szE.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 5)
-
-/-- The upper edge of `(eq:WO)`: `ilambda_n = 𝔡⁻¹ = 5` (`ilambda > 1`, the footnote `1_2:372` regime). -/
-def szUp : Sizes 3 := szE.withLam fun _ => 5
-
-theorem szE_size_le (n : ℕ) : szE.size n ≤ (szE.W n) ^ 4 := by
-  have h : (n + 3) ^ 3 ≤ (n + 2) ^ 6 := by
-    have h1 : n + 3 ≤ (n + 2) ^ 2 := by nlinarith
-    calc (n + 3) ^ 3 ≤ ((n + 2) ^ 2) ^ 3 := Nat.pow_le_pow_left h1 3
-      _ = (n + 2) ^ 6 := by ring
-  calc szE.size n = ((n + 2) ^ 6 * (n + 3)) ^ 3 := rfl
-    _ = (n + 2) ^ 18 * (n + 3) ^ 3 := by ring
-    _ ≤ (n + 2) ^ 18 * (n + 2) ^ 6 := Nat.mul_le_mul_left _ h
-    _ = ((n + 2) ^ 6) ^ 4 := by ring
-
-theorem szE_bandwidth : szE.Bandwidth (1 / 4) := by
-  refine Eventually.of_forall fun n => ?_
-  have h : ((szE.size n : ℕ) : ℝ) ≤ ((szE.W n : ℕ) : ℝ) ^ 4 := by exact_mod_cast szE_size_le n
-  calc ((szE.size n : ℕ) : ℝ) ^ (1 / 4 : ℝ) ≤ (((szE.W n : ℕ) : ℝ) ^ 4) ^ (1 / 4 : ℝ) :=
-        Real.rpow_le_rpow (Nat.cast_nonneg _) h (by norm_num)
-    _ = (szE.W n : ℝ) := by
-        rw [show (1 / 4 : ℝ) = ((4 : ℕ) : ℝ)⁻¹ by norm_num]
-        exact Real.pow_rpow_inv_natCast (Nat.cast_nonneg _) (by norm_num)
-
-theorem szE_tendsto : szE.SizeTendsto := by
-  refine tendsto_atTop_mono (fun n => ?_) tendsto_natCast_atTop_atTop
-  have h1 : n + 3 ≤ (n + 2) ^ 6 * (n + 3) := Nat.le_mul_of_pos_left _ (by positivity)
-  have h2 : (n + 2) ^ 6 * (n + 3) ≤ ((n + 2) ^ 6 * (n + 3)) ^ 3 := Nat.le_self_pow (by norm_num) _
-  have h3 : n ≤ szE.size n := by
-    change n ≤ ((n + 2) ^ 6 * (n + 3)) ^ 3
-    omega
-  exact_mod_cast h3
-
-theorem szLo_admissible : szLo.Admissible (1 / 4) (1 / 5) := by
-  refine ⟨by norm_num, by norm_num, szE_tendsto, szE_bandwidth, Eventually.of_forall fun n => ⟨le_rfl, ?_⟩⟩
-  have hW : (1 : ℝ) ≤ ((szLo.W n : ℕ) : ℝ) := by exact_mod_cast szLo.W_pos n
-  have h1 : ((szLo.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 5) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos hW (by norm_num)
-  change ((szE.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 5) ≤ (1 / 5 : ℝ)⁻¹
-  have hW' : (1 : ℝ) ≤ ((szE.W n : ℕ) : ℝ) := hW
-  refine (Real.rpow_le_one_of_one_le_of_nonpos hW' (by norm_num)).trans (by norm_num)
-
-theorem szUp_admissible : szUp.Admissible (1 / 4) (1 / 5) := by
-  refine ⟨by norm_num, by norm_num, szE_tendsto, szE_bandwidth, Eventually.of_forall fun n => ⟨?_, by norm_num [szUp, Sizes.withLam]⟩⟩
-  have hW : (1 : ℝ) ≤ ((szE.W n : ℕ) : ℝ) := by exact_mod_cast szE.W_pos n
-  have h1 : ((szE.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2 + 1 / 5) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos hW (by norm_num)
-  exact h1.trans (by norm_num [szUp, Sizes.withLam])
-
-/-- `locSC` at the lower edge `ilambda = W^{-d/2+𝔡}` (`𝔠 = 1/4`, `𝔡 = 1/5`, `ilambda → 0`). -/
-theorem inst_locSC_lo (h : locSC) :
-    ∀ᶠ n in atTop, Sizes.seqP szLo {ω | locBad1 szLo (1 / 10) (1 / 20) (1 / 10) n ω} ≤
-        ENNReal.ofReal (Nsz szLo n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP szLo {ω | locBad2 szLo (1 / 10) (1 / 20) (1 / 10) n ω} ≤ ENNReal.ofReal (Nsz szLo n ^ (-(2 : ℝ))) :=
-  h 3 le_rfl (1 / 4) (1 / 5) szLo szLo_admissible (1 / 10) (1 / 20) (1 / 10) 2 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-
-/-- `locSC` at the upper edge `ilambda = 𝔡⁻¹ = 5` (`ilambda > 1`). -/
-theorem inst_locSC_up (h : locSC) :
-    ∀ᶠ n in atTop, Sizes.seqP szUp {ω | locBad1 szUp (1 / 10) (1 / 20) (1 / 10) n ω} ≤
-        ENNReal.ofReal (Nsz szUp n ^ (-(2 : ℝ))) ∧
-      Sizes.seqP szUp {ω | locBad2 szUp (1 / 10) (1 / 20) (1 / 10) n ω} ≤ ENNReal.ofReal (Nsz szUp n ^ (-(2 : ℝ))) :=
-  h 3 le_rfl (1 / 4) (1 / 5) szUp szUp_admissible (1 / 10) (1 / 20) (1 / 10) 2 (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num)
-
-/-- `QUE` at the upper edge (`ilambda = 5`): `ε₀ = 1/20·(2/3)`, `c = ε₀/2` inside `(0, 𝔡/2) = (0, 1/10)` and
-`(0, ε₀ ∧ 𝔡/5 = 1/25)`. -/
-theorem inst_QUE_up (h : QUE) :
-    ∀ᶠ n in atTop, ∀ E : ℝ, |E| ≤ 2 - 1 / 10 →
-      ∀ a : Zd 3 (szUp.L n),
-        Sizes.seqP szUp {ω | queBadMat 3 (szUp.L n) (szUp.W n) (szUp.lam n) (1 / 15) (1 / 30) E a (szUp.seqXmat n ω)} ≤
-          queBound (szUp.W n) (1 / 5) (1 / 15) (1 / 30) (1 / 10) := by
-  filter_upwards [h 3 le_rfl (1 / 4) (1 / 5) szUp szUp_admissible (1 / 10) (by norm_num) (1 / 15) (1 / 30) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)] with n hn E hE a
-  exact (hn E hE).1 a
-
-
 /-! ### Extreme inputs (TEAM §8 lesson 25) -/
-
-/-- `κ = 2`, `ε = 1`: `𝐃_{2,1}` is the single point `i` (nonempty); the empty domain starts at `κ > 2` or `ε > 1`
-(`locDomain_empty_kappa`, `locDomain_empty_eps`): the ticket's "`κ ≥ 2`, `ε ≥ 1`" is off at equality. -/
-theorem domain_extreme : sz0.locDomain 2 1 0 Complex.I ∧ ¬ sz0.locDomain 3 (1 / 20) 0 zI ∧
-    ¬ sz0.locDomain (1 / 10) 2 0 zI := by
-  refine ⟨⟨by simp, by simp, by simp⟩, locDomain_empty_kappa sz0 (by norm_num) 0 zI,
-    locDomain_empty_eps sz0 (by norm_num) ?_ zI⟩
-  have : (1 : ℝ) < Nsz sz0 0 := by
-    have h := sz0_values.2.2.1
-    simp only [Nsz, h]; norm_num
-  exact this
-
-/-- Over the empty domain (`κ = 3`) the failure event of `(G_bound)` is empty, so the endpoint is vacuous there: the pins are
-tried with a domain that has no points. -/
-theorem locBad1_empty_kappa (n : ℕ) (ω : sz0.SeqΩ) : ¬ locBad1 sz0 3 (1 / 20) (1 / 10) n ω :=
-  fun ⟨z, hz, _⟩ => locDomain_empty_kappa sz0 (by norm_num) n z hz
-
-/-- The window edge `E = ±(2-κ)`: `Im m(E) = √(κ(4-κ))/2` (the constant `κ'` of `thetaDiff` is attained). -/
-theorem im_mE_edge {κ : ℝ} : (mE (2 - κ)).im = Real.sqrt (κ * (4 - κ)) / 2 ∧
-    (mE (-(2 - κ))).im = Real.sqrt (κ * (4 - κ)) / 2 := by
-  refine ⟨?_, ?_⟩ <;> rw [mE_im] <;> congr 2 <;> ring
-
-
-/-- `(Meq:QUE2)` with `A = univ`: the failure event is empty (`∑_a ∑_{x∈[a]} |ψ_k(x)|² = 1 = W^d |univ|/N`, so the
-left side is `0 < W^{d-c}|univ|/N`). -/
-theorem que2BadMat_univ {d L W : ℕ} [NeZero L] [NeZero W] (lam ε₀ c E : ℝ)
-    (M : Matrix (Idx d L W) (Idx d L W) ℂ) : ¬ que2BadMat d L W lam ε₀ c E Finset.univ M := by
-  rintro ⟨μ, ψ, hψ, k, -, hk⟩
-  have hsum : ∀ f : Idx d L W → ℝ, ∑ a : Zd d L, ∑ x ∈ Iblk d L W a, f x = ∑ x, f x := by
-    intro f
-    simp only [Iblk, Finset.sum_filter]
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun x _ => ?_
-    simp
-  have h1 : ∑ x, ‖ψ k x‖ ^ 2 = 1 := by
-    have h := hψ.1 k k
-    simp only [dotProduct, Pi.star_apply, ite_true] at h
-    have h2 : ((∑ x, ‖ψ k x‖ ^ 2 : ℝ) : ℂ) = 1 := by
-      rw [← h]; push_cast
-      refine Finset.sum_congr rfl fun x _ => ?_
-      rw [Complex.star_def, Complex.conj_mul']
-    exact_mod_cast h2
-  have hcard : ((Finset.univ : Finset (Zd d L)).card : ℝ) = (L : ℝ) ^ d := by
-    rw [Finset.card_univ, card_Zd]; push_cast; rfl
-  have hN : (((W * L) ^ d : ℕ) : ℝ) = (W : ℝ) ^ d * (L : ℝ) ^ d := by push_cast; ring
-  have hWp : (0 : ℝ) < (W : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
-  have hLp : (0 : ℝ) < (L : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne L)
-  rw [hsum (fun x => ‖ψ k x‖ ^ 2), h1, hcard, hN] at hk
-  have hz : (W : ℝ) ^ d / ((W : ℝ) ^ d * (L : ℝ) ^ d) * (L : ℝ) ^ d = 1 := by field_simp
-  rw [hz, sub_self, abs_zero] at hk
-  have hpos : 0 < (W : ℝ) ^ ((d : ℝ) - c) * (L : ℝ) ^ d / ((W : ℝ) ^ d * (L : ℝ) ^ d) := by positivity
-  linarith
-
-/-- `(Meq:QUE2)` with `A = ∅` is the event that the window contains an eigenvalue (the inequality `0 ≤ 0` holds): for the zero
-matrix and `E = 0` it is nonempty, so the bound fails; this is why `A ≠ ∅` is part of the statement (T2001f). -/
-theorem que2BadMat_empty_zero {d L W : ℕ} [NeZero L] [NeZero W] (lam ε₀ c : ℝ) (hW : (1 : ℝ) ≤ W) (hlam : 0 ≤ lam) :
-    que2BadMat d L W lam ε₀ c 0 ∅ (0 : Matrix (Idx d L W) (Idx d L W) ℂ) := by
-  refine ⟨fun _ => 0, fun k => Pi.single k 1, isOrthoEigenbasis_zero, 0, ?_, ?_⟩
-  · unfold queWindow
-    have hWp : (0 : ℝ) < (W : ℝ) := by linarith
-    have : 0 ≤ (W : ℝ) ^ (-ε₀) * (lam * (W : ℝ) ^ ((d : ℝ) / 2) / (((W * L) ^ d : ℕ) : ℝ)) := by positivity
-    simpa using this
-  · simp
-
-
-/-- `𝓑_{η,0} = Bctl n (1 - η)` and the floor `(Nη)⁻¹ ≤ 𝓑` at `n = 0`, `η = 1/2`. -/
-theorem inst_calB :
-    calB sz0 0 (1 / 2) 0 = sz0.Bctl 0 (1 - 1 / 2) ∧
-      (((sz0.size 0 : ℕ) : ℝ) * (1 / 2))⁻¹ ≤ calB sz0 0 (1 / 2) 0 :=
-  ⟨calB_zero_eq_Bctl sz0 0 (by norm_num) (by norm_num),
-    inv_size_mul_le_calB sz0 0 (by norm_num) (by norm_num) le_rfl⟩
-
-/-- The `L^∞`/`ℓ¹` conversion at `n = 0`, `η = 1/2` and every pair of blocks of `Z_4^3`: the factor is `3^{-1}`
-(`d^{-(d-2)}` at `d = 3`). -/
-theorem inst_distB_compare (a b : Zd 3 (sz0.L 0)) :
-    (((3 : ℕ) : ℝ) ^ (3 - 2))⁻¹ * calB sz0 0 (1 / 2) (distB sz0 0 a b) ≤
-        calB sz0 0 (1 / 2) (((sz0.W 0 : ℕ) : ℝ) * ((zdistD 3 (sz0.L 0) (a - b) : ℕ) : ℝ)) ∧
-      calB sz0 0 (1 / 2) (((sz0.W 0 : ℕ) : ℝ) * ((zdistD 3 (sz0.L 0) (a - b) : ℕ) : ℝ)) ≤
-        calB sz0 0 (1 / 2) (distB sz0 0 a b) :=
-  calB_distB_compare sz0 0 (by norm_num) (by norm_num) a b
-
 
 end Inst
 
