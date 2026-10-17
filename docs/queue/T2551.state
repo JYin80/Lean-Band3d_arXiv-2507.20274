@@ -1,0 +1,4 @@
+state: audit-pass
+reason: prover 92a1e2cb; audit round 1 RETURN (section docstring at FinalShape.lean:128 still said "Four of the five conjuncts"); one rule-(B) repair 3b9ebf4a; audit round 2 PASS (claude-opus-5-5, wf_d9cfe374-4d1); merging (rule A), full lake build running.
+updated: Sat Oct 17 09:25:09 UTC 2026
+reports: docs/reports/T2551-prove.md, docs/reports/T2551-audit.md

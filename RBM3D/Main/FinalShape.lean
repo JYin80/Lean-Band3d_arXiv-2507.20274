@@ -24,7 +24,7 @@ every conjunct is a theorem proved elsewhere.
 
 The instances at the end apply the conjuncts at concrete data.  At `d = 3` all five block Anderson
 conjuncts are applied on the class sequence `S0` (`L = 4`, `W_n = (2(n+1))⁵`, constant coupling
-`λ = g₀`), `(𝔠, 𝔡) = (1/6, 1/10)`, and at `d = 4` four of the five conjuncts (decol, locSC, QUE,
+`λ = g₀`), `(𝔠, 𝔡) = (1/6, 1/10)`, and at `d = 4` all five conjuncts (decol, locSC, QUE, BUniv,
 QDiff) are applied on the class sequence with `L = 4`, `W_n = (2(n+1))⁵`, `(𝔠, 𝔡) = (1/8, 1/10)`,
 over a bulk proved to be nonempty.  Only `UNL32` stays a
 hypothesis.
@@ -125,8 +125,8 @@ end BAInstances
 The class sequence at `d = 4` (the analogue of `clsSz` at `d = 3`): constant block size `L = 4`, bandwidth `W_n = (2(n+1))^5` and
 constant coupling `g₀`.  The bulk is nonempty: a real-axis solution of `(self_m)` at `(d, L) = (4, 4)` is built from the
 subordination point `w = 6i/5` (`BASelf_subord`, `BAzztE_data`, as `exists_flowPt` does at `d = 3`), and `BAbulk_iff_exists` turns it
-into `BAbulk 4 4 g₀ κ E` with `κ = Im m₀ / π > 0`, for every `n`.  Four of the five conjuncts of `Thm27 4`
-(decol, locSC, QUE, QDiff) are applied over it. -/
+into `BAbulk 4 4 g₀ κ E` with `κ = Im m₀ / π > 0`, for every `n`.  All five conjuncts of `Thm27 4`
+(decol, locSC, QUE, BUniv, QDiff) are applied over it, `BUniv` at `k = 1`, `E' = 0`, `𝒪 = UNInst.bump`. -/
 
 section D4Instance
 
@@ -212,8 +212,8 @@ private theorem FinalShape_dom4 {g0 E κ ε : ℝ} (hε : ε ≤ 1) (hb : BAbulk
   exact Real.rpow_le_one_of_one_le_of_nonpos hN (by linarith)
 
 /-- **The `d = 4` instance of `Thm27`**: `Sizes 4` data `FinalShape_cls4 g₀` admissible at `(1/8, 1/10)`, a
-**nonempty bulk** `BAbulk 4 4 g₀ κ E` (every `n`) and nonempty end domains, and four of the five conjuncts of
-`(final_shape h32).2 4` (decol, locSC, QUE, QDiff) applied at it; `UNL32` is the only hypothesis. -/
+**nonempty bulk** `BAbulk 4 4 g₀ κ E` (every `n`) and nonempty end domains, and all five conjuncts of
+`(final_shape h32).2 4` (decol, locSC, QUE, BUniv, QDiff) applied at it; `UNL32` is the only hypothesis. -/
 example (h32 : UNL32) : ∃ g0 E κ : ℝ, 0 < κ ∧ (FinalShape_cls4 g0).Admissible (1 / 8) (1 / 10) ∧
     (∀ᶠ n in atTop, BAbulk 4 ((FinalShape_cls4 g0).L n) ((FinalShape_cls4 g0).lam n) κ E) ∧
     ∀ n, ∃ z : ℂ, BAendDom (FinalShape_cls4 g0) κ (1 / 10) n z := by
@@ -225,6 +225,8 @@ example (h32 : UNL32) : ∃ g0 E κ : ℝ, 0 < κ ∧ (FinalShape_cls4 g0).Admis
     (by norm_num)
   have _ := h.2.2.1 (by norm_num) (1 / 8) (1 / 10) (FinalShape_cls4 g0) hadm κ hκ (1 / 30) (1 / 60) (1 / 300)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+  have _ := h.2.2.2.1 (by norm_num) (1 / 8) (1 / 10) (FinalShape_cls4 g0) hadm 1 le_rfl κ hκ E (Eventually.of_forall fun _ => hb) 0
+    (by norm_num) UNInst.bump UNInst.bump_testFun
   have _ := h.2.2.2.2 (by norm_num) (1 / 8) (1 / 10) (FinalShape_cls4 g0) hadm κ (1 / 20) (1 / 10) 2 hκ (by norm_num) (by norm_num)
     (by norm_num)
   exact ⟨g0, E, κ, hκ, hadm, Eventually.of_forall fun _ => hb, FinalShape_dom4 (by norm_num) hb⟩
