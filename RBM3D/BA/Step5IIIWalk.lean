@@ -84,8 +84,8 @@ theorem baStep5III_EMatrix_level (d : ℕ) :
   fun sz lam0 E n u D D' Λ K₀ J θ Cd H hD h => baStep5III_matrix_level d sz lam0 E n u D D' Λ K₀ J θ Cd H hD h
 
 /-- **Target 1 (b)** (`T2493_GoodBundle`): U5c's good event `BAStep5IIIGood` with its matrix part read as `BAStep5IIIEMatrix` (definitional). -/
-theorem baStep5IIIGood_bundle :
-    ∀ (sz : Sizes 3) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ), BAStep5IIIGood sz z s t D Cd →
+theorem baStep5IIIGood_bundle {d : ℕ} :
+    ∀ (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ), BAStep5IIIGood sz z s t D Cd →
       ∀ τ' D₁ θ : ℝ, 0 < τ' → 0 < D₁ → 0 < θ → θ < 1 → ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∃ G : Set sz.SeqΩ,
         Sizes.seqP (sz.withLam 0) Gᶜ ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D₁)) ∧ ∀ ω ∈ G,
           BAStep5IIIEMatrix sz (BAflowLam0 sz z) (BAflowEs sz z) n (u : ℝ) D (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ')
@@ -99,7 +99,7 @@ theorem baStep5IIIGood_bundle :
 /-- The good event of U5c at a flow: `baStep5IIIGoodThm_holds` read as a statement about the good event itself (its arguments are the
 arguments of `BAStep5IIIGoodThm`; the four carrier predicates are other gates' pins and stay hypotheses).  Its conclusion head is
 `BAStep5IIIGood`. -/
-theorem Step5IIIWalk_good_of_flow (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes 3) (z : ℕ → ℂ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
+theorem Step5IIIWalk_good_of_flow {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
     (hCd : 0 < Cd) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ) (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
     (hT : ∀ n, t n ≤ BAflowT0 sz z n) (hReg : STReg5III sz s t)
     (hAvg : STAvgUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t)
@@ -107,7 +107,7 @@ theorem Step5IIIWalk_good_of_flow (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes 3) (z :
     (hLK : STLKUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t)
     (hDec : STGdecayWgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Cd) (D : ℝ) (hD : 0 < D) :
     BAStep5IIIGood sz z s t D Cd :=
-  baStep5IIIGoodThm_holds κ ε 𝔠 𝔡 Cd sz z hκ hε h𝔡 hCd hflow s t hs hst hT hReg hAvg hLmax hLK hDec D hD
+  baStep5IIIGoodThm_holds d hd κ ε 𝔠 𝔡 Cd sz z hκ hε h𝔡 hCd hflow s t hs hst hT hReg hAvg hLmax hLK hDec D hD
 
 /-- The Hermitian matrices are a measurable (closed) set (copy of `EigenMeasurable.measurableSet_isHermitian`,
 `Universality/EigenMeasurable.lean:295`, private there). -/
@@ -250,11 +250,11 @@ section WalkLevel
 `J♯(u, D_u) < W^{ε₀}` (`ε₀ ≤ 1/2`), both bundle parts hold at the walk level `D_u = D* + 2 log_W (1-u)` with the control `J♯(u, D_u)` and
 `Λ = K₀ = N^{τ'}`.  The matrix part is U5c target 2 (`D_u ≤ D*` for `u ≥ 0`); the scalar part is U5c target 4 at `D* - 6`, with
 `1 - u ≥ lam² ≥ W^{-3}` giving `D_u ≥ D* - 6`. -/
-theorem baStep5III_walkLevel :
-    ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes 3) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
+theorem baStep5III_walkLevel (d : ℕ) (hd : 3 ≤ d) :
+    ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
       STReg5III sz s t → ∀ Dst τ' θ Cd ε₀ : ℝ, 0 ≤ τ' → ε₀ ≤ 1 / 2 →
-      (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ 3 * ((sz.W n : ℕ) : ℝ) ^ (6 * 3)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ (Dst - 2 * 3)) →
-      ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (H : Matrix (Idx 3 (sz.L n) (sz.W n)) (Idx 3 (sz.L n) (sz.W n)) ℂ),
+      (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ (Dst - 2 * (d : ℝ))) →
+      ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
         BAStep5IIIEMatrix sz (BAflowLam0 sz z) (BAflowEs sz z) n (u : ℝ) Dst (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ')
           (BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n Dst (u : ℝ) H) θ Cd H →
         BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) (u : ℝ) H <
@@ -266,36 +266,36 @@ theorem baStep5III_walkLevel :
             (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ')
             (BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) (u : ℝ) H) θ Cd H := by
   intro κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg Dst τ' θ Cd ε₀ hτ' hε₀ hfl
-  have hsc := baStep5III_scalar_flow κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg (Dst - 2 * 3) τ' hτ' hfl
+  have hsc := baStep5III_scalar_flow d hd κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg (Dst - 2 * (d : ℝ)) τ' hτ' hfl
   filter_upwards [hsc] with n hn u H hmat hJ
   have hW1' : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
   have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith
   have hWhalf : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ) := Real.one_le_rpow hW1' (by norm_num)
   -- the scalar part at the crude level `D* - 6` with `J = 1`: `0 ≤ u < 1`, `lam² ≤ 1 - u`, `1 ≤ lam² W³`, `4 ≤ log W`
-  obtain ⟨-, hu0, hu1, -, hreg, hA, -, -, hlog, -, -, -⟩ := hn u (Dst - 2 * 3) 1 le_rfl le_rfl hWhalf
+  obtain ⟨-, hu0, hu1, -, hreg, hA, -, -, hlog, -, -, -⟩ := hn u (Dst - 2 * (d : ℝ)) 1 le_rfl le_rfl hWhalf
   have hW1 : 1 < ((sz.W n : ℕ) : ℝ) := by
     by_contra hcon
     have := Real.log_nonpos hW0.le (not_lt.1 hcon)
     linarith
   -- the level `D_u ∈ [D* - 6, D*]`
-  have hlv := pfStep5Grid_level 3 ((sz.W n : ℕ) : ℝ) Dst (u : ℝ) (u : ℝ) hW1 le_rfl hu1
-  have hWdl : ((sz.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ)) ≤ 1 - (u : ℝ) := by
-    have hWd : 0 < ((sz.W n : ℕ) : ℝ) ^ 3 := pow_pos hW0 3
+  have hlv := pfStep5Grid_level d ((sz.W n : ℕ) : ℝ) Dst (u : ℝ) (u : ℝ) hW1 le_rfl hu1
+  have hWdl : ((sz.W n : ℕ) : ℝ) ^ (-((d : ℕ) : ℝ)) ≤ 1 - (u : ℝ) := by
+    have hWd : 0 < ((sz.W n : ℕ) : ℝ) ^ d := pow_pos hW0 d
     rw [Real.rpow_neg hW0.le, Real.rpow_natCast]
-    have : (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz.lam n ^ 2 := by
+    have : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.lam n ^ 2 := by
       rw [inv_le_iff_one_le_mul₀' hWd]; nlinarith
     linarith
-  have hlow : Dst - 2 * 3 ≤ PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ) := by
+  have hlow : Dst - 2 * (d : ℝ) ≤ PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ) := by
     have := hlv.2.2.2 hWdl
     norm_num at this ⊢
     linarith
   have hup : PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ) ≤ Dst := hlv.2.2.1 hu0
-  have hJ1 := (baStep5IIIJsharp_spec 3 sz (BAflowLam0 sz z) (BAflowEs sz z) n
+  have hJ1 := (baStep5IIIJsharp_spec d sz (BAflowLam0 sz z) (BAflowEs sz z) n
     (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) (u : ℝ) H).1
   have hJW : BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) (u : ℝ) H ≤
       ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ) :=
     hJ.le.trans (Real.rpow_le_rpow_of_exponent_le hW1' hε₀)
-  exact ⟨hn u _ _ hlow hJ1 hJW, baStep5III_matrix_level 3 sz (BAflowLam0 sz z) (BAflowEs sz z) n (u : ℝ) Dst _ _ _ _ θ Cd H hup hmat⟩
+  exact ⟨hn u _ _ hlow hJ1 hJW, baStep5III_matrix_level d sz (BAflowLam0 sz z) (BAflowEs sz z) n (u : ℝ) Dst _ _ _ _ θ Cd H hup hmat⟩
 
 end WalkLevel
 
@@ -1293,35 +1293,35 @@ theorem Step5IIIWalk_pertime_det {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {lam0 E
 the matrix part at the crude level `D*` and `J♯(u, D_u) < W^{ε₀}` give (target 4, `baStep5III_walkLevel`, then
 `Step5IIIWalk_pertime_det` at `Λ = K₀ = N^{τ'}`, `J = J♯(u, D_u)`) the drift and quadratic-variation bounds at the level `D_u`, for `Q_n` above
 the loss `lossE2wG · W^{2θ'} S_θ`. -/
-theorem Step5IIIWalk_pertime (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes 3) (z : ℕ → ℂ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ)
+theorem Step5IIIWalk_pertime {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ)
     (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (hReg : STReg5III sz s t) (Dst τ' θ Cd ε₀ : ℝ) (hτ' : 0 ≤ τ') (hε₀ : 0 ≤ ε₀)
     (hε₀h : ε₀ ≤ 1 / 2) (hθ : 0 < θ) (hCd : 0 < Cd)
-    (hfl : ∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ 3 * ((sz.W n : ℕ) : ℝ) ^ (6 * 3)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ (Dst - 2 * 3))
+    (hfl : ∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ (Dst - 2 * (d : ℝ)))
     (Q : ℕ → ℝ)
-    (hQ : ∀ᶠ n in atTop, lossE2wG 3 (sz.L n) (sz.W n) (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ') *
-        (((sz.W n : ℕ) : ℝ) ^ (2 * (θ * (((3 : ℕ) : ℝ) * (Cd + 1)))) *
-          ∑ y : Zd 3 (sz.L n), Real.exp (-(θ / 2 * Real.sqrt (zdistInf 3 (sz.L n) y : ℝ)))) ≤ Q n) :
-    ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (H : Matrix (Idx 3 (sz.L n) (sz.W n)) (Idx 3 (sz.L n) (sz.W n)) ℂ),
+    (hQ : ∀ᶠ n in atTop, lossE2wG d (sz.L n) (sz.W n) (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ') *
+        (((sz.W n : ℕ) : ℝ) ^ (2 * (θ * (((d : ℕ) : ℝ) * (Cd + 1)))) *
+          ∑ y : Zd d (sz.L n), Real.exp (-(θ / 2 * Real.sqrt (zdistInf d (sz.L n) y : ℝ)))) ≤ Q n) :
+    ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
       BAStep5IIIEMatrix sz (BAflowLam0 sz z) (BAflowEs sz z) n (u : ℝ) Dst (((sz.size n : ℕ) : ℝ) ^ τ') (((sz.size n : ℕ) : ℝ) ^ τ')
         (BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n Dst (u : ℝ) H) θ Cd H →
       BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) (u : ℝ) H <
         ((sz.W n : ℕ) : ℝ) ^ ε₀ →
-      (∀ (σ : Fin 2 → Bool) (b : Fin 2 → Zd 3 (sz.L n)),
-        ‖STelklkMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H (KLloopOf 3 (sz.L n) σ b) +
-            STegtMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H (KLloopOf 3 (sz.L n) σ b)‖ ≤
-          Q n * (((sz.W n : ℕ) : ℝ) ^ (2 * ε₀) * (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((1 - (u : ℝ))⁻¹) ^ 2 + (1 - (u : ℝ))⁻¹ +
-            ((sz.W n : ℕ) : ℝ) ^ (3 * ε₀ / 2) * ((((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) ^ (1 / 2 : ℝ) *
+      (∀ (σ : Fin 2 → Bool) (b : Fin 2 → Zd d (sz.L n)),
+        ‖STelklkMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H (KLloopOf d (sz.L n) σ b) +
+            STegtMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H (KLloopOf d (sz.L n) σ b)‖ ≤
+          Q n * (((sz.W n : ℕ) : ℝ) ^ (2 * ε₀) * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((1 - (u : ℝ))⁻¹) ^ 2 + (1 - (u : ℝ))⁻¹ +
+            ((sz.W n : ℕ) : ℝ) ^ (3 * ε₀ / 2) * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (1 / 2 : ℝ) *
               ((1 - (u : ℝ))⁻¹) ^ (3 / 2 : ℝ)) *
             STtailTD sz n (u : ℝ) (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) b) ∧
-      (∀ (σ : Fin 2 → Bool) (b b' : Fin 2 → Zd 3 (sz.L n)),
-        (∀ i : Fin 2, (zdistInf 3 (sz.L n) (b i - b' i) : ℝ) ≤ 2 * Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)) →
+      (∀ (σ : Fin 2 → Bool) (b b' : Fin 2 → Zd d (sz.L n)),
+        (∀ i : Fin 2, (zdistInf d (sz.L n) (b i - b' i) : ℝ) ≤ 2 * Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ)) →
         ‖STeeMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ b b'‖ ≤
-          Q n * ((1 - (u : ℝ))⁻¹ + ((sz.W n : ℕ) : ℝ) ^ (3 * ε₀) * ((((sz.W n : ℕ) : ℝ) ^ 3)⁻¹) ^ (1 / 2 : ℝ) *
+          Q n * ((1 - (u : ℝ))⁻¹ + ((sz.W n : ℕ) : ℝ) ^ (3 * ε₀) * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (1 / 2 : ℝ) *
             ((1 - (u : ℝ))⁻¹) ^ (3 / 2 : ℝ)) *
             STtailTD sz n (u : ℝ) (PfStep5Grid_level ((sz.W n : ℕ) : ℝ) Dst (u : ℝ)) b ^ 2) := by
-  filter_upwards [baStep5III_walkLevel κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg Dst τ' θ Cd ε₀ hτ' hε₀h hfl, hQ] with n hn hQn u H hmat hJ
+  filter_upwards [baStep5III_walkLevel d hd κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg Dst τ' θ Cd ε₀ hτ' hε₀h hfl, hQ] with n hn hQn u H hmat hJ
   obtain ⟨hsc, hmat'⟩ := hn u H hmat hJ
-  exact Step5IIIWalk_pertime_det (d := 3) le_rfl hθ hCd hsc hmat' hε₀ hJ.le hQn
+  exact Step5IIIWalk_pertime_det (d := d) hd hθ hCd hsc hmat' hε₀ hJ.le hQn
 
 /-- **The good event at a grid index, transferred to the grid walk** (targets 1-2 and `Step2EventsGenTw_baLaw`): if `G ⊆ SeqΩ` has mass `≥ 1 - c`
 and the matrix part at the realized control holds at `H = seqHflowBA ω` for `ω ∈ G`, then off an event of probability `≤ c` the grid state

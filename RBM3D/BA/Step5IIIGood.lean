@@ -64,6 +64,8 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
+variable {d : ℕ}
+
 /-! ## 1. Real-analysis helpers -/
 
 section Helpers
@@ -390,29 +392,29 @@ section Good
 written out, `J♯` the realized control and the matrix part written inline): for `τ', D₁ > 0` and `0 < θ < 1`, eventually, at every
 `u ∈ [s_n, t_n]`, an event `G` with `seqP (sz.withLam 0) Gᶜ ≤ N^{-D₁}` on which the matrix part of U5b's bundle holds at
 `H = seqHflowBA`, `Λ = K₀ = N^{τ'}`, `J = J♯_{u,D}(H)`. -/
-def BAStep5IIIGood (sz : Sizes 3) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ) : Prop :=
+def BAStep5IIIGood (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ) : Prop :=
   ∀ τ' D₁ θ : ℝ, 0 < τ' → 0 < D₁ → 0 < θ → θ < 1 → ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∃ G : Set sz.SeqΩ,
     Sizes.seqP (sz.withLam 0) Gᶜ ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D₁)) ∧ ∀ ω ∈ G,
       let H := sz.seqHflowBA (BAflowLam0 sz z) n (u : ℝ) ω;
       let J := BAStep5IIIJsharp sz (BAflowLam0 sz z) (BAflowEs sz z) n D (u : ℝ) H;
-      H.IsHermitian ∧ (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz.L n)), ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ J * STtailTD sz n (u : ℝ) D a) ∧
-      (∀ a b : Zd 3 (sz.L n), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).K n (u : ℝ) ![true, false] ![a, b]‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ∧
-      (∀ a b : Zd 3 (sz.L n), Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) ≤ (zdistInf 3 (sz.L n) (a - b) : ℝ) →
+      H.IsHermitian ∧ (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ J * STtailTD sz n (u : ℝ) D a) ∧
+      (∀ a b : Zd d (sz.L n), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).K n (u : ℝ) ![true, false] ![a, b]‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ∧
+      (∀ a b : Zd d (sz.L n), Real.log ((sz.W n : ℕ) : ℝ) ^ (3 / 2 : ℝ) ≤ (zdistInf d (sz.L n) (a - b) : ℝ) →
         ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).K n (u : ℝ) ![true, false] ![a, b]‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D)) ∧
-      (∀ (σ : Bool) (a : Zd 3 (sz.L n)), ‖STavgMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ∧
-      (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ∧
-      (∀ (σ : Fin 3 → Bool) (a : Fin 3 → Zd 3 (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ^ 2) ∧
-      (∀ (σ : Fin 4 → Bool) (a : Fin 4 → Zd 3 (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ^ 3) ∧
-      (∀ (σ : Fin 6 → Bool) (a : Fin 6 → Zd 3 (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ^ 5) ∧
-      (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz.L n)), ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (θ * (((3 : ℕ) : ℝ) * (Cd + 1))) * ((sz.size n : ℕ) : ℝ) ^ τ' *
-        ((((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) ^ 2 * Real.exp (-(θ * Real.sqrt (zdistInf 3 (sz.L n) (a 0 - a 1) : ℝ))) + ((sz.W n : ℕ) : ℝ) ^ (-D))
+      (∀ (σ : Bool) (a : Zd d (sz.L n)), ‖STavgMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ∧
+      (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ∧
+      (∀ (σ : Fin 3 → Bool) (a : Fin 3 → Zd d (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ^ 2) ∧
+      (∀ (σ : Fin 4 → Bool) (a : Fin 4 → Zd d (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ^ 3) ∧
+      (∀ (σ : Fin 6 → Bool) (a : Fin 6 → Zd d (sz.L n)), ‖(baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).LM n (u : ℝ) H σ a‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ^ 5) ∧
+      (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (θ * (((d : ℕ) : ℝ) * (Cd + 1))) * ((sz.size n : ℕ) : ℝ) ^ τ' *
+        ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ^ 2 * Real.exp (-(θ * Real.sqrt (zdistInf d (sz.L n) (a 0 - a 1) : ℝ))) + ((sz.W n : ℕ) : ℝ) ^ (-D))
 
 /-- **Target 3** (content binding `T2485_BAGoodThm`; the probe's `T2459_BAgoodThm`, `:191`, with four corrections): the merged
 `STLmaxUgL`, `STLKUgL` replace the probe-local copies; `0 < ε`, `0 < 𝔡` (for `baEMn2ExpHK`, `baKbound_holds`) and `0 < Cd` (for (vi))
 are added; `STKboundgL` is not a hypothesis (merged at BA: `baKbound_holds`).  The Steps 2-4 inputs are exactly the carrier
 predicates of `STIngR5gL` (`Chain/Step5Gen.lean:191`). -/
-def BAStep5IIIGoodThm : Prop :=
-  ∀ (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes 3) (z : ℕ → ℂ), 0 < κ → 0 < ε → 0 < 𝔡 → 0 < Cd → BAFlow sz κ ε 𝔠 𝔡 z →
+def BAStep5IIIGoodThm (d : ℕ) : Prop :=
+  3 ≤ d → ∀ (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → 0 < ε → 0 < 𝔡 → 0 < Cd → BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ BAflowT0 sz z n) → STReg5III sz s t →
       STAvgUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t → STLmaxUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t →
       STLKUgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t → STGdecayWgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t Cd →
@@ -431,8 +433,8 @@ theorem Step5IIIGood_Wpow (d : ℕ) {W : ℝ} (hW : 0 ≤ W) (θ Cd : ℝ) :
     (W ^ d) ^ (θ * (Cd + 1)) = W ^ (θ * ((d : ℝ) * (Cd + 1))) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hW]; congr 1; ring
 
-theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
-  intro κ ε 𝔠 𝔡 Cd sz z hκ hε h𝔡 hCd hflow s t hs hst hT hReg hAvg hLmax hLK hDec D hD τ' D₁ θ hτ' hD₁ hθ0 hθ1
+theorem baStep5IIIGoodThm_holds (d : ℕ) : BAStep5IIIGoodThm d := by
+  intro hd κ ε 𝔠 𝔡 Cd sz z hκ hε h𝔡 hCd hflow s t hs hst hT hReg hAvg hLmax hLK hDec D hD τ' D₁ θ hτ' hD₁ hθ0 hθ1
   obtain ⟨h𝔠, -, hsize, hband, hWO⟩ := hflow.1
   have hτ₀ : 0 < τ' / 2 := by linarith
   have hD1 : 0 < D₁ + 1 := by linarith
@@ -446,25 +448,25 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
   have eDec := Step5IIIGood_event (hDec (D + τ' / 𝔠) hD'') hτ₀ hD1
   have hT1 : ∀ n, t n < 1 := fun n => (hT n).trans_lt (EMn2BA_T0_lt_one hκ sz hflow n)
   -- (ii): `‖𝒦^{(2)}_{(+,-)}‖ ≤ N^{τ'/2} Bctl`, deterministic, uniform in `u` (violator sequence)
-  have hii : ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, 2 ≤ sz.size n → ∀ a b : Zd 3 (sz.L n),
+  have hii : ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, 2 ≤ sz.size n → ∀ a b : Zd d (sz.L n),
       ‖(baFMz sz z).K n (u : ℝ) ![true, false] ![a, b]‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ' / 2) * sz.Bctl n (u : ℝ) ^ 1 := by
-    refine Step5IIIGood_uniform (fun n => (hst n).le) (fun n u => 2 ≤ sz.size n → ∀ a b : Zd 3 (sz.L n),
+    refine Step5IIIGood_uniform (fun n => (hst n).le) (fun n u => 2 ≤ sz.size n → ∀ a b : Zd d (sz.L n),
       ‖(baFMz sz z).K n u ![true, false] ![a, b]‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ' / 2) * sz.Bctl n u ^ 1) fun τ hτ => ?_
-    have hK := baKbound_holds 3 le_rfl κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ (fun n => (hs n).trans (hτ n).1)
+    have hK := baKbound_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ (fun n => (hs n).trans (hτ n).1)
       (fun n => ((hτ n).2.trans (hT n)).trans_lt (EMn2BA_T0_lt_one hκ sz hflow n)) 2 (by norm_num)
     have := Step5IIIGood_det_of_prec (Sizes.seqP (sz.withLam 0)) sz.size
-      (fun n (p : (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz.L n))) => ‖(baFMz sz z).K n (τ n) p.1 p.2‖)
+      (fun n (p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) => ‖(baFMz sz z).K n (τ n) p.1 p.2‖)
       (fun n _ => sz.Bctl n (τ n) ^ (2 - 1)) hK hτ₀
     filter_upwards [this] with n hn h2 a b
     exact hn h2 (![true, false], ![a, b])
   -- (iii): the far field, deterministic, uniform in `u`
-  have hiii : ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∀ (x x' : Zd 3 (sz.L n)) (b : Bool),
-      emn2ExpEllStar sz n (u : ℝ) ≤ (zdistInf 3 (sz.L n) (x - x') : ℝ) →
-        ‖(baFMz sz z).K n (u : ℝ) ![b, !b] ![x, x']‖ ≤ (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ))) := by
-    refine Step5IIIGood_uniform (fun n => (hst n).le) (fun n u => ∀ (x x' : Zd 3 (sz.L n)) (b : Bool),
-      emn2ExpEllStar sz n u ≤ (zdistInf 3 (sz.L n) (x - x') : ℝ) →
-        ‖(baFMz sz z).K n u ![b, !b] ![x, x']‖ ≤ (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ)))) fun τ hτ => ?_
-    exact baEMn2ExpHK le_rfl κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ (fun n => (hs n).trans (hτ n).1) (fun n => (hτ n).2.trans (hT n)) D hD
+  have hiii : ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∀ (x x' : Zd d (sz.L n)) (b : Bool),
+      emn2ExpEllStar sz n (u : ℝ) ≤ (zdistInf d (sz.L n) (x - x') : ℝ) →
+        ‖(baFMz sz z).K n (u : ℝ) ![b, !b] ![x, x']‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ))) := by
+    refine Step5IIIGood_uniform (fun n => (hst n).le) (fun n u => ∀ (x x' : Zd d (sz.L n)) (b : Bool),
+      emn2ExpEllStar sz n u ≤ (zdistInf d (sz.L n) (x - x') : ℝ) →
+        ‖(baFMz sz z).K n u ![b, !b] ![x, x']‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ)))) fun τ hτ => ?_
+    exact baEMn2ExpHK hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ (fun n => (hs n).trans (hτ n).1) (fun n => (hτ n).2.trans (hT n)) D hD
   have hN7 := hsize.eventually_ge_atTop 7
   have hq32 : ∀ᶠ n in atTop, (32 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ' / 2) :=
     ((tendsto_rpow_atTop hτ₀).comp hsize).eventually_ge_atTop 32
@@ -509,14 +511,14 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
       rw [hQ]; nlinarith
     have hBc0 := Step5IIIGood_Bctl_nonneg sz n (u : ℝ)
     have hBc := Step5IIIGood_Bctl_le sz n hu1
-    have hτ0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹ := by
+    have hτ0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹ := by
       have : 0 < 1 - (u : ℝ) := by linarith
       positivity
     have hN2 : 2 ≤ sz.size n := by
       have : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
       exact_mod_cast this
     refine ⟨RBM.Graph.BAAuxGraph2_seqHflowBA_herm sz n (BAflowLam0 sz z) (u : ℝ) ω,
-      (baStep5IIIJsharp_spec 3 sz (BAflowLam0 sz z) (BAflowEs sz z) n D (u : ℝ) H).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      (baStep5IIIJsharp_spec d sz (BAflowLam0 sz z) (BAflowEs sz z) n D (u : ℝ) H).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · -- (ii)
       intro a b
       have h := Step5IIIGood_scale 1 hq0.le hBc0 hBc hτ0 (hQ2 1 (by norm_num)) (hii' u hN2 a b)
@@ -526,12 +528,12 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
       intro a b hab
       have h := hiii' u a b true (by unfold emn2ExpEllStar; rw [hell, mul_one]; exact hab)
       refine h.trans ?_
-      have hWd : (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (one_le_pow₀ hW1)
-      have hWm : ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ))) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) :=
-        Real.rpow_le_rpow_of_exponent_le hW1 (by norm_num)
-      have hWm0 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ))) := Real.rpow_nonneg (by linarith) _
-      calc (((sz.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ)))
-          ≤ 1 * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ))) := mul_le_mul_of_nonneg_right hWd hWm0
+      have hWd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (one_le_pow₀ hW1)
+      have hWm : ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ))) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) :=
+        Real.rpow_le_rpow_of_exponent_le hW1 (by have : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d; linarith)
+      have hWm0 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ))) := Real.rpow_nonneg (by linarith) _
+      calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ)))
+          ≤ 1 * ((sz.W n : ℕ) : ℝ) ^ (-(D + ((d : ℕ) : ℝ))) := mul_le_mul_of_nonneg_right hWd hWm0
         _ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) := by rw [one_mul]; exact hWm
     · -- (iv): `𝒦^{(1)} = m(σ)` (`baKsol_one`) and `STAvgUgL`
       intro σ a
@@ -539,7 +541,7 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
       have hreal := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
       have hK1 : (baFMz sz z).K n (u : ℝ) (fun _ : Fin 1 => σ) (fun _ => a) =
           PropSpin (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) σ :=
-        baKsol_one 3 hκ hg (sz.three_le_L n) (sz.W n) hreal ⟨hu0, hu1⟩ (fun _ => σ) (fun _ => a)
+        baKsol_one d hκ hg (sz.three_le_L n) (sz.W n) hreal ⟨hu0, hu1⟩ (fun _ => σ) (fun _ => a)
       have h := Step5IIIGood_scale 1 hq0.le hBc0 hBc hτ0 (hQ2 1 (by norm_num)) (h1 ω hω1 (u, (fun _ : Fin 1 => σ), (fun _ => a)))
       rw [pow_one] at h
       have e : STavgMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a =
@@ -563,16 +565,16 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
       intro σ a
       have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith
       have hv : 0 < 1 - (u : ℝ) := by linarith
-      have hWd3 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ 3 := one_le_pow₀ hW1
-      have hτpos : 0 < (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹ := by positivity
+      have hWd3 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d := one_le_pow₀ hW1
+      have hτpos : 0 < (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹ := by positivity
       -- `1 ≤ lam² W^d` from `(eq:WO)`
-      have hA : 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ 3 :=
+      have hA : 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d :=
         (Real.one_le_rpow hW1 (by linarith)).trans (sz.lam_sq_mul_pow_ge n hWO'.1)
       have hρ0 : 0 ≤ (1 - s n) / (1 - (u : ℝ)) := div_nonneg (by linarith [u.2.1]) hv.le
-      have hρ : (1 - s n) / (1 - (u : ℝ)) ≤ ((sz.W n : ℕ) : ℝ) ^ 3 := by
+      have hρ : (1 - s n) / (1 - (u : ℝ)) ≤ ((sz.W n : ℕ) : ℝ) ^ d := by
         rw [div_le_iff₀ hv]
-        nlinarith [mul_le_mul_of_nonneg_right hureg (by linarith : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ 3), hs n]
-      have hτW : ((((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ 3 := by
+        nlinarith [mul_le_mul_of_nonneg_right hureg (by linarith : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d), hs n]
+      have hτW : ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ d := by
         rw [inv_inv]; nlinarith
       have hq4 : 4 * ((sz.size n : ℕ) : ℝ) ^ (τ' / 2) ≤ ((sz.size n : ℕ) : ℝ) ^ τ' := by rw [hQ]; nlinarith
       have hFW : ((sz.size n : ℕ) : ℝ) ^ (τ' / 2) * ((sz.W n : ℕ) : ℝ) ^ (-(D + τ' / 𝔠)) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) := by
@@ -589,15 +591,15 @@ theorem baStep5IIIGoodThm_holds : BAStep5IIIGoodThm := by
       have hLK1 := h6 ω hω6 (u, σ, a)
       have hDec1 := h7 ω hω7 (u, σ, a)
       rw [hell, div_one, ← Real.sqrt_eq_rpow] at hDec1
-      obtain ⟨hy0, hy⟩ := Step5IIIGood_STWB_le sz n (u : ℝ) (zdistInf 3 (sz.L n) (a 0 - a 1))
+      obtain ⟨hy0, hy⟩ := Step5IIIGood_STWB_le sz n (u : ℝ) (zdistInf d (sz.L n) (a 0 - a 1))
       have hvi := Step5IIIGood_vi_alg (a := ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖)
         (q := ((sz.size n : ℕ) : ℝ) ^ (τ' / 2)) (Bc := sz.Bctl n (u : ℝ))
-        (y := STWB sz n (u : ℝ) (zdistInf 3 (sz.L n) (a 0 - a 1))) (ρ := (1 - s n) / (1 - (u : ℝ)))
-        (Wd := ((sz.W n : ℕ) : ℝ) ^ 3) (τ := (((sz.W n : ℕ) : ℝ) ^ 3 * (1 - (u : ℝ)))⁻¹) (θ := θ) (Cd := Cd)
-        (F := ((sz.W n : ℕ) : ℝ) ^ (-(D + τ' / 𝔠))) (r := ((zdistInf 3 (sz.L n) (a 0 - a 1) : ℕ) : ℝ))
+        (y := STWB sz n (u : ℝ) (zdistInf d (sz.L n) (a 0 - a 1))) (ρ := (1 - s n) / (1 - (u : ℝ)))
+        (Wd := ((sz.W n : ℕ) : ℝ) ^ d) (τ := (((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) (θ := θ) (Cd := Cd)
+        (F := ((sz.W n : ℕ) : ℝ) ^ (-(D + τ' / 𝔠))) (r := ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ))
         (Wf := ((sz.W n : ℕ) : ℝ) ^ (-D)) (Q := ((sz.size n : ℕ) : ℝ) ^ τ')
         hθ0 hθ1 hCd hτpos hBc0 hBc hy0 hy hρ0 hρ hτW hWd3 hq0 (Real.rpow_nonneg hW0.le _) hLK1 hDec1 hq4 hFW
-      rw [Step5IIIGood_Wpow 3 hW0.le θ Cd] at hvi
+      rw [Step5IIIGood_Wpow d hW0.le θ Cd] at hvi
       exact hvi
 
 end Good

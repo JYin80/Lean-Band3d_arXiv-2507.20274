@@ -42,6 +42,8 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
+variable {d : ℕ}
+
 /-! ## 1. Target 4: the scalar part at the flow -/
 
 section ScalarFlow
@@ -49,14 +51,14 @@ section ScalarFlow
 /-- **Target 4** (content binding `T2485_ScalarFlow`; audit O2, second half): along a flow in the regime, eventually, every
 `u ∈ [s_n, t_n]`, every level `D' ≥ D` and every control `1 ≤ J ≤ W^{1/2}` meet the scalar part of the bundle (inline) at
 `Λ = K₀ = N^{τ'}`; the floor premise is `(L^d W^{6d})² ≤ W^D` eventually. -/
-theorem baStep5III_scalar_flow :
-    ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes 3) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
+theorem baStep5III_scalar_flow (d : ℕ) (hd : 3 ≤ d) :
+    ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
       STReg5III sz s t → ∀ D τ' : ℝ, 0 ≤ τ' →
-        (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ 3 * ((sz.W n : ℕ) : ℝ) ^ (6 * 3)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D) →
+        (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D) →
         ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (D' J : ℝ), D ≤ D' → 1 ≤ J → J ≤ ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ) →
-          3 ≤ 3 ∧ 0 ≤ (u : ℝ) ∧ (u : ℝ) < 1 ∧ 0 < sz.lam n ∧ sz.lam n ^ 2 ≤ 1 - (u : ℝ) ∧
-            1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ 3 ∧ 1 ≤ ((sz.size n : ℕ) : ℝ) ^ τ' ∧ 1 ≤ ((sz.size n : ℕ) : ℝ) ^ τ' ∧
-            4 ≤ Real.log ((sz.W n : ℕ) : ℝ) ∧ (((sz.L n : ℕ) : ℝ) ^ 3 * ((sz.W n : ℕ) : ℝ) ^ (6 * 3)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D' ∧
+          3 ≤ d ∧ 0 ≤ (u : ℝ) ∧ (u : ℝ) < 1 ∧ 0 < sz.lam n ∧ sz.lam n ^ 2 ≤ 1 - (u : ℝ) ∧
+            1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d ∧ 1 ≤ ((sz.size n : ℕ) : ℝ) ^ τ' ∧ 1 ≤ ((sz.size n : ℕ) : ℝ) ^ τ' ∧
+            4 ≤ Real.log ((sz.W n : ℕ) : ℝ) ∧ (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D' ∧
             1 ≤ J ∧ J ≤ ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ) := by
   intro κ ε 𝔠 𝔡 sz z hflow s t hs hst hReg D τ' hτ' hfl
   obtain ⟨h𝔠, h𝔡, hsize, hband, hWO⟩ := hflow.1
@@ -72,7 +74,7 @@ theorem baStep5III_scalar_flow :
   have hreg : sz.lam n ^ 2 ≤ 1 - (u : ℝ) := by have := hReg n; linarith [u.2.2]
   have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
   have hQ : 1 ≤ ((sz.size n : ℕ) : ℝ) ^ τ' := Real.one_le_rpow hN1 hτ'
-  refine ⟨le_rfl, (hs n).trans u.2.1, ?_, hlam, hreg, ?_, hQ, hQ, hlogn, ?_, hJ1, hJW⟩
+  refine ⟨hd, (hs n).trans u.2.1, ?_, hlam, hreg, ?_, hQ, hQ, hlogn, ?_, hJ1, hJW⟩
   · nlinarith [pow_pos hlam 2]
   · exact (Real.one_le_rpow hW1 (by linarith)).trans (sz.lam_sq_mul_pow_ge n hwo.1)
   · exact hfln.trans (Real.rpow_le_rpow_of_exponent_le hW1 hDD')
