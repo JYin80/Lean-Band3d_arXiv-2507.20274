@@ -1,0 +1,1305 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Induction.ScaleFacts3
+import RBM3D.Induction.Split
+
+/-!
+# The `Ψ`-calculus, the chain bound and the scale facts of Lemma 4.11 (`lem:iterations`)
+
+Paper: arXiv:2507.20274, Lemma 4.11 `lem:iterations`, proved in Subsection 4.5 `subsec:support`.
+The lemma iterates the bootstrap bound (4.36) `am;asoi222` simultaneously in the length `n` and the
+depth `k` of the `G`-loops, with the parameter `Ψ(n,k;s,t) = A^{3/4} + (η_s/η_t)^{n-1} A^{1-k/8}` of
+(4.40) `adsyzz0s8d6`, where `A = ilambda² W^d` in case (i) (`1 - t ≥ ilambda²/L²`) and
+`A = (W^{-d}B_{s,0})⁻¹` in case (ii) (`1 - s ≤ ilambda²/L²`).  The other equations used are (4.38)
+`rela_XILXILK`, (4.39) `sef8w483r324`, (4.64) `xiu2n+2psi`, (4.66) `suauwiioo1`, (4.67)
+`eq:boundtwochains` and (4.69) `auskoppw2`.
+
+The depth `k_min = ⌊2 + 8𝔠d(r-1)⌋ + 1` of the iteration is `st_kmin` (`ScaleFacts3`).  The function
+`Ψ` is `STPsi A ρ n k` (`Step34Pins`), `ρ = η_s/η_t`; the relation between `ρ` and `A` that is used
+is `ρ ≤ A^{𝔠d}` together with `B_v ≤ c_B A^{-1+δ}`.
+
+## Contents
+
+* §1 `st_prec_one_add_sup`, `st_prec_of_xi` (`≺` with a supremum over a second index) and the lower
+  bounds `Ξ̂ ≥ 1` (`st_one_le_XiL`, `st_one_le_XiLK`).
+* §2 the real inequalities, polynomial in `b = A^{1/8}`, `ρ`, `e = A^{1-k/8}` and a number
+  `T ≥ W^{-d}B_{v,0}` (`iterationsA_ineq_long`, `iterationsA_ineq_quad`, `iterationsA_ineq_chain`)
+  and the sums of the envelopes of `Ξ̂^{(𝓛)}_m`, `Ξ̂^{(𝓛-𝒦)}_m`.
+* §3 the `Ψ`-calculus: `STPsi` in the variables `b`, `e`, nonnegativity, `Ψ ≥ 1`, monotonicity in
+  `k`.
+* §4 the chain bound (4.64) (`iterationsA_chain_term`) and the deterministic assembly
+  `STbootRHS 1 XL XLK B_u N p ≤ C Ψ(N,k)` (`iterationsA_boot_bound`), for `p ≥ 2` (the paper has
+  `p ≥ 4`).
+* §5 the odd chain bound (4.66)-(4.67) for the model (`iterationsA_xiL_odd_le`), from the splitting
+  bounds of `Induction/Split.lean`.
+* §6 the `≺`-calculus used by the iteration (monotonicity, absorption of a constant, powers,
+  `1 + c ξ`).
+* §7 the structure `IterationsAScale`, the scale facts used in the proof of the lemma.
+* §8 the averaged law, the a priori bound (4.39) and (4.38) on the pairs `(v,u)`, from `STAvgU`,
+  `STStep1Loop` and the `𝒦`-loop bound.
+* §9 `iterationsA_scale_I` (case (i); needs `2 ≤ d` and `𝔠d ≤ 1/16`) and `iterationsA_scale_II`
+  (case (ii); `𝔠d ≤ 1/24`).
+
+The `∀ n` facts of `IterationsAScale` (`A ≥ 0`, `T ≥ 0`, `t < 1`) hold for every `n` in both cases,
+all the others are `∀ᶠ n`; the constants (`2` in case (i), `1` in case (ii)) contain no `W`, `L`,
+`ilambda`.
+-/
+
+set_option linter.style.longLine false
+
+noncomputable section
+
+open MeasureTheory ProbabilityTheory Filter Matrix
+open scoped NNReal ENNReal
+
+/-! ## 1. `≺` with a supremum over a second index; `Ξ̂ ≥ 1` -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `f ≺ B` uniformly in the pairs `(u,v)` gives `1 + sup_v f(u,v)/B(u) ≺ 1` uniformly in `u` (`V n` finite and
+nonempty, `B > 0`). -/
+theorem st_prec_one_add_sup {U V : ℕ → Type*} [∀ n, Fintype (V n)] [hV : ∀ n, Nonempty (V n)]
+    (hsize : Tendsto sz.size atTop atTop) (f : ∀ n, U n → V n → sz.SeqΩ → ℝ) (B : ∀ n, U n → ℝ)
+    (hB : ∀ n u, 0 < B n u)
+    (h : Prec sz (U := fun n => U n × V n) (fun n p ω => f n p.1 p.2 ω) (fun n p _ => B n p.1)) :
+    Prec sz (U := U)
+      (fun n u ω => 1 + Finset.univ.sup' Finset.univ_nonempty (fun v => f n u v ω) / B n u)
+      (fun _ _ _ => 1) := by
+  intro τ hτ D hD
+  filter_upwards [h (τ / 2) (half_pos hτ) D hD,
+    hsize.eventually (eventually_le_rpow 2 (half_pos hτ))] with n hn h2
+  refine le_trans (measure_mono ?_) hn
+  rintro ω ⟨u, hu⟩
+  obtain ⟨v, -, hv⟩ := Finset.exists_mem_eq_sup' (Finset.univ_nonempty (α := V n)) (fun v => f n u v ω)
+  refine ⟨(u, v), ?_⟩
+  have hNN : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hh : ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) =
+      ((sz.size n : ℕ) : ℝ) ^ τ := UnifDetDom.rpow_half_mul_rpow_half (sz.size n) hτ
+  have hu' : ((sz.size n : ℕ) : ℝ) ^ τ < 1 + f n u v ω / B n u := by
+    rw [← hv]; simpa using hu
+  have hBpos := hB n u
+  set a : ℝ := ((sz.size n : ℕ) : ℝ) ^ (τ / 2) with ha
+  have h3 : a < f n u v ω / B n u := by nlinarith
+  change a * B n u < f n u v ω
+  have := (lt_div_iff₀ hBpos).1 h3
+  exact this
+
+/-- The converse of `st_prec_one_add_sup`: `1 + sup_v f(u,v)/B(u) ≺ 1` uniformly in `u` gives `f ≺ B` uniformly in
+the pairs `(u,v)`. -/
+theorem st_prec_of_xi {U V : ℕ → Type*} [∀ n, Fintype (V n)] [hV : ∀ n, Nonempty (V n)]
+    (f : ∀ n, U n → V n → sz.SeqΩ → ℝ) (B : ∀ n, U n → ℝ) (hB : ∀ n u, 0 < B n u)
+    (h : Prec sz (U := U)
+      (fun n u ω => 1 + Finset.univ.sup' Finset.univ_nonempty (fun v => f n u v ω) / B n u)
+      (fun _ _ _ => 1)) :
+    Prec sz (U := fun n => U n × V n) (fun n p ω => f n p.1 p.2 ω) (fun n p _ => B n p.1) := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD] with n hn
+  refine le_trans (measure_mono ?_) hn
+  rintro ω ⟨⟨u, v⟩, hu⟩
+  refine ⟨u, ?_⟩
+  have hBpos := hB n u
+  have h1 : f n u v ω ≤ Finset.univ.sup' Finset.univ_nonempty (fun v => f n u v ω) :=
+    Finset.le_sup' (fun v => f n u v ω) (Finset.mem_univ v)
+  have h2 : ((sz.size n : ℕ) : ℝ) ^ τ < f n u v ω / B n u := by
+    rw [lt_div_iff₀ hBpos]; exact hu
+  have h3 : f n u v ω / B n u ≤ Finset.univ.sup' Finset.univ_nonempty (fun v => f n u v ω) / B n u :=
+    div_le_div_of_nonneg_right h1 hBpos.le
+  change ((sz.size n : ℕ) : ℝ) ^ τ * 1 < _
+  linarith
+
+/-- `0 ≤ max`, hence `Ξ̂ ≥ 1`, for a positive `W^{-d}B_{v,0}`. -/
+theorem st_one_le_XiL {n : ℕ} {E v : ℝ} (k : ℕ) (ω : sz.SeqΩ) (hB : 0 < sz.Bctl n v) :
+    1 ≤ STXiL sz n E v k ω := by
+  unfold STXiL
+  have h0 : 0 ≤ STmaxL sz n E v k ω :=
+    le_trans (norm_nonneg _) (Finset.le_sup' (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
+      ‖Lloop sz n E v p.1 p.2 ω‖) (Finset.mem_univ ((fun _ => true), (fun _ => (0 : Zd d (sz.L n))))))
+  have := div_nonneg h0 (pow_pos hB (k - 1)).le
+  linarith
+
+/-- `Ξ̂^{(𝓛-𝒦)} ≥ 1` for a positive `W^{-d}B_{v,0}`. -/
+theorem st_one_le_XiLK {n : ℕ} {E v : ℝ} (k : ℕ) (ω : sz.SeqΩ) (hB : 0 < sz.Bctl n v) :
+    1 ≤ STXiLK sz n E v k ω := by
+  unfold STXiLK
+  have h0 : 0 ≤ STmaxLK sz n E v k ω :=
+    le_trans (norm_nonneg _) (Finset.le_sup' (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
+      ‖Lloop sz n E v p.1 p.2 ω - STKloop sz n E v p.1 p.2‖)
+      (Finset.mem_univ ((fun _ => true), (fun _ => (0 : Zd d (sz.L n))))))
+  have := div_nonneg h0 (pow_pos hB k).le
+  linarith
+
+end RBM.Gauss.Sizes
+
+/-! ## 2. The real inequalities
+
+Statements about real numbers `b = A^{1/8} ≥ 1`, `ρ ≥ 1`, `e = A^{1-k/8} ≥ 0`, `T ≥ 0` with
+`T b⁶ ≤ cB` and `T ρ² b⁷ ≤ cB K`; `Ψ(m,k) = b⁶ + ρ^{m-1} e`. -/
+
+namespace RBM.Ind
+
+
+/-- `ρ ≤ ρ²` for `ρ ≥ 1`. -/
+private theorem iterationsA_rho_le_sq {ρ : ℝ} (hρ : 1 ≤ ρ) : ρ ≤ ρ ^ 2 := by nlinarith
+
+/-- For `m ≤ N + 1`: `1 + T Ψ(m,k-1) ≤ (1 + cB + cB K) Ψ(N,k)`, where `Ψ(m,k-1) = b⁶ + ρ^{m-1} b e`. -/
+theorem iterationsA_ineq_long {b ρ e T cB K : ℝ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ) (hK : 1 ≤ K) (hcB : 0 ≤ cB)
+    (hT : 0 ≤ T) (he : 0 ≤ e) (hT1 : T * b ^ 6 ≤ cB) (hT2 : T * ρ ^ 2 * b ^ 7 ≤ cB * K)
+    {N m : ℕ} (hN : 1 ≤ N) (hm : 1 ≤ m) (hmN : m ≤ N + 1) :
+    1 + T * (b ^ 6 + ρ ^ (m - 1) * (b * e)) ≤ (1 + cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb
+  have hb0 : 0 ≤ b := by linarith
+  have hρ0 : 0 ≤ ρ := by linarith
+  have hρN : ρ ^ (m - 1) ≤ ρ ^ N := pow_le_pow_right₀ hρ (by omega)
+  have hρN' : ρ ^ N = ρ ^ (N - 1) * ρ := by rw [← pow_succ]; congr 1; omega
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  have h1 : T * (ρ ^ (m - 1) * (b * e)) ≤ cB * K * (ρ ^ (N - 1) * e) := by
+    have h2 : T * ρ * b ≤ cB * K := by
+      calc T * ρ * b ≤ T * ρ ^ 2 * b ^ 7 := by
+            have : ρ ≤ ρ ^ 2 := iterationsA_rho_le_sq hρ
+            have : b ≤ b ^ 7 := by
+              calc b = b ^ 1 := (pow_one b).symm
+                _ ≤ b ^ 7 := pow_le_pow_right₀ hb (by norm_num)
+            have h3 : T * ρ ≤ T * ρ ^ 2 := mul_le_mul_of_nonneg_left (iterationsA_rho_le_sq hρ) hT
+            exact mul_le_mul h3 this hb0 (by positivity)
+        _ ≤ cB * K := hT2
+    calc T * (ρ ^ (m - 1) * (b * e)) ≤ T * (ρ ^ N * (b * e)) := by
+          gcongr
+      _ = (T * ρ * b) * (ρ ^ (N - 1) * e) := by rw [hρN']; ring
+      _ ≤ (cB * K) * (ρ ^ (N - 1) * e) := mul_le_mul_of_nonneg_right h2 hpe
+  have h4 : 1 + T * b ^ 6 ≤ (1 + cB) * b ^ 6 := by nlinarith
+  calc 1 + T * (b ^ 6 + ρ ^ (m - 1) * (b * e)) = (1 + T * b ^ 6) + T * (ρ ^ (m - 1) * (b * e)) := by ring
+    _ ≤ (1 + cB) * b ^ 6 + cB * K * (ρ ^ (N - 1) * e) := add_le_add h4 h1
+    _ ≤ (1 + cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have hk : 0 ≤ cB * K := by positivity
+        nlinarith [mul_nonneg hk (sq_nonneg b), mul_nonneg hcB hpe, mul_nonneg hk hpe, mul_nonneg hcB (show 0 ≤ b ^ 6 by positivity), mul_nonneg hk (show 0 ≤ b ^ 6 by positivity)]
+
+
+/-- The quadratic term of the bootstrap right side: for `j + m = N + 2` and the envelopes `x_j ≤ 1 + Ψ(j,k)`,
+`x_a, x_b ≤ 1 + T Ψ(m,k)`, one has `x_j (x_a x_b)^{1/2} ≤ (2 + 3 cB + cB K) Ψ(N,k)`. -/
+theorem iterationsA_ineq_quad {b ρ e T cB K : ℝ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ) (hK : 1 ≤ K) (hcB : 0 ≤ cB)
+    (hT : 0 ≤ T) (he : 0 ≤ e) (he7 : e ≤ b ^ 7) (hT1 : T * b ^ 6 ≤ cB) (hT2 : T * ρ ^ 2 * b ^ 7 ≤ cB * K)
+    {N m j : ℕ} (_hj : 1 ≤ j) (hm : 1 ≤ m) (hjN : j ≤ N) (hmN : m ≤ N) (hjm : j + m = N + 2)
+    {xj xa xb : ℝ} (hxj : xj ≤ 1 + (b ^ 6 + ρ ^ (j - 1) * e)) (hxj0 : 0 ≤ xj)
+    (hxa : xa ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * e))
+    (hxb : xb ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * e)) (hxb0 : 0 ≤ xb) :
+    xj * (xa * xb) ^ (1 / 2 : ℝ) ≤ (2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb
+  have hb0 : 0 ≤ b := by linarith
+  have hρ0 : 0 ≤ ρ := by linarith
+  set X : ℝ := 1 + T * (b ^ 6 + ρ ^ (m - 1) * e) with hX
+  have hX0 : 0 ≤ X := by positivity
+  have hsq : (xa * xb) ^ (1 / 2 : ℝ) ≤ X := by
+    rw [← Real.sqrt_eq_rpow]
+    rw [Real.sqrt_le_iff]
+    refine ⟨hX0, ?_⟩
+    calc xa * xb ≤ X * X := mul_le_mul hxa hxb hxb0 hX0
+      _ = X ^ 2 := (sq X).symm
+  have hρj : ρ ^ (j - 1) ≤ ρ ^ (N - 1) := pow_le_pow_right₀ hρ (by omega)
+  have hρm : ρ ^ (m - 1) ≤ ρ ^ (N - 1) := pow_le_pow_right₀ hρ (by omega)
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  have hρN : ρ ^ (m - 1) * ρ ^ (j - 1) = ρ ^ (N - 1) * ρ := by
+    rw [← pow_add, ← pow_succ]; congr 1; omega
+  have hTρe : T * ρ * e ≤ cB * K := by
+    calc T * ρ * e ≤ T * ρ ^ 2 * b ^ 7 := by
+          have h3 : T * ρ ≤ T * ρ ^ 2 := mul_le_mul_of_nonneg_left (iterationsA_rho_le_sq hρ) hT
+          exact mul_le_mul h3 he7 he (by positivity)
+      _ ≤ cB * K := hT2
+  have hXle : X ≤ (1 + cB) + T * (ρ ^ (m - 1) * e) := by
+    have : T * b ^ 6 ≤ cB := hT1
+    rw [hX]; nlinarith
+  have hxj' : xj ≤ 2 * b ^ 6 + ρ ^ (j - 1) * e := by linarith
+  have hY0 : 0 ≤ (1 + cB) + T * (ρ ^ (m - 1) * e) := by positivity
+  have hxjb : xj * X ≤ (2 * b ^ 6 + ρ ^ (j - 1) * e) * ((1 + cB) + T * (ρ ^ (m - 1) * e)) :=
+    mul_le_mul hxj' hXle hX0 (by positivity)
+  have hpm : 0 ≤ ρ ^ (m - 1) * e := by positivity
+  have hpj : 0 ≤ ρ ^ (j - 1) * e := by positivity
+  have hterm1 : 2 * b ^ 6 * (T * (ρ ^ (m - 1) * e)) ≤ 2 * cB * (ρ ^ (N - 1) * e) := by
+    calc 2 * b ^ 6 * (T * (ρ ^ (m - 1) * e)) = 2 * (T * b ^ 6) * (ρ ^ (m - 1) * e) := by ring
+      _ ≤ 2 * cB * (ρ ^ (N - 1) * e) := by
+          have h5 : ρ ^ (m - 1) * e ≤ ρ ^ (N - 1) * e := mul_le_mul_of_nonneg_right hρm he
+          have : 2 * (T * b ^ 6) ≤ 2 * cB := by linarith
+          exact mul_le_mul this h5 hpm (by positivity)
+  have hterm2 : ρ ^ (j - 1) * e * (T * (ρ ^ (m - 1) * e)) ≤ cB * K * (ρ ^ (N - 1) * e) := by
+    calc ρ ^ (j - 1) * e * (T * (ρ ^ (m - 1) * e))
+        = (T * ρ * e) * (ρ ^ (N - 1) * e) := by
+          have : ρ ^ (j - 1) * ρ ^ (m - 1) = ρ ^ (N - 1) * ρ := by
+            rw [← pow_add, ← pow_succ]; congr 1; omega
+          calc ρ ^ (j - 1) * e * (T * (ρ ^ (m - 1) * e)) = T * e * e * (ρ ^ (j - 1) * ρ ^ (m - 1)) := by ring
+            _ = (T * ρ * e) * (ρ ^ (N - 1) * e) := by rw [this]; ring
+      _ ≤ (cB * K) * (ρ ^ (N - 1) * e) := mul_le_mul_of_nonneg_right hTρe (by positivity)
+  have hterm3 : (1 + cB) * (ρ ^ (j - 1) * e) ≤ (1 + cB) * (ρ ^ (N - 1) * e) :=
+    mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hρj he) (by positivity)
+  calc xj * (xa * xb) ^ (1 / 2 : ℝ) ≤ xj * X := mul_le_mul_of_nonneg_left hsq hxj0
+    _ ≤ (2 * b ^ 6 + ρ ^ (j - 1) * e) * ((1 + cB) + T * (ρ ^ (m - 1) * e)) := hxjb
+    _ = 2 * (1 + cB) * b ^ 6 + 2 * b ^ 6 * (T * (ρ ^ (m - 1) * e)) + (1 + cB) * (ρ ^ (j - 1) * e)
+          + ρ ^ (j - 1) * e * (T * (ρ ^ (m - 1) * e)) := by ring
+    _ ≤ 2 * (1 + cB) * b ^ 6 + 2 * cB * (ρ ^ (N - 1) * e) + (1 + cB) * (ρ ^ (N - 1) * e)
+          + cB * K * (ρ ^ (N - 1) * e) := by gcongr
+    _ ≤ (2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have hk : 0 ≤ cB * K := by positivity
+        nlinarith [mul_nonneg hcB (show 0 ≤ b ^ 6 by positivity), mul_nonneg hk hpe, mul_nonneg hcB hpe]
+
+
+/-- The chain term: `cv w x^{1/2} y^{1/(4p)} ≤ C Ψ(N,k)`, `C = 2 cv K + 2 cv² (1+cB) K + 2 cv² cB K`, for
+`x ≤ 1 + cv b⁸ Z²`, `Z = 1 + cB + T ρ^N b e`, `y ≤ (2ρ)^{4p}`, `1 ≤ w ≤ b` (`w` stands for `B_u^{-1/(4p)}`),
+`ρ² ≤ K b` and `T ρ² b⁷ ≤ cB K`. -/
+theorem iterationsA_ineq_chain {b ρ e T cB cv K w x y : ℝ} {N p : ℕ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ)
+    (hK : 1 ≤ K) (hcB : 0 ≤ cB) (hcv : 1 ≤ cv) (hT : 0 ≤ T) (he : 0 ≤ e) (hρK : ρ ^ 2 ≤ K * b)
+    (hT2 : T * ρ ^ 2 * b ^ 7 ≤ cB * K) (hw1 : 1 ≤ w) (hwb : w ≤ b) (hN : 1 ≤ N) (hp : 1 ≤ p)
+    (hx0 : 0 ≤ x) (hx : x ≤ 1 + cv * b ^ 8 * ((1 + cB) + T * ρ ^ N * (b * e)) ^ 2)
+    (hy0 : 0 ≤ y) (hy : y ≤ (2 * ρ) ^ (4 * p)) :
+    cv * w * (x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ)))) ≤
+      (2 * cv * K + 2 * cv ^ 2 * (1 + cB) * K + 2 * cv ^ 2 * cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hb0 : 0 ≤ b := by linarith
+  have hρ0 : 0 ≤ ρ := by linarith
+  have hcv0 : 0 ≤ cv := by linarith
+  set Z : ℝ := (1 + cB) + T * ρ ^ N * (b * e) with hZ
+  have hZ0 : 0 ≤ Z := by positivity
+  have hxs : x ^ (1 / 2 : ℝ) ≤ 1 + cv * b ^ 4 * Z := by
+    rw [← Real.sqrt_eq_rpow, Real.sqrt_le_iff]
+    refine ⟨by positivity, ?_⟩
+    have : cv * b ^ 8 * Z ^ 2 ≤ 2 * (cv * b ^ 4 * Z) + (cv * b ^ 4 * Z) ^ 2 := by
+      have h1 : 0 ≤ cv * b ^ 4 * Z := by positivity
+      have h2 : cv * b ^ 8 * Z ^ 2 ≤ (cv * b ^ 4 * Z) ^ 2 := by
+        have : (cv * b ^ 4 * Z) ^ 2 = cv * (cv * b ^ 8 * Z ^ 2) := by ring
+        rw [this]
+        have h3 : 0 ≤ cv * b ^ 8 * Z ^ 2 := by positivity
+        nlinarith
+      linarith
+    nlinarith
+  have hp' : (1 : ℝ) / (4 * (p : ℝ)) = (((4 * p : ℕ) : ℝ))⁻¹ := by
+    push_cast; rw [one_div]
+  have hys : y ^ (1 / (4 * (p : ℝ))) ≤ 2 * ρ := by
+    have h1 : y ^ (1 / (4 * (p : ℝ))) ≤ ((2 * ρ) ^ (4 * p)) ^ (1 / (4 * (p : ℝ))) :=
+      Real.rpow_le_rpow hy0 hy (by positivity)
+    rw [hp'] at h1 ⊢
+    refine h1.trans (le_of_eq ?_)
+    exact Real.pow_rpow_inv_natCast (by positivity) (by omega)
+  have hx1 : 0 ≤ x ^ (1 / 2 : ℝ) := Real.rpow_nonneg hx0 _
+  have hy1 : 0 ≤ y ^ (1 / (4 * (p : ℝ))) := Real.rpow_nonneg hy0 _
+  have hρb : ρ ≤ K * b := hρK.trans' (by nlinarith)
+  have hρ2 : ρ ≤ ρ ^ 2 := by nlinarith
+  have hwρ : w * ρ ≤ K * b ^ 2 := by
+    calc w * ρ ≤ b * (K * b) := mul_le_mul hwb hρb hρ0 hb0
+      _ = K * b ^ 2 := by ring
+  have hb2 : b ^ 2 ≤ b ^ 6 := pow_le_pow_right₀ hb (by norm_num)
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb
+  have hb67 : b ^ 6 ≤ b ^ 7 := pow_le_pow_right₀ hb (by norm_num)
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  have hρN : ρ ^ N = ρ ^ (N - 1) * ρ := by rw [← pow_succ]; congr 1; omega
+  -- the three pieces
+  have hP1 : cv * w * ρ ≤ cv * K * b ^ 6 := by
+    calc cv * w * ρ = cv * (w * ρ) := by ring
+      _ ≤ cv * (K * b ^ 2) := mul_le_mul_of_nonneg_left hwρ hcv0
+      _ ≤ cv * (K * b ^ 6) := by gcongr
+      _ = cv * K * b ^ 6 := by ring
+  have hP2 : cv * w * ρ * (b ^ 4 * (1 + cB)) ≤ cv * K * (1 + cB) * b ^ 6 := by
+    have h1 : w * ρ * b ^ 4 ≤ K * b ^ 2 * b ^ 4 := mul_le_mul_of_nonneg_right hwρ (by positivity)
+    calc cv * w * ρ * (b ^ 4 * (1 + cB)) = cv * (1 + cB) * (w * ρ * b ^ 4) := by ring
+      _ ≤ cv * (1 + cB) * (K * b ^ 2 * b ^ 4) := mul_le_mul_of_nonneg_left h1 (by positivity)
+      _ = cv * K * (1 + cB) * b ^ 6 := by ring
+  have hP3 : cv * w * ρ * (b ^ 4 * (T * ρ ^ N * (b * e))) ≤ cv * (cB * K) * (ρ ^ (N - 1) * e) := by
+    have h1 : cv * w * ρ * (b ^ 4 * (T * ρ ^ N * (b * e))) = (cv * w * b ^ 5) * (T * ρ ^ 2 * ρ ^ (N - 1) * e) := by
+      rw [hρN]; ring
+    have h2 : w * b ^ 5 ≤ b ^ 6 := by
+      calc w * b ^ 5 ≤ b * b ^ 5 := mul_le_mul_of_nonneg_right hwb (by positivity)
+        _ = b ^ 6 := by ring
+    have h3 : T * ρ ^ 2 * b ^ 6 ≤ cB * K := by
+      calc T * ρ ^ 2 * b ^ 6 ≤ T * ρ ^ 2 * b ^ 7 := by gcongr
+        _ ≤ cB * K := hT2
+    calc cv * w * ρ * (b ^ 4 * (T * ρ ^ N * (b * e)))
+        = cv * (ρ ^ (N - 1) * e) * (T * ρ ^ 2 * (w * b ^ 5)) := by rw [hρN]; ring
+      _ ≤ cv * (ρ ^ (N - 1) * e) * (T * ρ ^ 2 * b ^ 6) := by
+          gcongr
+      _ ≤ cv * (ρ ^ (N - 1) * e) * (cB * K) := by gcongr
+      _ = cv * (cB * K) * (ρ ^ (N - 1) * e) := by ring
+  calc cv * w * (x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ))))
+      ≤ cv * w * ((1 + cv * b ^ 4 * Z) * (2 * ρ)) := by
+        gcongr
+    _ = 2 * (cv * w * ρ) + 2 * cv * (cv * w * ρ * (b ^ 4 * (1 + cB))) + 2 * cv * (cv * w * ρ * (b ^ 4 * (T * ρ ^ N * (b * e)))) := by
+        rw [hZ]; ring
+    _ ≤ 2 * (cv * K * b ^ 6) + 2 * cv * (cv * K * (1 + cB) * b ^ 6) + 2 * cv * (cv * (cB * K) * (ρ ^ (N - 1) * e)) := by
+        gcongr
+    _ ≤ (2 * cv * K + 2 * cv ^ 2 * (1 + cB) * K + 2 * cv ^ 2 * cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have hk : 0 ≤ K := by linarith
+        nlinarith [mul_nonneg (mul_nonneg hcv0 hk) (show 0 ≤ b ^ 6 by positivity),
+          mul_nonneg (mul_nonneg (mul_nonneg hcv0 hcv0) (show 0 ≤ 1 + cB by positivity)) (mul_nonneg hk (show 0 ≤ b ^ 6 by positivity)),
+          mul_nonneg (mul_nonneg (mul_nonneg hcv0 hcv0) hcB) (mul_nonneg hk hpe),
+          mul_nonneg (mul_nonneg hcv0 hk) hpe, mul_nonneg (mul_nonneg (mul_nonneg hcv0 hcv0) (show 0 ≤ 1 + cB by positivity)) (mul_nonneg hk hpe)]
+
+
+/-- The sum of the envelopes of `Ξ̂^{(𝓛-𝒦)}_m`: `∑_{m=1}^{N-1} XLK m ≤ 2 N Ψ(N,k)` when `XLK m ≤ 1 + Ψ(m,k)` for `m + 1 ≤ N`. -/
+private theorem iterationsA_sum_XLK {b ρ e : ℝ} {N : ℕ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ) (he : 0 ≤ e)
+    {XLK : ℕ → ℝ} (h : ∀ m, 1 ≤ m → m + 1 ≤ N → XLK m ≤ 1 + (b ^ 6 + ρ ^ (m - 1) * e)) :
+    ∑ m ∈ Finset.Icc 1 (N - 1), XLK m ≤ (2 * (N : ℝ)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  have hterm : ∀ m ∈ Finset.Icc 1 (N - 1), XLK m ≤ 2 * (b ^ 6 + ρ ^ (N - 1) * e) := by
+    intro m hm
+    rw [Finset.mem_Icc] at hm
+    have h1 := h m hm.1 (by omega)
+    have h2 : ρ ^ (m - 1) * e ≤ ρ ^ (N - 1) * e :=
+      mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hρ (by omega)) he
+    linarith
+  calc ∑ m ∈ Finset.Icc 1 (N - 1), XLK m ≤ (Finset.Icc 1 (N - 1)).card • (2 * (b ^ 6 + ρ ^ (N - 1) * e)) :=
+        Finset.sum_le_card_nsmul _ _ _ hterm
+    _ = ((N - 1 : ℕ) : ℝ) * (2 * (b ^ 6 + ρ ^ (N - 1) * e)) := by
+        have hcard : (Finset.Icc 1 (N - 1)).card = N - 1 := by rw [Nat.card_Icc]; omega
+        rw [hcard, nsmul_eq_mul]
+    _ ≤ (2 * (N : ℝ)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have h1 : ((N - 1 : ℕ) : ℝ) ≤ N := by exact_mod_cast Nat.sub_le N 1
+        have h0 : 0 ≤ b ^ 6 + ρ ^ (N - 1) * e := by positivity
+        nlinarith
+
+/-- The sum of the envelopes of `Ξ̂^{(𝓛)}_m` over `m ∈ [N-1, N+1]` (by `iterationsA_ineq_long`). -/
+private theorem iterationsA_sum_XL {b ρ e T cB K : ℝ} {N : ℕ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ) (hK : 1 ≤ K)
+    (hcB : 0 ≤ cB) (hT : 0 ≤ T) (he : 0 ≤ e) (hT1 : T * b ^ 6 ≤ cB) (hT2 : T * ρ ^ 2 * b ^ 7 ≤ cB * K)
+    (hN : 2 ≤ N) {XL : ℕ → ℝ}
+    (h : ∀ m, 1 ≤ m → m ≤ N + 1 → XL m ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * (b * e))) :
+    ∑ m ∈ Finset.Icc (N - 1) (N + 1), XL m ≤ (3 * (1 + cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hterm : ∀ m ∈ Finset.Icc (N - 1) (N + 1), XL m ≤ (1 + cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+    intro m hm
+    rw [Finset.mem_Icc] at hm
+    exact (h m (by omega) hm.2).trans
+      (iterationsA_ineq_long hb hρ hK hcB hT he hT1 hT2 (N := N) (m := m) (by omega) (by omega) hm.2)
+  calc ∑ m ∈ Finset.Icc (N - 1) (N + 1), XL m
+      ≤ (Finset.Icc (N - 1) (N + 1)).card • ((1 + cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e)) :=
+        Finset.sum_le_card_nsmul _ _ _ hterm
+    _ = (3 * (1 + cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have hcard : (Finset.Icc (N - 1) (N + 1)).card = 3 := by rw [Nat.card_Icc]; omega
+        rw [hcard, nsmul_eq_mul]; push_cast; ring
+
+/-- `STn12 m` has both components in `[1, m]` for `m ≥ 3`. -/
+private theorem iterationsA_STn12_bounds' {m : ℕ} (hm : 3 ≤ m) :
+    (1 ≤ (if m % 2 = 0 then (m - 1, m - 1) else (m - 2, m)).1) ∧
+    ((if m % 2 = 0 then (m - 1, m - 1) else (m - 2, m)).1 ≤ m) ∧
+    (1 ≤ (if m % 2 = 0 then (m - 1, m - 1) else (m - 2, m)).2) ∧
+    ((if m % 2 = 0 then (m - 1, m - 1) else (m - 2, m)).2 ≤ m) := by
+  split_ifs <;> simp <;> omega
+
+/-- The quadratic sum of the bootstrap right side: `∑_{m} XLK(N+2-m) (XL a_m XL b_m)^{1/2} ≤ N (2+3cB+cB K) Ψ(N,k)`
+(`iterationsA_ineq_quad`); `(a_m, b_m) = (m-1, m-1)` or `(m-2, m)` is `STn12 m`, passed as the function `ab`. -/
+private theorem iterationsA_sum_quad {b ρ e T cB K : ℝ} {N : ℕ} (hb : 1 ≤ b) (hρ : 1 ≤ ρ) (hK : 1 ≤ K)
+    (hcB : 0 ≤ cB) (hT : 0 ≤ T) (he : 0 ≤ e) (he7 : e ≤ b ^ 7) (hT1 : T * b ^ 6 ≤ cB)
+    (hT2 : T * ρ ^ 2 * b ^ 7 ≤ cB * K) {XL XLK : ℕ → ℝ} {ab : ℕ → ℕ × ℕ}
+    (hab : ∀ m, 3 ≤ m → 1 ≤ (ab m).1 ∧ (ab m).1 ≤ m ∧ 1 ≤ (ab m).2 ∧ (ab m).2 ≤ m)
+    (hXL1' : ∀ m, 1 ≤ m → m + 1 ≤ N → XL m ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * e))
+    (hXL0 : ∀ m, 0 ≤ XL m) (hXLK0 : ∀ m, 0 ≤ XLK m)
+    (hXLK2 : ∀ m, 1 ≤ m → m + 1 ≤ N → XLK m ≤ 1 + (b ^ 6 + ρ ^ (m - 1) * e)) :
+    ∑ m ∈ Finset.Icc ((N + 1) / 2 + 1) (N - 1), XLK (N + 2 - m) * (XL (ab m).1 * XL (ab m).2) ^ (1 / 2 : ℝ)
+      ≤ ((N : ℝ) * (2 + 3 * cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  have hterm : ∀ m ∈ Finset.Icc ((N + 1) / 2 + 1) (N - 1),
+      XLK (N + 2 - m) * (XL (ab m).1 * XL (ab m).2) ^ (1 / 2 : ℝ) ≤
+        (2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+    intro m hm
+    rw [Finset.mem_Icc] at hm
+    have hm3 : 3 ≤ m := by omega
+    obtain ⟨ha1, ham, hb1', hbm⟩ := hab m hm3
+    have hXa : XL (ab m).1 ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * e) := by
+      have h1 := hXL1' (ab m).1 ha1 (by omega)
+      refine h1.trans ?_
+      have h3 : ρ ^ ((ab m).1 - 1) ≤ ρ ^ (m - 1) := pow_le_pow_right₀ hρ (by omega)
+      have h2 : T * (ρ ^ ((ab m).1 - 1) * e) ≤ T * (ρ ^ (m - 1) * e) := by gcongr
+      linarith
+    have hXb : XL (ab m).2 ≤ 1 + T * (b ^ 6 + ρ ^ (m - 1) * e) := by
+      have h1 := hXL1' (ab m).2 hb1' (by omega)
+      refine h1.trans ?_
+      have h3 : ρ ^ ((ab m).2 - 1) ≤ ρ ^ (m - 1) := pow_le_pow_right₀ hρ (by omega)
+      have h2 : T * (ρ ^ ((ab m).2 - 1) * e) ≤ T * (ρ ^ (m - 1) * e) := by gcongr
+      linarith
+    exact iterationsA_ineq_quad hb hρ hK hcB hT he he7 hT1 hT2 (N := N) (m := m) (j := N + 2 - m)
+      (by omega) (by omega) (by omega) (by omega) (by omega) (hXLK2 (N + 2 - m) (by omega) (by omega))
+      (hXLK0 _) hXa hXb (hXL0 _)
+  calc ∑ m ∈ Finset.Icc ((N + 1) / 2 + 1) (N - 1), XLK (N + 2 - m) * (XL (ab m).1 * XL (ab m).2) ^ (1 / 2 : ℝ)
+      ≤ (Finset.Icc ((N + 1) / 2 + 1) (N - 1)).card • ((2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e)) :=
+        Finset.sum_le_card_nsmul _ _ _ hterm
+    _ = ((N - 1 + 1 - ((N + 1) / 2 + 1) : ℕ) : ℝ) * ((2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e)) := by
+        rw [Nat.card_Icc, nsmul_eq_mul]
+    _ ≤ ((N : ℝ) * (2 + 3 * cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+        have h1 : ((N - 1 + 1 - ((N + 1) / 2 + 1) : ℕ) : ℝ) ≤ N := by
+          exact_mod_cast (by omega : N - 1 + 1 - ((N + 1) / 2 + 1) ≤ N)
+        have h5 : 0 ≤ (2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) := by
+          have : 0 ≤ K := by linarith
+          positivity
+        calc ((N - 1 + 1 - ((N + 1) / 2 + 1) : ℕ) : ℝ) * ((2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e))
+            ≤ (N : ℝ) * ((2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e)) := mul_le_mul_of_nonneg_right h1 h5
+          _ = ((N : ℝ) * (2 + 3 * cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by ring
+
+end RBM.Ind
+
+/-! ## 3. The `Ψ`-calculus -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+
+/-- `Ψ` in the variables `b = A^{1/8}`, `e = A^{1-k/8}`: `Ψ(m,k) = b^6 + ρ^{m-1} e`. -/
+theorem iterationsA_STPsi_eq {A : ℝ} (hA : 0 ≤ A) (ρ : ℝ) (m k : ℕ) :
+    STPsi A ρ m k = (A ^ (1 / 8 : ℝ)) ^ 6 + ρ ^ (m - 1) * A ^ (1 - (k : ℝ) / 8) := by
+  unfold STPsi
+  congr 1
+  rw [← Real.rpow_natCast, ← Real.rpow_mul hA]
+  norm_num
+
+/-- `A^{1-(k-1)/8} = A^{1/8} A^{1-k/8}` for `k ≥ 1`. -/
+theorem iterationsA_rpow_pred {A : ℝ} (hA : 0 < A) {k : ℕ} (hk : 1 ≤ k) :
+    A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8) = A ^ (1 / 8 : ℝ) * A ^ (1 - (k : ℝ) / 8) := by
+  rw [← Real.rpow_add hA]
+  congr 1
+  rw [Nat.cast_sub hk]
+  push_cast
+  ring
+
+/-- `Ψ(m,k-1) = b^6 + ρ^{m-1} b e`. -/
+theorem iterationsA_STPsi_pred {A : ℝ} (hA : 0 < A) (ρ : ℝ) (m : ℕ) {k : ℕ} (hk : 1 ≤ k) :
+    STPsi A ρ m (k - 1) = (A ^ (1 / 8 : ℝ)) ^ 6 + ρ ^ (m - 1) * (A ^ (1 / 8 : ℝ) * A ^ (1 - (k : ℝ) / 8)) := by
+  rw [iterationsA_STPsi_eq hA.le, iterationsA_rpow_pred hA hk]
+
+theorem iterationsA_STPsi_nonneg {A ρ : ℝ} (hA : 0 ≤ A) (hρ : 0 ≤ ρ) (m k : ℕ) : 0 ≤ STPsi A ρ m k := by
+  unfold STPsi; positivity
+
+theorem iterationsA_one_le_STPsi {A ρ : ℝ} (hA : 1 ≤ A) (hρ : 0 ≤ ρ) (m k : ℕ) : 1 ≤ STPsi A ρ m k := by
+  have h1 : 1 ≤ A ^ (3 / 4 : ℝ) := Real.one_le_rpow hA (by norm_num)
+  have h2 : 0 ≤ ρ ^ (m - 1) * A ^ (1 - (k : ℝ) / 8) := by
+    have := Real.rpow_nonneg (by linarith : (0 : ℝ) ≤ A) (1 - (k : ℝ) / 8)
+    positivity
+  unfold STPsi; linarith
+
+theorem iterationsA_STPsi_anti_k {A ρ : ℝ} (hA : 1 ≤ A) (hρ : 0 ≤ ρ) (m : ℕ) {k : ℕ} (hk : 1 ≤ k) :
+    STPsi A ρ m k ≤ STPsi A ρ m (k - 1) := by
+  unfold STPsi
+  have hA0 : 0 < A := by linarith
+  have : A ^ (1 - (k : ℝ) / 8) ≤ A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8) := by
+    apply Real.rpow_le_rpow_of_exponent_le hA
+    rw [Nat.cast_sub hk]; push_cast; linarith
+  have h2 : 0 ≤ ρ ^ (m - 1) := by positivity
+  gcongr
+
+
+end RBM.Gauss.Sizes
+
+/-! ## 4. The deterministic assembly: `STbootRHS ≤ C Ψ(n,k)`
+
+Proof of Lemma 4.11 `lem:iterations`.  The envelopes of `Ξ^{(𝓛)}_m`, `Ξ^{(𝓛-𝒦)}_m` enter `STbootRHS` through the
+functions `XL`, `XLK`; the hypotheses are the envelopes chosen in the proof: `Ξ^{(𝓛-𝒦)}_m ≤ 1 + Ψ(m,k)`
+for `m ≤ n-1`; `Ξ^{(𝓛)}_m ≤ 1 + T Ψ(m,l)` (`T ≥ W^{-d}B_{v,0}`, by (4.38) `rela_XILXILK`) with `l = k` for `m ≤ n-1` and
+`l = k-1` for `m ≤ n+1`; `Ξ^{(𝓛)}_{2n-1} ≤ 1 + cv A Z²` ((4.69) `auskoppw2`); `Ξ^{(𝓛)}_{4p} ≤ 1 + ρ^{4p-1}` (the a priori
+bound (4.39) `sef8w483r324`).  Scale facts: `ρ = η_s/η_u ≥ 1`, `ρ² ≤ K A^{1/8}` (from `ρ ≤ A^{𝔠d}`, `𝔠d ≤ 1/100`),
+`T A^{3/4} ≤ cB`, `T ρ² A^{7/8} ≤ cB K` (`B_v ≤ cB A^{-1+δ}`, `ρ² A^δ ≤ K A^{1/8}`), `W^{-d} B_{u,0} ≥ (cv A)⁻¹`.  The
+constants `C` depend on `(cB, cv, K, N)` only. -/
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+/-- **The chain bound (4.64) `xiu2n+2psi`**, deterministic and dimension free, in the form of the
+first term of `STbootRHS` (the right side of (4.36) `am;asoi222`): `B_u^{-1/(4p)} Ξ̂_{2N-1}^{1/2} Ξ̂_{4p}^{1/(4p)} ≤ C Ψ(N,k)` for the
+envelopes `Ξ̂_{2N-1} ≤ x ≤ 1 + cv A Z²` ((4.69) `auskoppw2`, `Z = 1 + cB + T ρ^N A^{1-(k-1)/8}`) and `Ξ̂_{4p} ≤ y ≤ 1 + ρ^{4p-1}` (the a
+priori bound), `(cv A)⁻¹ ≤ B_u` (`B_u⁻¹ ≤ cv A`), `p ≥ 2` (the paper has `p ≥ 4`), under the scale facts of `IterationsAScale`.  The
+constant depends on `(cB, cv, K)` only. -/
+theorem iterationsA_chain_term (cB cv K : ℝ) (hcB : 0 ≤ cB) (hcv : 1 ≤ cv) (hK : 1 ≤ K) (N k : ℕ)
+    (hN : 2 ≤ N) (hk : 1 ≤ k) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (A ρ T Bu x y : ℝ) (p : ℕ), 2 ≤ p → 1 ≤ A → 1 ≤ ρ →
+      ρ ^ 2 ≤ K * A ^ (1 / 8 : ℝ) → 0 ≤ T → T * ρ ^ 2 * A ^ (7 / 8 : ℝ) ≤ cB * K → (cv * A)⁻¹ ≤ Bu →
+      1 ≤ x → x ≤ 1 + cv * A * ((1 + cB) + T * ρ ^ N * A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8)) ^ 2 →
+      1 ≤ y → y ≤ 1 + ρ ^ (4 * p - 1) →
+      Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) * x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ))) ≤ C * STPsi A ρ N k := by
+  have hKpos : 0 < K := by linarith
+  set C1 : ℝ := 2 * cv * K + 2 * cv ^ 2 * (1 + cB) * K + 2 * cv ^ 2 * cB * K with hC1
+  have hC1p : 0 < C1 := by rw [hC1]; positivity
+  refine ⟨C1, hC1p, ?_⟩
+  intro A ρ T Bu x y p hp hA hρ hρK hT hT2 hBu hx1 hxc hy1 hy4p
+  have hA0 : 0 < A := by linarith
+  set b : ℝ := A ^ (1 / 8 : ℝ) with hb
+  set e : ℝ := A ^ (1 - (k : ℝ) / 8) with heq
+  have hb1 : 1 ≤ b := Real.one_le_rpow hA (by norm_num)
+  have he0 : 0 ≤ e := Real.rpow_nonneg hA0.le _
+  have hA78 : A ^ (7 / 8 : ℝ) = b ^ 7 := by
+    rw [hb, ← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num
+  have hA8 : A = b ^ 8 := by
+    rw [hb, ← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num
+  have hbe : A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8) = b * e := iterationsA_rpow_pred hA0 hk
+  rw [hA78] at hT2
+  have hρK' : ρ ^ 2 ≤ K * b := hρK
+  rw [iterationsA_STPsi_eq hA0.le ρ N k]
+  -- the chain term
+  have hz : -(1 : ℝ) / (4 * (p : ℝ)) ≤ 0 := by
+    have : (0 : ℝ) < 4 * (p : ℝ) := by
+      have : (0 : ℝ) < p := by exact_mod_cast (by omega : 0 < p)
+      positivity
+    exact div_nonpos_of_nonpos_of_nonneg (by norm_num) this.le
+  have hcvA : 0 < cv * A := by positivity
+  set w : ℝ := A ^ (1 / (4 * (p : ℝ))) with hw
+  have hw1 : 1 ≤ w := Real.one_le_rpow hA (by positivity)
+  have hwb : w ≤ b := by
+    rw [hw, hb]
+    apply Real.rpow_le_rpow_of_exponent_le hA
+    have : (2 : ℝ) ≤ p := by exact_mod_cast hp
+    rw [div_le_div_iff₀ (by positivity) (by norm_num)]
+    linarith
+  have hBw : Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) ≤ cv * w := by
+    have h1 : Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) ≤ ((cv * A)⁻¹) ^ (-(1 : ℝ) / (4 * (p : ℝ))) :=
+      Real.rpow_le_rpow_of_nonpos (inv_pos.2 hcvA) hBu hz
+    have h2 : ((cv * A)⁻¹) ^ (-(1 : ℝ) / (4 * (p : ℝ))) = (cv * A) ^ (1 / (4 * (p : ℝ))) := by
+      rw [← Real.rpow_neg_one, ← Real.rpow_mul hcvA.le]
+      congr 1; ring
+    have h3 : (cv * A) ^ (1 / (4 * (p : ℝ))) = cv ^ (1 / (4 * (p : ℝ))) * w := by
+      rw [hw, Real.mul_rpow (by linarith) hA0.le]
+    have h4 : cv ^ (1 / (4 * (p : ℝ))) ≤ cv := by
+      apply Real.rpow_le_self_of_one_le hcv
+      rw [div_le_one (by positivity)]
+      have : (2 : ℝ) ≤ p := by exact_mod_cast hp
+      linarith
+    rw [h2, h3] at h1
+    exact h1.trans (mul_le_mul_of_nonneg_right h4 (by linarith))
+  have hx0 : 0 ≤ x := by linarith [hx1]
+  have hy0 : 0 ≤ y := by linarith [hy1]
+  have hxle : x ≤ 1 + cv * b ^ 8 * ((1 + cB) + T * ρ ^ N * (b * e)) ^ 2 := by
+    rw [hbe, hA8] at hxc
+    exact hxc
+  have hyle : y ≤ (2 * ρ) ^ (4 * p) := by
+    refine hy4p.trans ?_
+    have h2 : (2 : ℝ) ≤ 2 ^ (4 * p) := by
+      calc (2 : ℝ) = 2 ^ 1 := by norm_num
+        _ ≤ 2 ^ (4 * p) := pow_le_pow_right₀ (by norm_num) (by omega)
+    have h3 : ρ ^ (4 * p - 1) ≤ ρ ^ (4 * p) := pow_le_pow_right₀ hρ (by omega)
+    have h4 : 1 ≤ ρ ^ (4 * p - 1) := one_le_pow₀ hρ
+    have h5 : 0 ≤ ρ ^ (4 * p) := by positivity
+    rw [mul_pow]
+    calc 1 + ρ ^ (4 * p - 1) ≤ 2 * ρ ^ (4 * p) := by linarith
+      _ ≤ 2 ^ (4 * p) * ρ ^ (4 * p) := mul_le_mul_of_nonneg_right h2 h5
+  have hchain := RBM.Ind.iterationsA_ineq_chain (b := b) (ρ := ρ) (e := e) (T := T) (cB := cB) (cv := cv)
+    (K := K) (w := w) (x := x) (y := y) (N := N) (p := p) hb1 hρ hK hcB hcv hT he0 hρK'
+    hT2 hw1 hwb (by omega) (by omega) hx0 hxle hy0 hyle
+  have ht1 : Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) * x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ))) ≤
+      C1 * (b ^ 6 + ρ ^ (N - 1) * e) := by
+    have hnn : 0 ≤ x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ))) :=
+      mul_nonneg (Real.rpow_nonneg hx0 _) (Real.rpow_nonneg hy0 _)
+    calc Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) * x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ)))
+        = Bu ^ (-(1 : ℝ) / (4 * (p : ℝ))) * (x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ)))) := by ring
+      _ ≤ (cv * w) * (x ^ (1 / 2 : ℝ) * y ^ (1 / (4 * (p : ℝ)))) :=
+          mul_le_mul_of_nonneg_right hBw hnn
+      _ ≤ C1 * (b ^ 6 + ρ ^ (N - 1) * e) := hchain
+  exact ht1
+
+/-- **The bootstrap right side** (deterministic, dimension free): under the envelopes above, `STbootRHS 1 XL XLK B_u N p ≤ C Ψ(N,k)`:
+the first term is the chain bound `iterationsA_chain_term` ((4.64) `xiu2n+2psi`), and the three sums are `≲ Ψ(N,k)` by
+`iterationsA_ineq_long`, `iterationsA_ineq_quad` (`p ≥ 2`; the paper has `p ≥ 4`). -/
+theorem iterationsA_boot_bound (cB cv K : ℝ) (hcB : 0 ≤ cB) (hcv : 1 ≤ cv) (hK : 1 ≤ K) (N k : ℕ)
+    (hN : 2 ≤ N) (hk : 1 ≤ k) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (A ρ T Bu : ℝ) (p : ℕ) (XL XLK : ℕ → ℝ), 2 ≤ p → 1 ≤ A → 1 ≤ ρ →
+      ρ ^ 2 ≤ K * A ^ (1 / 8 : ℝ) → 0 ≤ T → T * A ^ (3 / 4 : ℝ) ≤ cB →
+      T * ρ ^ 2 * A ^ (7 / 8 : ℝ) ≤ cB * K → (cv * A)⁻¹ ≤ Bu →
+      (∀ m, 1 ≤ m → m ≤ N + 1 → XL m ≤ 1 + T * STPsi A ρ m (k - 1)) →
+      (∀ m, 1 ≤ m → m + 1 ≤ N → XL m ≤ 1 + T * STPsi A ρ m k) →
+      (∀ m, 1 ≤ XL m) →
+      XL (2 * N - 1) ≤ 1 + cv * A * ((1 + cB) + T * ρ ^ N * A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8)) ^ 2 →
+      XL (4 * p) ≤ 1 + ρ ^ (4 * p - 1) →
+      (∀ m, 1 ≤ XLK m) → (∀ m, 1 ≤ m → m + 1 ≤ N → XLK m ≤ 1 + STPsi A ρ m k) →
+      STbootRHS 1 XL XLK Bu N p ≤ C * STPsi A ρ N k := by
+  obtain ⟨C1, hC1p, hC1⟩ := iterationsA_chain_term cB cv K hcB hcv hK N k hN hk
+  have hKpos : 0 < K := by linarith
+  have hNpos : (0 : ℝ) < N := by exact_mod_cast (by omega : 0 < N)
+  refine ⟨C1 + 2 * (N : ℝ) + 3 * (1 + cB + cB * K) + (N : ℝ) * (2 + 3 * cB + cB * K), by positivity, ?_⟩
+  intro A ρ T Bu p XL XLK hp hA hρ hρK hT hT1 hT2 hBu hXL1 hXL1' hXL0 hXLc hXL4p hXLK0 hXLK2
+  have hchain := hC1 A ρ T Bu (XL (2 * N - 1)) (XL (4 * p)) p hp hA hρ hρK hT hT2 hBu (hXL0 _) hXLc (hXL0 _) hXL4p
+  have hA0 : 0 < A := by linarith
+  have hρ0 : 0 ≤ ρ := by linarith
+  set b : ℝ := A ^ (1 / 8 : ℝ) with hb
+  set e : ℝ := A ^ (1 - (k : ℝ) / 8) with heq
+  have hb1 : 1 ≤ b := Real.one_le_rpow hA (by norm_num)
+  have he0 : 0 ≤ e := Real.rpow_nonneg hA0.le _
+  have hA34 : A ^ (3 / 4 : ℝ) = b ^ 6 := by
+    rw [hb, ← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num
+  have hA78 : A ^ (7 / 8 : ℝ) = b ^ 7 := by
+    rw [hb, ← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num
+  have hA8 : A = b ^ 8 := by
+    rw [hb, ← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num
+  have he7 : e ≤ b ^ 7 := by
+    rw [← hA78]
+    apply Real.rpow_le_rpow_of_exponent_le hA
+    have : (1 : ℝ) ≤ k := by exact_mod_cast hk
+    linarith
+  have hPsik : ∀ m, STPsi A ρ m k = b ^ 6 + ρ ^ (m - 1) * e := fun m => iterationsA_STPsi_eq hA0.le ρ m k
+  have hPsik1 : ∀ m, STPsi A ρ m (k - 1) = b ^ 6 + ρ ^ (m - 1) * (b * e) := fun m =>
+    iterationsA_STPsi_pred hA0 ρ m hk
+  have hbe : A ^ (1 - ((k - 1 : ℕ) : ℝ) / 8) = b * e := iterationsA_rpow_pred hA0 hk
+  rw [hA34] at hT1
+  rw [hA78] at hT2
+  have hρK' : ρ ^ 2 ≤ K * b := hρK
+  have hb6 : 1 ≤ b ^ 6 := one_le_pow₀ hb1
+  have hpe : 0 ≤ ρ ^ (N - 1) * e := by positivity
+  rw [hPsik N]
+  rw [hPsik N] at hchain
+  -- the sums
+  have hs1 := RBM.Ind.iterationsA_sum_XLK (N := N) hb1 hρ he0 (XLK := XLK) (fun m hm1 hm2 => by
+    have := hXLK2 m hm1 hm2
+    rwa [hPsik] at this)
+  have hs2 := RBM.Ind.iterationsA_sum_XL hb1 hρ hK hcB hT he0 hT1 hT2 hN (XL := XL) (fun m hm1 hm2 => by
+    have := hXL1 m hm1 hm2
+    rwa [hPsik1] at this)
+  have hs3 := RBM.Ind.iterationsA_sum_quad (N := N) hb1 hρ hK hcB hT he0 he7 hT1 hT2 (XL := XL) (XLK := XLK)
+    (ab := STn12) (fun m hm => RBM.Ind.iterationsA_STn12_bounds' hm)
+    (fun m hm1 hm2 => by
+      have := hXL1' m hm1 hm2
+      rwa [hPsik] at this)
+    (fun m => by linarith [hXL0 m]) (fun m => by linarith [hXLK0 m])
+    (fun m hm1 hm2 => by
+      have := hXLK2 m hm1 hm2
+      rwa [hPsik] at this)
+  unfold STbootRHS
+  have hsum : C1 * (b ^ 6 + ρ ^ (N - 1) * e) + (2 * (N : ℝ) * (b ^ 6 + ρ ^ (N - 1) * e) +
+      3 * (1 + cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e) + (N : ℝ) * (2 + 3 * cB + cB * K) * (b ^ 6 + ρ ^ (N - 1) * e)) =
+      (C1 + 2 * (N : ℝ) + 3 * (1 + cB + cB * K) + (N : ℝ) * (2 + 3 * cB + cB * K)) * (b ^ 6 + ρ ^ (N - 1) * e) := by ring
+  rw [← hsum]
+  exact add_le_add hchain (add_le_add (add_le_add hs1 hs2) hs3)
+
+end RBM.Gauss.Sizes
+
+/-! ## 5. The odd chain bound for the model
+
+The loops `𝓛^{(m)}_{v,σ,a}` of the flow (`Lloop`) are the list-based loops `loopL` of the Hermitian matrix
+`blockMat (seqHflow sz n v ω)` at `z = zt E v`, so `STmaxL` is `RBM.Ind.loopMax` (`Induction/Split.lean`) and
+`STXiL = 1 + loopXi` with the scale `A = (W^{-d}B_{v,0})⁻¹`.  The paper applies equation (5.118) of Yau-Yin [YY_25]
+(arXiv:2501.01718) to the two chains of (4.66) `suauwiioo1`, which gives (4.67) `eq:boundtwochains` (factor `ilambda² W^d`); here the
+scale is the free parameter `A = B_v⁻¹` of `loopXi_le`, and the Cauchy-Schwarz step of (4.66) is `loopMax_odd_sq_le`. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `max_{σ,a} |𝓛^{(m)}_{v,σ,a}|` is the `loopMax` of the block matrix of the flow matrix. -/
+theorem iterationsA_STmaxL_eq (n : ℕ) (E v : ℝ) (m : ℕ) (ω : sz.SeqΩ) :
+    STmaxL sz n E v m ω = RBM.Ind.loopMax d (sz.L n) (sz.W n)
+      (blockMat d (sz.L n) (sz.W n) (seqHflow sz n v ω)) (zt E v) m := by
+  have : Nonempty ((Fin m → Bool) × (Fin m → Zd d (sz.L n))) := ⟨((fun _ => true), (fun _ => 0))⟩
+  unfold STmaxL RBM.Ind.loopMax
+  rw [← Finset.sup'_univ_eq_ciSup]
+  congr 1
+  funext p
+  unfold Sizes.Lloop loopFine
+  rw [loopM_eq_loopL]
+  rfl
+
+/-- `Ξ̂^{(𝓛)}_{v,m} = 1 + Ξ^{(𝓛)}_m` with `Ξ_m = max|𝓛^{(m)}| (B_v⁻¹)^{m-1}` (`RBM.Ind.loopXi`, scale `A = B_v⁻¹`). -/
+theorem iterationsA_STXiL_eq (n : ℕ) (E v : ℝ) (m : ℕ) (ω : sz.SeqΩ) :
+    STXiL sz n E v m ω = 1 + RBM.Ind.loopXi d (sz.L n) (sz.W n)
+      (blockMat d (sz.L n) (sz.W n) (seqHflow sz n v ω)) (zt E v) (sz.Bctl n v)⁻¹ m := by
+  unfold STXiL RBM.Ind.loopXi
+  rw [iterationsA_STmaxL_eq, div_eq_mul_inv, inv_pow]
+
+/-- **The odd chain bound for the model** ((4.66) `suauwiioo1`, (4.67) `eq:boundtwochains`):
+for `N ≥ 3` and `B_{v,0} > 0`,
+`Ξ̂^{(𝓛)}_{v,2N-1} ≤ 1 + B_v⁻¹ (Ξ̂_{2l₁} Ξ̂_{2l₂} Ξ̂_{2l₃} Ξ̂_{2l₄})^{1/2}`, `l₁ = ⌈N/2⌉, l₂ = ⌊N/2⌋, l₃ = ⌈(N-1)/2⌉,
+l₄ = ⌊(N-1)/2⌋` (natural division below), pointwise in `ω`: `Ξ_{2N-1}² ≤ Ξ_{2N-2} Ξ_{2N}` (`loopMax_odd_sq_le`) and
+`Ξ_{2n+2} ≤ Ξ_{2l₁} Ξ_{2l₂} B⁻¹` (`loopXi_le`) twice, with `Ξ ≤ Ξ̂`. -/
+theorem iterationsA_xiL_odd_le (n : ℕ) {E v : ℝ} (ω : sz.SeqΩ) (hB : 0 < sz.Bctl n v) {N : ℕ} (hN : 3 ≤ N) :
+    STXiL sz n E v (2 * N - 1) ω ≤ 1 + (sz.Bctl n v)⁻¹ *
+      ((STXiL sz n E v (2 * ((N + 1) / 2)) ω * STXiL sz n E v (2 * (N / 2)) ω) *
+        (STXiL sz n E v (2 * (N / 2)) ω * STXiL sz n E v (2 * ((N - 1) / 2)) ω)) ^ (1 / 2 : ℝ) := by
+  set H := blockMat d (sz.L n) (sz.W n) (seqHflow sz n v ω) with hH
+  set z := zt E v with hz
+  set A' : ℝ := (sz.Bctl n v)⁻¹ with hA'
+  have hA'0 : 0 ≤ A' := (inv_pos.2 hB).le
+  have hHerm : H.IsHermitian := (seqHflow_isHermitian sz n v ω).submatrix _
+  set X : ℕ → ℝ := fun m => RBM.Ind.loopXi d (sz.L n) (sz.W n) H z A' m with hX
+  have hXe : ∀ m, STXiL sz n E v m ω = 1 + X m := fun m => iterationsA_STXiL_eq sz n E v m ω
+  have hX0 : ∀ m, 0 ≤ X m := fun m => by
+    simp only [hX, RBM.Ind.loopXi]
+    exact mul_nonneg (RBM.Ind.loopMax_nonneg _) (pow_nonneg hA'0 _)
+  -- (6.4)
+  have hodd := RBM.Ind.loopMax_odd_sq_le (d := d) (L := sz.L n) (W := sz.W n) (z := z) hHerm (m := N - 1) (by omega)
+  rw [show 2 * (N - 1) + 1 = 2 * N - 1 by omega, show 2 * (N - 1) + 2 = 2 * N by omega,
+    show 2 * (N - 1) = 2 * N - 2 by omega] at hodd
+  have hsq : X (2 * N - 1) ^ 2 ≤ X (2 * N - 2) * X (2 * N) := by
+    simp only [hX, RBM.Ind.loopXi]
+    have hp : A' ^ (2 * N - 1 - 1) * A' ^ (2 * N - 1 - 1) = A' ^ (2 * N - 2 - 1) * A' ^ (2 * N - 1) := by
+      rw [← pow_add, ← pow_add]; congr 1; omega
+    have hmul := mul_le_mul_of_nonneg_right hodd (show 0 ≤ A' ^ (2 * N - 1 - 1) * A' ^ (2 * N - 1 - 1) by positivity)
+    calc (RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N - 1) * A' ^ (2 * N - 1 - 1)) ^ 2
+        = RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N - 1) ^ 2 * (A' ^ (2 * N - 1 - 1) * A' ^ (2 * N - 1 - 1)) := by ring
+      _ ≤ (RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N - 2) * RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N)) *
+            (A' ^ (2 * N - 1 - 1) * A' ^ (2 * N - 1 - 1)) := hmul
+      _ = (RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N - 2) * A' ^ (2 * N - 2 - 1)) *
+            (RBM.Ind.loopMax d (sz.L n) (sz.W n) H z (2 * N) * A' ^ (2 * N - 1)) := by
+          rw [hp]; ring
+  -- (5.118) twice
+  have h1 : X (2 * N) ≤ X (2 * ((N + 1) / 2)) * X (2 * (N / 2)) * A' := by
+    have := RBM.Ind.loopXi_le (d := d) (L := sz.L n) (W := sz.W n) (z := z) hHerm hA'0 (n := N - 1)
+      (l₁ := (N + 1) / 2) (l₂ := N / 2) (by omega) (by omega) (by omega)
+    rwa [show 2 * (N - 1) + 2 = 2 * N by omega] at this
+  have h2 : X (2 * N - 2) ≤ X (2 * (N / 2)) * X (2 * ((N - 1) / 2)) * A' := by
+    have := RBM.Ind.loopXi_le (d := d) (L := sz.L n) (W := sz.W n) (z := z) hHerm hA'0 (n := N - 2)
+      (l₁ := N / 2) (l₂ := (N - 1) / 2) (by omega) (by omega) (by omega)
+    rwa [show 2 * (N - 2) + 2 = 2 * N - 2 by omega] at this
+  have hXX : X (2 * N - 1) ^ 2 ≤ A' ^ 2 * ((X (2 * ((N + 1) / 2)) * X (2 * (N / 2))) * (X (2 * (N / 2)) * X (2 * ((N - 1) / 2)))) := by
+    refine hsq.trans ?_
+    calc X (2 * N - 2) * X (2 * N)
+        ≤ (X (2 * (N / 2)) * X (2 * ((N - 1) / 2)) * A') * (X (2 * ((N + 1) / 2)) * X (2 * (N / 2)) * A') :=
+          mul_le_mul h2 h1 (hX0 _) (by have := hX0 (2 * (N / 2)); have := hX0 (2 * ((N - 1) / 2)); positivity)
+      _ = A' ^ 2 * ((X (2 * ((N + 1) / 2)) * X (2 * (N / 2))) * (X (2 * (N / 2)) * X (2 * ((N - 1) / 2)))) := by ring
+  -- from `Ξ ≤ Ξ̂`
+  have hP : (X (2 * ((N + 1) / 2)) * X (2 * (N / 2))) * (X (2 * (N / 2)) * X (2 * ((N - 1) / 2))) ≤
+      ((1 + X (2 * ((N + 1) / 2))) * (1 + X (2 * (N / 2)))) * ((1 + X (2 * (N / 2))) * (1 + X (2 * ((N - 1) / 2)))) := by
+    have a1 := hX0 (2 * ((N + 1) / 2)); have a2 := hX0 (2 * (N / 2)); have a3 := hX0 (2 * ((N - 1) / 2))
+    gcongr <;> linarith
+  have hfin : X (2 * N - 1) ≤ A' * (((1 + X (2 * ((N + 1) / 2))) * (1 + X (2 * (N / 2)))) *
+      ((1 + X (2 * (N / 2))) * (1 + X (2 * ((N - 1) / 2))))) ^ (1 / 2 : ℝ) := by
+    set P : ℝ := ((1 + X (2 * ((N + 1) / 2))) * (1 + X (2 * (N / 2)))) * ((1 + X (2 * (N / 2))) * (1 + X (2 * ((N - 1) / 2)))) with hPdef
+    have hP0 : 0 ≤ P := by
+      have a1 := hX0 (2 * ((N + 1) / 2)); have a2 := hX0 (2 * (N / 2)); have a3 := hX0 (2 * ((N - 1) / 2))
+      rw [hPdef]; positivity
+    rw [← Real.sqrt_eq_rpow]
+    have hle : X (2 * N - 1) ^ 2 ≤ (A' * Real.sqrt P) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt hP0]
+      exact hXX.trans (mul_le_mul_of_nonneg_left hP (by positivity))
+    exact le_of_sq_le_sq hle (by positivity) |>.trans (le_refl _)
+  rw [hXe (2 * N - 1), hXe (2 * ((N + 1) / 2)), hXe (2 * (N / 2)), hXe (2 * ((N - 1) / 2))]
+  linarith
+
+end RBM.Gauss.Sizes
+
+/-! ## 6. The `≺`-calculus used by the iteration
+
+`≺` is `Prec` (union over the index inside `P`, scale `N = sz.size n`).  Small lemmas on monotone
+changes of the two sides, absorption of a constant, powers and `1 + c ξ`. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `ξ ≺ ζ` and `ζ ≤ ζ'` eventually give `ξ ≺ ζ'`. -/
+theorem iterationsA_prec_mono_right {U : ℕ → Type*} {ξ ζ ζ' : ∀ n, U n → sz.SeqΩ → ℝ}
+    (h : sz.Prec ξ ζ) (hle : ∀ᶠ n in atTop, ∀ u ω, ζ n u ω ≤ ζ' n u ω) : sz.Prec ξ ζ' := by
+  refine StochDomAt.of_subset h fun τ hτ => ⟨τ, hτ, ?_⟩
+  filter_upwards [hle] with n hn
+  rintro ω ⟨u, hu⟩
+  exact ⟨u, lt_of_le_of_lt (mul_le_mul_of_nonneg_left (hn u ω) (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hu⟩
+
+/-- `ξ ≤ ξ'` eventually and `ξ' ≺ ζ` give `ξ ≺ ζ`. -/
+theorem iterationsA_prec_mono_left {U : ℕ → Type*} {ξ ξ' ζ : ∀ n, U n → sz.SeqΩ → ℝ}
+    (hle : ∀ᶠ n in atTop, ∀ u ω, ξ n u ω ≤ ξ' n u ω) (h : sz.Prec ξ' ζ) : sz.Prec ξ ζ := by
+  refine StochDomAt.of_subset h fun τ hτ => ⟨τ, hτ, ?_⟩
+  filter_upwards [hle] with n hn
+  rintro ω ⟨u, hu⟩
+  exact ⟨u, lt_of_lt_of_le hu (hn u ω)⟩
+
+/-- A constant factor on the right is absorbed: `ξ ≺ c ζ` gives `ξ ≺ ζ` (`ζ ≥ 0`). -/
+theorem iterationsA_prec_absorb (hsize : Tendsto sz.size atTop atTop) {U : ℕ → Type*}
+    {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ} {c : ℝ} (hζ : ∀ᶠ n in atTop, ∀ u ω, 0 ≤ ζ n u ω)
+    (h : sz.Prec ξ (fun n u ω => c * ζ n u ω)) : sz.Prec ξ ζ := by
+  refine StochDomAt.of_subset h fun τ hτ => ⟨τ / 2, half_pos hτ, ?_⟩
+  filter_upwards [hsize.eventually (eventually_le_rpow c (half_pos hτ)), hζ] with n hcN hζn
+  rintro ω ⟨u, hu⟩
+  refine ⟨u, lt_of_le_of_lt ?_ hu⟩
+  have hpos : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have h2 : 0 ≤ ζ n u ω := hζn u ω
+  calc ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (c * ζ n u ω)
+      ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζ n u ω) := by
+        gcongr
+    _ = ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω := by
+        rw [← mul_assoc, UnifDetDom.rpow_half_mul_rpow_half (sz.size n) hτ]
+
+/-- Powers: `ξ ≺ ζ` gives `ξ^θ ≺ ζ^θ`, `θ > 0`, `ξ, ζ ≥ 0`. -/
+theorem iterationsA_prec_rpow {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
+    (hξ : ∀ n u ω, 0 ≤ ξ n u ω) (hζ : ∀ n u ω, 0 ≤ ζ n u ω) {θ : ℝ} (hθ : 0 < θ)
+    (h : sz.Prec ξ ζ) : sz.Prec (fun n u ω => ξ n u ω ^ θ) (fun n u ω => ζ n u ω ^ θ) := by
+  refine StochDomAt.of_subset h fun τ hτ => ⟨τ / θ, div_pos hτ hθ, Eventually.of_forall fun n => ?_⟩
+  rintro ω ⟨u, hu⟩
+  refine ⟨u, ?_⟩
+  have hN : 0 ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have h1 : ((sz.size n : ℕ) : ℝ) ^ τ = (((sz.size n : ℕ) : ℝ) ^ (τ / θ)) ^ θ := by
+    rw [← Real.rpow_mul hN]; congr 1; field_simp
+  have hu' : (((sz.size n : ℕ) : ℝ) ^ (τ / θ) * ζ n u ω) ^ θ < ξ n u ω ^ θ := by
+    rw [Real.mul_rpow (Real.rpow_nonneg hN _) (hζ n u ω), ← h1]
+    exact hu
+  exact (Real.rpow_lt_rpow_iff (mul_nonneg (Real.rpow_nonneg hN _) (hζ n u ω)) (hξ n u ω) hθ).1 hu'
+
+/-- `ξ ≺ ζ` gives `1 + c ξ ≺ 1 + c ζ` for a deterministic `c ≥ 0`. -/
+theorem iterationsA_prec_one_add_mul (hsize : Tendsto sz.size atTop atTop) {U : ℕ → Type*}
+    {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ} {c : ∀ n, U n → ℝ} (hc : ∀ n u, 0 ≤ c n u)
+    (hξ : ∀ n u ω, 0 ≤ ξ n u ω) (h : sz.Prec ξ ζ) :
+    sz.Prec (fun n u ω => 1 + c n u * ξ n u ω) (fun n u ω => 1 + c n u * ζ n u ω) := by
+  have h1 : sz.Prec (U := U) (fun n _ _ => (1 : ℝ)) (fun _ _ _ => 1) :=
+    StochDomAt.refl hsize fun _ _ _ => zero_le_one
+  have h2 : sz.Prec (U := U) (fun n u _ => c n u) (fun n u _ => c n u) :=
+    StochDomAt.refl hsize fun n u _ => hc n u
+  have h3 := StochDomAt.mul hsize hξ (fun n u _ => hc n u) h2 h
+  exact StochDomAt.add hsize h1 h3
+
+private theorem iterationsA_one_le_ratio {s v : ℝ} (hsv : s ≤ v) (hv1 : v < 1) : 1 ≤ (1 - s) / (1 - v) := by
+  have hxv : 0 < 1 - v := by linarith
+  rw [le_div_iff₀ hxv]; linarith
+
+/-- `Bctl ≥ 0`. -/
+private theorem iterationsA_Bctl_nonneg (n : ℕ) (u : ℝ) : 0 ≤ sz.Bctl n u := by
+  unfold Sizes.Bctl Bparam
+  have hW : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hL : (0 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := Nat.cast_nonneg _
+  positivity
+/-! ## 7. The scale facts used in the proof of Lemma 4.11
+
+`IterationsAScale`: the deterministic facts used in the proof of Lemma 4.11 `lem:iterations`, for a scale sequence `A`
+(`A = ilambda² W^d` in case (i), `A = (W^{-d}B_{s,0})⁻¹` in case (ii)), the number `T n ≥ W^{-d}B_{v,0}` (`v ∈ [s,t]`) and
+`ρ = η_s/η_u = (1-s)/(1-u)`: `ρ ≥ 1`, `ρ² ≤ K A^{1/8}` (`ρ ≤ A^{𝔠d}`, `𝔠d ≤ 1/100`), `T A^{3/4} ≤ cB`, `T ρ² A^{7/8} ≤ cB K`
+(`T = cB A^{-1+δ}`, `ρ² A^δ ≤ K A^{1/8}`), `(cv A)⁻¹ ≤ W^{-d}B_{v,0} ≤ T`.  It is proved in both cases by
+`iterationsA_scale_I`, `iterationsA_scale_II` (section 9). -/
+
+/-- The deterministic scale facts used in the proof of Lemma 4.11 `lem:iterations`. -/
+structure IterationsAScale (sz : Sizes d) (E s t A T : ℕ → ℝ) (cB cv K : ℝ) : Prop where
+  cB_nonneg : 0 ≤ cB
+  one_le_cv : 1 ≤ cv
+  one_le_K : 1 ≤ K
+  A_nonneg : ∀ n, 0 ≤ A n
+  T_nonneg : ∀ n, 0 ≤ T n
+  t_lt_one : ∀ n, t n < 1
+  one_le_A : ∀ᶠ n in atTop, 1 ≤ A n
+  rho : ∀ᶠ n in atTop, ∀ q : STPair s t n, 1 ≤ etaT (E n) (s n) / etaT (E n) q.1.2 ∧
+    (etaT (E n) (s n) / etaT (E n) q.1.2) ^ 2 ≤ K * A n ^ (1 / 8 : ℝ) ∧
+    T n * (etaT (E n) (s n) / etaT (E n) q.1.2) ^ 2 * A n ^ (7 / 8 : ℝ) ≤ cB * K
+  TA : ∀ᶠ n in atTop, T n * A n ^ (3 / 4 : ℝ) ≤ cB
+  Bctl : ∀ᶠ n in atTop, ∀ w : TimeIcc s t n, (cv * A n)⁻¹ ≤ sz.Bctl n (w : ℝ) ∧ sz.Bctl n (w : ℝ) ≤ T n
+
+end RBM.Gauss.Sizes
+
+/-! ## 8. The averaged law, the a priori bound and (4.38) on the pairs
+
+`iterationsA_avg_of_STAvgU` restricts `STAvgU` (Step 2) to the pairs, `iterationsA_apriori_of_lRB1` gets (4.39) from
+(2.85) `lRB1` (`STStep1Loop`), and `iterationsA_rela_of_K` gets (4.38) from the `𝒦`-loop bound (2.58) `eq:bcal_k` in its
+form uniform in `(v,u)` and the labels, which is its hypothesis `hK` (`STKbound` itself is a statement for each time
+sequence). -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **The averaged law on the pairs**: `Ξ̂^{(𝓛-𝒦)}_{v,1} ≺ 1` uniformly in `(v,u)`, from `STAvgU`
+((2.88) `Gt_avgbound_flow` uniform in `u`). -/
+theorem iterationsA_avg_of_STAvgU (hsize : Tendsto sz.size atTop atTop) {E s t : ℕ → ℝ} (ht1 : ∀ n, t n < 1)
+    (h : STAvgU sz E s t) :
+    sz.Prec (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 1 ω) (fun _ _ _ => 1) := by
+  let φ : ∀ n, STPair s t n → TimeIcc s t n := fun n q => ⟨q.1.1, q.2.1, q.2.2.1.trans q.2.2.2⟩
+  have hBpos : ∀ n (v : TimeIcc s t n), 0 < (sz.Bctl n (v : ℝ)) ^ 1 := fun n v =>
+    pow_pos (st_Bctl_pos sz (n := n) (lt_of_le_of_lt (v.2).2 (ht1 n))) 1
+  exact StochDomAt.precomp_param
+    (st_prec_one_add_sup sz hsize (U := fun n => TimeIcc s t n)
+      (V := fun n => (Fin 1 → Bool) × (Fin 1 → Zd d (sz.L n)))
+      (fun n v p ω => ‖Lloop sz n (E n) (v : ℝ) p.1 p.2 ω - STKloop sz n (E n) (v : ℝ) p.1 p.2‖)
+      (fun n v => (sz.Bctl n (v : ℝ)) ^ 1) (fun n v => hBpos n v) h) φ
+
+/-- The real inequality behind `iterationsA_apriori_of_lRB1`: `1 + S/b_v ≤ r_u (1 + S/(r_v b_s))` for `0 ≤ S`,
+`1 ≤ r_v ≤ r_u`, `0 < b_s ≤ b_v`. -/
+private theorem iterationsA_apriori_aux {S rv ru bs bv : ℝ} (hS : 0 ≤ S) (hrv : 1 ≤ rv) (hru : rv ≤ ru)
+    (hbs : 0 < bs) (hbv : bs ≤ bv) : 1 + S / bv ≤ ru * (1 + S / (rv * bs)) := by
+  have hrv0 : 0 < rv := by linarith
+  have hbv0 : 0 < bv := by linarith
+  have h1 : S / bv ≤ S / bs := div_le_div_of_nonneg_left hS hbs hbv
+  have h2 : S / bs = rv * (S / (rv * bs)) := by field_simp
+  have h3 : 0 ≤ S / (rv * bs) := by positivity
+  have h4 : rv * (S / (rv * bs)) ≤ ru * (S / (rv * bs)) := mul_le_mul_of_nonneg_right hru h3
+  nlinarith
+
+/-- **The a priori bound (4.39) `sef8w483r324` on the pairs**: `Ξ̂^{(𝓛)}_{v,m} ≺ (η_s/η_u)^{m-1}` uniformly in `(v,u)`, from
+(2.85) `lRB1` (`STStep1Loop`): `Ξ̂ = 1 + max|𝓛|/B_v^{m-1}`, `max|𝓛| ≺ ((1-s)/(1-v))^{m-1} B_s^{m-1}`, `B_s ≤ B_v`, `(1-s)/(1-v) ≤ (1-s)/(1-u)`. -/
+theorem iterationsA_apriori_of_lRB1 (hsize : Tendsto sz.size atTop atTop) {E s t : ℕ → ℝ}
+    (ht1 : ∀ n, t n < 1) (hE : ∀ n, |E n| < 2) (h : STStep1Loop sz E s t) (m : ℕ) (hm : 1 ≤ m) :
+    sz.Prec (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω)
+      (fun n q _ => (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1)) := by
+  let φ : ∀ n, STPair s t n → TimeIcc s t n := fun n q => ⟨q.1.1, q.2.1, q.2.2.1.trans q.2.2.2⟩
+  have hv1 : ∀ n (v : TimeIcc s t n), (v : ℝ) < 1 := fun n v => lt_of_le_of_lt (v.2).2 (ht1 n)
+  have hBc : ∀ n (v : TimeIcc s t n), 0 < ((1 - s n) / (1 - (v : ℝ))) ^ (m - 1) * (sz.Bctl n (s n)) ^ (m - 1) :=
+    fun n v => by
+      have h1 : 0 < 1 - s n := by linarith [(v.2).1, hv1 n v]
+      have h2 : 0 < 1 - (v : ℝ) := by linarith [hv1 n v]
+      have h3 : 0 < sz.Bctl n (s n) := st_Bctl_pos sz (n := n) (by linarith [(v.2).1, hv1 n v])
+      positivity
+  have hX := st_prec_one_add_sup sz hsize (U := fun n => TimeIcc s t n)
+    (V := fun n => (Fin m → Bool) × (Fin m → Zd d (sz.L n)))
+    (fun n v p ω => ‖Lloop sz n (E n) (v : ℝ) p.1 p.2 ω‖)
+    (fun n v => ((1 - s n) / (1 - (v : ℝ))) ^ (m - 1) * (sz.Bctl n (s n)) ^ (m - 1)) hBc (h m hm)
+  have hX' := StochDomAt.precomp_param hX φ
+  have hXnn : ∀ n (q : STPair s t n) (ω : sz.SeqΩ), 0 ≤ 1 + (Finset.univ.sup' Finset.univ_nonempty
+      (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖Lloop sz n (E n) (φ n q : ℝ) p.1 p.2 ω‖)) /
+        (((1 - s n) / (1 - (φ n q : ℝ))) ^ (m - 1) * (sz.Bctl n (s n)) ^ (m - 1)) := fun n q ω => by
+    have h0 : 0 ≤ Finset.univ.sup' Finset.univ_nonempty
+        (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖Lloop sz n (E n) (φ n q : ℝ) p.1 p.2 ω‖) :=
+      le_trans (norm_nonneg _) (Finset.le_sup' (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) =>
+        ‖Lloop sz n (E n) (φ n q : ℝ) p.1 p.2 ω‖) (Finset.mem_univ ((fun _ => true), (fun _ => (0 : Zd d (sz.L n))))))
+    have := hBc n (φ n q)
+    positivity
+  -- ρ_u^{m-1} · X ≺ ρ_u^{m-1} · 1
+  have hρu : ∀ n (q : STPair s t n), 0 ≤ (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1) := fun n q => by
+    rw [RBM.Ind.scaleFacts_etaT_div_etaT (hE n)]
+    have h1 : 0 ≤ 1 - s n := by linarith [q.2.1, hv1 n (φ n q)]
+    have h2 : 0 ≤ 1 - q.1.2 := by linarith [q.2.2.2, ht1 n]
+    positivity
+  have hmul : sz.Prec (U := STPair s t)
+      (fun n q ω => (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1) * (1 + (Finset.univ.sup' Finset.univ_nonempty
+        (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖Lloop sz n (E n) (φ n q : ℝ) p.1 p.2 ω‖)) /
+          (((1 - s n) / (1 - (φ n q : ℝ))) ^ (m - 1) * (sz.Bctl n (s n)) ^ (m - 1))))
+      (fun n q _ => (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1) * 1) :=
+    StochDomAt.mul (ξ₁ := fun n q _ => (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1))
+      (ξ₂ := fun n q ω => 1 + (Finset.univ.sup' Finset.univ_nonempty
+        (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖Lloop sz n (E n) (φ n q : ℝ) p.1 p.2 ω‖)) /
+          (((1 - s n) / (1 - (φ n q : ℝ))) ^ (m - 1) * (sz.Bctl n (s n)) ^ (m - 1)))
+      (ζ₁ := fun n q _ => (etaT (E n) (s n) / etaT (E n) q.1.2) ^ (m - 1)) (ζ₂ := fun _ _ _ => 1) hsize
+      (fun n q ω => hXnn n q ω) (fun n q _ => hρu n q)
+      (StochDomAt.refl hsize (fun n q _ => hρu n q)) hX'
+  refine iterationsA_prec_mono_right sz (iterationsA_prec_mono_left sz ?_ hmul)
+    (Eventually.of_forall fun n q ω => by rw [mul_one])
+  refine Eventually.of_forall fun n q ω => ?_
+  -- the pointwise bound `Ξ̂ ≤ ρ_u^{m-1} X`
+  have hsv : s n ≤ q.1.1 := q.2.1
+  have hvu : q.1.1 ≤ q.1.2 := q.2.2.1
+  have hv1' : q.1.1 < 1 := hv1 n (φ n q)
+  have hu1 : q.1.2 < 1 := lt_of_le_of_lt q.2.2.2 (ht1 n)
+  have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz (n := n) (lt_of_le_of_lt hsv hv1')
+  have hBv : sz.Bctl n (s n) ≤ sz.Bctl n q.1.1 := STBctl_mono sz n hsv hv1'
+  have hS0 : 0 ≤ STmaxL sz n (E n) q.1.1 m ω :=
+    le_trans (norm_nonneg _) (Finset.le_sup' (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) =>
+      ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω‖) (Finset.mem_univ ((fun _ => true), (fun _ => (0 : Zd d (sz.L n))))))
+  rw [RBM.Ind.scaleFacts_etaT_div_etaT (hE n)]
+  have hrv := iterationsA_one_le_ratio hsv hv1'
+  have hrvu : (1 - s n) / (1 - q.1.1) ≤ (1 - s n) / (1 - q.1.2) := by
+    have h2 : 0 < 1 - q.1.2 := by linarith
+    exact div_le_div_of_nonneg_left (by linarith) h2 (by linarith)
+  have key := iterationsA_apriori_aux hS0 (one_le_pow₀ hrv : 1 ≤ ((1 - s n) / (1 - q.1.1)) ^ (m - 1))
+    (pow_le_pow_left₀ (by linarith) hrvu _) (pow_pos hBs (m - 1)) (pow_le_pow_left₀ hBs.le hBv _)
+  change 1 + STmaxL sz n (E n) q.1.1 m ω / sz.Bctl n q.1.1 ^ (m - 1) ≤ _
+  exact key
+
+/-- **(4.38) `rela_XILXILK` on the pairs**: `Ξ̂^{(𝓛)}_{v,m} ≺ 1 + W^{-d}B_{v,0} Ξ̂^{(𝓛-𝒦)}_{v,m}`, from the `𝒦`-loop bound
+(2.58) `eq:bcal_k` uniform in `(v,u)` and the labels: `max|𝓛| ≤ max|𝒦| + max|𝓛-𝒦|`, `B Ξ̂^{(𝓛-𝒦)} = B + max|𝓛-𝒦|/B^{m-1}`. -/
+theorem iterationsA_rela_of_K (hsize : Tendsto sz.size atTop atTop) {E s t : ℕ → ℝ} (ht1 : ∀ n, t n < 1)
+    (m : ℕ) (hm : 1 ≤ m)
+    (hK : sz.Prec (U := fun n => STPair s t n × ((Fin m → Bool) × (Fin m → Zd d (sz.L n))))
+      (fun n p _ => ‖STKloop sz n (E n) p.1.1.1 p.2.1 p.2.2‖) (fun n p _ => sz.Bctl n p.1.1.1 ^ (m - 1))) :
+    sz.Prec (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω)
+      (fun n q ω => 1 + sz.Bctl n q.1.1 * STXiLK sz n (E n) q.1.1 m ω) := by
+  have hBpos : ∀ n (q : STPair s t n), 0 < sz.Bctl n q.1.1 := fun n q =>
+    st_Bctl_pos sz (n := n) (lt_of_le_of_lt (q.2.2.1.trans q.2.2.2) (ht1 n))
+  have hX := st_prec_one_add_sup sz hsize (U := STPair s t)
+    (V := fun n => (Fin m → Bool) × (Fin m → Zd d (sz.L n)))
+    (fun n q p ω => ‖STKloop sz n (E n) q.1.1 p.1 p.2‖) (fun n q => sz.Bctl n q.1.1 ^ (m - 1))
+    (fun n q => pow_pos (hBpos n q) _) hK
+  have hGnn : ∀ n (q : STPair s t n) (ω : sz.SeqΩ), 0 ≤ sz.Bctl n q.1.1 * STXiLK sz n (E n) q.1.1 m ω :=
+    fun n q ω => by
+      have := st_one_le_XiLK sz (n := n) (E := E n) (v := q.1.1) m ω (hBpos n q)
+      have := hBpos n q
+      positivity
+  have hadd := StochDomAt.add hsize hX
+    (StochDomAt.refl hsize (ζ := fun n q ω => sz.Bctl n q.1.1 * STXiLK sz n (E n) q.1.1 m ω) hGnn)
+  refine iterationsA_prec_mono_left sz ?_ hadd
+  refine Eventually.of_forall fun n q ω => ?_
+  have hB0 := hBpos n q
+  have hBm : 0 < sz.Bctl n q.1.1 ^ (m - 1) := pow_pos hB0 _
+  set SK : ℝ := Finset.univ.sup' Finset.univ_nonempty
+    (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖STKloop sz n (E n) q.1.1 p.1 p.2‖) with hSK
+  have hSL : STmaxL sz n (E n) q.1.1 m ω ≤ SK + STmaxLK sz n (E n) q.1.1 m ω := by
+    refine Finset.sup'_le _ _ fun p _ => ?_
+    have h1 : ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω‖ ≤ ‖STKloop sz n (E n) q.1.1 p.1 p.2‖ +
+        ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω - STKloop sz n (E n) q.1.1 p.1 p.2‖ := by
+      calc ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω‖
+          = ‖STKloop sz n (E n) q.1.1 p.1 p.2 + (Lloop sz n (E n) q.1.1 p.1 p.2 ω - STKloop sz n (E n) q.1.1 p.1 p.2)‖ := by
+            congr 1; ring
+        _ ≤ _ := norm_add_le _ _
+    have h2 : ‖STKloop sz n (E n) q.1.1 p.1 p.2‖ ≤ SK :=
+      Finset.le_sup' (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) => ‖STKloop sz n (E n) q.1.1 p.1 p.2‖)
+        (Finset.mem_univ p)
+    have h3 : ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω - STKloop sz n (E n) q.1.1 p.1 p.2‖ ≤ STmaxLK sz n (E n) q.1.1 m ω :=
+      Finset.le_sup' (fun p : (Fin m → Bool) × (Fin m → Zd d (sz.L n)) =>
+        ‖Lloop sz n (E n) q.1.1 p.1 p.2 ω - STKloop sz n (E n) q.1.1 p.1 p.2‖) (Finset.mem_univ p)
+    linarith
+  have hGeq : sz.Bctl n q.1.1 * STXiLK sz n (E n) q.1.1 m ω =
+      sz.Bctl n q.1.1 + STmaxLK sz n (E n) q.1.1 m ω / sz.Bctl n q.1.1 ^ (m - 1) := by
+    unfold STXiLK
+    have : sz.Bctl n q.1.1 ^ m = sz.Bctl n q.1.1 * sz.Bctl n q.1.1 ^ (m - 1) := by
+      rw [← pow_succ']; congr 1; omega
+    rw [this]; field_simp
+  change 1 + STmaxL sz n (E n) q.1.1 m ω / sz.Bctl n q.1.1 ^ (m - 1) ≤
+    (1 + SK / sz.Bctl n q.1.1 ^ (m - 1)) + sz.Bctl n q.1.1 * STXiLK sz n (E n) q.1.1 m ω
+  rw [hGeq]
+  have h4 : STmaxL sz n (E n) q.1.1 m ω / sz.Bctl n q.1.1 ^ (m - 1) ≤
+      SK / sz.Bctl n q.1.1 ^ (m - 1) + STmaxLK sz n (E n) q.1.1 m ω / sz.Bctl n q.1.1 ^ (m - 1) := by
+    rw [← add_div]; exact div_le_div_of_nonneg_right hSL hBm.le
+  linarith
+
+end RBM.Gauss.Sizes
+
+/-! ## 9. The scale facts, both cases
+
+Case (i) (`A = ilambda² W^d`, `1 - s ≤ ilambda²`, `1 - t ≥ ilambda²/L²`): `T = 2 A⁻¹`, `cB = cv = K = 2`
+(`B_v ≤ 2 A⁻¹` needs `2 ≤ d`, `B_v ≥ (2A)⁻¹`, `ρ ≤ (2A)^{𝔠d}`).  Case (ii) (`A = (W^{-d}B_{s,0})⁻¹`, `1 - s ≤ ilambda²/L²`):
+`T = A^{-1+𝔠d}`, `cB = cv = K = 1` (`B_v ≤ B_s^{1-𝔠d}` by `scaleFacts_R2`, `B_v ≥ B_s`, `ρ ≤ B_t^{-𝔠d} ≤ A^{𝔠d}`); the exponent
+counts need `𝔠d ≤ 1/16` (case (i): `ρ² ≤ 2 A^{1/8}`) and `𝔠d ≤ 1/24` (case (ii): `A^{3𝔠d - 1/8} ≤ 1`), both implied by
+`𝔠d ≤ 1/100`.  The first helpers below repeat the private lemmas `st_WO_pos`, `st_WO_AI`, `st_con_aux`, `st_rho_le`,
+`st_BI_lower` of `ScaleFacts3.lean`. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+private theorem iterationsA_WO_pos {𝔡 : ℝ} (hWO : sz.WO 𝔡) : 0 < 𝔡 := by
+  obtain ⟨n, h1, h2⟩ := hWO.exists
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  exact inv_pos.1 (lt_of_lt_of_le (Real.rpow_pos_of_pos hW _) (h1.trans h2))
+
+private theorem iterationsA_WO_AI {𝔡 : ℝ} (hWO : sz.WO 𝔡) :
+    ∀ᶠ n in atTop, 0 < sz.lam n ∧ 1 ≤ sz.STAI n := by
+  have h𝔡 := iterationsA_WO_pos sz hWO
+  filter_upwards [hWO] with n hn
+  obtain ⟨h1, -⟩ := hn
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  refine ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos hW0 _) h1, ?_⟩
+  have h2 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (2 * 𝔡) := Real.one_le_rpow hW1 (by linarith)
+  exact h2.trans (Sizes.lam_sq_mul_pow_ge sz n h1)
+
+private theorem iterationsA_con_aux {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) {s t : ℕ → ℝ} (hcon : sz.STConStInd 𝔠d s t)
+    (ht1 : ∀ n, t n < 1) : ∀ᶠ n in atTop, s n < t n ∧ sz.Bctl n (t n) < 1 := by
+  filter_upwards [hcon] with n hn
+  obtain ⟨h1, h2⟩ := hn
+  have hBt : 0 < sz.Bctl n (t n) := st_Bctl_pos sz (ht1 n)
+  have hpos : 0 < sz.Bctl n (t n) ^ 𝔠d := Real.rpow_pos_of_pos hBt _
+  have hxt : 0 < 1 - t n := by linarith [ht1 n]
+  have hr0 : 0 < (1 - t n) / (1 - s n) := lt_of_lt_of_le hpos h1
+  have hxs : 0 < 1 - s n := by
+    rcases (div_pos_iff.1 hr0) with h | h
+    · exact h.2
+    · linarith [h.1]
+  refine ⟨?_, ?_⟩
+  · have := (div_lt_one hxs).1 h2
+    linarith
+  · by_contra h
+    have := Real.one_le_rpow (not_lt.1 h) h𝔠d.le
+    linarith
+
+/-- `η_s/η_v = (1-s)/(1-v) ≤ B_t^{-𝔠d}` for `s ≤ v ≤ t < 1` from (2.83) `con_st_ind` at `n`. -/
+private theorem iterationsA_rho_le {n : ℕ} {c s v t : ℝ} (hsv : s ≤ v) (hvt : v ≤ t) (ht1 : t < 1)
+    (hB : sz.Bctl n t ^ c ≤ (1 - t) / (1 - s)) :
+    (1 - s) / (1 - v) ≤ (sz.Bctl n t) ^ (-c) := by
+  have hBt : 0 < sz.Bctl n t := st_Bctl_pos sz ht1
+  have hxt : 0 < 1 - t := by linarith
+  have hxs : 0 < 1 - s := by linarith
+  calc (1 - s) / (1 - v) ≤ (1 - s) / (1 - t) := div_le_div_of_nonneg_left hxs.le hxt (by linarith)
+    _ = ((1 - t) / (1 - s))⁻¹ := (inv_div _ _).symm
+    _ ≤ (sz.Bctl n t ^ c)⁻¹ := inv_anti₀ (Real.rpow_pos_of_pos hBt c) hB
+    _ = sz.Bctl n t ^ (-c) := (Real.rpow_neg hBt.le c).symm
+
+/-- Case (i): `B_{w} ≥ (2 A_I)⁻¹` for `s ≤ w < 1`, `1 - s ≤ ilambda²`. -/
+private theorem iterationsA_BI_lower {n : ℕ} {s w : ℝ} (hsw : s ≤ w) (hw1 : w < 1) (hs : 1 - s ≤ sz.lam n ^ 2)
+    (hlam : 0 < sz.lam n) : 1 / (2 * sz.STAI n) ≤ sz.Bctl n w := by
+  unfold Sizes.Bctl Bparam STAI
+  have hx : 0 < 1 - w := by linarith
+  rw [abs_of_pos hx]
+  have hz : (((0 : ℕ) : ℝ) + 1) ^ (d - 2) = 1 := by norm_num
+  simp only [hz, inv_one, mul_one]
+  have hg : 0 < sz.lam n ^ 2 := by positivity
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hL0 : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 0 < sz.L n)
+  have hWd : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by positivity
+  have h1 : (2 * sz.lam n ^ 2)⁻¹ ≤ (sz.lam n ^ 2 + (1 - w))⁻¹ :=
+    inv_anti₀ (by linarith) (by linarith)
+  have h2 : 0 ≤ (((sz.L n : ℕ) : ℝ) ^ d * (1 - w))⁻¹ := by positivity
+  calc 1 / (2 * (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d))
+      = ((((sz.W n : ℕ) : ℝ) ^ d))⁻¹ * (2 * sz.lam n ^ 2)⁻¹ := by field_simp
+    _ ≤ ((((sz.W n : ℕ) : ℝ) ^ d))⁻¹ * ((sz.lam n ^ 2 + (1 - w))⁻¹ +
+          (((sz.L n : ℕ) : ℝ) ^ d * (1 - w))⁻¹) :=
+        mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+
+/-- Case (i): `B_w ≤ 2 A_I⁻¹` for `1 - w ≥ ilambda²/L²` (`2 ≤ d`: `L^d ≥ L²`). -/
+private theorem iterationsA_BI_upper (hd : 2 ≤ d) {n : ℕ} {w : ℝ} (hcase : sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ 1 - w)
+    (hlam : 0 < sz.lam n) : sz.Bctl n w ≤ 2 * (sz.STAI n)⁻¹ := by
+  have hg : 0 < sz.lam n ^ 2 := by positivity
+  have hL0 : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 0 < sz.L n)
+  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  have hLd2 : ((sz.L n : ℕ) : ℝ) ^ 2 ≤ ((sz.L n : ℕ) : ℝ) ^ d := pow_le_pow_right₀ hL1 hd
+  have hq : 0 < sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 := by positivity
+  have hx : 0 < 1 - w := lt_of_lt_of_le hq hcase
+  have hgL : sz.lam n ^ 2 ≤ ((sz.L n : ℕ) : ℝ) ^ d * (1 - w) := by
+    have h1 : sz.lam n ^ 2 ≤ ((sz.L n : ℕ) : ℝ) ^ 2 * (1 - w) := by
+      have := (div_le_iff₀ (by positivity : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) ^ 2)).1 hcase
+      linarith
+    exact h1.trans (mul_le_mul_of_nonneg_right hLd2 hx.le)
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hWd : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by positivity
+  unfold Sizes.Bctl Bparam STAI
+  rw [abs_of_pos hx]
+  have hz : (((0 : ℕ) : ℝ) + 1) ^ (d - 2) = 1 := by norm_num
+  simp only [hz, inv_one, mul_one]
+  have h1 : (sz.lam n ^ 2 + (1 - w))⁻¹ ≤ (sz.lam n ^ 2)⁻¹ :=
+    inv_anti₀ hg (by linarith)
+  have h2 : (((sz.L n : ℕ) : ℝ) ^ d * (1 - w))⁻¹ ≤ (sz.lam n ^ 2)⁻¹ :=
+    inv_anti₀ hg hgL
+  calc ((((sz.W n : ℕ) : ℝ) ^ d))⁻¹ * ((sz.lam n ^ 2 + (1 - w))⁻¹ +
+        (((sz.L n : ℕ) : ℝ) ^ d * (1 - w))⁻¹)
+      ≤ ((((sz.W n : ℕ) : ℝ) ^ d))⁻¹ * ((sz.lam n ^ 2)⁻¹ + (sz.lam n ^ 2)⁻¹) :=
+        mul_le_mul_of_nonneg_left (add_le_add h1 h2) (by positivity)
+    _ = 2 * (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by
+        rw [mul_inv]; ring
+
+
+/-- **The scale facts, case (i)** (`A = ilambda² W^d`, `T = 2 A⁻¹`, `cB = cv = K = 2`): under
+`STRegIterI` (`1 - s ≤ ilambda²`, `1 - t ≥ ilambda²/L²`), (2.83) `con_st_ind`, (2.10) `eq:WO`, `t < 1`, `|E| < 2`, `2 ≤ d` and
+`0 < 𝔠d ≤ 1/16` (the constant of the lemma is `𝔠d ≤ 1/100`). -/
+theorem iterationsA_scale_I (hd : 2 ≤ d) {E s t : ℕ → ℝ} {𝔠d 𝔡 : ℝ} (h𝔠d : 0 < 𝔠d) (hc : 𝔠d ≤ 1 / 16)
+    (hreg : STRegIterI sz s t) (hcon : sz.STConStInd 𝔠d s t) (hWO : sz.WO 𝔡) (ht1 : ∀ n, t n < 1)
+    (hE : ∀ n, |E n| < 2) :
+    IterationsAScale sz E s t (fun n => sz.STAI n) (fun n => 2 * (sz.STAI n)⁻¹) 2 2 2 := by
+  have hAnn : ∀ n, 0 ≤ sz.STAI n := fun n => by unfold STAI; positivity
+  refine ⟨by norm_num, by norm_num, by norm_num, hAnn, fun n => ?_, ht1, ?_, ?_, ?_, ?_⟩
+  · have := hAnn n
+    positivity
+  · filter_upwards [iterationsA_WO_AI sz hWO] with n hn
+    exact hn.2
+  · filter_upwards [hcon, iterationsA_WO_AI sz hWO] with n hn hW q
+    obtain ⟨hlam, hA⟩ := hW
+    have hsu : s n ≤ q.1.2 := q.2.1.trans q.2.2.1
+    have hut : q.1.2 ≤ t n := q.2.2.2
+    have hst : s n ≤ t n := hsu.trans hut
+    have hu1 : q.1.2 < 1 := lt_of_le_of_lt hut (ht1 n)
+    rw [RBM.Ind.scaleFacts_etaT_div_etaT (hE n)]
+    have hρ1 := iterationsA_one_le_ratio hsu hu1
+    have hρ := iterationsA_rho_le sz hsu hut (ht1 n) hn.1
+    have hA0 : 0 < sz.STAI n := lt_of_lt_of_le one_pos hA
+    have h2A : 0 < 2 * sz.STAI n := by positivity
+    have hBt : 0 < sz.Bctl n (t n) := st_Bctl_pos sz (ht1 n)
+    have hlow := iterationsA_BI_lower sz hst (ht1 n) (hreg.2 n) hlam
+    have hB : sz.Bctl n (t n) ^ (-𝔠d) ≤ (2 * sz.STAI n) ^ 𝔠d := by
+      calc sz.Bctl n (t n) ^ (-𝔠d) ≤ (1 / (2 * sz.STAI n)) ^ (-𝔠d) :=
+            Real.rpow_le_rpow_of_nonpos (by positivity) hlow (by linarith)
+        _ = (2 * sz.STAI n) ^ 𝔠d := by
+            rw [one_div, Real.inv_rpow h2A.le, Real.rpow_neg h2A.le, inv_inv]
+    have hρR : (1 - s n) / (1 - q.1.2) ≤ 2 ^ 𝔠d * sz.STAI n ^ 𝔠d := by
+      rw [← Real.mul_rpow (by norm_num) hA0.le]; exact hρ.trans hB
+    have hρ0 : 0 ≤ (1 - s n) / (1 - q.1.2) := by linarith
+    have hsq : ((1 - s n) / (1 - q.1.2)) ^ 2 ≤ 2 * sz.STAI n ^ (1 / 8 : ℝ) := by
+      calc ((1 - s n) / (1 - q.1.2)) ^ 2 ≤ (2 ^ 𝔠d * sz.STAI n ^ 𝔠d) ^ 2 := pow_le_pow_left₀ hρ0 hρR 2
+        _ = 2 ^ (2 * 𝔠d) * sz.STAI n ^ (2 * 𝔠d) := by
+            rw [mul_pow, ← Real.rpow_natCast, ← Real.rpow_natCast (sz.STAI n ^ 𝔠d),
+              ← Real.rpow_mul (by norm_num), ← Real.rpow_mul hA0.le]
+            norm_num; ring_nf
+        _ ≤ 2 * sz.STAI n ^ (1 / 8 : ℝ) := by
+            have h1 : (2 : ℝ) ^ (2 * 𝔠d) ≤ 2 := by
+              calc (2 : ℝ) ^ (2 * 𝔠d) ≤ 2 ^ (1 : ℝ) :=
+                    Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
+                _ = 2 := Real.rpow_one 2
+            have h2 : sz.STAI n ^ (2 * 𝔠d) ≤ sz.STAI n ^ (1 / 8 : ℝ) :=
+              Real.rpow_le_rpow_of_exponent_le hA (by linarith)
+            have h3 : 0 ≤ sz.STAI n ^ (2 * 𝔠d) := Real.rpow_nonneg hA0.le _
+            exact mul_le_mul h1 h2 h3 (by norm_num)
+    refine ⟨hρ1, hsq, ?_⟩
+    have h78 : sz.STAI n ^ (1 / 8 : ℝ) * sz.STAI n ^ (7 / 8 : ℝ) = sz.STAI n := by
+      rw [← Real.rpow_add hA0]; norm_num
+    have h7 : 0 ≤ sz.STAI n ^ (7 / 8 : ℝ) := Real.rpow_nonneg hA0.le _
+    calc 2 * (sz.STAI n)⁻¹ * ((1 - s n) / (1 - q.1.2)) ^ 2 * sz.STAI n ^ (7 / 8 : ℝ)
+        ≤ 2 * (sz.STAI n)⁻¹ * (2 * sz.STAI n ^ (1 / 8 : ℝ)) * sz.STAI n ^ (7 / 8 : ℝ) := by
+          gcongr
+      _ = 4 * ((sz.STAI n)⁻¹ * (sz.STAI n ^ (1 / 8 : ℝ) * sz.STAI n ^ (7 / 8 : ℝ))) := by ring
+      _ = 2 * 2 := by rw [h78]; field_simp; norm_num
+  · filter_upwards [iterationsA_WO_AI sz hWO] with n hn
+    have hA0 : 0 < sz.STAI n := lt_of_lt_of_le one_pos hn.2
+    have hle : sz.STAI n ^ (3 / 4 : ℝ) ≤ sz.STAI n := by
+      calc sz.STAI n ^ (3 / 4 : ℝ) ≤ sz.STAI n ^ (1 : ℝ) :=
+            Real.rpow_le_rpow_of_exponent_le hn.2 (by norm_num)
+        _ = sz.STAI n := Real.rpow_one _
+    calc 2 * (sz.STAI n)⁻¹ * sz.STAI n ^ (3 / 4 : ℝ) ≤ 2 * (sz.STAI n)⁻¹ * sz.STAI n := by gcongr
+      _ = 2 := by field_simp
+  · filter_upwards [iterationsA_WO_AI sz hWO] with n hn w
+    obtain ⟨hlam, hA⟩ := hn
+    have hsw : s n ≤ (w : ℝ) := (w.2).1
+    have hwt : (w : ℝ) ≤ t n := (w.2).2
+    refine ⟨?_, iterationsA_BI_upper sz hd (by linarith [hreg.1 n]) hlam⟩
+    have := iterationsA_BI_lower sz hsw (lt_of_le_of_lt hwt (ht1 n)) (hreg.2 n) hlam
+    rwa [one_div] at this
+
+/-- **The scale facts, case (ii)** (`A = (W^{-d}B_{s,0})⁻¹`, `T = A^{-1+𝔠d}`, `cB = cv = K = 1`):
+under (2.83) `con_st_ind`, `t < 1`, `|E| < 2` and `0 < 𝔠d ≤ 1/24`; the regime `STCaseII` is not used (it enters through `A`). -/
+theorem iterationsA_scale_II {E s t : ℕ → ℝ} {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (hc : 𝔠d ≤ 1 / 24)
+    (hcon : sz.STConStInd 𝔠d s t) (ht1 : ∀ n, t n < 1) (hE : ∀ n, |E n| < 2) :
+    IterationsAScale sz E s t (fun n => sz.STAII s n) (fun n => (sz.STAII s n) ^ (-1 + 𝔠d)) 1 1 1 := by
+  have hAnn : ∀ n, 0 ≤ sz.STAII s n := fun n => inv_nonneg.2 (iterationsA_Bctl_nonneg sz n _)
+  have hA1 : ∀ᶠ n in atTop, 1 ≤ sz.STAII s n := by
+    filter_upwards [iterationsA_con_aux sz h𝔠d hcon ht1] with n hn
+    have hst : s n ≤ t n := hn.1.le
+    have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz (lt_of_le_of_lt hst (ht1 n))
+    have hmono : sz.Bctl n (s n) ≤ sz.Bctl n (t n) := STBctl_mono sz n hst (ht1 n)
+    exact (one_le_inv₀ hBs).2 (hmono.trans hn.2.le)
+  refine ⟨by norm_num, by norm_num, by norm_num, hAnn, fun n => Real.rpow_nonneg (hAnn n) _, ht1, hA1, ?_, ?_, ?_⟩
+  · filter_upwards [hcon, hA1, iterationsA_con_aux sz h𝔠d hcon ht1] with n hn hA hcn q
+    have hsu : s n ≤ q.1.2 := q.2.1.trans q.2.2.1
+    have hut : q.1.2 ≤ t n := q.2.2.2
+    have hst : s n ≤ t n := hsu.trans hut
+    have hu1 : q.1.2 < 1 := lt_of_le_of_lt hut (ht1 n)
+    rw [RBM.Ind.scaleFacts_etaT_div_etaT (hE n)]
+    have hρ1 := iterationsA_one_le_ratio hsu hu1
+    have hρ := iterationsA_rho_le sz hsu hut (ht1 n) hn.1
+    have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz (lt_of_le_of_lt hst (ht1 n))
+    have hmono : sz.Bctl n (s n) ≤ sz.Bctl n (t n) := STBctl_mono sz n hst (ht1 n)
+    have hA0 : 0 < sz.STAII s n := lt_of_lt_of_le one_pos hA
+    have hB : sz.Bctl n (t n) ^ (-𝔠d) ≤ sz.STAII s n ^ 𝔠d := by
+      calc sz.Bctl n (t n) ^ (-𝔠d) ≤ sz.Bctl n (s n) ^ (-𝔠d) :=
+            Real.rpow_le_rpow_of_nonpos hBs hmono (by linarith)
+        _ = sz.STAII s n ^ 𝔠d := by
+            unfold STAII
+            rw [Real.inv_rpow hBs.le, Real.rpow_neg hBs.le]
+    have hρR := hρ.trans hB
+    have hρ0 : 0 ≤ (1 - s n) / (1 - q.1.2) := by linarith
+    have hsq : ((1 - s n) / (1 - q.1.2)) ^ 2 ≤ sz.STAII s n ^ (2 * 𝔠d) := by
+      calc ((1 - s n) / (1 - q.1.2)) ^ 2 ≤ (sz.STAII s n ^ 𝔠d) ^ 2 := pow_le_pow_left₀ hρ0 hρR 2
+        _ = sz.STAII s n ^ (2 * 𝔠d) := by
+            rw [← Real.rpow_natCast, ← Real.rpow_mul hA0.le]; norm_num; ring_nf
+    refine ⟨hρ1, ?_, ?_⟩
+    · rw [one_mul]
+      exact hsq.trans (Real.rpow_le_rpow_of_exponent_le hA (by linarith))
+    · calc sz.STAII s n ^ (-1 + 𝔠d) * ((1 - s n) / (1 - q.1.2)) ^ 2 * sz.STAII s n ^ (7 / 8 : ℝ)
+          ≤ sz.STAII s n ^ (-1 + 𝔠d) * sz.STAII s n ^ (2 * 𝔠d) * sz.STAII s n ^ (7 / 8 : ℝ) := by
+            gcongr
+        _ = sz.STAII s n ^ (-1 + 𝔠d + 2 * 𝔠d + 7 / 8) := by
+            rw [← Real.rpow_add hA0, ← Real.rpow_add hA0]
+        _ ≤ 1 * 1 := by
+            rw [mul_one]
+            exact Real.rpow_le_one_of_one_le_of_nonpos hA (by linarith)
+  · filter_upwards [hA1] with n hA
+    have hA0 : 0 < sz.STAII s n := lt_of_lt_of_le one_pos hA
+    calc sz.STAII s n ^ (-1 + 𝔠d) * sz.STAII s n ^ (3 / 4 : ℝ) = sz.STAII s n ^ (-1 + 𝔠d + 3 / 4) := by
+          rw [← Real.rpow_add hA0]
+      _ ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hA (by linarith)
+  · filter_upwards [RBM.Ind.scaleFacts_R2 sz h𝔠d hcon (Eventually.of_forall ht1), iterationsA_con_aux sz h𝔠d hcon ht1]
+      with n hR2 hcn w
+    have hsw : s n ≤ (w : ℝ) := (w.2).1
+    have hwt : (w : ℝ) ≤ t n := (w.2).2
+    have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz (lt_of_le_of_lt (hsw.trans hwt) (ht1 n))
+    refine ⟨?_, ?_⟩
+    · have hmono : sz.Bctl n (s n) ≤ sz.Bctl n (w : ℝ) :=
+        STBctl_mono sz n hsw (lt_of_le_of_lt hwt (ht1 n))
+      rw [one_mul]
+      unfold STAII
+      rwa [inv_inv]
+    · have := hR2 (w : ℝ) hsw hwt
+      refine this.trans (le_of_eq ?_)
+      unfold STAII
+      rw [Real.inv_rpow hBs.le, ← Real.rpow_neg hBs.le]
+      congr 1; ring
+
+end RBM.Gauss.Sizes

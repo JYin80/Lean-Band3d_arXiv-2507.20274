@@ -1,0 +1,135 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Loop.GLoopFlow
+import Mathlib.LinearAlgebra.Matrix.Kronecker
+
+/-!
+# The block Anderson wrapper
+
+The block Anderson model of arXiv:2507.20274 (Section "Main results for the block Anderson
+model") in the vocabulary of the band model of `RBM3D.Loop.GLoopFlow`.  The file contains `Ψ^{(B)}`
+and `Ψ` (`PsiB`, `PsiV`, `PsiI`, `(eq:Psi3D)`), the flow `seqHflowBA`
+(`H_u = λ₀ Ψ + √u V`, `(MBM)`), the matrix `seqHBA` (`H = V + λ Ψ`, `(eq:H_blocka)`) and the
+pointwise identity `Gt_BA` (`(eq:zztE_BA)`).
+
+The block Anderson model fits the band vocabulary with three differences: (i) the Gaussian part
+is the model of `sz.withLam 0`, because `S^{(B)}(0) = I`; (ii) the deterministic shift
+`H_0 = λ₀ Ψ`; (iii) the data `m`, `M` of `(self_m)`, `(def_G0)`, which enter only through `ztOf`
+and `Mres`.  The deterministic layer that supplies `m₀ = m(E, λ₀)` (`m(z, λ)`, `M^{(B)}`, `e_λ`)
+is not part of this file; `Gt_BA` takes its two scalar clauses `λ₀ = √t₀ λ` and
+`z_{t₀}(E, λ₀) = √t₀ z` as hypotheses.
+-/
+
+noncomputable section
+
+open MeasureTheory ProbabilityTheory Filter Matrix
+open scoped NNReal ENNReal
+
+namespace RBM.Gauss
+
+/-! ## Block Anderson: the band vocabulary with three differences -/
+
+section BlockAnderson
+
+open scoped Kronecker
+
+variable (d L W : ℕ) [NeZero L] [NeZero W]
+
+/-- `Ψ^(B)` of `(eq:Psi3D)`: the adjacency matrix of the block lattice,
+`Ψ^(B)_{ab} = 1(a ∼ b)` with `a ∼ b` the adjacency `Adj`. -/
+def PsiB : Matrix (Zd d L) (Zd d L) ℂ := Matrix.of fun a b => if Adj d L a b then 1 else 0
+
+/-- `Ψ = Ψ^(B) ⊗ I_{W^d}` on the block-product index (`(eq:Psi3D)`). -/
+def PsiV : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
+  PsiB d L ⊗ₖ (1 : Matrix (Fin (W ^ d)) (Fin (W ^ d)) ℂ)
+
+/-- `Ψ` on the fine lattice (`(eq:Psi3D)`), through the bridge `splitEquiv`. -/
+def PsiI : Matrix (Idx d L W) (Idx d L W) ℂ :=
+  (PsiV d L W).submatrix (splitEquiv d L W) (splitEquiv d L W)
+
+theorem PsiB_isHermitian : (PsiB d L).IsHermitian := by
+  ext a b
+  simp only [conjTranspose_apply, PsiB, Matrix.of_apply]
+  have hadj : Adj d L b a ↔ Adj d L a b := by
+    simp only [Adj]
+    rw [show b - a = -(a - b) by ring, zdistD_neg]
+  by_cases h : Adj d L a b
+  · simp [h, hadj.mpr h]
+  · simp [h, mt hadj.mp h]
+
+theorem PsiI_isHermitian : (PsiI d L W).IsHermitian := by
+  have h : (PsiV d L W).IsHermitian := by
+    unfold PsiV IsHermitian
+    rw [conjTranspose_kronecker, (PsiB_isHermitian d L).eq, conjTranspose_one]
+  exact h.submatrix _
+
+end BlockAnderson
+
+namespace Sizes
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **The block Anderson flow at one time** (`(MBM)`, with `H_0 = λ₀ Ψ`; `lam0` is the flow
+coupling, `λ₀ = √t₀ · λ` in `(eq:t0E0_BA)`): the Gaussian part is the model of `sz.withLam 0`,
+because `S^(B)(0) = I` (`(bandcwV)`).  So the block Anderson model *fits the band vocabulary*:
+it differs by (i) the coupling `0` in the law, (ii) the deterministic shift `H_0`, (iii) the
+deterministic data `m`, `M` (`(self_m)`, `(def_G0)`), which enter only through `ztOf` and the
+matrix `M`. -/
+def seqHflowBA (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : SeqΩ sz) :
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  (lam0 n : ℂ) • PsiI d (sz.L n) (sz.W n) +
+    Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => seqHflow (sz.withLam 0) n u ω i j
+
+end Sizes
+
+namespace Sizes
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **`H` of the block Anderson model** (`(eq:H_blocka)`): `H = V + λ Ψ`, with `V`
+the Gaussian potential of `sz.withLam 0` (`(bandcwV)`). -/
+def seqHBA (n : ℕ) (ω : SeqΩ sz) :
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  (sz.lam n : ℂ) • PsiI d (sz.L n) (sz.W n) +
+    Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => seqXmat (sz.withLam 0) n ω i j
+
+theorem seqHBA_isHermitian (n : ℕ) (ω : SeqΩ sz) : (seqHBA sz n ω).IsHermitian := by
+  unfold seqHBA
+  refine IsHermitian.add ?_ (seqXmat_isHermitian (sz.withLam 0) n ω)
+  unfold IsHermitian
+  rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
+    show star (sz.lam n : ℂ) = (sz.lam n : ℂ) from Complex.conj_ofReal _]
+
+/-- **`zztE_BA`, third clause, pointwise** (`(eq:zztE_BA)`): for the block Anderson
+flow `H_u = lam0·Ψ + √u V` the identity `G(z, λ) = √t₀ G_{t₀;E,λ₀}` holds pointwise, given the two
+deterministic clauses `λ₀ = √t₀ λ` and `z_{t₀}(E, λ₀) = √t₀ z` of `(eq:t0E0_BA)`, `(eq:zztE_BA)`
+(data of the deterministic layer: `m0 = m(E, λ₀)`). -/
+theorem Gt_BA (lam0 : ℕ → ℝ) (n : ℕ) {z m0 : ℂ} {E t0 : ℝ} (hz : 0 < z.im) (ht0 : 0 < t0)
+    (hlam0 : lam0 n = Real.sqrt t0 * sz.lam n)
+    (hzt : ztOf m0 E t0 = (Real.sqrt t0 : ℂ) * z) (ω : SeqΩ sz) :
+    (Real.sqrt t0 : ℂ) • Gres (seqHflowBA sz lam0 n t0 ω) (ztOf m0 E t0) true =
+      Gres (seqHBA sz n ω) z true := by
+  have hr0 : (Real.sqrt t0 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 (Real.sqrt_pos.2 ht0).ne'
+  have hA : IsUnit (seqHBA sz n ω - z • (1 : Matrix _ _ ℂ)) :=
+    isUnit_sub_smul_of_isHermitian (seqHBA_isHermitian sz n ω) hz.ne'
+  have hHt : seqHflowBA sz lam0 n t0 ω - ztOf m0 E t0 • (1 : Matrix _ _ ℂ) =
+      (Real.sqrt t0 : ℂ) • (seqHBA sz n ω - z • (1 : Matrix _ _ ℂ)) := by
+    have hBA : seqHflowBA sz lam0 n t0 ω = (lam0 n : ℂ) • PsiI d (sz.L n) (sz.W n) +
+        (Real.sqrt t0 : ℂ) • (Matrix.of fun i j : Idx d (sz.L n) (sz.W n) =>
+          seqXmat (sz.withLam 0) n ω i j) := rfl
+    rw [hzt, hBA, seqHBA, hlam0]
+    simp only [smul_sub, smul_add, ← mul_smul, Complex.ofReal_mul]
+  unfold Gres
+  simp only [↓reduceIte]
+  rw [hHt, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse]
+  have : Invertible (Real.sqrt t0 : ℂ) := invertibleOfNonzero hr0
+  rw [Matrix.inv_smul (A := seqHBA sz n ω - z • (1 : Matrix _ _ ℂ)) (Real.sqrt t0 : ℂ)
+    ((Matrix.isUnit_iff_isUnit_det _).mp hA), smul_smul, invOf_eq_inv,
+    mul_inv_cancel₀ hr0, one_smul]
+
+end Sizes
+
+end RBM.Gauss

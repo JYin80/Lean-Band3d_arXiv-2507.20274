@@ -1,0 +1,508 @@
+
+
+
+\section{Proofs of auxiliary graphical lemmas}
+
+
+\subsection{Proof of \texorpdfstring{\Cref{lem:LWterm_EXP}}{Lemma ExpLW}}\label{subsec:pf-LWterm_EXP}
+
+
+Recall the light-weight term in \eqref{eq:EGC}. To prove \Cref{lem:LWterm_EXP}, it suffices to establish 
+\begin{align}
+ W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\E       
+ \tr\big( \Gc_t E_{a_1} \big)  (G_t(\sig))_{yx} (G_t)_{x\al }(G_t)_{\al y} \prec \eta_t^{-1}(W^{-d}B_{t,0})^{5/2}\label{eq:ELW_term}
+\end{align} 
+for any $\sig\in\{+,-\}$. Here $[a]$ and $[b]$ denote the two external blocks appearing in \eqref{eq:EGC}, whereas $a_1$ and $a_2$ are summation indices. For brevity, write $G_t\equiv G$, and assume $\sig=-$ in the following proof. The case $\sig=+$ is analogous. %---and in fact slightly simpler---since the LHS of \eqref{eq:ELW_term} contains no negatively charged resolvent entries. 
+We first focus on the random band matrix model. Performing the $GG$ expansion in \eqref{Oe2x} with respect to $G_{x\al}G_{\al y}$, we can expand the LHS of \eqref{eq:ELW_term} as 
+\begin{align*}
+ &~mW^{-2d}\sum_{a_1}S^{(\sB)}_{a_1 b} \sum_{x\in [a],y\in [b]}\E  \tr \big(\Gc E_{a_1} \big) |G_{xy}|^2 \tag{$I_1$} \\
+ +&~m^3 W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]} S^+_{\al y} \E       
+ \tr \big(\Gc E_{a_1} \big) |G_{xy}|^2 \tag{$J_1$}\\
++&~m W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta}\E       
+ \tr \big(\Gc E_{a_1} \big) (S_{\al\beta} \Gc_{\beta\beta})  G_{x\al }G_{\al y} \overline G_{xy} \tag{$I_2$}\\
+ +&~m^3 W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta,\gamma}S^{+}_{\al\beta}\E       
+ \tr \big(\Gc E_{a_1} \big) (S_{\beta\gamma} \Gc_{\gamma\gamma})  G_{x\beta }G_{\beta y} \overline G_{xy} \tag{$J_2$}\\
+ +&~m W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta}\E       
+ \tr \big(\Gc E_{a_1} \big) (\Gc_{\al\al} S_{\al\beta})G_{x\beta }G_{\beta y} \overline G_{xy} \tag{$I_3$}\\
++&~m^3 W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta,\gamma}S^{+}_{\al\beta} \E       
+ \tr \big(\Gc E_{a_1} \big) (\Gc_{\beta\beta} S_{\beta\gamma})G_{x\gamma }G_{\gamma y} \overline G_{xy} \tag{$J_3$}\\
+-&~m W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta}S_{\al\beta} \E       
+ G_{x\al }G_{\beta y} \partial_{\beta\al}\left(\tr \big(\Gc E_{a_1} \big) \overline G_{xy}\right) \tag{$I_4$}\\
+-&~m^3 W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\sum_{\beta,\gamma}S^+_{\al\beta}S_{\beta\gamma} \E      
+ G_{x\beta}G_{\gamma y} \partial_{\gamma\beta}\left(\tr \big(\Gc E_{a_1} \big) \overline G_{xy}\right) \tag{$J_4$},
+\end{align*} 
+where we recall that $\partial_{\beta\al}\equiv \partial_{(H_t)_{\beta\al}}$. We will only estimate the terms $I_i$ for $i\in\qqq{4}$; the terms $J_i$ can be treated in exactly the same way by using \eqref{eq:def-Spm}, together with the bound \eqref{prop:ThfadC_short}. 
+
+
+For the term $I_1$, we have
+\begin{align}
+I_1&= m \sum_{a_1}S^{(\sB)}_{a_1 b} \E \tr \big(\Gc E_{a_1} \big)\cal L^{(2)}_{t,(-,+),(a,b)} \nonumber\\
+&=m \sum_{a_1}S^{(\sB)}_{a_1 b} \E \tr \big(\Gc E_{a_1} \big)\cal K^{(2)}_{t,(-,+),(a,b)} +  m \sum_{a_1}S^{(\sB)}_{a_1 b} \E \tr \big(\Gc E_{a_1} \big) (\cal L-\cK)^{(2)}_{t,(-,+),(a,b)} \prec (W^{-d}B_{t,0})^3, \label{eq:termI1}
+\end{align}
+where in the last step, we use \eqref{eq:bcal_k} and \eqref{res_ELK_n=1} to bound the first term, and \eqref{Gt_avgbound_flow} together with \eqref{Eq:L-KGt-flow} to bound the second.
+For $I_2$, applying the averaged local law \eqref{Gt_avgbound_flow} to both $\tr( \Gc E_{a_1} )$ and $\sum_\beta S_{\al\beta} \Gc_{\beta\beta}$ yields
+\begin{align}
+    I_2&\prec (W^{-d}B_{t,0})^2 \cdot W^{-2d}\sum_{a_1, a_2}S^{(\sB)}_{a_1a_2} \sum_{x\in [a],y\in [b],\al \in [a_2]}\E  |G_{x\al}||G_{\al y}| |G_{xy}| \nonumber\\
+    &\lesssim (W^{-d}B_{t,0})^2 \cdot W^{-2d}\sum_{x\in [a],y\in [b]} \sum_\al \E  |G_{x\al}||G_{\al y}| |G_{xy}| \nonumber\\
+    &\prec \eta_t^{-1}(W^{-d}B_{t,0})^2 \cdot W^{-2d}\sum_{x\in [a],y\in [b]}\E|G_{xy}| \prec \eta_t^{-1}(W^{-d}B_{t,0})^{5/2},\label{eq:termI2}
+\end{align}
+where in the third step we use Cauchy--Schwarz together with Ward's identity, and in the last step the local law \eqref{Gt_bound_flow} to control the averages over $x\in[a]$ and $y\in[b]$. The term $I_3$ can be handled in exactly the same way. It remains to estimate $I_4$. Splitting according to which factor the partial derivative acts on, we obtain
+\begin{align*}
+I_4&=m W^{-3d}\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \sum_{x\in [a],y\in [b],\al \in [a_2],\beta\in[a_3]}  \E  \tr\big( \Gc E_{a_1} \big) |G_{x\al}|^2 |G_{\beta y}|^2 \\
+&\quad +m W^{-4d}\sum_{a_1, a_2, a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \sum_{x\in [a],y\in [b],\gamma\in[a_1],\al \in [a_2],\beta\in[a_3]} \E       
+ G_{x\al }G_{\al\gamma}G_{\gamma\beta}G_{\beta y}  \overline G_{xy} \\
+&= mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big) \cL^{(2)}_{t,(-,+),(a,a_2)}\cL^{(2)}_{t,(-,+),(a_3,b)} +mW^d \sum_{a_1, a_2, a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E \cL^{(5)}_{t,\bsig_5,\ba_5} \\
+&=:I_{41}+I_{42},
+\end{align*}
+where $\bsig_5=(+,+,+,+,-)$ and $\ba_5=(a_2,a_1,a_3,b,a)$. For $I_{41}$, we decompose each 2-$G$-loop as $(\cL-\cK)^{(2)}+\cK^{(2)}$, giving 
+\begin{align}
+    I_{41}&= mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big)  \cL^{(2)}_{t,(-,+),(a,a_2)}\cK^{(2)}_{t,(-,+),(a_3,b)} \nonumber\\
+    &\quad +mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big)  \cL^{(2)}_{t,(-,+),(a,a_2)}(\cL-\cK)^{(2)}_{t,(-,+),(a_3,b)}\nonumber\\ 
+    &= mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big) \cL^{(2)}_{t,(-,+),(a,a_2)}\cK^{(2)}_{t,(-,+),(a_3,b)}+ \OO_\prec\p{(W^{-d}B_{t,0})^3}\cdot W^d\sum_{ a_2}\E \cL^{(2)}_{t,(-,+),(a,a_2)} \nonumber\\
+    &= mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big) \cK^{(2)}_{t,(-,+),(a,a_2)}\cK^{(2)}_{t,(-,+),(a_3,b)}\nonumber\\
+    &\quad +mW^d\sum_{a_1, a_2,a_3}S^{(\sB)}_{a_1a_2}S^{(\sB)}_{a_2a_3} \E  \tr\big( \Gc E_{a_1} \big) (\cL-\cK)^{(2)}_{t,(-,+),(a,a_2)}\cK^{(2)}_{t,(-,+),(a_3,b)}+ \OO_\prec\p{\eta_t^{-1}(W^{-d}B_{t,0})^3} \nonumber\\
+    &\prec (W^{-d}B_{t,0})^3\cdot W^d\sum_{a_3}\cK^{(2)}_{t,(-,+),(a_3,b)} + \eta_t^{-1}(W^{-d}B_{t,0})^3 \prec \eta_t^{-1}(W^{-d}B_{t,0})^3.\label{eq:termI41}
+\end{align}
+Here, we use \eqref{Eq:L-KGt-flow} and \eqref{Gt_avgbound_flow} in the second step; Ward's identity \eqref{WI_calL} for \smash{$\sum_{a_2} \cL^{(2)}_{t,(-,+),(a,a_2)}$} and the local law \eqref{Gt_bound_flow} in the third; \eqref{Eq:L-KGt-flow}, \eqref{eq:bcal_k}, and \eqref{res_ELK_n=1} in the fourth; and Ward's identity \eqref{WI_calK} for \smash{$\sum_{a_3}\cK^{(2)}_{t,(-,+),(a_3,b)}$} in the last. 
+Finally, for the term $I_{42}$, we rewrite it as an average over the graphs $\cal G_{xy}$: 
+\begin{align}\label{eq;I42inG}
+ I_{42}=mW^{-2d} \sum_{x\in [a],y\in [b]} \E\cal G_{xy},\quad \text{where}\quad \cal G_{xy}:=\sum_{\gamma,\al,\beta}S_{\gamma\al}S_{\al\beta} \p{G_{x\al }G_{\al\gamma}G_{\gamma\beta}G_{\beta y}  \overline G_{xy}}.
+\end{align}
+We claim the following bound for $\E\cal G_{xy}$: 
+\begin{align}\label{eq;EGxy:x=y}
+\E\cal G_{xy} \prec \mathbf 1_{x = y}\cdot  \eta_t^{-1} (W^{-d}B_{t,0})^{2}+\mathbf 1_{x\ne y}\cdot \eta_t^{-1}(W^{-d}B_{t,0})^{5/2}. 
+\end{align}
+Substituting this estimate into \eqref{eq;I42inG} gives
+\[ I_{42} \prec \eta_t^{-1} (W^{-d}B_{t,0})^{5/2}.\]
+Together with \eqref{eq:termI1}--\eqref{eq:termI41}, this completes the proof of \eqref{eq:ELW_term}.
+
+
+Finally, we prove the estimate \eqref{eq;EGxy:x=y}. To this end, we apply the $GG$-expansion from \Cref{T eq0} at the non-standard neutral vertices $\al,\gamma,\beta$, which expands $\cal G_{xy}$ into a collection of new graphs:
+\begin{align*}
+    \cal G_{xy}=_{\E} \sum_\mu \Gamma_{\mu,xy} \; .
+\end{align*}
+By \Cref{GtoAG}, each $\Gamma_{\mu,xy}$ can be bounded through its auxiliary graph \smash{$\Gamma^{\aux}_{\mu,[a][b]}$} as in \eqref{G_by_auxG}, with $q\in\{0,1\}$ internal molecules and $\Psi_t=(W^{-d}B_{t,0})^{1/2}$. 
+If an auxiliary graph contains an internal molecule, then that molecule is attached to at least two solid edges corresponding to the $\xi$-variables defined in \eqref{eq:xia1a2}. Indeed, every vertex of $\cal G_{xy}$ is incident to an even number of solid half-edges (a light-weight counting twice), and $\cal G_{xy}$ is connected through its solid and waved edges; both properties are preserved by the local expansions and by the identification of vertices. Since different molecules are joined only by solid edges, an internal molecule of $\Gamma_{\mu,xy}$ is therefore joined to the other molecules by a positive even number of solid edges. Applying Cauchy--Schwarz together with \eqref{eq:Gbyxi2} therefore gives
+\[ \Gamma^{\aux}_{\mu, [a][b]} \prec (W^d\eta_t)^{-q}(\Psi_t)^{\ord(\Gamma^{\aux}_{\mu, [a][b]})}. \]
+Combining this with \eqref{G_by_auxG} implies that %, for any large constant $D>0$, 
+\begin{align}\label{Gammamuxy}
+    \Gamma_{\mu, xy} \prec \eta_t^{-1} (W^{-d}B_{t,0})^{\frac12\ord(\Gamma_{\mu, xy})} .% + W^{-D}.
+\end{align}
+With this estimate in hand, to conclude \eqref{eq;EGxy:x=y} it remains to show that the scaling order of each $\Gamma_{\mu,xy}$ satisfies
+\be\label{eq:sizeGammamu_E}
+\ord(\Gamma_{\mu,xy}) \ge 4\cdot \mathbf 1_{x= y}+5\cdot \mathbf 1_{x\ne y} , 
+\ee
+where $x$ and $y$ are regarded as external vertices.
+
+
+The three remaining cases below all rest on the following fact about the graphs \smash{$\cal G^{(21)}_{xy}$} and \smash{$\cal G^{(4)}_{xy}$} defined below (and the analogue of \smash{$\cal G^{(21)}_{xy}$} in case (3)), which is verified by inspecting the terms on the right-hand side of \eqref{Oe2x}:
+\be\label{eq:GGraisesord}
+\text{\emph{applying the $GG$ expansion \eqref{Oe2x} at a non-standard neutral vertex strictly increases the scaling order.}}
+\ee
+This fact does not hold for arbitrary graphs. For instance, if the two solid edges at the expansion vertex form a $2$-cycle, i.e., $\cal G=G_{xy}G_{yx}f(G)$ in the notation of \eqref{Oe2x}, then the parts of the first two terms on the right-hand side of \eqref{Oe2x} in which the resulting diagonal entry $G_{yy}$ is replaced by $m$ have the same scaling order as $\cal G$.
+To obtain \eqref{eq:sizeGammamu_E}, we decompose $\cal G_{xy}$ into four parts $\cal G^{(i)}_{xy}$, $i\in\{1,2,3,4\}$, corresponding to the cases: (1) $\al=\gamma=\beta$, (2) $\al=\gamma\ne \beta$, (3) $\al\ne \gamma = \beta$, and (4) $\al\ne \gamma$ and $\gamma\ne \beta$. It is easy to see that \smash{$\ord(\cal G^{(1)}_{xy})$} already satisfies the lower bound in \eqref{eq:sizeGammamu_E}. Next, in case (2), we write 
+\[ \cal G^{(2)}_{xy}= m\sum_{\al\ne\beta}S_{\al\al}S_{\al\beta} \p{G_{x\al }G_{\al\beta}G_{\beta y}  \overline G_{xy}}+ \sum_{\al\ne\beta}S_{\al\al}S_{\al\beta} \Gc_{\al\al} \p{G_{x\al }G_{\al\beta}G_{\beta y}  \overline G_{xy}}=:\cal G^{(21)}_{xy}+\cal G^{(22)}_{xy}.\]
+The second graph \smash{$\cal G^{(22)}_{xy}$} already meets the lower bound in \eqref{eq:sizeGammamu_E}, while the first graph \smash{$\cal G^{(21)}_{xy}$} has scaling order $3\cdot \mathbf 1_{x= y}+4\cdot \mathbf 1_{x\ne y} .$ To raise its scaling order, we expand \smash{$\cal G^{(21)}_{xy}$} using the $GG$ expansion \eqref{Oe2x} at the vertex $\al$. By \eqref{eq:GGraisesord}, every graph produced by this expansion has scaling order strictly larger than that of \smash{$\cal G^{(21)}_{xy}$}, and thus satisfies \eqref{eq:sizeGammamu_E}.
+Case (3) is handled in exactly the same manner as case (2).
+%One can check directly that all resulting graphs from the expansions have strictly higher scaling order than \smash{$\cal G^{(21)}_{xy}$}, and hence satisfy the lower bound in \eqref{eq:sizeGammamu_E}. Since checking this fact is straightforward, we omit the details. The case (3) can be handled in the same way as case (2). 
+Finally, in case (4), the graph \smash{$\cal G^{(4)}_{xy}$} has scaling order $2\cdot \mathbf 1_{x= y}+3\cdot \mathbf 1_{x\ne y},$ which has to be raised by $2$. We first apply the $GG$ expansion \eqref{Oe2x} at the vertex $\al$; by \eqref{eq:GGraisesord}, every resulting graph has scaling order at least $3\cdot \mathbf 1_{x= y}+4\cdot \mathbf 1_{x\ne y}$. A second $GG$ expansion need not raise the scaling order further, because the first one may create $2$-cycles: for instance, the term in which the derivative $\partial_{h_{\al'\al}}$ in \eqref{Oe2x} acts on $G_{\gamma\beta}$ contains the factor $G_{\al'\gamma}G_{\gamma\al'}$. We therefore proceed as follows: in every graph that does not yet satisfy \eqref{eq:sizeGammamu_E}, we apply \eqref{Oe2x} at one of its remaining non-standard neutral vertices, and we repeat. A direct inspection of the resulting finite expansion tree shows that, for any choice of the expansion vertices, every branch ends after at most three $GG$ expansions in a graph satisfying \eqref{eq:sizeGammamu_E}, for some branches with equality.
+This yields \eqref{eq:sizeGammamu_E} and thus completes the proof of \eqref{eq;EGxy:x=y}.
+
+%\[\cal G^{(4)}_{xy}:=\sum_{\al,\beta}\sum_{\gamma\notin \{\al ,  \beta\}}S_{\gamma\al}S_{\al\beta} \p{G_{x\al }G_{\al\gamma}G_{\gamma\beta}G_{\beta y}  \overline G_{xy}}.\]
+%One can check directly that each application of \eqref{Oe2x} strictly increases the scaling order of the resulting graphs. Thus, the two $GG$ expansions at the vertices $\al$ and $\beta$ increase the scaling order by at least 2 in total, thus yielding \eqref{eq:sizeGammamu_E} and concluding the proof of \eqref{eq;EGxy:x=y}. 
+% {\cor Next, by \Cref{GtoAG}, we can bound each $\Gamma_{\mu,xy}$ via its auxiliary graph \smash{$\Gamma^{\aux}_{\mu, [a][b]}$} as in \eqref{G_by_auxG}, with $q\in \{0, 1\}$ and $\Psi_t=(W^{-d}B_{t,0})^{1/2}$. The auxiliary graphs \smash{$\Gamma^{\aux}_{\mu, [a][b]}$} are controlled by \eqref{eq:bddGamma_aux} with $p=0$ and $q\in \{0, 1\}$. Consequently,
+% \begin{align*}
+%     \Gamma_{\mu, xy} \prec  (\Psi_t)^{\ord(\Gamma_{\mu, xy}) - \ord(\Gamma^{\aux}_{\mu, [a][b]})}  \cdot W^{qd}\Gamma^{\aux}_{\mu, [a][b]} + W^{-D}\prec \eta_t^{-1}(\Psi_t)^{\ord(\Gamma_{\mu, xy})}.
+% \end{align*}
+% Combining this with \eqref{eq:sizeGammamu_E} yields the desired bound \eqref{eq;EGxy:x=y}. } 
+
+For the block Anderson model, the proof of \Cref{lem:LWterm_EXP} follows the same outline, in the graphical notation of \Cref{subsec:LWchange-to-BA} below: we have $S^{(\sB)}=I_{L^d}$ (so that $a_2=a_1$ in \eqref{eq:ELW_term}), every solid edge is split as $G=\Gc+M$, and the $GG$ expansion \eqref{GGGamma} (and its complex conjugate) is used in place of \eqref{Oe2x}. However, the argument above does not carry over verbatim, and the following three modifications are needed.
+\begin{itemize}
+\item[(i)] \emph{Twisted loops.} Since $M_{uv}=0$ unless $u-W[u]=v-W[v]$ (see \eqref{eq:Psi3D} and \eqref{def_G0}), summing over the two ends of an $M$-dotted edge produces, besides $G$-loops, the twisted traces $\tr(\Gc_t(\sig)P_{c_1c_2})$ and the twisted $2$-loops $\wt{\cal L}_{t,\bsig,(a;c_1,c_2)}=\tr(G_t(\sig_1)E_aG_t(\sig_2)P_{c_1c_2})$ introduced in \Cref{sec:ext-to-BA}. In coordinates,
+\[ \tr\big(\Gc_t P_{c_1c_2}\big)=W^{-d}\sum_{u\in[c_1]}(\Gc_t)_{u'u} ,\qquad \wt{\cal L}_{t,\bsig,(a;c_1,c_2)}=W^{-2d}\sum_{x\in[a]}\sum_{u\in[c_1]}\big(G_t(\sig_1)\big)_{u'x}\big(G_t(\sig_2)\big)_{xu}, \]
+where, for $u\in[c_1]$, $u'$ denotes the vertex of $[c_2]$ with $u'-W[u']=u-W[u]$. For $c_1=c_2$ these are the light-weight $\tr(\Gc_t E_{c_1})$ and the $2$-loop $\cL^{(2)}_{t,\bsig,(a,c_1)}$. For $c_1\ne c_2$ they are not $G$-loops in the sense of \Cref{Def:G_loop}, and bounding them entrywise by \eqref{Gt_bound_flow} loses a factor $(W^{-d}B_{t,0})^{-1/2}$. Twisted traces replace the light-weights at the expansion vertex in the analogues of the terms $I_3$ and $J_3$, and twisted $2$-loops replace the $2$-loop $\cL^{(2)}_{t,(-,+),(a,a_2)}$ in the analogue of $I_{41}$. We bound the twisted traces by \Cref{lem:TL1_BA}, which gives the same bound $W^{-d}B_{t,0}$ as \eqref{Gt_avgbound_flow} gives for light-weights. We write each twisted $2$-loop as the twisted tree $\wt{\cal K}_{t,\bsig,(a;c_1,c_2)}$ plus a fluctuation, which is bounded by \eqref{eq:TL2_BA}; if a leg is circled, we write $\Gc_t(\sig)=G_t(\sig)-M(\sig)$, and the contribution of $M(\sig)$ is $W^{-d}$ times an entry of $M^{(\sB)}(\sig)$ times a twisted trace. By \eqref{prop:ThfadC}, \eqref{eq:THETAinftinf} and \eqref{eq:WardM}, the twisted tree satisfies $|\wt{\cal K}_{t,\bsig,(a;c_1,c_2)}|\lesssim W^{-d}B_{t,0}$ and $\sum_a|\wt{\cal K}_{t,\bsig,(a;c_1,c_2)}|\lesssim (W^d\eta_t)^{-1}$, which are the properties of the $\cK$-loops used in \eqref{eq:termI41}. With these replacements, the arguments leading to \eqref{eq:termI1}--\eqref{eq:termI41} carry over. Since \eqref{eq:TL2_BA} gives the power $3/2$ of $W^{-d}B_{t,0}$ instead of the power $2$ in \eqref{Eq:L-KGt-flow}, the analogue of \eqref{eq:termI41} is $\eta_t^{-1}(W^{-d}B_{t,0})^{5/2}$, which still suffices for \eqref{eq:ELW_term}.
+
+\item[(ii)] \emph{Scaling orders at the level of atoms.} Scaling orders are now defined by \eqref{eq:ordG_BA}, and the analogue of \eqref{eq:GGraisesord} for \eqref{GGGamma} holds only under additional conditions. Before the new solid edges are split as $G=\Gc+M$, the first sum on the right-hand side of \eqref{GGGamma} removes two solid edges, adds one waved edge, and merges the atoms of $y$ and $y'$; hence it raises the scaling order by $2\nu$, where $\nu\in\{0,1\}$ is the number of internal atoms lost in this merger. In particular, it does not raise the scaling order if $y$ and $y'$ lie in the same atom, or if both lie in external atoms. The other terms raise the scaling order by exactly $1$. Accordingly, we apply \eqref{GGGamma} to $\Gc_{y'v}\Gc_{vy}f(G)$ at a vertex $v$ only if the following conditions hold:
+\begin{itemize}
+\item[(H1)] the atom of $v$ is internal, and $\Gc_{y'v}$ and $\Gc_{vy}$ are the only solid edges incident to it;
+\item[(H2)] the atoms of $v$, $y$, and $y'$ are pairwise distinct;
+\item[(H3)] at least one of the atoms of $y$ and $y'$ is internal.
+\end{itemize}
+Under these conditions, every graph produced by \eqref{GGGamma} at $v$ has scaling order at least that of the input graph plus $1$. Indeed, $\nu=1$ by (H2) and (H3). Moreover, if $j$ of the new solid edges of a term are replaced by $M$-dotted edges, the scaling order of the term changes by $2\nu'-j$, where $\nu'$ is the number of internal atoms lost in the resulting mergers. Each such $M$-dotted edge joins two different atoms, at least one of which is internal (the atom of $v$, which is internal by (H1), an atom created by the expansion, or one of the atoms of $y$ and $y'$ as in (H3)), and checking the terms of \eqref{GGGamma} one by one shows that $\nu'\ge \lceil j/2\rceil$.
+The target \eqref{eq:sizeGammamu_E} is replaced by the atom-level bound
+\[ \ord(\Gamma_{\mu,xy})\ge 5-2\cdot\mathbf 1\p{x \text{ and } y \text{ lie in the same atom}} . \]
+The version with $\mathbf 1_{x=y}$ fails for the block Anderson model: for instance, the part of case (1) in which all solid edges are replaced by $M$-dotted edges has scaling order $4$, while $x$ and $y$ lie in the same atom. By \eqref{scaleatom}, $x\in[a]$ and $y\in[b]$ can lie in the same atom only if $x-W[x]=y-W[y]$, which holds for at most $W^d$ of the $W^{2d}$ pairs $(x,y)$. Since $B_{t,0}\ge (\fd^{-2}+1)^{-1}$ by \eqref{eq:WO}, the resulting factor $W^{-d}\lesssim W^{-d}B_{t,0}$, obtained after averaging over $x\in[a]$ and $y\in[b]$, compensates for the weaker bound. Finally, the analogue of \eqref{Gammamuxy}, which follows from \eqref{G_by_auxG_BA} and \eqref{eq:Gbyxi2_BA}, requires that each internal molecule be joined to the other molecules by at least two solid edges. This follows from two properties that hold for $\cal G_{xy}$ and are preserved by every expansion step and by the splitting $G=\Gc+M$: each atom is incident to an even number of solid half-edges (a light-weight counting twice), and the graph is connected through its solid, waved and dotted edges. Since different molecules are joined only by solid edges, an internal molecule is then joined to the other molecules by a positive even number of solid edges.
+
+\item[(iii)] \emph{Folding.} The case analysis below \eqref{eq:GGraisesord} is replaced by the following procedure. We expand the block Anderson analogue of the graph $\cal G_{xy}$ in \eqref{eq;I42inG} by \eqref{GGGamma}, only at vertices satisfying (H1)--(H3), and we stop as soon as a graph satisfies the bound in (ii). Along each branch, at most two such expansions are needed, and every graph at which the procedure stops either satisfies the bound in (ii) and the attachment property, or is a \emph{folded graph}: a graph of scaling order $4$, with $x$ and $y$ in different atoms, whose solid edges form the cycle $\Gc_{xu_1}\Gc_{u_1'u_2}\Gc_{u_2'y}(\Gc_t(\sig))_{yx}$, where $u_i$ and $u_i'$ are joined by $M$-dotted edges, $i=1,2$. An example is the graph $\Gc_{xw}M_{w\gamma}\Gc_{\gamma v}M_{v\delta}\Gc_{\delta y}(\Gc_t(\sig))_{yx}$ (with the waved edges of $\cal G_{xy}$), obtained from $\cal G_{xy}$ by the splitting $G=\Gc+M$. In a folded graph, no vertex is incident to two solid edges of the same charge, so \eqref{GGGamma} cannot be applied, although each of the two internal atoms carries two blue solid edges. For these graphs, we do not prove the pointwise bound \eqref{eq;EGxy:x=y}, but only its average over $x\in[a]$ and $y\in[b]$, which is all that is used in \eqref{eq;I42inG}. Since $M_{uu'}\ne0$ only if $u-W[u]=u'-W[u']$, every folded graph, after summing over all vertices other than $x$, $y$, $u_1$, $u_2$ and averaging over $x\in[a]$ and $y\in[b]$, takes the form
+\[ \mathfrak F_\rho:=W^{-4d}\sum_{\mathbf c\in(\Zn)^4}\rho(\mathbf c)\sum_{x\in[a],\,y\in[b]}\ \sum_{u\in[c_1],\,v\in[c_3]}(\Gc_t)_{xu}\,(\Gc_t)_{u'v}\,(\Gc_t)_{v'y}\,\big(\Gc_t(\sig)\big)_{yx}, \]
+where $\mathbf c=(c_1,c_2,c_3,c_4)$, the vertices $u'\in[c_2]$ and $v'\in[c_4]$ are determined by $u'-W[u']=u-W[u]$ and $v'-W[v']=v-W[v]$, and the coefficients $\rho(\mathbf c)$ collect the entries of $M^{(\sB)}$, the waved edges and the remaining factors, which do not depend on the vertices of the cycle. In all cases, one checks using \eqref{eq:WardM} and \eqref{Mbound_AO}--\eqref{Mbound_AO2} that
+\[ r_1:=\max_{c_1}\sum_{c_2,c_3,c_4}|\rho(\mathbf c)|\prec B_{t,0},\qquad r_2:=\max_{c_4}\sum_{c_1,c_2,c_3}|\rho(\mathbf c)|\prec B_{t,0}. \]
+We now show that $|\mathfrak F_\rho|\prec \eta_t^{-1}(W^{-d}B_{t,0})^{5/2}$ whenever $r_1r_2\prec B_{t,0}^2$. Writing $R:=\Gc_tE_b\Gc_t(\sig)$, we have $\mathfrak F_\rho=W^{-3d}\sum_{\mathbf c,x,u,v}\rho(\mathbf c)(\Gc_t)_{xu}(\Gc_t)_{u'v}R_{v'x}$. We apply the Cauchy--Schwarz inequality to this sum, with weight $|\rho(\mathbf c)|$, putting $(\Gc_t)_{xu}(\Gc_t)_{u'v}$ into the first factor and $R_{v'x}$ into the second. Since $R_{v'x}$ does not depend on $u\in[c_1]$, we obtain
+\[ |\mathfrak F_\rho|^2\le W^{-4d}\,r_1r_2\,\|\Gc_t\|_{\max}^2\,S_AS_C,\qquad S_A:=\sum_{x\in[a]}\sum_{w}|(\Gc_t)_{xw}|^2,\quad S_C:=\sum_{x\in[a]}\big\|R\mathbf e_x\big\|^2 , \]
+where $\mathbf e_x$ denotes the standard basis vector. By \eqref{Gt_bound_flow}, $\|\Gc_t\|_{\max}^2\prec W^{-d}B_{t,0}$. Since $\sum_w|(G_t)_{xw}|^2=\im (G_t)_{xx}/\eta_t$ by Ward's identity, and $\sum_w|M_{xw}|^2=\sum_c|M^{(\sB)}_{[x]c}|^2=1$ by \eqref{eq:WardM}, we have $S_A\le 2\eta_t^{-1}W^d\,\im\tr(G_tE_a)+2W^d\prec\eta_t^{-1}W^d$. For $S_C$, let $\phi_x:=E_b\Gc_t(\sig)\mathbf e_x$, a vector supported in $[b]$. We have $\|\Gc_t\phi\|^2\le 2\|G_t\phi\|^2+2\|M\phi\|^2$, where $\|G_t\phi\|^2=\eta_t^{-1}\im\langle\phi,G_t\phi\rangle$ by Ward's identity, and $\|M\phi\|=\|\phi\|$ for every vector $\phi$ supported in a single block by \eqref{eq:WardM}. Splitting $\phi_x=E_bG_t(\sig)\mathbf e_x-E_bM(\sig)\mathbf e_x$ and using that $\phi\mapsto\im\langle\phi,G_t\phi\rangle$ is a nonnegative quadratic form, we obtain
+\[ S_C\le 4\eta_t^{-1}W^{d}\,\big|\cL^{(3)}_{t,(-\sig,+,\sig),(b,b,a)}\big|+4\eta_t^{-1}W^{-d}\,\big|\tr(G_tE_b)\big|+2\|\Gc_t\|_{\max}^2\prec \eta_t^{-1}W^d(W^{-d}B_{t,0})^2 . \]
+Here, the second term comes from $E_bM(\sig)\mathbf e_x$, which is supported on the single vertex of $[b]$ with the same offset as $x$, and in the last step we used \eqref{Eq:LGxb} with $n=3$, $|\tr(G_tE_b)|\prec 1$, $\eta_t\le 1$, and $B_{t,0}\gtrsim 1$. Combining these bounds yields $|\mathfrak F_\rho|^2\prec r_1r_2\,\eta_t^{-2}W^{-2d}(W^{-d}B_{t,0})^3\prec \eta_t^{-2}(W^{-d}B_{t,0})^5$. Since all quantities involved are deterministically bounded by $W^C$, the same bound holds for the expectations. Together with (ii), we conclude
+\[ W^{-2d}\sum_{x\in[a],\,y\in[b]}\E\,\cal G_{xy}\prec \eta_t^{-1}(W^{-d}B_{t,0})^{5/2}, \]
+which is the form in which \eqref{eq;EGxy:x=y} is used in \eqref{eq;I42inG}.
+\end{itemize}
+With these modifications, the remaining steps are the same as for the random band matrix model.
+
+
+
+\subsection{Proof of \texorpdfstring{\Cref{lem:localregular}}{Lemma localregular}}\label{sec:pflocalregular}
+
+Our local expansion strategy leading to the proof of \Cref{lem:localregular} proceeds as follows. Given a graph $\Gamma$ that is not locally standard, we first find all weights in it, and apply the weight expansion \eqref{Owx} to remove them one by one. 
+Once the graph is free of weights, we find all vertices connected to more than two solid edges, and apply the edge expansion \eqref{Oe1x} iteratively to reduce their degrees.  
+After removing weights and ensuring each vertex is connected to at most two solid edges, we identify all vertices that are not standard neutral---that is, vertices connected to two $G$ edges or two $\overline G$ edges---and apply the $GG$ expansion \eqref{Oe2x} to correct them.
+It is important to note that after each expansion, the resulting graphs may require earlier steps to be re-applied. For instance, an edge expansion might introduce new weights, which must be removed via weight expansions before proceeding with further edge or $GG$ expansions. %This recursive process explains the loops shown in Figure \ref{Fig chart1}.
+We now formally state the local expansion rules. Throughout the following proof, when we refer to the degree of a vertex $\al$, we mean \emph{the number of solid edges connected to it}, excluding any solid self-loops (i.e., weights).
+
+%Finally, given a graph without weights and where all vertices are connected with at most two solid edges, we find all vertices that are not standard neutral (i.e., those connected with two $G$ edges or two $\overline G$ edges) and apply the $GG$ expansion \eqref{Oe2x} to them one by one. Note that after an expansion, we may need to perform earlier expansions to the resulting graphs. For example, after an edge expansion, we may get graphs that contain weights. Then, before performing another edge expansion, we first need to perform weight expansions to these graphs. This explains why we have loops in Figure \ref{Fig chart1}. We now formally state the local expansion rule. In the following proof, whenever we refer to the degree of a vertex $\al$, we only count the \emph{solid edges connected with it} and we do not count the self-loops of solid edges (i.e., weights).
+
+
+
+
+\begin{strategy}[Local expansion strategy]\label{strat_local}
+Given an arbitrarily large constant $D>0$, we apply the following local expansion strategy. %{\cor For each step, add a decomposition step $G=(G-M)+M$}
+\begin{itemize}
+\item[Step 1:] Given an input graph, we apply the \emph{weight expansion} $\cal O_{\mathrm{weight}}$ as follows. If the graph contains no weights (neither regular nor light), then $\cal O_{\mathrm{weight}}$ is a null operation, and the graph is passed to the next step. Otherwise, we select one of its weights, say on vertex $\al$. If this is a light-weight, we apply the expansion \eqref{Owx} directly. If it is a regular weight, i.e., $G_{\al\al}$ or \smash{$\overline G_{\al\al}$}, we decompose it as a sum of a light-weight and a factor of $m$ or $\overline m$: \smash{$(G_{\al\al}-m)+m$} or \smash{$(\overline G_{\al\al}-\overline m)+\overline m$}, and then apply the expansion \eqref{Owx} to the resulting light-weight term.  
+For each new graph generated by the weight expansion, we apply the operations in \Cref{dot-def} to write it as a sum of normal graphs. For each normal graph $\cal G$, if its scaling size is sufficiently small:
+\be\label{eq:smallsize}
+\size(\cal G)\le W^{-D},
+\ee
+then we send it directly to the output; if it contains no weights, we pass it to Step 2; if it still contains weights, we restart Step 1.  
+
+
+\item[Step 2:] At this stage, the input graph has no weights. We apply the edge expansion $\cal O_{\mathrm{edge}}$ as follows. If there exists a vertex $\al$ whose degree is $\notin\{0,2\}$, or whose charge is not neutral (recall the definition in \eqref{eq:neutralcharge}),\footnote{If $\al$ is attached to two $+$ solid edges and has non-neutral charge, then the two edges incident to it must be of the form $G_{\al y}G_{\al y'}$ or $G_{y\al}G_{y'\al}$. Such configurations cannot be expanded using the $GG$ expansion \eqref{Oe2x}, and therefore must first be removed via the edge expansion \eqref{Oe1x}.} then we apply the edge expansion \eqref{Oe1x} at $\al$. 
+For each resulting graph, we again apply the operations in \Cref{dot-def} to express it as a sum of normal graphs. Those satisfying the small-size condition \eqref{eq:smallsize} are sent to the output, while the rest are sent back to Step 1.
+If all internal vertices have degree $\in \{0,2\}$ and are neutral in charge, then $\cal O_{\mathrm{edge}}$ is a null operation, and the graph is passed to Step 3.  
+
+\item[Step 3:] Now, the input graph has no weights, and all internal vertices have degree $\in\{0,2\}$ and neutral charge. We apply the $GG$ expansion $\cal O_{GG}$ as follows. 
+If there exists a vertex $\al$ connected to two solid edges of the same charge (i.e., two $G$ edges or two $\overline G$ edges), we apply the expansion \eqref{Oe2x} at $\al$.
+Each resulting graph is expanded into a sum of normal graphs using the operations in \Cref{dot-def}. Those satisfying \eqref{eq:smallsize} are sent to the output, while the rest are sent back to Step 1.
+If all internal vertices are standard neutral, then $\cal O_{GG}$ is a null operation, and the graph is sent to the output. 
+
+%\item[Stop:] Finally, if all the above operations are null, then the input graph is locally standard, and we send it to the output.  
+\end{itemize}
+\end{strategy}
+
+% Finally, we collect all the output graphs of Strategy \ref{strat_local} and obtain the following lemma. 
+
+% \begin{lemma}[Lemma 3.22 of \cite{yang2021delocalization}] \label{lvl1 lemma}
+% Let $\Gamma$ be an arbitrary graph with $\OO(1)$ many vertices and edges. For any large constant $D>0$, we can expand $\Gamma$ into a sum of $\OO(1)$ many locally standard graphs $\Gamma_\mu$:
+% \begin{align}\label{expand lvl1}
+% \Gamma =_{\E} \sum_\mu \Gamma_\mu + \Err,
+% \end{align}
+% where every $\Gamma_\mu$ has scaling size $\lesssim \size(\Gamma)$ and scaling order $\ge \ord(\Gamma)$, and $\Err$ is a sum of graphs of scaling size $\OO(W^{-D})$.
+% \end{lemma}
+
+
+We now apply \Cref{strat_local} to complete the proof of \Cref{lem:localregular}.
+
+\begin{proof}[\bf Proof of \Cref{lem:localregular}]
+By \Cref{lvl1 lemma}, we obtain the expansion of $\big|f_{xy}(G)\big|^{p}$ as in \eqref{eq:local_Gs}, where the graphs $\Gamma_{\mu,xy}$ trivially satisfy property (1). For property (2), note that the original graph 
+\be\label{eq:originGamma}\Gamma_{xy}=\big|f_{xy}(G)\big|^{p}= \sum_{\bal,\bbeta}\prod_{i=1}^p \left[S_{\al_i\beta_i} \mathbf 1_{x\ne \al_i}\mathbf 1_{y\ne \al_i} \cdot 
+\Gc^{(i)}_{\beta_i\beta_i} G^{(i)}_{x\al_i}G^{(i)}_{\al_i y}\right]\ee
+where $G^{(i)}:=G$ for $1\le i\le p/2$ and $G^{(i)}:=\overline{G}$ for $p/2< i\le p$ (recall $p\in 2\N$), contains $p$ internal molecules, corresponding to the vertices $\bal=(\al_1,\ldots, \al_p)$ and $\bbeta=(\beta_1,\ldots, \beta_p)$. During the expansions, the number of internal molecules never increases; it may decrease when two molecules---internal or external---are merged due to new dotted or waved edges created in the process. Consequently, $\Gamma_{\mu,xy}$ may contain strictly fewer molecules than $\Gamma_{xy}$. In particular, if all internal molecules merge with external ones, then $\Gamma_{\mu,xy}$ contains no internal molecules, in which case $q=0$. Finally, \eqref{eq:MolVW} follows directly from the definition of a molecule, since all vertices within a molecule are connected by paths of waved edges. 
+
+For properties (3)--(5), note that the original graph $\Gamma_{xy}$ contains $p$ edge-disjoint paths between $\Mol_x$ and $\Mol_y$, each passing through an internal molecule $\Mol_i$ that contains the vertex $\al_i$, $i\in \qqq{p}$. We denote the path through $\Mol_i$ by $\fP_i$.
+During the expansions, molecules may merge, but for notational convenience, we retain their original labels: if molecules $\Mol_i$ and $\Mol_j$ merge, we continue to refer to the resulting molecule as both  $\Mol_i$ and $\Mol_j$. Similarly, although the paths $\fP_i$ may change during the expansion, we keep their names and regard each $\fP_i$ as the path associated with $\Mol_i$. 
+Checking \Cref{ssl,Oe14,T eq0}, we observe that these paths never disappear under local expansions. More precisely, if $e$ is a solid edge between two distinct molecules $\cal M$ and $\cal M'$, then in any local expansion either: 
+\begin{itemize}
+\item  the edge $e$ remains unaffected on the molecular graph; or %this edge is either unaffected (on the molecular graph) or one of the following scenarios occurs to it: 
+
+\item $e$ is replaced by two new edges $e_1$ and $e_2$, which still form a connected path between $\Mol$ and $\Mol'$ (though this connectedness may fail at the vertex level); or %, and one edge may lie within a molecule); or
+ 
+% The edge $e$ is replaced by two new edges $e_1$ and $e_2$, but these two edges still form a connected path between $\Mol$ and $\Mol'$ on the molecular graph. (Note that such connectedness may break on the vertex-level graph. Moreover, one of these edges may lie within a molecule.)
+
+\item the molecules $\Mol$ and $\Mol'$ merge, in which case $e$ disappears on the molecular graph, but the connectedness between $\Mol$ and $\Mol'$ holds trivially. 
+
+\end{itemize}
+From this observation, properties (3) and (5) follow.
+
+For property (4), let $\Mol$ be an internal molecule in $\Gamma_{\mu,xy}$. If $\Mol$ arises from merging at least two internal molecules, say $\Mol_i$ and $\Mol_j$, then both associated paths $\fP_i$ and $\fP_j$ pass through $\Mol$.
+If the previous scenario does not occur, then we are in the case $\Mol=\Mol_i$, which corresponds to the following path in the original graph $\Gamma_{xy}$ (assuming, without loss of generality, that the path carries a $+$ charge):
+\[ \sum_{\al_i,\beta_i}S_{\al_i\beta_i} \mathbf 1_{x\ne \al_i}\mathbf 1_{y\ne \al_i}\cdot \Gc_{\beta_i\beta_i} G_{x\al_i}G_{\al_i y}.\] 
+To ensure that $\Gamma_{\mu,xy}$ is locally standard, the molecule $\Mol_i$ must pull in some $\overline G$ edges from other paths or molecules during the expansions. 
+If a $\overline G$-edge from path $\fP_j$ is pulled to $\Mol_i$, then $\fP_j$ also passes through $\Mol_i$. Similarly, if a $\overline G$-edge inside $\Mol_j$ is pulled to $\Mol_i$, then the two new edges between $\Mol_i$ and $\Mol_j$ can be incorporated into path $\fP_j$, so that $\fP_j$ again passes through $\Mol_i$. In either case, property (4) holds.
+
+
+Finally, we examine the scaling order of $\Gamma_{\mu,xy}$. For the original graph $\Gamma_{xy}$, the scaling order is
+\be\label{eq:initial_scaling} \ord(\Gamma_{xy}) =
+p, \ee
+which follows from the presence of $2p$ off-diagonal solid edges, $p$ light-weights, $p$ waved edges, and $2p$ internal vertices. The scaling order itself is not monotone along the expansions; for instance, the contraction of a $2$-cycle discussed below \eqref{eq:GGraisesord} does not increase it. We therefore track a quantity that also accounts for the vertices that still have to be expanded, and that is minimized over all identifications of vertices that may occur later.
+
+Let $\cal G$ be a normal graph. A \emph{partition} $\pi$ of $\cal G$ is a partition of its vertex set into classes; a class is \emph{external} if it contains an external vertex, and \emph{internal} otherwise. A solid edge is \emph{kept} by $\pi$ if it is a light-weight or joins two different classes, and $\cal G/\pi$ denotes the graph obtained from $\cal G$ by identifying the vertices in each class and removing the solid edges that are not kept.\footnote{Intuitively, $\pi$ describes an identification of vertices that may occur in later expansions: an off-diagonal solid edge whose two ends are identified may be replaced by its deterministic part $m$ or $\overline m$, and then loses its factor $\Psi_t$.} An internal class of $\pi$ is called \emph{elementary} if, as a vertex of $\cal G/\pi$, it either carries exactly one light-weight and no other solid edge, or carries no light-weight and exactly two solid edges, which have the same color (two $G$ edges or two $\overline G$ edges). We define the cost of $\pi$ and the local cost of $\cal G$ by
+\be\label{eq:relateG1G0}
+c_\pi(\cal G):=\ord(\cal G/\pi)+\#\{\text{elementary classes of }\pi\},\qquad \Phi(\cal G):=\min_{\pi}c_\pi(\cal G),
+\ee
+where $\ord(\cal G/\pi)=\#\{\text{solid edges kept by }\pi\}+2n_W(\cal G)-2\#\{\text{internal classes of }\pi\}$ as in \eqref{eq:ordG}, and we denote by $\Phi^{\rm far}(\cal G)$ the minimum of $c_\pi(\cal G)$ over the partitions $\pi$ in which $x$ and $y$ lie in different classes. These quantities have the following three properties.
+\begin{itemize}
+\item[(a)] Let $\pi_0$ be the partition of $\cal G$ into single vertices. Then $\cal G/\pi_0=\cal G$, and the elementary classes of $\pi_0$ are the internal vertices that carry either exactly one light-weight and no other solid edge, or exactly two solid edges of the same color and no light-weight. A locally standard graph has no such vertices. Hence, if $\cal G$ is locally standard and $x\ne y$, then $\ord(\cal G)=c_{\pi_0}(\cal G)\ge \Phi^{\rm far}(\cal G)$.
+
+\item[(b)] We have $\Phi(\Gamma_{xy})=2p$ and $\Phi^{\rm far}(\Gamma_{xy})=3p$. Indeed, all internal vertices $\al_i$ and $\beta_i$ of $\Gamma_{xy}$ are elementary, so every internal class of a partition $\pi$ that consists of a single vertex is elementary. Hence $-2\#\{\text{internal classes}\}+\#\{\text{elementary classes}\}$ is at least minus the number of internal vertices lying in internal classes, and each $\beta_i$ contributes at least $-1$ to $c_\pi(\Gamma_{xy})$. Each $\al_i$ contributes at least $1$, unless its class contains both $x$ and $y$, in which case it contributes at least $0$: if $\al_i$ lies in an internal class, its two edges $G^{(i)}_{x\al_i}$ and $G^{(i)}_{\al_i y}$ are kept, and if it lies in an external class not containing both $x$ and $y$, at least one of them is kept. Together with the $p$ light-weights and the contribution $2p$ of the waved edges, we obtain
+\[ c_\pi(\Gamma_{xy})\ge 2p+\#\{i\in\qqq{p}:\text{the class of $\al_i$ does not contain both $x$ and $y$}\}, \]
+which gives $\Phi(\Gamma_{xy})\ge 2p$ and $\Phi^{\rm far}(\Gamma_{xy})\ge 3p$. Equality is attained by putting $x$, $y$, and all $\al_i$ in one class, and by $\pi_0$, respectively.
+
+\item[(c)] $\Phi$ and $\Phi^{\rm far}$ do not decrease along the expansions: if $\cal G_1$ is a normal graph obtained from $\cal G_0$ by one step of \Cref{strat_local}, then $\Phi(\cal G_1)\ge\Phi(\cal G_0)$ and $\Phi^{\rm far}(\cal G_1)\ge\Phi^{\rm far}(\cal G_0)$.
+\end{itemize}
+To prove (c), given a partition $\pi_1$ of $\cal G_1$, we construct a partition $\pi_0$ of $\cal G_0$ with $c_{\pi_0}(\cal G_0)\le c_{\pi_1}(\cal G_1)$, such that $x$ and $y$ lie in different classes of $\pi_0$ whenever they do in $\pi_1$. Since the dotted edge partition only identifies vertices, and an identification of vertices amounts to passing to a coarser partition (with a cost that is not smaller), it suffices to consider the graphs on the right-hand sides of \eqref{Owx}, \eqref{Oe1x}, and \eqref{Oe2x} before the dotted edge partition. Each of these graphs is obtained from $\cal G_0$ by a bounded number of local operations at the expansion vertex: adding a new vertex joined to it by a waved edge, adding or removing a light-weight, moving an end of a solid edge or of a light-weight (this includes the action of the partial derivatives), and contracting a solid edge, i.e., identifying its two ends (this comes from the factors $\delta$ in \eqref{Oe1x} and \eqref{Oe2x}). Placing a new vertex in a class that contains at most one of its neighbors (counted with multiplicity) never lowers the cost, so it suffices to consider partitions $\pi_1$ in which each new vertex either forms a class of its own or lies in a class containing at least two of its neighbors. For each of the local operations, one checks directly that the partition $\pi_0$ induced by $\pi_1$ on the vertices of $\cal G_0$ (in which identified vertices are put into the same class) is a suitable choice, with one exception: when the two solid edges of a $2$-cycle $G_{uv}G_{vu}$ (or $\overline G_{uv}\overline G_{vu}$) at an internal vertex $u$ are removed without identifying $u$ and $v$, as in the second term of the example below \eqref{eq:GGraisesord}, the cost of the partition into single vertices may decrease by $1$. In this case, we put in addition $u$ into the class of $v$ in $\pi_0$. Since $u$ is internal, this never merges two external classes, so $x$ and $y$ remain in different classes. This finite case-by-case verification over the terms of \eqref{Owx}, \eqref{Oe1x}, and \eqref{Oe2x} replaces a bookkeeping of individual light-weights and vertices, which is not monotone along the expansions.
+
+Applying (c) along the expansions in \Cref{lvl1 lemma} and using (a) and (b), we obtain that every locally standard graph $\Gamma_{\mu,xy}$ satisfies
+\be\label{eq:ordGinter} \ord(\Gamma_{\mu,xy})\ge \Phi^{\rm far}(\Gamma_{\mu,xy})\ge \Phi^{\rm far}(\Gamma_{xy}) = 3p > 2p ,\ee
+since $x\ne y$ under \eqref{eq:far_ab}. (Without \eqref{eq:far_ab}, the same argument with $\Phi$ in place of $\Phi^{\rm far}$ gives $\ord(\Gamma_{\mu,xy})\ge 2p$, also when $x=y$.) This concludes \eqref{eq:sizeGammamu}.
+\end{proof}
+
+\begin{remark}
+The bound \eqref{eq:ordGinter} is in fact the stronger bound $\ord(\Gamma_{\mu,xy}) \ge 3p$, which in turn improves \eqref{eq:LW_moment} by replacing the factor $[\Psi_t(0)]^p$ with $[\Psi_t(0)]^{2p}$. We do not use this refinement, however, since the bottleneck of the main proof lies instead in the martingale estimate of \Cref{lem: EMn2_N} (see \Cref{rmk_bottleneck}).
+\end{remark}
+
+
+
+\subsection{Proof of \texorpdfstring{\Cref{lem:LWterm,lem: EWGn2_N}}{LemGraph1} for the block Anderson model}\label{subsec:LWchange-to-BA}
+
+Analogously to the random band matrix model, the proofs of \Cref{lem:LWterm,lem: EWGn2_N} for the block Anderson model reduce to \Cref{lem:LW_moment,lem:LW_moment_exp}. In this reduction (see the beginning of \Cref{Sec:graph}), \Cref{lem_GbEXP_BA} gives, in place of \eqref{eq:directG1} and \eqref{eq:directG2},
+\[ |(G_t(\sig'))_{yx}|\prec |(M(\sig'))_{yx}|+\Psi_t(|a-b|)\quad\text{and}\quad |(G_t(\sig'))_{yx}|\prec |(M(\sig'))_{yx}|+\sT_t(|a-b|\wedge\ell)+W^{-D}, \]
+respectively, where $M(\sig')$ is defined in \eqref{def_mtzk}. Unlike $\delta_{xy}$, the term $|(M(\sig'))_{yx}|$ need not vanish for $x\ne y$; it is of order $\ilambda$ for some pairs in neighboring blocks. However, it is harmless after averaging over $x\in[a]$ and $y\in[b]$: by \eqref{eq:Psi3D} and \eqref{def_G0}, $M_{yx}\ne 0$ only if $x-W[x]=y-W[y]$, so at most $W^d$ of the $W^{2d}$ pairs $(x,y)$ contribute, each with $|M_{yx}|\le Ce^{-c|a-b|}$ by \eqref{Mbound_AO} or \eqref{Mbound_AO2}. Hence the additional contributions carry a factor $\OO(W^{-d}e^{-c|a-b|})$, which is bounded by $\Psi_t(|a-b|)$ by \eqref{eq:Psi}, and by $\sT_t(|a-b|\wedge\ell)$ since $\sT_t(0)\gtrsim W^{-d/2}$ and $\sT_t(0)e^{-cr}\lesssim\sT_t(r\wedge\ell)$. To establish \Cref{lem:LW_moment,lem:LW_moment_exp}, we introduce new graphical notations and corresponding local expansion rules.
+In the setting of the block Anderson model, we continue to define the matrices $S^\pm$ as in \eqref{eq:def-Spm}, with \smash{$\Theta^{(+,+)}(z)$} defined in \eqref{def:Theta_BA} and $S^{(\sB)}=I_{L^d}$. 
+In addition to the components introduced in \Cref{def_graph1}, we introduce new types of edges that represent the matrix entries of $\Psi$ and $M$, specific to this model: 
+\begin{itemize}			
+	
+\item {\bf $\Psi$-dotted edge}: A black dotted edge labeled $\Psi$ between vertices $x$ and $y$ represents a factor $\ilambda\Psi_{xy}$.\footnote{Here $\Psi$ denotes the block-hopping matrix of the model, cf.~\eqref{eq:Psi3D}; it should not be confused with the control parameter $\Psi_t$ of \eqref{eq:Psi}.}
+
+\item {\bf $M$-dotted edge}: A blue (resp.~red) dotted edge  labeled $M$ between vertices $x$ and $y$ represents a factor $M_{xy}$ (resp.~$\bar M_{xy}$).
+
+\end{itemize}
+With these new types of dotted edges, the definitions of molecules and molecular graphs remain the same as in \Cref{def_poly}. However, graphs in the block Anderson model carry an additional level of structure, which we refer to as \emph{atoms}. More precisely, our graphs exhibit microscopic structures, called atoms, which are equivalence classes of vertices connected via dotted edges. These atoms form mesoscopic structures within each molecule, and the global (macroscopic) structure is represented by the molecular graph.
+
+% More precisely, our graphs have some microscopic structures, called \emph{atoms}, which are the equivalence classes of vertices connected through dotted edges, some mesoscopic structures within molecules, which are the equivalence classes of atoms connected through waved edges, and a global (macroscopic) structure given by the molecular graph. 
+
+\begin{definition}[Atoms and atomic graphs]\label{def_atom}
+We partition the set of all vertices in a graph into disjoint subsets called atoms. Two vertices belong to the same atom if and only if they are connected by a path consisting entirely of dotted edges---that is, any combination of regular dotted edges, $\Psi$-dotted edges, or $M$-dotted edges.
+An atom is called external if it contains at least one external vertex; otherwise, it is called internal. 
+
+Given a graph $\cal G$, we define its atomic graph as follows:
+\begin{itemize}
+\item Merge all vertices belonging to the same atom into a single vertex. 
+		
+\item Retain all solid and waved edges that connect different atoms. 
+		
+\item Discard all other components within $\cal G$, including $\times$-dotted edges, edges between vertices within the same atom, and coefficients.
+\end{itemize}
+\end{definition}
+
+By the definition of (regular) dotted edges, the form of the $\Psi$-dotted edges in \eqref{eq:Psi3D}, and the bounds for the $M$-dotted edges in \eqref{Mbound_AO} or \eqref{Mbound_AO2}, we deduce that, up to an error of order $e^{-c(\log W)^{1+\e_1}}$, where $\e_1\in(0,1/10)$ is the constant fixed in \eqref{yixi}, %the following holds: %for any small constant $\e>0$
+\be\label{scaleatom}
+ \hbox{$x$, $y$ belong to the same atom} \implies  x-W[x] = y-W[y],\ \text{and} \ |[x]-[y]|\le (\log W)^{1+\e_1}.
+\ee
+Here, $[x],[y]\in \Zn$ are the block-level vertices as defined in \Cref{def: BM2}. 
+The concept of atoms is introduced for two main purposes: first, to define the scaling size and scaling order of our graphs; and second, to enable a structural comparison between the block Anderson model and the random band matrix model. 
+In particular, if every solid edge between two vertices of the same atom is retained as a solid self-loop of the merged vertex, then the atomic graphs in the block Anderson model have the same form as the vertex-level graphs in the random band matrix setting, where the $M$ matrices reduce to scalars. This correspondence transfers the \emph{statements} concerning molecular graphs from the random band matrix model to the block Anderson model, but not the \emph{arguments} step by step. A local expansion in the block Anderson model acts at a vertex rather than at an atom (for example, \eqref{GGGamma} below requires two solid edges at the same vertex, not merely in the same atom), and in general it is not the image of a single expansion step of the random band matrix model; the correspondence holds only for the outputs of the expansions, after grouping consecutive steps. The structural properties used below are therefore verified directly for the block Anderson expansions; see the end of \Cref{subsec:pf-LWterm_EXP} and the proof of \Cref{lem:LW_moment,lem:LW_moment_exp} below.
+
+
+%One reason we introduce the concept of atoms is to define the scaling size and scaling order of our graphs. Another key reason is that our atomic graphs for the block Anderson model would have the same structure as the vertex-level graphs in the setting of the random band matrix model if we merge all vertices connected by dotted edges and discard all $\times$-dotted edges. In particular, all statements about the molecular graphs in the previous proofs for the random band matrix model will carry over verbatim to the setting of the block Anderson model.  
+
+
+
+\begin{definition}[Normal graphs]  \label{defn_normalBA}  
+We say a graph is \emph{normal} if it satisfies the following properties:
+\begin{itemize}
+\item[(i)] It contains at most $\OO(1)$ many vertices and edges.
+
+\item[(ii)] There are no regular dotted edges between vertices (note that $\Psi$- or $M$-dotted edges are allowed).
+
+\item[(iii)] Every solid edge carries a $\circ$ (i.e., it represents an entry of \smash{$\Gc$ or $\Gc^*$}). In particular, all weights are light-weights.
+
+\end{itemize}
+\end{definition}
+
+
+Given an arbitrary graph with $\OO(1)$ many vertices and edges, we can decompose it into a linear combination of normal graphs by expanding each $G_{xy}$ (resp.~$G^*_{xy}$) edge into a \smash{$\Gc_{xy}$} edge plus an $M_{xy}$ edge (resp.~a \smash{$\Gc^*_{xy}$} edge plus an $M^*_{xy}$ edge), and by merging any vertices connected by regular dotted edges. For a normal graph, we define its scaling size in the same way as in \Cref{def scaling}, except that we replace the number of internal vertices with the number of internal atoms.
+
+
+\begin{definition}[Scaling size and scaling order]\label{def scalingBA} 
+%For a normal graph $\Gamma$, its scaling size is defined by
+We define the scaling size of a normal graph $\Gamma$ as 
+ \begin{align}
+\size(\Gamma): = (L^d)^{n_M(\Gamma)}\cdot(\Psi_t)^{n_S(\Gamma)} \cdot W^{-d\left(n_W(\Gamma) - n_A(\Gamma) \right)},
+  \label{eq_defsize_BA}
+\end{align} 
+where $n_S(\Gamma)$, $n_W(\Gamma)$, $n_A(\Gamma)$, and $n_M(\Gamma)$ denote the numbers of solid edges (including light-weights), waved edges, internal atoms, and internal molecules, respectively. The scaling order of $\Gamma$ is then defined as
+\be\label{eq:ordG_BA} \ord(\Gamma):=n_S(\Gamma)+ 2 \left(n_W(\Gamma)  -  n_A(\Gamma)\right) . \ee
+If $\Gamma$ can be expressed as a sum of $\OO(1)$ many normal graphs $\Gamma_k$, i.e., $\Gamma=\sum_k \Gamma_k$, we define its scaling size as in \eqref{eq_defsizemax}, and its scaling order by
+\(\ord(\Gamma)=\min_k \ord(\Gamma_k).\)
+\end{definition}
+Next, we state the local expansion rules for the block Anderson model, as given in \cite{yang2024Del}.  
+
+\begin{lemma}[Basic expansion, Lemma B.9 of \cite{yang2024Del}]\label{lanlw}
+In the setting of the block Anderson model, let $f$ be a differentiable function of $G$. Then, we have the expansion
+\begin{align} \label{eq:BE}
+ \Gc_{xy} f(G) =_{\E}  &
+   \sum_{\al,\beta}  M_{x\al} S_{\al \beta}
+ \Gc_{\beta\beta} G _{\al y} f(G)
+  - \sum_{\al,\beta}M_{x\al} S_{\al \beta} G _{\beta y} 
+  \partial_{h_{ \beta\al}} f(G) .
+ \end{align}
+% where $Q$ is a sum of $Q$-graphs defined as
+% \begin{align*}
+% Q=-\sum_{\al,\beta}M_{x\al}S_{\al\beta}  Q_{\al}\left[\Gc_{\beta \beta}G_{\al y}\Gamma\right] +\sum_{\al,\beta}M_{x\al}S_{\al\beta} Q_{\al}\left[G_{\beta y}\partial_{h_{\beta\al}}\Gamma\right]+ \sum_{\al}M_{x\al}Q_\al\left[(M^{-1}\Gc)_{\al y} \bigGamma\right].
+% \end{align*}
+\end{lemma}
+
+The purpose of the basic expansion is to expand any graph as a sum of graphs in which every vertex has a solid-edge degree $\in \{0,2\}$. If a vertex still carries self-loops (i.e., weights), we then apply the following weight expansion.
+
+\begin{lemma} [Weight expansion, Lemma B.10 of \cite{yang2024Del}]\label{lem_lweight}
+In the setting of the block Anderson model, let $f$ be a differentiable function of $G$. Then, we have the expansion
+\begin{align} \label{eq:LW}
+\Gc _{xx} f(G)  
+=_{\E} &\sum_{y}(1+M^+S^+)_{xy}
+ \Big(   \sum_{\al,\beta}  M_{y\al} S_{\al \beta} \Gc_{ \al y} 
+ \Gc_{\beta\beta} f(G)
+  - \sum_{\al,\beta}M_{y\al} S_{\al \beta} G _{\beta y} 
+   \partial_{h_{ \beta\al}} f(G)\Big) ,
+ \end{align}
+where $M^+$ is the $N\times N$ matrix with entries $M^+_{xy}:=M_{xy}M_{yx}$. 
+\end{lemma}
+
+
+
+If there are vertices incident to two solid edges of the same charge, we use the following $GG$ expansion.
+ 
+\begin{lemma}[$GG$ expansion, Lemma B.11 of \cite{yang2024Del}]
+In the setting of the block Anderson model, let $f$ be a differentiable function of $G$. Then, we have the expansion
+\begin{align} 
+&\Gc _{y'x}\Gc _{xy} f(G) 
+=_\E \sum_\beta (M^+S^+) _{x\beta } M _{\beta y}M_{y'\beta}f(G)
++ \sum_{ \beta}(M^+S^+)_{x\beta}\left(\Gc _{\beta y}M_{y'\beta}+M_{\beta y}\Gc _{y'\beta}\right)f(G)\label{GGGamma}
+ \\ & +\sum_{w,\al,\beta}\left(1+M^+S^+\right)_{xw}M_{w\al} S_{\al \beta}\left(   
+ \Gc_{\beta\beta} G _{\al y} \Gc _{y'w}f(G)
+ + \Gc _{\al w}G _{\beta y}G_{y'\beta}
+   f(G) -  G _{\beta y} \Gc _{y'w}
+     \partial_{h_{ \beta\al}}   f(G)\right) .\nonumber
+ \end{align}
+\end{lemma}
+The expansion of $\overline{\Gc_{y'x}}\,\overline{\Gc_{xy}} f(G)$ (two red solid edges) can be derived by taking the complex conjugate of \eqref{GGGamma}.
+
+As explained in \cite[Appendix B]{yang2024Del}, repeated applications of the above local expansions to an arbitrary normal graph yield a sum of $\OO(1)$ \emph{locally standard graphs} (see \Cref{deflvl1}), subject to the additional requirement that all solid edges are \smash{$\Gc$} edges. This allows us to establish an analogue of \Cref{lvl1 lemma} for the block Anderson model. 
+With the above preparations, we can now proceed to the proof of \Cref{lem:LW_moment,lem:LW_moment_exp} for the block Anderson model.
+Since the argument is very similar to that in \Cref{Sec:graph}, we only sketch the proof and omit the repetitive details.
+
+%With these preparations, we are now ready to give the proof of \Cref{lem:LW_moment,lem:LW_moment_exp} for the block Anderson model.  Due to close similarity with the arguments in \Cref{Sec:graph}, we will only outline the proof, without writing all details. 
+
+%With the above preparations, we are ready to outline the proofs of \Cref{lem:LWterm,lem: EWGn2_N} for the block Anderson model. As for the random band matrix model, we need to establish \Cref{lem:LW_moment,lem:LW_moment_exp} for the block Anderson model. 
+
+\begin{proof}[\bf Proof of \Cref{lem:LW_moment,lem:LW_moment_exp} for the block Anderson model]
+We begin by applying the local expansions \eqref{eq:BE}, \eqref{eq:LW}, and \eqref{GGGamma} (and their complex conjugates) to the graph $|f_{xy}(G)|^p$, splitting every solid edge as $G=\Gc+M$. This yields the analogue of \Cref{lem:localregular} for the block Anderson model, with properties (1)--(6) read on the atomic graphs. In property (2), $n_V(\Mol_i)$ denotes the number of atoms in $\Mol_i$, in accordance with \Cref{def scalingBA}; counted with vertices, \eqref{eq:MolVW} fails already for the initial graph, since $M$-dotted edges join vertices of a molecule without waved edges. With atoms in place of vertices, (2) follows as in \Cref{sec:pflocalregular}, since the atoms of a molecule are connected by paths of waved edges.
+
+These properties are not inherited from the random band matrix model step by step (see the discussion below \eqref{scaleatom}), and we verify them directly. For the path properties (3)--(5), one checks term by term that every expansion step, including the splitting $G=\Gc+M$, acts on the molecular graph in one of the three ways listed in \Cref{sec:pflocalregular}: a solid edge between two molecules is unaffected, or it is replaced by two edges forming a path between the same molecules, or it disappears because the two molecules merge. Hence the family of $p$ edge-disjoint paths from $\Mol_x$ to $\Mol_y$ (which may revisit molecules), labeled as in \Cref{sec:pflocalregular}, is preserved. This includes the terms of \eqref{GGGamma} that have no single counterpart in \eqref{Oe2x}, namely its first sum and the terms in which both expanded solid edges become edges inside one molecule.
+
+Property (6) is used, and proved, when $x$ and $y$ lie in different atoms, which holds under \eqref{eq:far_ab} up to a negligible error by \eqref{scaleatom}. For (6), we use the local cost $\Phi^{\rm far}$ of \Cref{sec:pflocalregular}, computed on the atomic graphs, in which solid edges between different atoms are treated as off-diagonal solid edges and solid edges inside an atom as light-weights. A locally standard graph has no elementary atoms, since each of its vertices carries either no solid edge or one blue and one red solid edge. The splitting $G=\Gc+M$ of a solid edge between two atoms replaces it by an $M$-dotted edge and merges the two atoms; this does not decrease $\Phi^{\rm far}$, because every partition of the new atomic graph comes from a partition of the old one in which the two atoms lie in the same class, the removed edge is not kept by the latter, and the two quotient graphs coincide. Most of the remaining terms act on the atomic graphs as compositions of the local operations considered in \Cref{sec:pflocalregular}; for the terms that have no counterpart in \eqref{Owx}, \eqref{Oe1x}, and \eqref{Oe2x} (for instance, the first sum in \eqref{GGGamma}), the same comparison of partitions is carried out directly. Hence $\ord(\Gamma_{\mu,xy})\ge 3p>2p$ whenever $x$ and $y$ lie in different atoms.
+
+
+
+
+Next, we define the auxiliary graph in a similar manner as in \Cref{def_auxgraph}, with minor modifications that we now describe. Let $\cal G_{xy}$ be a locally standard graph obtained from the local expansions, with $q$ internal molecules $\Mol_i$, $i\in\qqq{q}$, and two external molecules $\Mol_x$ and $\Mol_y$, as in \Cref{def_auxgraph}. For each $i\in \{1,\ldots, q,x,y\}$, we fix a center $\al_i\in \Mol_i$, and we also choose centers $x_{i,j}$ for the atoms $\cal A_{i,j}\subset\Mol_i$, where $j\in\qqq{k_i}$ and $k_i$ denotes the number of atoms in $\Mol_i$. Without loss of generality, we set $\al_i\equiv x_{i,1}$ and assume that $\al_i$ is connected to other molecules via solid edges.
+(By the definition of locally standard graphs, the solid-edge degree of each $\al_i$ is at least 2.)
+If $\p{\beta\to \beta'}$ is a solid edge connecting the atoms $\cal A_{i,j}$ and $\cal A_{i',j'}$, then by \eqref{scaleatom}, the form of the $\Psi$-dotted edges in \eqref{eq:Psi3D}, and the exponential decay estimates \eqref{Mbound_AO} or \eqref{Mbound_AO2} for the $M$-dotted edges, we obtain
+\be\label{Gyiyjatom}
+\big|(\Gc_t)_{\beta\beta'}\big|\prec \zeta(x_{i,j},x_{i',j'}):=\sum_{|[a]|+|[b]|\le (\log W)^{1+\e_1}}\big|(\Gc_{t})_{x_{i,j}+W[a],x_{i',j'}+W[b]}\big| + W^{-D}
+\ee
+for any large constant $D>0$. This quantity satisfies bounds analogous to \eqref{eq:Gbyxi2}:
+\be\label{eq:Gbyxi2_BA}
+\zeta(\al,\beta) \prec \Psi_t(|[\al]-[\beta]|),\quad \sum_{\al\in \ZL}(|\zeta(\al,\beta)|^2+|\zeta(\beta,\al)|^2) \prec \eta_t^{-1},
+\ee
+where the first estimate follows from \Cref{lem_GbEXP_BA}, and the second from Ward's identity for $G$ together with \eqref{Mbound_AO} or \eqref{Mbound_AO2} for $M$. If $\p{\beta,\beta'}$ is a waved edge connecting the atoms $\cal A_{i,j}$ and $\cal A_{i',j'}$, then by \eqref{scaleatom}, the definition of $S$ in \eqref{bandcwV}, and the estimate \eqref{prop:ThfadC_short}, we obtain
+\be\label{Gyiyjatom2}
+\big|S_{\beta\beta'}\big|+ \big|S^+_{\beta\beta'}\big|\prec W^{-d}\mathbf 1\p{|x_{i,j}-x_{i',j'}|\le W(\log W)^{1+\e_1}} + W^{-D}.\ee
+
+
+We first define a graph $\cal G^{a}_{xy}$ as an ``atomic reduction'' of $\cal G_{xy}$:
+\begin{itemize}
+    \item Its vertices are the atom centers $x_{i,j}$ for $i\in\{1,\ldots,q,x,y\}$ and $j\in\qqq{k_i}$.
+    
+    \item For each solid edge in $\cal G_{xy}$ from the atom $\cal A_{i,j}$ to the atom $\cal A_{i',j'}$, we introduce an oriented solid edge from $x_{i,j}$ to $x_{i',j'}$ in $\cal G^{a}_{xy}$, representing the factor $\zeta(x_{i,j},x_{i',j'})$.
+
+\item For each waved edge in $\cal G_{xy}$ connecting the atoms $\cal A_{i,j}$ and $\cal A_{i',j'}$, we introduce a waved edge between $x_{i,j}$ and $x_{i',j'}$ in $\cal G^{a}_{xy}$, representing the factor $W^{-d}\mathbf 1 \left(|x_{i,j}-x_{i',j'}|\le W(\log W)^{1+\e_1}\right)$.
+
+\end{itemize}
+Next, we further simplify the structure of $\cal G^{a}_{xy}$ and define the auxiliary graph $\cal G^{\aux}_{xy}$ as follows.
+First, we remove all solid and waved edges that lie entirely within individual molecules of $\cal G^{a}_{xy}$.
+Second, for each molecule $\Mol_i$, we retain only those vertices (including the center $\al_i$) that connect to other molecules through solid edges; all remaining vertices inside $\Mol_i$ are discarded. 
+Third, for each retained vertex $x_{i,j}\ne \al_i$ inside $\Mol_i$, we add a new waved edge connecting $x_{i,j}$ to $\al_i$, representing the factor $W^{-d}\mathbf 1(|x_{i,j}-\al_i|\le W(\log W)^{1+2\e_1})$.
+In other words, the molecular structure is reduced to the following simplified form:
+\be  \nonumber%\label{simplemolecule} 
+\parbox[c]{0.8\linewidth}{
+\begin{center}
+\scalebox{0.9}{
+\begin{tikzpicture}
+  \begin{feynman}
+    
+    % Internal fermion vertices    
+    \vertex [dot] (a1) at (0,0.7);
+    \fill[black] (a1) circle (2pt) node at (0.2,0.5) {$\al_i$};
+    \vertex [dot] (a) at (0,0);   
+    \fill[black] (a) circle (2pt) node[left=2pt]{};
+      \vertex [dot] (a2) at (-0.7,0.7);
+    \fill[black] (a2) circle (2pt) node[left=2pt]{$x_{i,2}$};
+    \vertex [dot] (a3) at (0,1.4);   
+    \fill[black] (a3) circle (2pt) node[left=2pt]{$x_{i,3}$};
+     \vertex [dot] (a4) at (0.7,0.7);   
+    \fill[black] (a4) circle (2pt) node[right=2pt]{$x_{i,4}$};
+  \vertex (a5) at (0.5,0.2) {$\cdots$};
+    
+    % Draw fermion lines
+    \diagram*{
+      %(L) -- [fermion] (a) -- [fermion] (b) -- [fermion] (R),
+      %(L) -- [fermion] (c) -- [fermion] (d) -- [fermion] (R),
+
+      % Photon exchange lines
+      (a) -- [photon] (a1), (a1) -- [photon] (a2), (a1) -- [photon] (a3), (a1) -- [photon] (a4)
+
+      % Tadpoles
+      %(a) -- [photon, half left, looseness=1.5] (ta) -- [photon, half left, looseness=1.5] (a),
+      %(c) -- [photon, half left, looseness=1.5] (tc) -- [photon, half left, looseness=1.5] (c),
+    };
+  \end{feynman}
+\end{tikzpicture}}
+\end{center}}\ee
+For the auxiliary graph $\cal G^{\aux}_{xy}$ constructed above, we define its scaling order by
+\be\label{eq:ordGaux_BAM} \ord(\cal G^{\aux}_{xy}):=\#\{\text{solid edges in } \cal G^{\aux}_{xy}\}+2\#\{\text{waved edges in } \cal G^{\aux}_{xy}\}-2\#\{\text{internal vertices in } \cal G^{\aux}_{xy}\}.
+\ee
+From the construction, together with \eqref{eq:Gbyxi2_BA} and by repeating the argument used in the proof of \Cref{GtoAG}, we can control $\cal G_{xy}$ via its auxiliary graph as
+\be\label{G_by_auxG_BA} 
+\cal G_{xy} \prec  (\Psi_t)^{\ord(\cal G_{xy}) - \ord(\cal G_{xy}^{\aux})}  \cdot \cal G^{\aux}_{xy} + W^{-D}\, .
+\ee
+Finally, using \eqref{eq:Gbyxi2_BA}, the auxiliary graph $\cal G^{\aux}_{xy}$ can be bounded by an argument parallel to that in \Cref{sec:pf_Anp}.
+In particular, the argument there, when applied to the molecular graph of $\cal G^{\aux}_{xy}$, provides a systematic procedure for selecting the long solid edges between molecules and for establishing a nested summation order over the internal molecules.
+The only difference from the random band matrix case is that the ``summation over a molecule'' here also includes summing over certain non-center vertices within the molecule. However, only two solid edges incident to $\Mol_i$ are used in the summation step, while every other solid edge contributes either a long-edge factor or a $\Psi_t$-factor.
+%when summing over vertices in $\Mol_i$ we retain only two solid edges attached to the center $\al_i$ and bound all other solid edges by $\Psi_t$-factors.
+Applying the Cauchy-Schwarz inequality together with the bound \eqref{eq:Gbyxi2_BA} to these two solid edges, the summation over all vertices in the molecule $\Mol_i$ produces the desired factor of $\eta_t^{-1}$.
+With this modification, the argument of \Cref{sec:pf_Anp} carries over verbatim, completing the proof of \Cref{lem:LW_moment} for the block Anderson model.
+
+%The only difference from the random band matrix setting is that a ``summation over a molecule'' now also involves summing over some non-center vertices inside a molecule. However, recall that only two solid edges incident to $\Mol_i$ will be used in the summation. Hence, when summing over the vertices in $\Mol_i$, we only keep two solid edges incident to $\al_i$, while bounding other solid edges connected with $\Mol_i$ by $\Psi_t$ factors. Then, using \eqref{eq:Gbyxi2_BA}, the summation over $\al_i$ provides the desired $\eta_t^{-1}$ factor. With this modification in mind, the argument in \Cref{sec:pf_Anp} completes the proof of \Cref{lem:LW_moment} for the block Anderson model.
+
+% Each waved edge now represents a factor of \smash{$W^{-d}\mathbf 1_{|\beta_k-\al_i|\le W(\log W)^{3/2}}$} up to an error of order \smash{$\exp(-c(\log W)^{3/2})$}, as implied by \eqref{scaleatom} and \eqref{scalemole}. In other words, such a contribution corresponds to the summation  
+% \[W^{-kd} \sum_{\al_i}\sum_{\beta_1,\ldots, \beta_k} \mathbf 1\Big(\max_{j=1}^k|\beta_j-\al_i|\le W(\log W)^{3/2}\Big) .\] 
+
+% For each auxiliary graph constructed as above, every solid edge $|\Gc_{\al\beta}|$ connecting different molecules satisfies an estimate analogous to \eqref{eq:Gbyxi2}:
+% \be\label{eq:Gbyxi2_BA}
+% |\Gc_{\al\beta}| \prec \Psi_t(|[\al]-[\beta]|)+\exp\left(-c_0(\log W)^{3/2}\right),\quad \sum_{\al}|\Gc_{\al\beta}|^2 \prec \eta_t^{-1},
+% \ee
+% where the first bound follows from \Cref{lem_GbEXP_BA}, and the second is obtained via Ward's identity for $G$, together with the bound \eqref{Mbound_AO} or \eqref{Mbound_AO2} for $M$. 
+
+%except that we modify the definition of the $\xi$-variables slightly. Moreover, by the definition of $S$ in \eqref{bandcwV} and the bound \eqref{prop:ThfadC_short}, we can again assume \eqref{yixi} for $\beta_i\sim_{\Mol}\al_i$. By the definition of $S$ in \eqref{bandcwV} and the bound \eqref{prop:ThfadC_short}, we can again assume \eqref{yixi} for $\beta_i\sim_{\Mol}\al_i$. Thus, we can further bound 
+
+% Specifically, given a graph $\cal G_{xy}$, we still select a molecular center $\al_i\in \cal M_i$ for each $i\in\{1,\ldots, q, x, y\}$. For each molecule, we bound every waved edge within it by a factor of $\OO_\prec(W^{-d})$, and every solid edge within it by a $\Psi_t$ factor. By \eqref{scaleatom}, each atom contributes a factor of $\OO_\prec(W^{d})$ in the summation. It remains to control the solid edges between molecules, say $\Mol_i$ and $\Mol_j$. 
+% For any atoms $\cal A_i\subset \Mol_i$ and $\cal A_j\subset \Mol_j$, we fix their centers as $x_i\in \cal A_i$ and $x_j\in \cal A_j$. Then, by \eqref{scaleatom}, the form of $\Psi$-dotted edges in \eqref{eq:Psi3D}, and the bound \eqref{Mbound_AO} or \eqref{Mbound_AO2} for $M$-dotted edges, we see that any solid edge between vertices $y_i\in \cal A_i$ and $y_j\in \cal A_j$ can be bounded by 
+% \[\zeta(x_i,x_j):=\sum_{[a],[b]\in \ZL}e^{-c(|[a]|+|[b]|)}\p{\big|\Gc_{t}\p{x_i+W[a],x_j+W[b]}\big|+\big|\Gc_{t}\p{x_j+W[b],x_i+W[a]}\big|} .\]
+
+
+%Within each molecule, we bound the solid edges by $\Psi_t$ factors, while solid edges between molecules are retained and each is bounded by its absolute value, e.g., $|\Gc_{\al\beta}|$ for an edge $\Gc_{\al\beta}$. 
+ 
+
+
+
+For the proof of \Cref{lem:LW_moment_exp}, the bounds in \eqref{eq:Gbyxi2_BA} remain valid with $\Psi_t(|[\al]-[\beta]|)=\sT_t(|[\al]-[\beta]|\wedge\ell)+W^{-D}$. Then, by following the same reasoning as in \Cref{subsec_pf_LW_moment_exp}, we complete the proof of \Cref{lem:LW_moment_exp} for the block Anderson model.
+\end{proof}
+
+

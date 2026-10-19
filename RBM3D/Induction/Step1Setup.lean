@@ -1,0 +1,1026 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Induction.Defs
+import RBM3D.Induction.ScaleFacts
+import RBM3D.Induction.PerTimeCalc
+import RBM3D.Induction.ConArg
+import RBM3D.Induction.ContinuityNet
+import RBM3D.Green.Pins
+
+/-!
+# Step 1 of `lem:main_ind`, first part: elementary facts, scales, per-time lemmas, loops, bridge
+
+Paper: arXiv:2507.20274, Step 1 of Theorem 2.24 (`lem:main_ind`): (2.85) `lRB1` and (2.86)
+`Gtmwc` (the conclusions `STStep1Loop`, `STStep1Weak` of `STStep1`).  The proof of Step 1
+(Section 3, with Lemma 3.1 `lem_GbEXP` and Lemma 3.2 `lem_ConArg`) follows [YY_25, §5.1].  This
+file follows the first part of the two-dimensional formalization (RBM2D `Induction/Step1`); the
+weak-law step, the net, the bootstrap and the assembly `step1` are in `Step1.lean`.
+
+## Contents
+
+* `Step1TargetV3 d := STGbEXPii d → STGbEXPij d → STStep1 d`: both conjuncts `STStep1Loop`,
+  `STStep1Weak` of `STStep1`.
+* Elementary facts: `s1_bulk` (alias of `ContinuityNet.cont_bulk`), `s1_inv_rpow`,
+  `s1_mul_rpow_le` (private), `s1_one_le_W`, `s1_one_le_size`, `s1_hsize`, `s1_d_pos`, and
+  `s1_ratio_pt` (`a_s (1-s)/(1-u) ≤ a_s^{1-𝔠_d}`).  The two-dimensional scale `M_u = W² ℓ² η` has
+  no `d ≥ 3` reading; its uses become `STBctl_ge` (`s1_Wd_le_Bctl`, `s1_F8`, `s1_loop_det`) and
+  `cont_inv_size_le_Bctl` (`s1_F6`).
+* Scales: `S1Std` (the standing hypotheses; the fields `hWO`, `h𝔠d`, `h𝔠d'` are specific to
+  `d ≥ 3`), `s1_std_of_stFlow`, `s1_a_le`, `s1_B_tendsto`, `s1_B_pos`, `s1_Bu_pos`,
+  `s1_B_ev_pow`, `s1_B_le_one`, `s1_ratio_ev`, `s1B`, `s1_apow_le`, `s1_c1_pos`, `s1_c0_pos`,
+  `s1_F3`-`s1_F8`.
+* Generic `PerTimeDomAt` helpers: `s1_highProb_of_pt`, `s1_pt_of_highProb`, `s1_stochDom_unit`,
+  `s1_pt_of_ev_or` (private).
+* Loops: `s1T1`, `s1_blockMat_herm` (private), `s1_loop_det`, `s1_Kbound_seq`, `S1H55`,
+  `s1_h55`, `s1_LI`.
+* Bridges: `s1_zdist_le_one` (private), `s1_near_card`, `s1xM`, `s1xM_ge`, `s1xM_le`,
+  `s1_gMax_le`, `s1xM_le_add`, `s1_wl_det`, `s1_llErrMat_eq`, `s1_STGM_norm`,
+  `s1_omegaC_eq_one`, `s1_indMax_eq_one` (the sample-level indicators `STomegaC`, `STindMax`
+  read at `s1xM`).  The entries of `Gt` and `STGM` are read directly on the fine lattice
+  `Idx d L W`, where `STGiiGEX`, `STGijGEX` live.
+
+## Dimension-dependent statements
+
+`W²` -> `W^d`, `(WL)²` -> `(WL)^d = N`, `Z2 L` -> `Zd d L`; `M_s⁻¹` -> `a_s := sz.Bctl n s =
+W^{-d} B_{s,0}` (`ScaleFacts.lean`); `(ℓ_u/ℓ_s)² M_u⁻¹` -> `(1-s)/(1-u) · a_s`; the
+exponent `30` of `CondStInd` -> the parameter `𝔠_d` of `STConStInd`.  Constants:
+`6 -> 2·3^d ≥ √(2·9^d + 1)` (F4), `25 → 2·9^d` and `26 → 2·9^d + 1` (`s1_gexRHS_le`,
+`s1_wl_det`: `STgexRHS` sums the two orientations `σ ∈ {(+,-),(-,+)}`, and the `zdistInf` ball
+of radius `1` has `≤ 3^d` blocks).  The `zdistD` ball, with `2d + 1` points, is not used.
+
+## The hypotheses of `S1Std` and of `STStep1` (`STFlow sz κ ε 𝔠 𝔡 z`, `E = STflowE z`)
+
+`hκ`, `hc`, `h𝔡` <- the arguments of `STStep1` and `Admissible.1`; `hE` <- `lemma28_quant`;
+`hN` <- `Admissible.2.2.1`; `hB` <- `.2.2.2.1`; `hWO` <- `.2.2.2.2`; `hτ`, `hR` <-
+`Green.v3_premises_of_stFlow` (`τ = ε/2`); `hs0`, `hst`, `ht1` <- the hypotheses of `STStep1`
+(`t ≤ lemT z < 1`); `hCond` <- `STConStInd 𝔠_d s t`; `InitLK` <- `STLK s`; `InitLocal` <-
+`STLocalMax s`; `KboundConcl κ` <- `STKbound`; `InitDecay` unused; `GbEXPHypV3 d (κ/2) c τ` <-
+`STGbEXPii d`, `STGbEXPij d` (`STGbEXPav` unused).
+
+## Time windows
+
+`0 ≤ s` is used exactly in `STBctl_ge` (`s1_Wd_le_Bctl`, `s1_F8`, the `u < 1/2` branches of
+`s1_h55`, `s1_LI`) and `cont_inv_size_le_Bctl` (`s1_F6`); `s1_ratio_pt` and the `u ≥ 1/2` branch of
+`s1_LI` use only `s ≤ u ≤ t < 1`.  The facts that need `lam ≤ 𝔡⁻¹` or `a_s → 0` are `∀ᶠ n`; the
+pointwise facts are `∀ n`.  No statement here contains `ℓ` or uses `L^d ≤ W^K`.  The constants
+depend on `κ, 𝔡, d, k` only.
+-/
+
+set_option linter.style.longLine false
+
+noncomputable section
+
+
+namespace RBM.Ind
+
+open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
+open scoped NNReal ENNReal
+
+/-! ## 1. The statement `Step1TargetV3` -/
+
+/-- **The counterpart of RBM2D's `Step1TargetV3`** (`GbEXPHypV3 d (κ/2) c τ` with `MainIndHyp`) in
+its `d`-dimensional form: Step 1 of `lem:main_ind` (Theorem 2.24: (2.85), (2.86); proof of
+Step 1) is the statement `STStep1 d` (the hypotheses `STKbound`, `STLK s`, `STLocalMax s`,
+`STConStInd` and the flow are `STStep1`'s own, they play the roles of `KboundConcl`, `InitLK`,
+`InitLocal`, `CondStInd`, `MainIndHyp`), under the two parts `STGbEXPii`, `STGbEXPij` of
+`lem_GbEXP` ((3.2) `GiiGEX`, (3.3) `GijGEX`) that RBM2D's `GbEXPHypV3` carries.  It covers
+**both** conjuncts `STStep1Loop` and `STStep1Weak` of `STStep1`; `step1TargetV3_holds` (in
+`Step1.lean`) proves it. -/
+def Step1TargetV3 (d : ℕ) : Prop :=
+  STGbEXPii d → STGbEXPij d → STStep1 d
+
+/-! ## 2. Elementary facts -/
+
+section Elementary
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- Bulk energy: `|E| < 2` and `√(2κ)/2 ≤ Im m` for `|E| ≤ 2 - κ` (`ContinuityNet.cont_bulk`, `spectralM` is `mE`). -/
+theorem s1_bulk {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) :
+    |E| < 2 ∧ Real.sqrt (2 * κ) / 2 ≤ (mE E).im :=
+  ContinuityNet.cont_bulk hκ hE
+
+/-- `x⁻¹ ^ p = x ^ (-p)` for `x ≥ 0`. -/
+theorem s1_inv_rpow {x : ℝ} (hx : 0 ≤ x) (p : ℝ) : x⁻¹ ^ p = x ^ (-p) := by
+  rw [Real.rpow_neg hx, Real.inv_rpow hx]
+
+/-- `K x^p ≤ x^q` from `K ≤ x^{q-p}`. -/
+private theorem s1_mul_rpow_le {x K p q : ℝ} (hx : 0 < x) (h : K ≤ x ^ (q - p)) :
+    K * x ^ p ≤ x ^ q := by
+  have e : x ^ q = x ^ (q - p) * x ^ p := by rw [← Real.rpow_add hx]; ring_nf
+  rw [e]
+  exact mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hx.le _)
+
+theorem s1_one_le_W (n : ℕ) : 1 ≤ sz.W n := sz.W_pos n
+
+theorem s1_one_le_size (n : ℕ) : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
+  exact_mod_cast sz.one_le_size n
+
+theorem s1_hsize (h : sz.SizeTendsto) : Tendsto sz.size atTop atTop :=
+  tendsto_natCast_atTop_iff.mp h
+
+/-- `N → ∞` forces `d ≥ 1` (for `d = 0` the scale `N = (WL)^0 = 1` is constant). -/
+theorem s1_d_pos (h : sz.SizeTendsto) : 0 < d := by
+  by_contra hd
+  have hd0 : d = 0 := by omega
+  obtain ⟨n, hn⟩ := (h.eventually_ge_atTop 2).exists
+  subst hd0
+  have : ((sz.size n : ℕ) : ℝ) = 1 := by simp [Sizes.size]
+  linarith
+
+/-- The deterministic ratio fact behind Step 1 (RBM2D: `ℓ_u ℓ_s^{-1} ≤ M_s^{1/60}`;
+`(ℓ_u/ℓ_s)² M_u⁻¹ ≤ M_s^{-14/15}`), `d ≥ 3` form: with `a_s = W^{-d}B_{s,0}`, from
+`(con_st_ind)` `a_t^c ≤ (1-t)/(1-s)` (`c = 𝔠_d`) and `s ≤ u ≤ t < 1`,
+`a_s (1-s)/(1-u) ≤ a_s^{1-c}`.  No `0 ≤ s` is needed.  (The exponent `30` of RBM2D is `1/c`.) -/
+theorem s1_ratio_pt (n : ℕ) {c s u t : ℝ} (hc : 0 < c) (hsu : s ≤ u) (hut : u ≤ t) (ht : t < 1)
+    (hstep : (sz.Bctl n t) ^ c ≤ (1 - t) / (1 - s)) :
+    sz.Bctl n s * ((1 - s) / (1 - u)) ≤ (sz.Bctl n s) ^ (1 - c) := by
+  have hu1 : u < 1 := lt_of_le_of_lt hut ht
+  have hs1 : s < 1 := lt_of_le_of_lt hsu hu1
+  have hxt : 0 < 1 - t := by linarith
+  have hxs : 0 < 1 - s := by linarith
+  have has : 0 < sz.Bctl n s := sz.STBctl_pos n hs1
+  have hat : sz.Bctl n s ≤ sz.Bctl n t := sz.STBctl_mono n (hsu.trans hut) ht
+  have h1 : (1 - t) ≤ (1 - u) := by linarith
+  exact closure_scale hc has hat hxt hxs h1 hstep
+
+end Elementary
+
+/-! ## 3. The standing hypotheses and the scale facts along the window -/
+
+section Scales
+
+/-- The deterministic hypotheses of `STStep1` that Step 1 uses (RBM2D's `S1Std`: all of
+`MainIndHyp` but the three initial-data clauses): `κ` bulk, `𝔠` bandwidth, `𝔡` window
+(`(eq:WO)`, a field specific to `d ≥ 3`: `ilambda` is a sequence), `τ` the range exponent
+(`1 - t ≥ N^{-1+τ}`), `𝔠_d ∈ (0, 10^{-2}]` the constant of `(con_st_ind)`.  Public: `Step1.lean` uses it. -/
+structure S1Std {d : ℕ} (sz : Sizes d) (κ 𝔠 𝔡 τ 𝔠d : ℝ) (E s t : ℕ → ℝ) : Prop where
+  hκ : 0 < κ
+  hE : ∀ n, |E n| ≤ 2 - κ
+  hc : 0 < 𝔠
+  h𝔡 : 0 < 𝔡
+  hτ : 0 < τ
+  h𝔠d : 0 < 𝔠d
+  h𝔠d' : 𝔠d ≤ 1 / 100
+  hs0 : ∀ n, 0 ≤ s n
+  hst : ∀ n, s n ≤ t n
+  ht1 : ∀ n, t n < 1
+  hN : sz.SizeTendsto
+  hB : sz.Bandwidth 𝔠
+  hWO : sz.WO 𝔡
+  hCond : sz.STConStInd 𝔠d s t
+  hR : sz.RangeCond τ t
+
+variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
+
+/-- `S1Std` from the flow hypotheses (RBM2D's `s1_std_of_mainIndHyp`): `STFlow`,
+`0 ≤ s ≤ t ≤ lemT z`, `STConStInd 𝔠_d s t`; `τ = ε/2` (`Green.v3_premises_of_stFlow`),
+`E = STflowE z`. -/
+theorem s1_std_of_stFlow {ε : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔠d : 0 < 𝔠d)
+    (h𝔠d' : 𝔠d ≤ 1 / 100) (hflow : STFlow sz κ ε 𝔠 𝔡 z) (hs0 : ∀ n, 0 ≤ s n)
+    (hst : ∀ n, s n ≤ t n) (ht : ∀ n, t n ≤ lemT (z n))
+    (hC : sz.STConStInd 𝔠d s t) : S1Std sz κ 𝔠 𝔡 (ε / 2) 𝔠d (STflowE z) s t := by
+  obtain ⟨hA, -, ht1, hR⟩ := Green.v3_premises_of_stFlow sz hκ hε hflow ht
+  have hz0 : ∀ n, 0 < (z n).im := fun n =>
+    lt_of_lt_of_le (Real.rpow_pos_of_pos (sz.STsize_pos n) _) (hflow.2 n).2.1
+  exact ⟨hκ, fun n => (lemma28_quant hκ (hz0 n) (hflow.2 n).2.2 (hflow.2 n).1).1, hA.1, hA.2.1,
+    half_pos hε, h𝔠d, h𝔠d', hs0, hst, ht1, hA.2.2.1, hA.2.2.2.1, hA.2.2.2.2, hC, hR⟩
+
+/-- `c₀ = min(2𝔠𝔡, τ) > 0`. -/
+theorem s1_c0_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) : 0 < min (2 * 𝔠 * 𝔡) τ :=
+  lt_min (by have := h.hc; have := h.h𝔡; positivity) h.hτ
+
+/-- `s_n < 1`. -/
+theorem s1_s_lt_one (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (n : ℕ) : s n < 1 :=
+  lt_of_le_of_lt (h.hst n) (h.ht1 n)
+
+/-- `a_s = W^{-d} B_{s,0} > 0`. -/
+theorem s1_B_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (n : ℕ) : 0 < sz.Bctl n (s n) :=
+  sz.STBctl_pos n (s1_s_lt_one h n)
+
+/-- `a_u > 0` for `u ≤ t n`. -/
+theorem s1_Bu_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (n : ℕ) {u : ℝ} (hu : u ≤ t n) :
+    0 < sz.Bctl n u :=
+  sz.STBctl_pos n (lt_of_le_of_lt hu (h.ht1 n))
+
+/-- `a_u ≤ 2 N^{-c₀}` for `u ≤ t n`, eventually (RBM2D's `s1_Ms_ge`,
+`M_u ≥ Im m N^{c₀}`; `scaleFacts_R1`, needs `(eq:WO)`). -/
+theorem s1_a_le (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, u ≤ t n →
+      sz.Bctl n u ≤ 2 * ((sz.size n : ℕ) : ℝ) ^ (-(min (2 * 𝔠 * 𝔡) τ)) :=
+  scaleFacts_R1 sz 𝔠 𝔡 τ t h.h𝔡 h.hB h.hWO h.hR
+
+/-- `a_s → 0` (RBM2D's `s1_Ms_tendsto`, `M_s → ∞`). -/
+theorem s1_B_tendsto (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    Tendsto (fun n => sz.Bctl n (s n)) atTop (nhds 0) := by
+  have hc0 := s1_c0_pos h
+  have hS : Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop := h.hN
+  have h1 : Tendsto (fun n => 2 * ((sz.size n : ℕ) : ℝ) ^ (-(min (2 * 𝔠 * 𝔡) τ))) atTop
+      (nhds (2 * 0)) :=
+    ((tendsto_rpow_neg_atTop hc0).comp hS).const_mul 2
+  rw [mul_zero] at h1
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds h1
+    (Eventually.of_forall fun n => (s1_B_pos h n).le) ?_
+  filter_upwards [s1_a_le h] with n hn
+  exact hn (s n) (h.hst n)
+
+/-- `a_s^p ≤ K` eventually (`p > 0`, `K > 0`; RBM2D's `s1_Ms_ev_pow`). -/
+theorem s1_B_ev_pow (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) {p : ℝ} (hp : 0 < p) {K : ℝ} (hK : 0 < K) :
+    ∀ᶠ n : ℕ in atTop, sz.Bctl n (s n) ^ p ≤ K := by
+  have h0 : Tendsto (fun n => sz.Bctl n (s n) ^ p) atTop (nhds ((0 : ℝ) ^ p)) :=
+    (s1_B_tendsto h).rpow_const (Or.inr hp.le)
+  rw [Real.zero_rpow hp.ne'] at h0
+  exact (h0.eventually (gt_mem_nhds hK)).mono fun n hn => hn.le
+
+/-- `a_s ≤ 1` eventually (RBM2D's `s1_one_le_Ms`). -/
+theorem s1_B_le_one (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, sz.Bctl n (s n) ≤ 1 := by
+  have := s1_B_ev_pow h (p := 1) one_pos one_pos
+  simpa using this
+
+/-- `a_s` at the energy `E n` (RBM2D's `s1Ms`: there `M_s`, here `M_s⁻¹ = W^{-d}B_{s,0}`). -/
+abbrev s1B (sz : Sizes d) (s : ℕ → ℝ) (n : ℕ) : ℝ := sz.Bctl n (s n)
+
+/-- From `a ≤ 2 N^{-c₀}`: `a^p ≤ 2 N^{-c₀ p}` for `0 ≤ p ≤ 1` (replaces RBM2D's `s1_Npow_le`). -/
+theorem s1_apow_le {a N c₀ p : ℝ} (ha : 0 ≤ a) (hN : 0 ≤ N) (hle : a ≤ 2 * N ^ (-c₀))
+    (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : a ^ p ≤ 2 * N ^ (-(c₀ * p)) := by
+  have h1 : a ^ p ≤ (2 * N ^ (-c₀)) ^ p := Real.rpow_le_rpow ha hle hp0
+  rw [Real.mul_rpow (by norm_num) (Real.rpow_nonneg hN _), ← Real.rpow_mul hN] at h1
+  have h2 : (2 : ℝ) ^ p ≤ 2 := by
+    calc (2 : ℝ) ^ p ≤ (2 : ℝ) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) hp1
+      _ = 2 := Real.rpow_one 2
+  have h3 : 0 ≤ N ^ (-c₀ * p) := Real.rpow_nonneg hN _
+  have e : -c₀ * p = -(c₀ * p) := by ring
+  rw [e] at h1 h3
+  exact h1.trans (mul_le_mul_of_nonneg_right h2 h3)
+
+/-- (`con_st_ind`; RBM2D's `s1_ratio_ev`) `a_s (1-s)/(1-u) ≤ a_s^{14/15}` uniformly in
+`u ∈ [s,t]`, eventually (`𝔠_d ≤ 1/100 ≤ 1/15`, `a_s ≤ 1`). -/
+theorem s1_ratio_ev (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, s n ≤ u → u ≤ t n →
+      sz.Bctl n (s n) * ((1 - s n) / (1 - u)) ≤ sz.Bctl n (s n) ^ ((14 : ℝ) / 15) := by
+  filter_upwards [h.hCond, s1_B_le_one h] with n hn hle u hsu hut
+  have h1 := s1_ratio_pt sz n h.h𝔠d hsu hut (h.ht1 n) hn.1
+  refine h1.trans ?_
+  exact Real.rpow_le_rpow_of_exponent_ge (s1_B_pos h n) hle (by linarith [h.h𝔠d'])
+
+
+/-- `K ≤ N^y` eventually (`y > 0`). -/
+theorem s1_N_pow_ev (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) {y : ℝ} (hy : 0 < y) (K : ℝ) :
+    ∀ᶠ n : ℕ in atTop, K ≤ ((sz.size n : ℕ) : ℝ) ^ y :=
+  ((tendsto_rpow_atTop hy).comp h.hN).eventually_ge_atTop K
+
+/-- The exponent `τ₀` of the initial-data step: `N^{τ₀} a_s^{1/2} < a_s^{1/4}`, eventually
+(RBM2D's `s1_F3`, `N^{τ₀} M_s^{-1/2} < M_s^{-1/4}`), `τ₀ = c₀/8`. -/
+theorem s1_F3 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∃ τ₀ > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
+      ((sz.size n : ℕ) : ℝ) ^ τ₀ * (s1B sz s n) ^ ((1 : ℝ) / 2) < (s1B sz s n) ^ ((1 : ℝ) / 4) := by
+  have hc0 := s1_c0_pos h
+  set c₀ := min (2 * 𝔠 * 𝔡) τ with hc₀
+  refine ⟨c₀ * (1 / 8), by positivity, ?_⟩
+  filter_upwards [s1_a_le h, s1_N_pow_ev h (y := c₀ * (1 / 8)) (by positivity) 3,
+    Eventually.of_forall (s1_one_le_size sz)] with n hn1 hn2 hn3
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := lt_of_lt_of_le one_pos hn3
+  have ha : 0 < s1B sz s n := s1_B_pos h n
+  have hb := s1_apow_le ha.le hN0.le (hn1 (s n) (h.hst n)) (p := (1 : ℝ) / 4) (by norm_num)
+    (by norm_num)
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  set b := s1B sz s n ^ ((1 : ℝ) / 4) with hbdef
+  have hb0 : 0 < b := Real.rpow_pos_of_pos ha _
+  have hsq : s1B sz s n ^ ((1 : ℝ) / 2) = b * b := by
+    rw [hbdef, ← Real.rpow_add ha]; norm_num
+  have hXpos : 0 < N ^ (c₀ * (1 / 8)) := Real.rpow_pos_of_pos hN0 _
+  have hmul : N ^ (c₀ * (1 / 8)) * N ^ (-(c₀ * (1 / 4))) = (N ^ (c₀ * (1 / 8)))⁻¹ := by
+    rw [← Real.rpow_add hN0, ← Real.rpow_neg hN0.le]; congr 1; ring
+  have h1 : N ^ (c₀ * (1 / 8)) * b < 1 := by
+    calc N ^ (c₀ * (1 / 8)) * b ≤ N ^ (c₀ * (1 / 8)) * (2 * N ^ (-(c₀ * (1 / 4)))) :=
+          mul_le_mul_of_nonneg_left hb hXpos.le
+      _ = 2 * (N ^ (c₀ * (1 / 8)))⁻¹ := by rw [← hmul]; ring
+      _ < 1 := by
+          have : (N ^ (c₀ * (1 / 8)))⁻¹ ≤ 3⁻¹ := inv_anti₀ (by norm_num) hn2
+          linarith
+  rw [hsq]
+  nlinarith [mul_pos hb0 hb0]
+
+/-- The exponent `ε` of the gap `f ≪ a` at the net: `(2·3^d) a_s^{7/15} ≤ N^{-ε} (a_s^{1/4}/2)`,
+eventually (RBM2D's `s1_F4`, constant `6`; here `C_d = 2·3^d ≥ √(2·9^d + 1)`, the root
+of the constant of `s1_wl_det`), `ε = c₀/8`. -/
+theorem s1_F4 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∃ ε > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
+      (2 * (3 : ℝ) ^ d) * (s1B sz s n) ^ ((7 : ℝ) / 15) ≤
+        ((sz.size n : ℕ) : ℝ) ^ (-ε) * ((s1B sz s n) ^ ((1 : ℝ) / 4) / 2) := by
+  have hc0 := s1_c0_pos h
+  set c₀ := min (2 * 𝔠 * 𝔡) τ with hc₀
+  refine ⟨c₀ * (1 / 8), by positivity, ?_⟩
+  filter_upwards [s1_a_le h, s1_N_pow_ev h (y := (11 / 120 : ℝ) * c₀) (by positivity)
+    (4 * (2 * (3 : ℝ) ^ d)), Eventually.of_forall (s1_one_le_size sz)] with n hn1 hn2 hn3
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := lt_of_lt_of_le one_pos hn3
+  have ha : 0 < s1B sz s n := s1_B_pos h n
+  have he := s1_apow_le ha.le hN0.le (hn1 (s n) (h.hst n)) (p := (13 : ℝ) / 60) (by norm_num)
+    (by norm_num)
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  set b := s1B sz s n ^ ((1 : ℝ) / 4) with hbdef
+  set e := s1B sz s n ^ ((13 : ℝ) / 60) with hedef
+  have hb0 : 0 < b := Real.rpow_pos_of_pos ha _
+  have hsq : s1B sz s n ^ ((7 : ℝ) / 15) = b * e := by
+    rw [hbdef, hedef, ← Real.rpow_add ha]; norm_num
+  have hX : 0 < N ^ (c₀ * (1 / 8)) := Real.rpow_pos_of_pos hN0 _
+  have hY : 0 < N ^ ((11 / 120 : ℝ) * c₀) := Real.rpow_pos_of_pos hN0 _
+  have hXinv : N ^ (-(c₀ * (1 / 8))) = (N ^ (c₀ * (1 / 8)))⁻¹ := by
+    rw [Real.rpow_neg hN0.le]
+  have hmul : N ^ (c₀ * (1 / 8)) * N ^ (-(c₀ * (13 / 60))) = (N ^ ((11 / 120 : ℝ) * c₀))⁻¹ := by
+    rw [← Real.rpow_add hN0, ← Real.rpow_neg hN0.le]; congr 1; ring
+  -- `2 C X e ≤ 1`
+  have key : 2 * (2 * (3 : ℝ) ^ d) * (N ^ (c₀ * (1 / 8)) * e) ≤ 1 := by
+    have hC0 : (0 : ℝ) < 2 * (3 : ℝ) ^ d := by positivity
+    calc 2 * (2 * (3 : ℝ) ^ d) * (N ^ (c₀ * (1 / 8)) * e)
+        ≤ 2 * (2 * (3 : ℝ) ^ d) * (N ^ (c₀ * (1 / 8)) * (2 * N ^ (-(c₀ * (13 / 60))))) := by
+          gcongr
+      _ = 4 * (2 * (3 : ℝ) ^ d) * (N ^ ((11 / 120 : ℝ) * c₀))⁻¹ := by
+          rw [show 4 * (2 * (3 : ℝ) ^ d) * (N ^ ((11 / 120 : ℝ) * c₀))⁻¹ =
+            2 * (2 * (3 : ℝ) ^ d) * (2 * (N ^ (c₀ * (1 / 8)) * N ^ (-(c₀ * (13 / 60))))) by
+              rw [hmul]; ring]
+          ring
+      _ ≤ 1 := by
+          rw [← div_eq_mul_inv, div_le_one hY]; exact hn2
+  rw [hsq, hXinv]
+  have hXne : N ^ (c₀ * (1 / 8)) ≠ 0 := hX.ne'
+  have : (N ^ (c₀ * (1 / 8)))⁻¹ * (b / 2) - 2 * (3 : ℝ) ^ d * (b * e) =
+      (N ^ (c₀ * (1 / 8)))⁻¹ * (b / 2) *
+        (1 - 2 * (2 * (3 : ℝ) ^ d) * (N ^ (c₀ * (1 / 8)) * e)) := by
+    field_simp
+  rw [← sub_nonneg, this]
+  exact mul_nonneg (by positivity) (by linarith)
+
+/-- The exponent `c'` of `Ω(u,c')`: `2 a_s^{1/4} ≤ W^{-c'}`, eventually (RBM2D's `s1_F5`; there `W² ≤ N`, here `W^τ ≤ N^{τ/d}`, `d ≥ 1`), `c' = c₀/8`. -/
+theorem s1_F5 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∃ c' > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
+      2 * (s1B sz s n) ^ ((1 : ℝ) / 4) ≤ ((sz.W n : ℕ) : ℝ) ^ (-c') := by
+  have hc0 := s1_c0_pos h
+  have hd : 0 < d := s1_d_pos sz h.hN
+  set c₀ := min (2 * 𝔠 * 𝔡) τ with hc₀
+  refine ⟨c₀ * (1 / 8), by positivity, ?_⟩
+  filter_upwards [s1_a_le h, s1_N_pow_ev h (y := c₀ * (1 / 8)) (by positivity) 4,
+    Eventually.of_forall (s1_one_le_size sz)] with n hn1 hn2 hn3
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := lt_of_lt_of_le one_pos hn3
+  have ha : 0 < s1B sz s n := s1_B_pos h n
+  have hb := s1_apow_le ha.le hN0.le (hn1 (s n) (h.hst n)) (p := (1 : ℝ) / 4) (by norm_num)
+    (by norm_num)
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz n
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  set b := s1B sz s n ^ ((1 : ℝ) / 4) with hbdef
+  have hb0 : 0 < b := Real.rpow_pos_of_pos ha _
+  -- `W^{c'} ≤ N^{c'}`
+  have hW1 : ((sz.W n : ℕ) : ℝ) ^ (c₀ * (1 / 8)) ≤ N ^ (c₀ * (1 / 8)) := by
+    refine (sz.W_rpow_le hd n (by positivity)).trans ?_
+    refine Real.rpow_le_rpow_of_exponent_le hn3 ?_
+    have : (1 : ℝ) ≤ d := by exact_mod_cast hd
+    rw [div_le_iff₀ (by linarith)]
+    nlinarith [show 0 < c₀ * (1 / 8) by positivity]
+  have hw : 0 < ((sz.W n : ℕ) : ℝ) ^ (c₀ * (1 / 8)) := Real.rpow_pos_of_pos hW0 _
+  have hX : 0 < N ^ (c₀ * (1 / 8)) := Real.rpow_pos_of_pos hN0 _
+  have hmul : N ^ (c₀ * (1 / 8)) * N ^ (-(c₀ * (1 / 4))) = (N ^ (c₀ * (1 / 8)))⁻¹ := by
+    rw [← Real.rpow_add hN0, ← Real.rpow_neg hN0.le]; congr 1; ring
+  have h1 : 2 * b * ((sz.W n : ℕ) : ℝ) ^ (c₀ * (1 / 8)) ≤ 1 := by
+    calc 2 * b * ((sz.W n : ℕ) : ℝ) ^ (c₀ * (1 / 8))
+        ≤ 2 * (2 * N ^ (-(c₀ * (1 / 4)))) * N ^ (c₀ * (1 / 8)) := by gcongr
+      _ = 4 * (N ^ (c₀ * (1 / 8)))⁻¹ := by rw [← hmul]; ring
+      _ ≤ 1 := by
+          rw [← div_eq_mul_inv, div_le_one hX]; exact hn2
+  rw [Real.rpow_neg hW0.le, ← one_div, le_div_iff₀ hw]
+  exact h1
+
+/-- `N⁻¹ ≤ a_s^{1/4}/2`, eventually (the mesh of the net is finer than `a/2`; RBM2D's `s1_F6`: there `M_s ≤ W² ≤ N`, here `N⁻¹ ≤ W^{-d}B_{s,0}`, `cont_inv_size_le_Bctl`). -/
+theorem s1_F6 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop,
+      ((sz.size n : ℕ) : ℝ)⁻¹ ≤ (s1B sz s n) ^ ((1 : ℝ) / 4) / 2 := by
+  filter_upwards [s1_N_pow_ev h (y := (3 : ℝ) / 4) (by norm_num) 2] with n hn
+  have ha : 0 < s1B sz s n := s1_B_pos h n
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := lt_of_lt_of_le one_pos (s1_one_le_size sz n)
+  have hle : ((sz.size n : ℕ) : ℝ)⁻¹ ≤ s1B sz s n :=
+    ContinuityNet.cont_inv_size_le_Bctl sz n (h.hs0 n) (s1_s_lt_one h n)
+  have h1 : ((sz.size n : ℕ) : ℝ)⁻¹ ^ ((1 : ℝ) / 4) ≤ (s1B sz s n) ^ ((1 : ℝ) / 4) :=
+    Real.rpow_le_rpow (inv_nonneg.2 hN0.le) hle (by norm_num)
+  have h2 : 2 * ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-((1 : ℝ) / 4)) := by
+    refine s1_mul_rpow_le hN0 ?_
+    have : -((1 : ℝ) / 4) - -1 = 3 / 4 := by norm_num
+    rw [this]; exact hn
+  rw [s1_inv_rpow hN0.le] at h1
+  rw [Real.rpow_neg_one] at h2
+  linarith
+
+/-- `a_s^{1/4} ≤ 1`, eventually (RBM2D's `s1_F7`). -/
+theorem s1_F7 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, (s1B sz s n) ^ ((1 : ℝ) / 4) ≤ 1 := by
+  filter_upwards [s1_B_le_one h] with n hn
+  exact Real.rpow_le_one (s1_B_pos h n).le hn (by norm_num)
+
+/-- `W^{-d} ≤ a_s^{14/15}`, eventually (RBM2D's `s1_F8`, `W⁻² ≤ M_s^{-14/15}`): from
+`STBctl_ge` (`0 ≤ s`) and `ilambda ≤ 𝔡⁻¹` (`(eq:WO)`), `W^{-d} ≤ (𝔡⁻² + 1) a_s ≤ a_s^{14/15}` once
+`(𝔡⁻² + 1) a_s^{1/15} ≤ 1`. -/
+theorem s1_F8 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (s1B sz s n) ^ ((14 : ℝ) / 15) := by
+  have hK : 0 < ((𝔡⁻¹) ^ 2 + 1)⁻¹ := by positivity
+  filter_upwards [h.hWO, s1_B_ev_pow h (p := (1 : ℝ) / 15) (by norm_num) hK] with n hWO hn
+  have ha : 0 < s1B sz s n := s1_B_pos h n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz n
+  have hlam0 : 0 ≤ sz.lam n :=
+    le_trans (Real.rpow_nonneg hW0.le _) hWO.1
+  have hlam : sz.lam n ^ 2 ≤ (𝔡⁻¹) ^ 2 := pow_le_pow_left₀ hlam0 hWO.2 2
+  have hge := sz.STBctl_ge n (h.hs0 n) (s1_s_lt_one h n)
+  have hWd : 0 < ((sz.W n : ℕ) : ℝ) ^ d := pow_pos hW0 d
+  have h1 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (sz.lam n ^ 2 + 1) * s1B sz s n := by
+    have hl : 0 < sz.lam n ^ 2 + 1 := by positivity
+    calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹
+        = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (sz.lam n ^ 2 + 1)⁻¹ * (sz.lam n ^ 2 + 1) := by
+          field_simp
+      _ ≤ s1B sz s n * (sz.lam n ^ 2 + 1) :=
+          mul_le_mul_of_nonneg_right hge hl.le
+      _ = _ := mul_comm _ _
+  have h2 : (sz.lam n ^ 2 + 1) * s1B sz s n ≤ ((𝔡⁻¹) ^ 2 + 1) * s1B sz s n :=
+    mul_le_mul_of_nonneg_right (by linarith) ha.le
+  have hsplit : s1B sz s n = s1B sz s n ^ ((1 : ℝ) / 15) * s1B sz s n ^ ((14 : ℝ) / 15) := by
+    rw [← Real.rpow_add ha]; norm_num
+  have h3 : ((𝔡⁻¹) ^ 2 + 1) * s1B sz s n ≤ s1B sz s n ^ ((14 : ℝ) / 15) := by
+    have hp : 0 < s1B sz s n ^ ((14 : ℝ) / 15) := Real.rpow_pos_of_pos ha _
+    have h4 : ((𝔡⁻¹) ^ 2 + 1) * s1B sz s n ^ ((1 : ℝ) / 15) ≤ 1 := by
+      calc ((𝔡⁻¹) ^ 2 + 1) * s1B sz s n ^ ((1 : ℝ) / 15)
+          ≤ ((𝔡⁻¹) ^ 2 + 1) * ((𝔡⁻¹) ^ 2 + 1)⁻¹ := by gcongr
+        _ = 1 := mul_inv_cancel₀ (by positivity)
+    calc ((𝔡⁻¹) ^ 2 + 1) * s1B sz s n
+        = (((𝔡⁻¹) ^ 2 + 1) * s1B sz s n ^ ((1 : ℝ) / 15)) * s1B sz s n ^ ((14 : ℝ) / 15) := by
+          rw [mul_assoc, ← hsplit]
+      _ ≤ 1 * s1B sz s n ^ ((14 : ℝ) / 15) := mul_le_mul_of_nonneg_right h4 hp.le
+      _ = _ := one_mul _
+  exact h1.trans (h2.trans h3)
+
+end Scales
+
+
+/-! ## 4. Generic `PerTimeDomAt` helpers -/
+
+section Generic
+
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
+
+/-- The union bound in event form: `ξ ≺ ζ` per time, with polynomially many parameters, gives that
+`ξ ≤ N^τ ζ` for all parameters simultaneously with high probability (RBM2D's `s1_highProb_of_pt`). -/
+theorem s1_highProb_of_pt [∀ l, Fintype (U l)] {ξ ζ : ∀ l, U l → Ω → ℝ} {C : ℝ}
+    (hC0 : 0 ≤ C) (hC : ∀ᶠ l : ℕ in atTop, (Fintype.card (U l) : ℝ) ≤ (size l : ℝ) ^ C)
+    (h : PerTimeDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
+    HighProbAt P size (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω}) :=
+  PerTimeCalc.perTimeCalc_highProbAt_of_stochDomAt (stochDomAt_of_perTimeDomAt P size hC0 hC h) hτ
+
+/-- Conversely, a high-probability event for every `τ > 0` gives `ξ ≺ ζ` per time (RBM2D's
+`s1_pt_of_highProb`). -/
+theorem s1_pt_of_highProb {ξ ζ : ∀ l, U l → Ω → ℝ}
+    (h : ∀ τ > (0 : ℝ), HighProbAt P size
+      (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω})) :
+    PerTimeDomAt P size ξ ζ := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD] with l hl u
+  refine (measure_mono ?_).trans hl
+  intro ω hω hω'
+  exact absurd (hω' u) (not_le.2 hω)
+
+/-- Per time along a `Unit`-indexed family is the uniform statement (RBM2D's `s1_stochDom_unit`). -/
+theorem s1_stochDom_unit {ξ ζ : ∀ _ : ℕ, Unit → Ω → ℝ} (h : PerTimeDomAt P size ξ ζ) :
+    StochDomAt P size ξ ζ :=
+  stochDomAt_of_perTimeDomAt P size (C := 0) le_rfl
+    (Eventually.of_forall fun _ => by simp) h
+
+/-- Case splitting under `≺`, the case distinction holding only for large `l` (the form of
+`PerTimeCalc.PerTime.stochDom_of_forall_or` with `∀ᶠ l`, needed because `ilambda ≤ 𝔡⁻¹` holds only
+eventually): if for all large `l` and all `(u, ω)` the pair `(ξ, ζ)` is dominated by `(ξ₁, ζ₁)`
+or by `(ξ₂, ζ₂)`, then `ξ₁ ≺ ζ₁` and `ξ₂ ≺ ζ₂` give `ξ ≺ ζ`. -/
+private theorem s1_pt_of_ev_or (hsize : Tendsto size atTop atTop)
+    {ξ ζ ξ₁ ζ₁ ξ₂ ζ₂ : ∀ l, U l → Ω → ℝ}
+    (h₁ : PerTimeDomAt P size ξ₁ ζ₁) (h₂ : PerTimeDomAt P size ξ₂ ζ₂)
+    (hor : ∀ᶠ l : ℕ in atTop, ∀ u ω, (ξ l u ω ≤ ξ₁ l u ω ∧ ζ₁ l u ω ≤ ζ l u ω) ∨
+      (ξ l u ω ≤ ξ₂ l u ω ∧ ζ₂ l u ω ≤ ζ l u ω)) : PerTimeDomAt P size ξ ζ := by
+  refine PerTimeCalc.PerTime.perTimeCalc_of_imp_union hsize h₁ h₂ fun τ hτ => ⟨τ, hτ, ?_⟩
+  filter_upwards [hor] with l hl u ω hu
+  have hpos : 0 ≤ (size l : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  rcases hl u ω with ⟨h1, h2⟩ | ⟨h1, h2⟩
+  · exact Or.inl (by nlinarith [mul_le_mul_of_nonneg_left h2 hpos])
+  · exact Or.inr (by nlinarith [mul_le_mul_of_nonneg_left h2 hpos])
+
+end Generic
+
+/-! ## 5. The loop family: (55) at `t₁ = max(s, 1/2)`, and (`lRB1`) with the indicator -/
+
+section Loops
+
+variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
+
+/-- `c₁ = √(2κ)/2 > 0` (RBM2D's `s1_c1_pos`). -/
+theorem s1_c1_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) : 0 < Real.sqrt (2 * κ) / 2 := by
+  have := Real.sqrt_pos.2 (by linarith [h.hκ] : 0 < 2 * κ); linarith
+
+/-- `W^{-d} ≤ (ilambda² + 1) W^{-d} B_{u,0}` for `0 ≤ u < 1` (`STBctl_ge`): the volume factor is
+at most `W^{-d} B_{u,0}` up to the coupling (replaces RBM2D's `W⁻² ≤ M_u⁻¹`). -/
+theorem s1_Wd_le_Bctl (sz : Sizes d) (n : ℕ) {u : ℝ} (hu0 : 0 ≤ u) (hu1 : u < 1) :
+    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (sz.lam n ^ 2 + 1) * sz.Bctl n u := by
+  have hge := sz.STBctl_ge n hu0 hu1
+  have hl : 0 < sz.lam n ^ 2 + 1 := by positivity
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹
+      = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (sz.lam n ^ 2 + 1)⁻¹ * (sz.lam n ^ 2 + 1) := by
+        field_simp
+    _ ≤ sz.Bctl n u * (sz.lam n ^ 2 + 1) := mul_le_mul_of_nonneg_right hge hl.le
+    _ = _ := mul_comm _ _
+
+/-- `ilambda² + 1 ≤ 𝔡⁻² + 1`, eventually (`(eq:WO)`). -/
+theorem s1_lam_sq_le (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
+    ∀ᶠ n : ℕ in atTop, sz.lam n ^ 2 + 1 ≤ (𝔡⁻¹) ^ 2 + 1 := by
+  filter_upwards [h.hWO] with n hWO
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz n
+  have hlam0 : 0 ≤ sz.lam n := le_trans (Real.rpow_nonneg hW0.le _) hWO.1
+  have : sz.lam n ^ 2 ≤ (𝔡⁻¹) ^ 2 := pow_le_pow_left₀ hlam0 hWO.2 2
+  linarith
+
+/-- The start time `t₁ = max(s, 1/2)` of the continuity argument (RBM2D's `s1T1`,
+RBM1D `startTime`). -/
+abbrev s1T1 (s : ℕ → ℝ) (n : ℕ) : ℝ := max (s n) (1 / 2)
+
+private theorem s1_blockMat_herm {L W : ℕ} [NeZero L] [NeZero W]
+    {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) :
+    (blockMat d L W M).IsHermitian :=
+  hM.submatrix _
+
+/-- (`Lboundfor1/2`) ([YY_25, §5.1]) at a time `u ≤ 1/2` (deterministic):
+`|𝓛_{u,σ,a}| ≤ (2/c₁)^k (W^{-d})^{k-1}` when `Im m ≥ c₁` (RBM2D's `s1_loop_det`;
+`d = 2`: `(2/c₁)^k M_u^{-(k-1)}`, via `W⁻² ≤ M_u⁻¹`; here the volume factor `W^{-d}` is kept and
+compared with `a_s` by `s1_Wd_le_Bctl`).  `norm_loopM_le_sharp`, `Im z_u = (1-u) Im m ≥ c₁/2`. -/
+theorem s1_loop_det {L W : ℕ} [NeZero L] [NeZero W] {E u c₁ : ℝ} (hc₁ : 0 < c₁)
+    (hm : c₁ ≤ (mE E).im) (hu : u ≤ 1 / 2)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (hM : M.IsHermitian) {k : ℕ} (hk : 1 ≤ k)
+    (σ : Fin k → Bool) (a : Fin k → Zd d L) :
+    ‖loopFine d L W M (zt E u) σ a‖ ≤ (2 / c₁) ^ k * (((W : ℝ) ^ d)⁻¹) ^ (k - 1) := by
+  obtain ⟨j, rfl⟩ : ∃ j, k = j + 1 := ⟨k - 1, by omega⟩
+  have hη : c₁ / 2 ≤ |(zt E u).im| := by
+    rw [zt_im, abs_of_nonneg (mul_nonneg (by linarith) (by linarith))]
+    calc c₁ / 2 ≤ (1 / 2) * (mE E).im := by linarith
+      _ ≤ (1 - u) * (mE E).im := mul_le_mul_of_nonneg_right (by linarith) (by linarith)
+  have h1 := norm_loopM_le_sharp d L W (s1_blockMat_herm hM) (by positivity : 0 < c₁ / 2) hη σ a
+  have h3 : (c₁ / 2)⁻¹ = 2 / c₁ := by rw [inv_div]
+  rw [h3] at h1
+  simpa [loopFine] using h1
+
+/-- `KboundConcl κ` along the sequence, per time: `|𝒦_{s,σ,a}| ≺ (W^{-d}B_{s,0})^{k-1}`
+(`ML:Kbound`; RBM2D's `s1_Kbound_seq`): the statement `STKbound` at the time sequence `s`
+(`0 ≤ s < 1`), read per time by `perTimeOfStochDomAt`. -/
+theorem s1_Kbound_seq (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (hK : STKbound sz E) {k : ℕ}
+    (hk : 1 ≤ k) :
+    sz.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p _ => ‖STKloop sz n (E n) (s n) p.1 p.2‖)
+      (fun n _ _ => (sz.Bctl n (s n)) ^ (k - 1)) :=
+  Path.perTimeOfStochDomAt (seqP sz) sz.size _ _ (hK s h.hs0 (s1_s_lt_one h) k hk)
+
+/-- Hypothesis (55) of `lem_ConArg` ([YY_25, §5.1]; Lemma 3.2, (3.6) `eq:loopbound_s`) at `t₁ = max(s, 1/2)`:
+`max_{σ,a} |𝓛_{t₁,σ,a}| ≺ (W^{-d}B_{t₁,0})^{k-1}` per time, for every `k ≥ 1` (RBM2D's `S1H55`;
+this is the hypothesis `h55` of `ConArgPin`). -/
+def S1H55 (sz : Sizes d) (E s : ℕ → ℝ) : Prop :=
+  ∀ k : ℕ, 1 ≤ k →
+    sz.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖Sizes.Lloop sz n (E n) (s1T1 s n) p.1 p.2 ω‖)
+      (fun n _ _ => (sz.Bctl n (s1T1 s n)) ^ (k - 1))
+
+/-- **(55) at `t₁ = max(s, 1/2)`** (Cases 2 and 3 of [YY_25, §5.1]):
+for `s ≥ 1/2`, `𝓛 = (𝓛-𝒦) + 𝒦` with `STLK` (`InitLK`) and `STKbound` (`Lboundfors`); for `s < 1/2`
+the deterministic bound `s1_loop_det` at `1/2` with `W^{-d} ≤ (𝔡⁻² + 1) a_{1/2}`.  RBM2D's `s1_h55`,
+RBM1D's `eq54`, `eq55`.  The case distinction
+`s n ≥ 1/2` is pointwise in `n`; the constant `(2/c₁)^k (𝔡⁻² + 1)^{k-1}` of the second case
+needs `ilambda ≤ 𝔡⁻¹` and so holds for large `n`. -/
+theorem s1_h55 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (hIK : STLK sz E s) (hK : STKbound sz E) :
+    S1H55 sz E s := by
+  intro k hk
+  have hsize := s1_hsize sz h.hN
+  have hc1 := s1_c1_pos h
+  have hLK : sz.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖Sizes.Lloop sz n (E n) (s n) p.1 p.2 ω - STKloop sz n (E n) (s n) p.1 p.2‖)
+      (fun n _ _ => (sz.Bctl n (s n)) ^ k) :=
+    Path.perTimeOfStochDomAt (seqP sz) sz.size _ _ (hIK k hk)
+  have hsum := PerTimeCalc.PerTime.perTimeCalc_add hsize hLK (s1_Kbound_seq h hK hk)
+  have hMt1 : ∀ n, 0 < sz.Bctl n (s1T1 s n) := fun n =>
+    sz.STBctl_pos n (max_lt (s1_s_lt_one h n) (by norm_num))
+  have h₁ := PerTimeCalc.PerTime.perTimeCalc_mono hsize (P := seqP sz) (size := sz.size)
+    (ζ' := fun n (_ : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+      (sz.Bctl n (s1T1 s n)) ^ (k - 1))
+    (fun n _ _ => pow_nonneg (hMt1 n).le _) 2 ?_ hsum
+  swap
+  · filter_upwards [s1_B_le_one h] with n hn p ω
+    have ha := s1_B_pos h n
+    have h2 : (sz.Bctl n (s n)) ^ k ≤ (sz.Bctl n (s n)) ^ (k - 1) :=
+      pow_le_pow_of_le_one ha.le hn (Nat.sub_le k 1)
+    have h3 : sz.Bctl n (s n) ≤ sz.Bctl n (s1T1 s n) :=
+      sz.STBctl_mono n (le_max_left _ _) (max_lt (s1_s_lt_one h n) (by norm_num))
+    have h4 : (sz.Bctl n (s n)) ^ (k - 1) ≤ (sz.Bctl n (s1T1 s n)) ^ (k - 1) :=
+      pow_le_pow_left₀ ha.le h3 _
+    change (sz.Bctl n (s n)) ^ k + (sz.Bctl n (s n)) ^ (k - 1) ≤
+      2 * (sz.Bctl n (s1T1 s n)) ^ (k - 1)
+    linarith
+  set C : ℝ := (2 / (Real.sqrt (2 * κ) / 2)) ^ k * ((𝔡⁻¹) ^ 2 + 1) ^ (k - 1) with hCdef
+  have hC0 : 0 ≤ C := by positivity
+  have h₂ := PerTimeCalc.PerTime.stochDom_of_le_const_mul hsize (P := seqP sz) (size := sz.size)
+    (ξ := fun n (_ : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+      C * (sz.Bctl n (s1T1 s n)) ^ (k - 1))
+    (ζ := fun n (_ : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+      (sz.Bctl n (s1T1 s n)) ^ (k - 1))
+    (fun n _ _ => mul_nonneg hC0 (pow_nonneg (hMt1 n).le _))
+    (fun n _ _ => pow_nonneg (hMt1 n).le _) C (fun _ _ _ => le_rfl)
+  refine s1_pt_of_ev_or hsize h₁ h₂ ?_
+  filter_upwards [s1_lam_sq_le h] with n hlam p ω
+  by_cases hs : 1 / 2 ≤ s n
+  · left
+    have ht : s1T1 s n = s n := max_eq_left hs
+    refine ⟨?_, le_rfl⟩
+    rw [ht]
+    exact norm_le_norm_sub_add _ _
+  · right
+    have hs' : s n < 1 / 2 := not_le.1 hs
+    have ht : s1T1 s n = 1 / 2 := max_eq_right hs'.le
+    refine ⟨?_, le_rfl⟩
+    rw [ht]
+    have hdet := s1_loop_det (d := d) (L := sz.L n) (W := sz.W n) hc1
+      (s1_bulk h.hκ (h.hE n)).2 (le_refl (1 / 2 : ℝ)) (sz.seqHflow n (1 / 2) ω)
+      (Sizes.seqHflow_isHermitian sz n _ ω) hk p.1 p.2
+    have hW := s1_Wd_le_Bctl sz n (u := 1 / 2) (by norm_num) (by norm_num)
+    have hW' : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ ((𝔡⁻¹) ^ 2 + 1) * sz.Bctl n (1 / 2) :=
+      hW.trans (mul_le_mul_of_nonneg_right hlam (sz.STBctl_pos n (by norm_num)).le)
+    have h5 : ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (k - 1) ≤
+        (((𝔡⁻¹) ^ 2 + 1) * sz.Bctl n (1 / 2)) ^ (k - 1) :=
+      pow_le_pow_left₀ (by positivity) hW' _
+    rw [mul_pow] at h5
+    calc ‖Sizes.Lloop sz n (E n) (1 / 2) p.1 p.2 ω‖
+        ≤ (2 / (Real.sqrt (2 * κ) / 2)) ^ k * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ^ (k - 1) := hdet
+      _ ≤ (2 / (Real.sqrt (2 * κ) / 2)) ^ k *
+          (((𝔡⁻¹) ^ 2 + 1) ^ (k - 1) * sz.Bctl n (1 / 2) ^ (k - 1)) :=
+          mul_le_mul_of_nonneg_left h5 (by positivity)
+      _ = C * sz.Bctl n (1 / 2) ^ (k - 1) := by rw [hCdef]; ring
+
+/-- The indicator `STomegaC` of `{‖G_u‖_max ≤ C₀}` is at most `1`. -/
+theorem s1_omegaC_le_one (n : ℕ) (E τ C₀ : ℝ) (ω : sz.SeqΩ) :
+    sz.STomegaC n E τ C₀ ω ≤ 1 := by
+  unfold Sizes.STomegaC; split_ifs <;> norm_num
+
+/-- **`(lRB1)` with the indicator, per time sequence** (`jsajufua` of [YY_25, §5.1], from `lem_ConArg`
+(Lemma 3.2) and (`Lboundfor1/2`) for `u < 1/2`; RBM2D's `s1_LI`, RBM1D's `eq58_seq`): for every time sequence
+`u n ∈ [s n, t n]` and `k ≥ 1`,
+`1(‖G_u‖_max ≤ 2) |𝓛_{u,σ,a}| ≺ ((1-s)/(1-u))^{k-1} (W^{-d}B_{s,0})^{k-1}` per time.
+For `u ≥ 1/2` this is `conArg` at `(t₁, u)`, `t₁ = max(s,1/2)`, with
+`(W^{-d}B_{t₁,0} η_{t₁}/η_u)^{k-1} ≤ ((1-s)/(1-u) W^{-d}B_{s,0})^{k-1}` (`STBctl_xmono`,
+`η_s/η_u = (1-s)/(1-u)`); for `u < 1/2` the deterministic bound `s1_loop_det` with
+`W^{-d} ≤ (𝔡⁻² + 1) a_s ≤ (𝔡⁻² + 1) a_s (1-s)/(1-u)` (`(1-s)/(1-u) ≥ 1`). -/
+theorem s1_LI (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 sz E s) (u : ℕ → ℝ)
+    (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {k : ℕ} (hk : 1 ≤ k) :
+    sz.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => sz.STomegaC n (E n) (u n) 2 ω * ‖Sizes.Lloop sz n (E n) (u n) p.1 p.2 ω‖)
+      (fun n _ _ => ((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1)) := by
+  have hsize := s1_hsize sz h.hN
+  have hc1 := s1_c1_pos h
+  have hs1 : ∀ n, s n < 1 := s1_s_lt_one h
+  have hu1 : ∀ n, u n < 1 := fun n => lt_of_le_of_lt (hu n).2 (h.ht1 n)
+  have hcon := conArg sz κ (1 / 4) 2 E (s1T1 s) (fun n => max (u n) (s1T1 s n)) h.hκ h.hE
+    (by norm_num) (by norm_num) (fun n => le_max_of_le_right (by norm_num))
+    (fun n => le_max_right _ _)
+    (fun n => max_lt (hu1 n) (max_lt (hs1 n) (by norm_num))) h.hN h55 k hk
+  have hζ0 : ∀ n, 0 ≤ ((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1) := fun n =>
+    mul_nonneg (pow_nonneg (div_nonneg (by linarith [hs1 n]) (by linarith [hu1 n])) _)
+      (pow_nonneg (s1_B_pos h n).le _)
+  set C : ℝ := (2 / (Real.sqrt (2 * κ) / 2)) ^ k * ((𝔡⁻¹) ^ 2 + 1) ^ (k - 1) with hCdef
+  have hC0 : 0 ≤ C := by positivity
+  have h₂ := PerTimeCalc.PerTime.stochDom_of_le_const_mul hsize (P := seqP sz) (size := sz.size)
+    (ξ := fun n (_ : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+      C * (((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1)))
+    (ζ := fun n (_ : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+      ((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1))
+    (fun n _ _ => mul_nonneg hC0 (hζ0 n)) (fun n _ _ => hζ0 n) C (fun _ _ _ => le_rfl)
+  refine s1_pt_of_ev_or hsize hcon h₂ ?_
+  filter_upwards [s1_lam_sq_le h] with n hlam p ω
+  by_cases hu12 : 1 / 2 ≤ u n
+  · left
+    have ht2 : max (u n) (s1T1 s n) = u n := max_eq_left (max_le (hu n).1 hu12)
+    have hs1' : s n ≤ s1T1 s n := le_max_left _ _
+    have hs1'' : s1T1 s n < 1 := max_lt (hs1 n) (by norm_num)
+    have hxu : 0 < 1 - u n := by linarith [hu1 n]
+    refine ⟨?_, ?_⟩
+    · simp only [ht2]; exact le_rfl
+    · simp only [ht2]
+      have hE2 : |E n| < 2 := (s1_bulk h.hκ (h.hE n)).1
+      rw [scaleFacts_etaT_div_etaT hE2]
+      have hx := sz.STBctl_xmono n hs1' hs1''
+      have h1 : sz.Bctl n (s1T1 s n) * ((1 - s1T1 s n) / (1 - u n)) ≤
+          ((1 - s n) / (1 - u n)) * sz.Bctl n (s n) := by
+        have e1 : sz.Bctl n (s1T1 s n) * ((1 - s1T1 s n) / (1 - u n)) =
+            ((1 - s1T1 s n) * sz.Bctl n (s1T1 s n)) / (1 - u n) := by ring
+        have e2 : ((1 - s n) / (1 - u n)) * sz.Bctl n (s n) =
+            ((1 - s n) * sz.Bctl n (s n)) / (1 - u n) := by ring
+        rw [e1, e2]
+        exact div_le_div_of_nonneg_right hx hxu.le
+      calc (sz.Bctl n (s1T1 s n) * ((1 - s1T1 s n) / (1 - u n))) ^ (k - 1)
+          ≤ (((1 - s n) / (1 - u n)) * sz.Bctl n (s n)) ^ (k - 1) :=
+            pow_le_pow_left₀ (mul_nonneg (sz.STBctl_pos n hs1'').le
+              (div_nonneg (by linarith) hxu.le)) h1 _
+        _ = ((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1) := mul_pow _ _ _
+  · right
+    have hu' : u n < 1 / 2 := not_le.1 hu12
+    refine ⟨?_, le_rfl⟩
+    have hxu : 0 < 1 - u n := by linarith [hu1 n]
+    have hdet := s1_loop_det (d := d) (L := sz.L n) (W := sz.W n) hc1
+      (s1_bulk h.hκ (h.hE n)).2 hu'.le (sz.seqHflow n (u n) ω)
+      (Sizes.seqHflow_isHermitian sz n _ ω) hk p.1 p.2
+    have hW := s1_Wd_le_Bctl sz n (u := s n) (h.hs0 n) (hs1 n)
+    have hrat : 1 ≤ (1 - s n) / (1 - u n) := by
+      rw [one_le_div hxu]; linarith [(hu n).1]
+    have hBs := s1_B_pos h n
+    have hW' : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤
+        ((𝔡⁻¹) ^ 2 + 1) * (sz.Bctl n (s n) * ((1 - s n) / (1 - u n))) := by
+      refine hW.trans ?_
+      calc (sz.lam n ^ 2 + 1) * sz.Bctl n (s n)
+          ≤ ((𝔡⁻¹) ^ 2 + 1) * sz.Bctl n (s n) := mul_le_mul_of_nonneg_right hlam hBs.le
+        _ ≤ ((𝔡⁻¹) ^ 2 + 1) * (sz.Bctl n (s n) * ((1 - s n) / (1 - u n))) := by
+            refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+            exact le_mul_of_one_le_right hBs.le hrat
+    have h5 : ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ (k - 1) ≤
+        (((𝔡⁻¹) ^ 2 + 1) * (sz.Bctl n (s n) * ((1 - s n) / (1 - u n)))) ^ (k - 1) :=
+      pow_le_pow_left₀ (by positivity) hW' _
+    rw [mul_pow, mul_pow] at h5
+    have hind := s1_omegaC_le_one (sz := sz) n (E n) (u n) 2 ω
+    have hnn : 0 ≤ ‖Sizes.Lloop sz n (E n) (u n) p.1 p.2 ω‖ := norm_nonneg _
+    calc sz.STomegaC n (E n) (u n) 2 ω * ‖Sizes.Lloop sz n (E n) (u n) p.1 p.2 ω‖
+        ≤ ‖Sizes.Lloop sz n (E n) (u n) p.1 p.2 ω‖ := mul_le_of_le_one_left hnn hind
+      _ ≤ (2 / (Real.sqrt (2 * κ) / 2)) ^ k * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ^ (k - 1) := hdet
+      _ ≤ (2 / (Real.sqrt (2 * κ) / 2)) ^ k *
+          (((𝔡⁻¹) ^ 2 + 1) ^ (k - 1) *
+            (sz.Bctl n (s n) ^ (k - 1) * ((1 - s n) / (1 - u n)) ^ (k - 1))) :=
+          mul_le_mul_of_nonneg_left h5 (by positivity)
+      _ = C * (((1 - s n) / (1 - u n)) ^ (k - 1) * (sz.Bctl n (s n)) ^ (k - 1)) := by
+          rw [hCdef]; ring
+
+end Loops
+
+/-! ## 6. Bridges: the lattice ball, `‖G_u - m‖_max`, the indicators, `STgexRHS` -/
+
+section Bridge
+
+variable {d : ℕ}
+
+private theorem s1_zdist_le_one {L : ℕ} [NeZero L] {x : ZMod L} (h : zdist L x ≤ 1) :
+    x = 0 ∨ x = 1 ∨ x = -1 := by
+  have hx : x.val < L := ZMod.val_lt x
+  have hL : 0 < L := Nat.pos_of_ne_zero (NeZero.ne L)
+  have hx' : x = ((x.val : ℕ) : ZMod L) := (ZMod.natCast_zmod_val x).symm
+  simp only [zdist] at h
+  rcases (by omega : x.val = 0 ∨ x.val = 1 ∨ x.val = L - 1) with h0 | h0 | h0
+  · left; rw [hx', h0]; simp
+  · right; left; rw [hx', h0]; simp
+  · right; right; rw [hx', h0, Nat.cast_sub (by omega)]; simp
+
+/-- **The number of near blocks** (RBM2D's `s1_near_card`, `≤ 5`: the `sbSupport` of the
+`d = 2` profile): `#{a' : |a' - a|_∞ ≤ 1} ≤ 3^d` (the `L^∞` ball of radius `1` of the paper,
+`zdistInf`; it has exactly `3^d` points for `L ≥ 3`.  The `zdistD` ball has `2d + 1` points). -/
+theorem s1_near_card {L : ℕ} [NeZero L] (a : Zd d L) :
+    ((Finset.univ.filter (fun a' : Zd d L => zdistInf d L (a' - a) ≤ 1)).card : ℝ) ≤ 3 ^ d := by
+  classical
+  set T : Finset (Zd d L) :=
+    Fintype.piFinset (fun _ : Fin d => ({0, 1, -1} : Finset (ZMod L))) with hT
+  have hsub : Finset.univ.filter (fun a' : Zd d L => zdistInf d L (a' - a) ≤ 1) ⊆
+      T.image (fun v => v + a) := by
+    intro a' ha'
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha'
+    refine Finset.mem_image.2 ⟨a' - a, ?_, by simp⟩
+    rw [hT, Fintype.mem_piFinset]
+    intro i
+    have hi : zdist L ((a' - a) i) ≤ 1 :=
+      Finset.sup_le_iff.1 ha' i (Finset.mem_univ i)
+    rcases s1_zdist_le_one hi with h0 | h0 | h0 <;> simp [h0]
+  have hTcard : T.card ≤ 3 ^ d := by
+    rw [hT, Fintype.card_piFinset]
+    have := Finset.prod_le_pow_card (Finset.univ : Finset (Fin d))
+      (fun _ => ({0, 1, -1} : Finset (ZMod L)).card) 3 (fun _ _ => Finset.card_le_three)
+    simpa using this
+  have := (Finset.card_le_card hsub).trans Finset.card_image_le
+  exact_mod_cast this.trans hTcard
+
+end Bridge
+
+section BridgeEntries
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- `‖G_u - m‖_max = max_{i,j} |(G_u - m)_{ij}|` at the matrix `M` (RBM2D's `s1xM`;
+entries `llErrMat`, `Green/Pins.lean`). -/
+def s1xM (d L W : ℕ) [NeZero L] [NeZero W] (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) : ℝ :=
+  Finset.univ.sup' Finset.univ_nonempty
+    (fun q : Idx d L W × Idx d L W => Green.llErrMat d L W E u M q.1 q.2)
+
+theorem s1xM_ge (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (i j : Idx d L W) :
+    Green.llErrMat d L W E u M i j ≤ s1xM d L W E u M :=
+  Finset.le_sup' (fun q : Idx d L W × Idx d L W => Green.llErrMat d L W E u M q.1 q.2)
+    (Finset.mem_univ (i, j))
+
+theorem s1xM_le {E u B : ℝ} {M : Matrix (Idx d L W) (Idx d L W) ℂ}
+    (h : ∀ i j, Green.llErrMat d L W E u M i j ≤ B) : s1xM d L W E u M ≤ B :=
+  Finset.sup'_le _ _ fun q _ => h q.1 q.2
+
+/-- `llErrMat` as the matrix inverse (`Gres = Ring.inverse`, `Matrix.nonsing_inv_eq_ringInverse`). -/
+theorem s1_llErrMat_eq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (i j : Idx d L W) :
+    Green.llErrMat d L W E u M i j =
+      ‖(M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+        (if i = j then mE E else 0)‖ := by
+  unfold Green.llErrMat Gres
+  simp only [ite_true]
+  rw [Matrix.nonsing_inv_eq_ringInverse]
+
+/-- `‖G_u‖_max ≤ 1 + ‖G_u - m‖_max` (`|m| = 1`; RBM2D's `s1_gMax_le`, `gMax`). -/
+theorem s1_gMax_le {E u : ℝ} (hE : |E| ≤ 2) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (i j : Idx d L W) : ‖Gres M (zt E u) true i j‖ ≤ 1 + s1xM d L W E u M := by
+  have h1 := norm_le_norm_sub_add (Gres M (zt E u) true i j) (if i = j then mE E else 0)
+  have h2 : ‖(if i = j then mE E else 0)‖ ≤ 1 := by
+    split_ifs
+    · rw [norm_mE hE]
+    · simp
+  have h3 := s1xM_ge E u M i j
+  unfold Green.llErrMat at h3
+  linarith
+
+/-- One-sided Lipschitz bound of `‖G_u - m‖_max` in the resolvent entries (RBM2D's `s1xM_le_add`). -/
+theorem s1xM_le_add {E u u' δ : ℝ} {M M' : Matrix (Idx d L W) (Idx d L W) ℂ}
+    (h : ∀ i j, ‖(M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (M' - zt E u' • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j‖ ≤ δ) :
+    s1xM d L W E u M ≤ s1xM d L W E u' M' + δ := by
+  refine s1xM_le fun i j => ?_
+  have h1 := s1xM_ge E u' M' i j
+  have h6 := norm_le_norm_sub_add
+    ((M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (if i = j then mE E else 0))
+    ((M' - zt E u' • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (if i = j then mE E else 0))
+  have h4 : ((M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (if i = j then mE E else 0)) -
+      ((M' - zt E u' • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (if i = j then mE E else 0)) =
+      (M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
+      (M' - zt E u' • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j := by ring
+  rw [h4] at h6
+  have h7 := h i j
+  rw [s1_llErrMat_eq] at h1 ⊢
+  linarith
+
+end BridgeEntries
+
+section BridgeSample
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- The sample-level entry `‖(G_u - M)_{xy}‖` (`STGM`) is `llErrMat` at `H_u(ω)`. -/
+theorem s1_STGM_norm (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖sz.STGM n E u ω x y‖ = Green.llErrMat d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) x y := rfl
+
+/-- `‖G_u - m‖_max ≤ C₀ - 1` gives the indicator `STomegaC = 1` of `{‖G_u‖_max ≤ C₀}`
+(RBM2D: `gMax E u M ≤ 2`). -/
+theorem s1_omegaC_eq_one (n : ℕ) (ω : sz.SeqΩ) {E u C₀ : ℝ} (hE : |E| ≤ 2)
+    (hx : s1xM d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) ≤ C₀ - 1) :
+    sz.STomegaC n E u C₀ ω = 1 := by
+  unfold Sizes.STomegaC
+  have hall : ∀ x y : Idx d (sz.L n) (sz.W n), ‖Sizes.Gt sz n E u true ω x y‖ ≤ C₀ := by
+    intro x y
+    have h1 := s1_gMax_le (u := u) hE (sz.seqHflow n u ω) x y
+    have e : Sizes.Gt sz n E u true ω x y = Gres (sz.seqHflow n u ω) (zt E u) true x y := rfl
+    rw [e]
+    linarith
+  simp [hall]
+
+/-- `‖G_u - m‖_max ≤ A` gives the indicator `STindMax = 1` of `Ω(u, A)`. -/
+theorem s1_indMax_eq_one (n : ℕ) (ω : sz.SeqΩ) {E u A : ℝ}
+    (hx : s1xM d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) ≤ A) :
+    sz.STindMax n E u A ω = 1 := by
+  unfold Sizes.STindMax
+  have hall : ∀ x y : Idx d (sz.L n) (sz.W n), ‖sz.STGM n E u ω x y‖ ≤ A := by
+    intro x y
+    rw [s1_STGM_norm]
+    exact (s1xM_ge E u _ x y).trans hx
+  simp [hall]
+
+/-- **The right side of (`GijGEX`)** is at most `2·9^d B + W^{-d}` if every
+`|𝓛^{(2)}_{σ,(a',b')}| ≤ B` (RBM2D's `s1_gexRHS_le`, `25 B + W⁻²`: at `d = 2` one
+orientation and `5 · 5` neighbours; here `STgexRHS` sums the two orientations
+`σ ∈ {(+,-),(-,+)}` and each `L^∞`-ball of radius `1` has `≤ 3^d` blocks, `s1_near_card`). -/
+theorem s1_gexRHS_le (n : ℕ) (E u B : ℝ) (ω : sz.SeqΩ)
+    (hL : ∀ (σ : Fin 2 → Bool) (b : Fin 2 → Zd d (sz.L n)), ‖Sizes.Lloop sz n E u σ b ω‖ ≤ B)
+    (a b : Zd d (sz.L n)) :
+    sz.STgexRHS n E u ω a b ≤ 2 * 9 ^ d * B + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by
+  classical
+  have hB : 0 ≤ B := (norm_nonneg _).trans (hL (fun _ => true) (fun _ => 0))
+  unfold Sizes.STgexRHS
+  set Fa := Finset.univ.filter (fun a' : Zd d (sz.L n) => zdistInf d (sz.L n) (a' - a) ≤ 1)
+    with hFa
+  set Fb := Finset.univ.filter (fun b' : Zd d (sz.L n) => zdistInf d (sz.L n) (b' - b) ≤ 1)
+    with hFb
+  have hFa' : (Fa.card : ℝ) ≤ 3 ^ d := s1_near_card a
+  have hFb' : (Fb.card : ℝ) ≤ 3 ^ d := s1_near_card b
+  have h3d : (0 : ℝ) ≤ 3 ^ d := by positivity
+  have hinner : ∀ σ : Fin 2 → Bool,
+      ∑ a' ∈ Fa, ∑ b' ∈ Fb, ‖Sizes.Lloop sz n E u σ ![a', b'] ω‖ ≤ 3 ^ d * (3 ^ d * B) := by
+    intro σ
+    calc ∑ a' ∈ Fa, ∑ b' ∈ Fb, ‖Sizes.Lloop sz n E u σ ![a', b'] ω‖
+        ≤ ∑ _a' ∈ Fa, ((3 : ℝ) ^ d * B) := Finset.sum_le_sum fun a' _ => by
+          calc ∑ b' ∈ Fb, ‖Sizes.Lloop sz n E u σ ![a', b'] ω‖ ≤ ∑ _b' ∈ Fb, B :=
+                Finset.sum_le_sum fun b' _ => hL σ ![a', b']
+            _ = Fb.card * B := by rw [Finset.sum_const, nsmul_eq_mul]
+            _ ≤ 3 ^ d * B := mul_le_mul_of_nonneg_right hFb' hB
+      _ = Fa.card * ((3 : ℝ) ^ d * B) := by rw [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ 3 ^ d * (3 ^ d * B) := mul_le_mul_of_nonneg_right hFa' (by positivity)
+  have hS : ∑ σ ∈ ({![true, false], ![false, true]} : Finset (Fin 2 → Bool)),
+      ∑ a' ∈ Fa, ∑ b' ∈ Fb, ‖Sizes.Lloop sz n E u σ ![a', b'] ω‖ ≤ 2 * (3 ^ d * (3 ^ d * B)) := by
+    calc _ ≤ ∑ _σ ∈ ({![true, false], ![false, true]} : Finset (Fin 2 → Bool)),
+          ((3 : ℝ) ^ d * (3 ^ d * B)) := Finset.sum_le_sum fun σ _ => hinner σ
+      _ = (({![true, false], ![false, true]} : Finset (Fin 2 → Bool)).card : ℝ) *
+          (3 ^ d * (3 ^ d * B)) := by rw [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ 2 * (3 ^ d * (3 ^ d * B)) := by
+          refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+          exact_mod_cast Finset.card_le_two
+  have h2 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (if zdistInf d (sz.L n) (a - b) ≤ 1 then (1 : ℝ) else 0) ≤
+      (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by
+    split_ifs
+    · rw [mul_one]
+    · rw [mul_zero]; positivity
+  have h9 : 2 * ((3 : ℝ) ^ d * (3 ^ d * B)) = 2 * 9 ^ d * B := by
+    rw [show (9 : ℝ) = 3 * 3 by norm_num, mul_pow]; ring
+  linarith
+
+/-- **The deterministic core of the weak-law step** ([YY_25, §5.1]; RBM2D's `s1_wl_det`):
+on `{‖G_u - m‖_max ≤ 2a}`, with `2a ≤ W^{-c'}` (so `Ω(u,c')` holds and `‖G_u‖_max ≤ 2`), the three
+per-time bounds `1_Ω |G_{pq}|² ≤ N^τ 𝓛-terms` (`STGiiGEX`, `STGijGEX`) and `1_Ω |𝓛| ≤ N^τ g` give
+`|(G_u - m)_{ij}|² ≤ (2·9^d + 1) N^{2τ} g` (RBM2D `26`; `s1_gexRHS_le`).  Stated at the sample
+`ω` with `STGM`, `STindMax`, `STomegaC`, `STmaxLoop2`, `STgexRHS`; the hypotheses
+`hii`, `hij` are literally the events produced by `Prec.whp` from `STGiiGEX`, `STGijGEX`. -/
+theorem s1_wl_det (n : ℕ) (ω : sz.SeqΩ) {E u a c' g Nτ : ℝ} (hE : |E| ≤ 2) (hc' : 0 < c')
+    (hx : s1xM d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) ≤ 2 * a)
+    (hΩ : 2 * a ≤ ((sz.W n : ℕ) : ℝ) ^ (-c')) (hNτ : 1 ≤ Nτ) (hg : 0 ≤ g)
+    (hWg : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ g)
+    (hLoop : ∀ (σ : Fin 2 → Bool) (b : Fin 2 → Zd d (sz.L n)),
+      sz.STomegaC n E u 2 ω * ‖Sizes.Lloop sz n E u σ b ω‖ ≤ Nτ * g)
+    (hii : ∀ p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
+      sz.STindMax n E u (((sz.W n : ℕ) : ℝ) ^ (-c')) ω * ‖sz.STGM n E u ω p.1 p.2‖ ^ 2 ≤
+        Nτ * sz.STmaxLoop2 n E u ω)
+    (hij : ∀ p : {p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) // p.1 ≠ p.2},
+      sz.STindMax n E u (((sz.W n : ℕ) : ℝ) ^ (-c')) ω *
+          ‖Sizes.Gt sz n E u true ω p.1.1 p.1.2‖ ^ 2 ≤
+        Nτ * sz.STgexRHS n E u ω (sz.STblk n p.1.1) (sz.STblk n p.1.2)) :
+    ∀ i j, ‖sz.STGM n E u ω i j‖ ^ 2 ≤ (2 * 9 ^ d + 1) * Nτ ^ 2 * g := by
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast s1_one_le_W sz n
+  have hWc : ((sz.W n : ℕ) : ℝ) ^ (-c') ≤ 1 :=
+    Real.rpow_le_one_of_one_le_of_nonpos hW1 (by linarith)
+  have hom : sz.STindMax n E u (((sz.W n : ℕ) : ℝ) ^ (-c')) ω = 1 :=
+    s1_indMax_eq_one sz n ω (hx.trans hΩ)
+  have hom2 : sz.STomegaC n E u 2 ω = 1 :=
+    s1_omegaC_eq_one sz n ω hE (by linarith)
+  have hLoop' : ∀ (σ : Fin 2 → Bool) (b : Fin 2 → Zd d (sz.L n)),
+      ‖Sizes.Lloop sz n E u σ b ω‖ ≤ Nτ * g := fun σ b => by
+    have := hLoop σ b
+    rwa [hom2, one_mul] at this
+  have hB : 0 ≤ Nτ * g := mul_nonneg (by linarith) hg
+  have hmax : sz.STmaxLoop2 n E u ω ≤ Nτ * g :=
+    Finset.sup'_le _ _ fun p _ => hLoop' _ _
+  have hgle : g ≤ Nτ * g := by nlinarith
+  intro i j
+  by_cases hij' : i = j
+  · subst hij'
+    have h1 := hii (i, i)
+    rw [hom, one_mul] at h1
+    have h2 : Nτ * sz.STmaxLoop2 n E u ω ≤ Nτ * (Nτ * g) :=
+      mul_le_mul_of_nonneg_left hmax (by linarith)
+    have h3 : 0 ≤ Nτ ^ 2 * g := mul_nonneg (sq_nonneg _) hg
+    have h9 : (0 : ℝ) ≤ 9 ^ d := by positivity
+    have h4 : Nτ * (Nτ * g) ≤ (2 * 9 ^ d + 1) * Nτ ^ 2 * g := by
+      nlinarith [mul_nonneg h9 h3]
+    simp only at h1
+    linarith
+  · have h1 := hij ⟨(i, j), hij'⟩
+    rw [hom, one_mul] at h1
+    simp only at h1
+    have hGM : sz.STGM n E u ω i j = Sizes.Gt sz n E u true ω i j := by
+      unfold Sizes.STGM; simp [hij']
+    have h2 := s1_gexRHS_le sz n E u (Nτ * g) ω hLoop' (sz.STblk n i) (sz.STblk n j)
+    have h3 : Nτ * sz.STgexRHS n E u ω (sz.STblk n i) (sz.STblk n j) ≤
+        Nτ * (2 * 9 ^ d * (Nτ * g) + Nτ * g) :=
+      mul_le_mul_of_nonneg_left (h2.trans (by linarith)) (by linarith)
+    have e : Nτ * (2 * 9 ^ d * (Nτ * g) + Nτ * g) = (2 * 9 ^ d + 1) * Nτ ^ 2 * g := by ring
+    rw [hGM]
+    linarith
+
+end BridgeSample
+
+end RBM.Ind
+
+
+
+
+
+
+
+end

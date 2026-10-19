@@ -1,0 +1,915 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Induction.Step6Pins
+import RBM3D.Induction.Step5Kit
+import RBM3D.Induction.ScaleFacts3
+import RBM3D.Induction.Step2Iterate
+import RBM3D.Induction.ZeroModeCalc
+import RBM3D.Induction.QopNorm
+import RBM3D.Induction.GridDuhamelN
+import RBM3D.Induction.DecayLoopB
+import RBM3D.Loop.KLFinal
+import RBM3D.Green.GbEXP
+import RBM3D.Graph.LWPins
+import RBM3D.Evolution.Prec
+
+/-!
+# The Step 6 kit
+
+The kit of Step 6 of `lem:main_ind` (arXiv:2507.20274, Step 6 of Theorem 2.24 and Section 6):
+the `Prec` calculus, the bridges at a section `u` (`STLK_of_STLKU_at`,
+`STDecay_of_STGdecayW_at`, ...), the glue (windows, the rotation bridge `st6_EGt_eq_LWE`, the
+Duhamel identity along `[s,t]`), the initial-term comparisons in regimes (iii), (iv), and the
+regime skeletons `ST_step6_case{II,III,IV}_of_pins` (Step 6 in each regime from its ingredient
+statements).  The statements (`STStep6I..IV`, `STExp*`) are in `RBM3D/Induction/Step6Pins.lean`.
+No `Prop` is defined here.
+-/
+
+set_option linter.style.longLine false
+
+noncomputable section
+
+open MeasureTheory ProbabilityTheory Filter Matrix
+open scoped NNReal ENNReal
+
+/-! ## 2. `0 < lam n` eventually, the generic lemma "per time sequence ⇒ uniform in `u`", the bridges at a sequence `u ∈ [s,t]`
+
+The generic lemma `(g)` below: `LWtermEXP` and `STImproveExpAver` are statements at one time sequence; Step 6 integrates over `u`.
+For a **deterministic** family the two agree: `Prec` of a deterministic family is the pointwise bound for all large `n`
+(`st6_prec_det_iff`), and a failing family of times is a sequence of times (`st6_precU_of_forall_seq`). -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `(eq:WO)` gives `0 < lam n` eventually: `W^{-d/2+𝔡} ≤ lam n` and `W ≥ 1` (`W^{x} > 0`).  So the term
+`(lam² W^d)^{-1/5}` of `STExp2` is eventually positive (it is `0` at a size with `lam n = 0`, `0 ^ (-1/5) = 0` in Mathlib). -/
+theorem st6_lam_pos {𝔡 : ℝ} (h : sz.WO 𝔡) : ∀ᶠ n in atTop, 0 < sz.lam n := by
+  filter_upwards [h] with n hn
+  exact lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1
+
+/-- **A deterministic `Prec` is the pointwise bound for all large `n`** (the failure event is `∅` or the whole space,
+which has probability `1 > N^{-1}`). -/
+theorem st6_prec_det_iff (hsz : sz.SizeTendsto) {V : ℕ → Type*} (F G : ∀ n, V n → ℝ) :
+    sz.Prec (U := V) (fun n v _ => F n v) (fun n v _ => G n v) ↔
+      ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, ∀ v, F n v ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n v := by
+  constructor
+  · intro h τ hτ
+    have h1 := h τ hτ 1 one_pos
+    filter_upwards [h1, (tendsto_size sz hsz).eventually (eventually_ge_atTop 2)] with n hn hN2
+    intro v
+    by_contra hcon
+    push Not at hcon
+    have hbad : badSetAt sz.size (fun n v (_ : sz.SeqΩ) => F n v) (fun n v (_ : sz.SeqΩ) => G n v) τ n =
+        (Set.univ : Set sz.SeqΩ) := by
+      ext ω
+      simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_univ, iff_true]
+      exact ⟨v, hcon⟩
+    rw [hbad, measure_univ] at hn
+    have hN : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN2
+    have hlt : ((sz.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) < 1 := by
+      rw [Real.rpow_neg_one]
+      exact inv_lt_one_of_one_lt₀ (by linarith)
+    have h2 : ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) < 1 := by
+      rw [← ENNReal.ofReal_one]
+      exact (ENNReal.ofReal_lt_ofReal_iff one_pos).2 hlt
+    exact absurd hn (not_le.2 h2)
+  · intro h
+    refine StochDomAt.of_eventually_empty fun τ hτ => ?_
+    filter_upwards [h τ hτ] with n hn
+    ext ω
+    simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_lt]
+    exact fun v => hn v
+
+/-- **(g) Per time sequence ⇒ uniform in `u ∈ [s,t]`** for a deterministic family: if for every time sequence `u` with
+`s ≤ u ≤ t` the family `(F n (u n) w, G n (u n) w)` satisfies `Prec`, then the family indexed by `(u, w) ∈ [s_n,t_n] × W n`
+does.  (A failing `(n, u_n, w)` for infinitely many `n` is a time sequence `u`.) -/
+theorem st6_precU_of_forall_seq (hsz : sz.SizeTendsto) {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n)
+    {W : ℕ → Type*} (F G : ∀ n, ℝ → W n → ℝ)
+    (h : ∀ u : ℕ → ℝ, (∀ n, s n ≤ u n) → (∀ n, u n ≤ t n) →
+      sz.Prec (U := W) (fun n w _ => F n (u n) w) (fun n w _ => G n (u n) w)) :
+    sz.Prec (U := fun n => TimeIcc s t n × W n) (fun n p _ => F n (p.1 : ℝ) p.2)
+      (fun n p _ => G n (p.1 : ℝ) p.2) := by
+  classical
+  rw [st6_prec_det_iff sz hsz]
+  intro τ hτ
+  by_contra hcon
+  rw [Filter.not_eventually] at hcon
+  let u : ℕ → ℝ := fun n =>
+    if hn : ∃ p : TimeIcc s t n × W n,
+        ¬ (F n (p.1 : ℝ) p.2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n (p.1 : ℝ) p.2)
+    then ((Classical.choose hn).1 : ℝ) else s n
+  have hu1 : ∀ n, s n ≤ u n := by
+    intro n
+    by_cases hn : ∃ p : TimeIcc s t n × W n,
+        ¬ (F n (p.1 : ℝ) p.2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n (p.1 : ℝ) p.2)
+    · simp only [u, hn, ↓reduceDIte]; exact (Classical.choose hn).1.2.1
+    · simp only [u, hn, ↓reduceDIte]; exact le_rfl
+  have hu2 : ∀ n, u n ≤ t n := by
+    intro n
+    by_cases hn : ∃ p : TimeIcc s t n × W n,
+        ¬ (F n (p.1 : ℝ) p.2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n (p.1 : ℝ) p.2)
+    · simp only [u, hn, ↓reduceDIte]; exact (Classical.choose hn).1.2.2
+    · simp only [u, hn, ↓reduceDIte]; exact hst n
+  have h' := ((st6_prec_det_iff sz hsz (fun n (w : W n) => F n (u n) w)
+    (fun n (w : W n) => G n (u n) w)).1 (h u hu1 hu2)) τ hτ
+  obtain ⟨n, hn1, hn2⟩ := (hcon.and_eventually h').exists
+  push Not at hn1
+  obtain ⟨p, hp⟩ := hn1
+  have hex : ∃ p : TimeIcc s t n × W n,
+      ¬ (F n (p.1 : ℝ) p.2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n (p.1 : ℝ) p.2) := ⟨p, not_le.2 hp⟩
+  have hun : u n = ((Classical.choose hex).1 : ℝ) := by simp only [u, hex, ↓reduceDIte]
+  have hc := Classical.choose_spec hex
+  have := hn2 (Classical.choose hex).2
+  rw [hun] at this
+  exact hc this
+
+end RBM.Gauss.Sizes
+
+/-! ### The bridges at a time sequence `u ∈ [s,t]` (consumers: `STImproveExpAver`, `LWtermEXP`, `STMainInd`)
+
+`LWtermEXP` (`Graph/LWPins.lean`) has the premises `STLocalEntry`, `LWAvgLaw`, `STLmax`, `STLK`, `STDecay` at **one** time
+sequence; Steps 2, 3, 4, 5 give them uniformly in `u ∈ [s,t]` (`STLocalEntryU`, `STAvgU`, `STLmaxU`, `STLKU`,
+`STGdecayW … 0`).  The uniform statement restricted to the section `u` is the per-time statement (`precomp_param`).
+`STDecayStrong` has no such bridge at `u`: its index set is `ilambda² ≤ 1-t`, not `≤ 1-u`. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+theorem STLK_of_STLKU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
+    (h : STLKU sz E s t) : STLK sz E u := by
+  intro k hk
+  exact StochDomAt.precomp_param (h k hk)
+    (fun n (p : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) => ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), p))
+
+theorem STLmax_of_STLmaxU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
+    (h : STLmaxU sz E s t) : STLmax sz E u := by
+  intro k hk
+  exact StochDomAt.precomp_param (h k hk)
+    (fun n (p : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) => ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), p))
+
+theorem STLocalEntry_of_STLocalEntryU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
+    (h : STLocalEntryU sz E s t) : STLocalEntry sz E u :=
+  StochDomAt.precomp_param h
+    (fun n (p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) => ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), p))
+
+/-- `(Gt_avgbound_flow)` at the section `u`: `STAvgU` gives the premise `LWAvgLaw` of `LWtermEXP` (and of
+`STImproveExpAver`); `𝒦^{(1)}_{σ,a} = m(σ)` is `ST_Kloop_one`. -/
+theorem LWAvgLaw_of_STAvgU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
+    (h : STAvgU sz E s t) : LWAvgLaw sz E u := by
+  have h1 := StochDomAt.precomp_param h
+    (fun n (a : Zd d (sz.L n)) =>
+      ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), ((fun _ : Fin 1 => true), (fun _ : Fin 1 => a))))
+  simp only [ST_Kloop_one, pow_one] at h1
+  exact h1
+
+/-- `(Eq:Gdecay_flow)` of Step 5 (`STGdecayW … 0`, no loss `((1-s)/(1-u))^{C_d}`) at the section `u` is `(Eq:Gdecay)` at
+the time sequence `u` (the endpoint `u = t` is `ST_step5_assembly`). -/
+theorem STDecay_of_STGdecayW_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
+    (h : STGdecayW sz E s t 0) : STDecay sz E u := by
+  intro D hD
+  have := StochDomAt.precomp_param (h D hD)
+    (fun n (p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) => ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), p))
+  simp only [Real.rpow_zero, one_mul] at this
+  exact this
+
+/-- The endpoint `u = t` of `STLocalEntryU` (conclusion `STLocalEntry` of `lem:main_ind`, `Induction/Defs.lean`). -/
+theorem STLocalEntry_of_STLocalEntryU {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLocalEntryU sz E s t) :
+    STLocalEntry sz E t :=
+  STLocalEntry_of_STLocalEntryU_at sz hst (fun _ => le_rfl) h
+
+end RBM.Gauss.Sizes
+
+/-! ## 5. Glue: calculus of `Prec` (labels, finitely many signs), flow facts, the windows, the LW bridge `STEGt = LWE`,
+the Duhamel identity along `[s,t]` -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **The sup norm over the labels of a tensor is `≺` if the entries are** (the union over the labels is inside `P`, so the event
+`‖f‖ > r` is contained in `∃ a, |f_a| > r`): from `(Eq:Gtlp_exp+IND)` (index `(σ,a)`) to the `L^∞` hypothesis `‖𝒜‖_∞ ≺ X` of the kernel statements. -/
+theorem st6_prec_pi_norm (hsz : sz.SizeTendsto) {E s : ℕ → ℝ} {X : ℕ → ℝ} (hX : ∀ n, 0 ≤ X n)
+    (h : sz.Prec (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+      (fun n p _ => ‖STExpErr sz n (E n) (s n) p.1 p.2‖) (fun n _ _ => X n))
+    (σ : Fin 2 → Bool) {V : ℕ → Type*} :
+    sz.Prec (U := V) (fun n _ _ => ‖(fun b => STExpErr sz n (E n) (s n) σ b)‖) (fun n _ _ => X n) := by
+  refine StochDomAt.of_subset_union (tendsto_size sz hsz) h h fun τ hτ => ⟨τ, hτ, Eventually.of_forall fun n ω hω => ?_⟩
+  obtain ⟨v, hv⟩ := hω
+  have hr : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * X n := mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (hX n)
+  have : ¬ ‖(fun b => STExpErr sz n (E n) (s n) σ b)‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * X n := not_le.2 hv
+  rw [pi_norm_le_iff_of_nonneg hr] at this
+  push Not at this
+  obtain ⟨a, ha⟩ := this
+  exact Or.inl ⟨(σ, a), ha⟩
+
+/-- **Finitely many signs**: `Prec` for each of finitely many index values `i` (a fixed finite type) gives `Prec` for the family
+indexed by `(i, v)` (union bound, `#ι ≤ N`). -/
+theorem st6_prec_of_forall_fin (hsz : sz.SizeTendsto) {ι : Type*} [Finite ι] {V : ℕ → Type*}
+    (ξ ζ : ∀ n, ι → V n → sz.SeqΩ → ℝ)
+    (h : ∀ i : ι, sz.Prec (U := V) (fun n v ω => ξ n i v ω) (fun n v ω => ζ n i v ω)) :
+    sz.Prec (U := fun n => ι × V n) (fun n (p : ι × V n) ω => ξ n p.1 p.2 ω)
+      (fun n (p : ι × V n) ω => ζ n p.1 p.2 ω) := by
+  intro τ hτ D hD
+  have : Fintype ι := Fintype.ofFinite ι
+  have hall : ∀ᶠ n in atTop, ∀ i : ι, sz.seqP (badSetAt sz.size (fun n v ω => ξ n i v ω)
+      (fun n v ω => ζ n i v ω) τ n) ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-(D + 1))) :=
+    Filter.eventually_all.2 fun i => h i τ hτ (D + 1) (by linarith)
+  filter_upwards [hall, (tendsto_size sz hsz).eventually (eventually_ge_atTop (Fintype.card ι)),
+    (tendsto_size sz hsz).eventually (eventually_ge_atTop 1)] with n hn hN hN1
+  have hsub : badSetAt sz.size (fun n (p : ι × V n) ω => ξ n p.1 p.2 ω)
+      (fun n (p : ι × V n) ω => ζ n p.1 p.2 ω) τ n ⊆
+      ⋃ i : ι, badSetAt sz.size (fun n v ω => ξ n i v ω) (fun n v ω => ζ n i v ω) τ n := by
+    intro ω hω
+    obtain ⟨p, hp⟩ := hω
+    exact Set.mem_iUnion.2 ⟨p.1, p.2, hp⟩
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  have hNr : (Fintype.card ι : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN
+  have hp : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-(D + 1)) := Real.rpow_nonneg hN0.le _
+  have hrw : ((sz.size n : ℕ) : ℝ) ^ (-D) =
+      ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-(D + 1)) := by
+    rw [← Real.rpow_one_add' hN0.le (by linarith)]
+    congr 1; ring
+  calc sz.seqP (badSetAt sz.size (fun n (p : ι × V n) ω => ξ n p.1 p.2 ω)
+        (fun n (p : ι × V n) ω => ζ n p.1 p.2 ω) τ n)
+      ≤ sz.seqP (⋃ i : ι, badSetAt sz.size (fun n v ω => ξ n i v ω) (fun n v ω => ζ n i v ω) τ n) :=
+        measure_mono hsub
+    _ ≤ ∑ i : ι, sz.seqP (badSetAt sz.size (fun n v ω => ξ n i v ω) (fun n v ω => ζ n i v ω) τ n) :=
+        measure_iUnion_fintype_le _ _
+    _ ≤ ∑ _i : ι, ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-(D + 1))) := Finset.sum_le_sum fun i _ => hn i
+    _ = ENNReal.ofReal ((Fintype.card ι : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-(D + 1))) := by
+        rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, ENNReal.ofReal_mul (Nat.cast_nonneg _),
+          ENNReal.ofReal_natCast]
+    _ ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) := by
+        apply ENNReal.ofReal_le_ofReal
+        rw [hrw]
+        exact mul_le_mul_of_nonneg_right hNr hp
+
+/-- `|lemE z_n| < 2` on the flow (`|E| ≤ |Re z| ≤ 2 - κ`). -/
+theorem st6_flowE_lt_two {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
+    |STflowE z n| < 2 := by
+  have h := hz.2 n
+  have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have him : 0 < (z n).im := lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) h.2.1
+  have h2 : |lemE (z n)| < 2 := by linarith [(abs_lemE_le him).trans h.1]
+  exact h2
+
+/-- The window `ilambda²/L^d ≤ 1-t` contains regime (i). -/
+theorem st6_hi_of_reg5I (hd : 2 ≤ d) {s t : ℕ → ℝ} (h : STReg5I sz s t) : STDriftHi sz s t :=
+  fun n => (st5_reg5I_mid hd h n).1
+
+/-- The window contains regime (ii). -/
+theorem st6_hi_of_reg5II {s t : ℕ → ℝ} (h : STReg5II sz s t) : STDriftHi sz s t := fun n => (h n).1
+
+/-- The window contains regime (iii) (`L^d ≥ 1`). -/
+theorem st6_hi_of_reg5III {s t : ℕ → ℝ} (h : STReg5III sz s t) : STDriftHi sz s t := by
+  intro n
+  have hL : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  have h1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) ^ d := one_le_pow₀ hL
+  calc sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ sz.lam n ^ 2 / 1 :=
+        div_le_div_of_nonneg_left (sq_nonneg _) one_pos h1
+    _ = sz.lam n ^ 2 := div_one _
+    _ ≤ 1 - t n := h n
+
+/-! ### The rotation bridge `STEGt = LWE` (the proof is that of the `private` `STB_EGt_eq_LWE` of
+`Induction/Step2Events.lean`) -/
+
+private theorem st6_trace_six {ι : Type*} [Fintype ι] (P Q R S T U : Matrix ι ι ℂ) :
+    (P * (Q * (R * (S * (T * U))))).trace = (T * (U * (P * (Q * (R * S))))).trace := by
+  have := Matrix.trace_mul_comm (P * (Q * (R * S))) (T * U)
+  simp only [Matrix.mul_assoc] at this ⊢
+  exact this
+
+private theorem st6_loop_rot (n : ℕ) (E u : ℝ) (σ₀ σ₁ : Bool) (a₀ y a₁ : Zd d (sz.L n))
+    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
+    STLM sz n E u H ![σ₁, σ₁, σ₀] ![y, a₁, a₀] = STLM sz n E u H ![σ₀, σ₁, σ₁] ![a₀, y, a₁] := by
+  unfold STLM loopFine loopM
+  simp only [Nat.succ_eq_add_one, zero_add, Nat.reduceAdd, List.ofFn_succ, Fin.isValue,
+    Fin.cast_eq_self, Matrix.cons_val_zero, Matrix.cons_val_succ, Matrix.cons_val_fin_one,
+    List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one, Matrix.mul_assoc]
+  exact st6_trace_six _ _ _ _ _ _
+
+/-- `STEGt = LWE`: the two forms of the light-weight term agree pointwise (cyclic rotation of the 3-loop and the order of the two
+factors). -/
+theorem st6_EGt_eq_LWE (n : ℕ) (E t : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (ω : sz.SeqΩ) :
+    STEGt sz n E t σ a ω = LWE sz n E t σ a ω := by
+  unfold STEGt STEGtM LWE LWcut
+  have hm : ∀ s : Bool, STmsig E s = mSigma E s := fun s => rfl
+  have h1 : ∀ s : Bool, (fun _ : Fin 1 => s) = ![s] := fun s => by
+    funext i; fin_cases i; rfl
+  have h1' : ∀ x : Zd d (sz.L n), (fun _ : Fin 1 => x) = ![x] := fun x => by
+    funext i; fin_cases i; rfl
+  simp only [STavgM, STLM_seqHflow, hm, h1, h1']
+  have hA : ∀ x y : Zd d (sz.L n),
+      (Lloop sz n E t ![σ 0] ![x] ω - mSigma E (σ 0)) * SB d (sz.L n) (sz.lam n) x y *
+        Lloop sz n E t ![σ 0, σ 0, σ 1] ![y, a 0, a 1] ω =
+      SB d (sz.L n) (sz.lam n) x y * (Lloop sz n E t ![σ 0] ![x] ω - mSigma E (σ 0)) *
+        Lloop sz n E t ![σ 0, σ 0, σ 1] ![y, a 0, a 1] ω := fun x y => by ring
+  have hB : ∀ x y : Zd d (sz.L n),
+      (Lloop sz n E t ![σ 1] ![x] ω - mSigma E (σ 1)) * SB d (sz.L n) (sz.lam n) x y *
+        Lloop sz n E t ![σ 0, σ 1, σ 1] ![a 0, y, a 1] ω =
+      SB d (sz.L n) (sz.lam n) x y * (Lloop sz n E t ![σ 1] ![x] ω - mSigma E (σ 1)) *
+        Lloop sz n E t ![σ 1, σ 1, σ 0] ![y, a 1, a 0] ω := fun x y => by
+    have := st6_loop_rot sz n E t (σ 0) (σ 1) (a 0) y (a 1) (sz.seqHflow n t ω)
+    simp only [STLM_seqHflow] at this
+    rw [this]; ring
+  simp only [Finset.sum_add_distrib, hA, hB]
+  ring
+
+/-- The expected light-weight term is `𝔼 LWE`. -/
+theorem st6_expEGt_eq (n : ℕ) (E t : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
+    STExpEGt sz n E t σ a = ∫ ω, LWE sz n E t σ a ω ∂(sz.seqP) := by
+  unfold STExpEGt
+  congr 1
+  funext ω
+  exact st6_EGt_eq_LWE sz n E t σ a ω
+
+/-- **The Duhamel identity along `[s_n, t_n]`** from `STExpDuhamelZ` (`|E_n| < 2`, `0 ≤ s`, `u ≤ t < 1`). -/
+theorem st6_duhEq_of_pin (hDu : STExpDuhamelZ d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ}
+    (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ lemT (z n)) :
+    STExpDuhEq sz (STflowE z) s t := by
+  intro n u σ A a
+  exact hDu hd sz n (STflowE z n) (st6_flowE_lt_two sz hκ hflow n) (s n) u (hs0 n) u.2.1
+    (lt_of_le_of_lt u.2.2 (st5_t_lt_one sz hflow htT n)) σ A a
+
+end RBM.Gauss.Sizes
+
+/-! ## 6. The initial term closes with no `𝔠_d` loss in regimes (iii) and (iv)
+
+`(1-s) B_s` against `(1-u) B_u`: `x B(x) = W^{-d} x/(ilambda² + x) + N⁻¹` with `x = 1 - u` (`N = (WL)^d`).  In regime (iii),
+`x ≥ ilambda²` gives `x/(ilambda²+x) ∈ [1/2, 1]`; in regime (iv), `x ≤ ilambda²/L^d` gives `W^{-d} x/(ilambda²+x) ≤ N⁻¹`: in both
+`(1-s) B_s ≤ 2 (1-u) B_u`, so `((1-s)/(1-u))² B_s² ≤ 4 B_u²`: the `L^∞`-only kernel estimate `(sum_res_Ndecay)` costs the constant `4`. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `W^{-d} B_{u,0} = W^{-d}(ilambda² + 1-u)⁻¹ + (N(1-u))⁻¹` for `u < 1` (`N = (WL)^d`; `(eq_B_param)` with `K = 0`). -/
+theorem st6_Bctl_eq (n : ℕ) {u : ℝ} (hu : u < 1) :
+    sz.Bctl n u = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (sz.lam n ^ 2 + (1 - u))⁻¹ +
+      (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ := by
+  have hx0 : 0 < 1 - u := by linarith
+  have hNeq : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    simp only [Sizes.size]; push_cast; ring
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  unfold Sizes.Bctl Bparam
+  rw [abs_of_pos hx0, hNeq]
+  have h0 : (((0 : ℕ) : ℝ) + 1) ^ (d - 2) = 1 := by simp
+  rw [h0, inv_one, mul_one]
+  have hL0 : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 0 < sz.L n)
+  field_simp
+
+/-- `(1-u) W^{-d}B_{u,0} = W^{-d} (1-u)/(ilambda² + 1-u) + N⁻¹`. -/
+theorem st6_xB_eq (n : ℕ) {u : ℝ} (hu : u < 1) :
+    (1 - u) * sz.Bctl n u = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((1 - u) / (sz.lam n ^ 2 + (1 - u))) +
+      (((sz.size n : ℕ) : ℝ))⁻¹ := by
+  have hx0 : 0 < 1 - u := by linarith
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hg : 0 < sz.lam n ^ 2 + (1 - u) := by positivity
+  rw [st6_Bctl_eq sz n hu]
+  field_simp
+
+/-- Regime (iii): `ilambda² ≤ 1-u ≤ 1-s` gives `(1-s) B_s ≤ 2 (1-u) B_u`. -/
+theorem st6_xB_III (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1) (hg : sz.lam n ^ 2 ≤ 1 - u) :
+    (1 - s) * sz.Bctl n s ≤ 2 * ((1 - u) * sz.Bctl n u) := by
+  have hs1 : s < 1 := lt_of_le_of_lt hsu hu
+  have hx0 : 0 < 1 - u := by linarith
+  have hxs0 : 0 < 1 - s := by linarith
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hWd : (0 : ℝ) < (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  rw [st6_xB_eq sz n hs1, st6_xB_eq sz n hu]
+  have h1 : (1 - s) / (sz.lam n ^ 2 + (1 - s)) ≤ 1 := by
+    rw [div_le_one (by positivity)]; nlinarith [sq_nonneg (sz.lam n)]
+  have h2 : (1 / 2 : ℝ) ≤ (1 - u) / (sz.lam n ^ 2 + (1 - u)) := by
+    rw [le_div_iff₀ (by positivity)]; linarith
+  have h3 := mul_le_mul_of_nonneg_left h1 hWd.le
+  have h4 := mul_le_mul_of_nonneg_left h2 hWd.le
+  have hN : (0 : ℝ) ≤ (((sz.size n : ℕ) : ℝ))⁻¹ := by positivity
+  nlinarith
+
+/-- Regime (iv): `1-s ≤ ilambda²/L^d` (and `u ≥ s`) gives `(1-s) B_s ≤ 2 (1-u) B_u`. -/
+theorem st6_xB_IV (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1)
+    (hg : 1 - s ≤ sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d) :
+    (1 - s) * sz.Bctl n s ≤ 2 * ((1 - u) * sz.Bctl n u) := by
+  have hs1 : s < 1 := lt_of_le_of_lt hsu hu
+  have hx0 : 0 < 1 - u := by linarith
+  have hxs0 : 0 < 1 - s := by linarith
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hL0 : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 0 < sz.L n)
+  have hLd : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) ^ d := by positivity
+  have hWd : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by positivity
+  have hNeq : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    simp only [Sizes.size]; push_cast; ring
+  rw [st6_xB_eq sz n hs1, st6_xB_eq sz n hu]
+  -- `(1-s)/(ilambda² + 1-s) ≤ L^{-d}`
+  have hg2 : (1 - s) * ((sz.L n : ℕ) : ℝ) ^ d ≤ sz.lam n ^ 2 := by
+    rwa [le_div_iff₀ hLd] at hg
+  have h1 : (1 - s) / (sz.lam n ^ 2 + (1 - s)) ≤ (((sz.L n : ℕ) : ℝ) ^ d)⁻¹ := by
+    rw [div_le_iff₀ (by positivity), inv_mul_eq_div, le_div_iff₀ hLd]
+    nlinarith
+  have h2 : 0 ≤ (1 - u) / (sz.lam n ^ 2 + (1 - u)) := by positivity
+  have h3 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((1 - s) / (sz.lam n ^ 2 + (1 - s))) ≤ (((sz.size n : ℕ) : ℝ))⁻¹ := by
+    calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((1 - s) / (sz.lam n ^ 2 + (1 - s)))
+        ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (((sz.L n : ℕ) : ℝ) ^ d)⁻¹ :=
+          mul_le_mul_of_nonneg_left h1 (by positivity)
+      _ = (((sz.size n : ℕ) : ℝ))⁻¹ := by rw [hNeq, mul_inv]
+  have h4 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((1 - u) / (sz.lam n ^ 2 + (1 - u))) := by positivity
+  linarith
+
+/-- From `(1-s) B_s ≤ 2 (1-u) B_u` to the squared ratio: `((1-s)/(1-u))² B_s² ≤ 4 B_u²`. -/
+theorem st6_ratio_sq (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1)
+    (h : (1 - s) * sz.Bctl n s ≤ 2 * ((1 - u) * sz.Bctl n u)) :
+    ((1 - s) / (1 - u)) ^ 2 * (sz.Bctl n s) ^ 2 ≤ 4 * (sz.Bctl n u) ^ 2 := by
+  have hx0 : 0 < 1 - u := by linarith
+  have hB0 : 0 ≤ sz.Bctl n s := (STBctl_pos sz n (lt_of_le_of_lt hsu hu)).le
+  have h1 : ((1 - s) / (1 - u)) * sz.Bctl n s ≤ 2 * sz.Bctl n u := by
+    rw [div_mul_eq_mul_div, div_le_iff₀ hx0]
+    linarith
+  have h0 : 0 ≤ ((1 - s) / (1 - u)) * sz.Bctl n s := by
+    have : 0 ≤ 1 - s := by linarith
+    positivity
+  calc ((1 - s) / (1 - u)) ^ 2 * (sz.Bctl n s) ^ 2 = (((1 - s) / (1 - u)) * sz.Bctl n s) ^ 2 := by ring
+    _ ≤ (2 * sz.Bctl n u) ^ 2 := pow_le_pow_left₀ h0 h1 2
+    _ = 4 * (sz.Bctl n u) ^ 2 := by ring
+
+/-- **The comparison of the initial term with the target**: `((1-s)/(1-u))² T_s ≤ 4 T_u`, given `(1-s) B_s ≤ 2 (1-u) B_u`
+(`T_u = B_u² (G + B_u)`, `G = (ilambda² W^d)^{-1/5} ≥ 0`, `B_s ≤ B_u`). -/
+theorem st6_cmp_ini (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1)
+    (h : (1 - s) * sz.Bctl n s ≤ 2 * ((1 - u) * sz.Bctl n u)) :
+    ((1 - s) / (1 - u)) ^ 2 * STExpTarget sz n s ≤ 4 * STExpTarget sz n u := by
+  unfold STExpTarget
+  have hG : 0 ≤ (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) :=
+    Real.rpow_nonneg (by positivity) _
+  have hr := st6_ratio_sq sz n hsu hu h
+  have hm := STBctl_mono sz n hsu hu
+  have hs0 : 0 ≤ sz.Bctl n s := (STBctl_pos sz n (lt_of_le_of_lt hsu hu)).le
+  calc ((1 - s) / (1 - u)) ^ 2 * ((sz.Bctl n s) ^ 2 * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) +
+          sz.Bctl n s))
+      = (((1 - s) / (1 - u)) ^ 2 * (sz.Bctl n s) ^ 2) *
+          ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n s) := by ring
+    _ ≤ (4 * (sz.Bctl n u) ^ 2) * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n u) := by
+        apply mul_le_mul hr (by linarith) (by positivity) (by positivity)
+    _ = 4 * ((sz.Bctl n u) ^ 2 * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n u)) := by ring
+
+/-- `T_u ≥ 0` (every term is nonnegative). -/
+theorem st6_target_nonneg (n : ℕ) {u : ℝ} (hu : u < 1) : 0 ≤ STExpTarget sz n u := by
+  unfold STExpTarget
+  have hB := (STBctl_pos sz n hu).le
+  have hG : 0 ≤ (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) :=
+    Real.rpow_nonneg (by positivity) _
+  positivity
+
+/-- `T_s ≤ T_u` for `s ≤ u < 1` (`B_s ≤ B_u`, `G ≥ 0`). -/
+theorem st6_target_mono (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1) :
+    STExpTarget sz n s ≤ STExpTarget sz n u := by
+  unfold STExpTarget
+  have hm := STBctl_mono sz n hsu hu
+  have hs0 : 0 ≤ sz.Bctl n s := (STBctl_pos sz n (lt_of_le_of_lt hsu hu)).le
+  have hG : 0 ≤ (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) :=
+    Real.rpow_nonneg (by positivity) _
+  gcongr
+
+/-- `B_u³ ≤ T_u` (the `Ward` terms of regimes (i), (ii) are below the target). -/
+theorem st6_cube_le_target (n : ℕ) {u : ℝ} (hu : u < 1) : (sz.Bctl n u) ^ 3 ≤ STExpTarget sz n u := by
+  unfold STExpTarget
+  have hB := (STBctl_pos sz n hu).le
+  have hG : 0 ≤ (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) :=
+    Real.rpow_nonneg (by positivity) _
+  nlinarith [mul_nonneg (sq_nonneg (sz.Bctl n u)) hG]
+
+end RBM.Gauss.Sizes
+
+/-! ## 7. The skeletons: Step 6 in each regime from its ingredient statements
+
+Each skeleton takes the ingredient statements of its regime and the glue: the constant `𝔠_d` is the minimum of the constants of the statements
+(`st5_conStInd_mono`); the premises of the integrated statement are the Duhamel identity (from `STExpDuhamelZ`), the drift bounds (`(eq:Exp(L-K)1)`
+from `STExpLKLKHi`, `(eq:ExpLWn=2)` derived from `LWtermEXP` by the bridges of §2 and (g)), and the Ward bounds; the initial term is bounded by
+the kernel theorems `stek_sumNdecay_holds`, `stek_nonzero_holds` applied to the deterministic tensor `f_s`, with the
+hypothesis `(Eq:Gtlp_exp+IND)` (`STExp2` at `s`); the closing comparisons are §6. -/
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `|E_n| ≤ 2 - κ` on the flow. -/
+theorem st6_flowE_le {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
+    |STflowE z n| ≤ 2 - κ := by
+  have h := hz.2 n
+  have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have him : 0 < (z n).im := lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) h.2.1
+  have h2 : |lemE (z n)| ≤ 2 - κ := (abs_lemE_le him).trans h.1
+  exact h2
+
+/-- `Im m(E) ≥ √(2κ)/2` for `|E| ≤ 2 - κ` (bulk). -/
+theorem st6_mE_im_ge {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) : Real.sqrt (2 * κ) / 2 ≤ (mE E).im := by
+  rw [mE_im]
+  have hκ2 : κ ≤ 2 := by linarith [abs_nonneg E]
+  have hE2 : E ^ 2 ≤ (2 - κ) ^ 2 := by
+    have h1 : |E| ^ 2 ≤ (2 - κ) ^ 2 := pow_le_pow_left₀ (abs_nonneg E) hE 2
+    rwa [sq_abs] at h1
+  have h : 2 * κ ≤ 4 - E ^ 2 := by nlinarith
+  have := Real.sqrt_le_sqrt h
+  linarith
+
+/-- **`(res_ELK_n=1)` uniformly in `u ∈ [s,t]`** from the per-time statement `STImproveExpAver` (consumers: the Ward statements, `STExpDriftLo`):
+for each time sequence `u ∈ [s,t]` the premise `LWAvgLaw` is the section of `STAvgU` (Step 2), the premise `STLK` is the section of
+`STLKU` (Step 4), and (g) turns the per-time conclusions into the uniform one. -/
+theorem st6_expAvgU_of_pin (hAvg : STImproveExpAver d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
+    (h𝔡 : 0 < 𝔡) {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n)
+    (hst : ∀ n, s n < t n) (htT : ∀ n, t n ≤ lemT (z n)) (hS2 : STStep2Core sz (STflowE z) s t)
+    (hLKU : STLKU sz (STflowE z) s t) : STExpAvgU sz (STflowE z) s t := by
+  refine st6_precU_of_forall_seq sz hflow.1.2.2.1 (fun n => (hst n).le) (W := fun n => Bool × Zd d (sz.L n))
+    (fun n u w => ‖(∫ ω, Lloop sz n (STflowE z n) u (fun _ : Fin 1 => w.1) (fun _ => w.2) ω ∂(sz.seqP)) -
+      mSigma (STflowE z n) w.1‖) (fun n u _ => (sz.Bctl n u) ^ 2) ?_
+  intro u hsu hut
+  exact hAvg hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u (fun n => (hs0 n).trans (hsu n))
+    (fun n => (hut n).trans (htT n)) (LWAvgLaw_of_STAvgU_at sz hsu hut hS2.2) (STLK_of_STLKU_at sz hsu hut hLKU)
+
+/-- **`(eq:ExpLWn=2)` uniformly in `u ∈ [s,t]`, derived from `LWtermEXP`** (per time): the premises at the section `u` are the
+bridges of §2, the conclusion is converted from `LWE` to `STEGt` by `st6_expEGt_eq`, and (g) makes it uniform; the index set
+`ilambda²/L^d ≤ 1-u` of `LWtermEXP` is all of `[s,t]` in the window `STDriftHi`. -/
+theorem st6_EGtHi_of_LW (hLW : LWtermEXP d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
+    {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
+    (htT : ∀ n, t n ≤ lemT (z n)) (hHi : STDriftHi sz s t) (hS2 : STStep2Core sz (STflowE z) s t)
+    (hLmax : STLmaxU sz (STflowE z) s t) (hLKU : STLKU sz (STflowE z) s t)
+    (hS5 : STGdecayW sz (STflowE z) s t 0) : STExpEGtHiConcl sz (STflowE z) s t := by
+  refine st6_precU_of_forall_seq sz hflow.1.2.2.1 (fun n => (hst n).le)
+    (W := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+    (fun n u w => ‖STExpEGt sz n (STflowE z n) u w.1 w.2‖)
+    (fun n u _ => (1 - u)⁻¹ * (sz.Bctl n u) ^ (5 / 2 : ℝ)) ?_
+  intro u hsu hut
+  have h1 := hLW hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u (fun n => (hs0 n).trans (hsu n))
+    (fun n => (hut n).trans (htT n)) (STLocalEntry_of_STLocalEntryU_at sz hsu hut hS2.1)
+    (LWAvgLaw_of_STAvgU_at sz hsu hut hS2.2) (STLmax_of_STLmaxU_at sz hsu hut hLmax)
+    (STLK_of_STLKU_at sz hsu hut hLKU) (STDecay_of_STGdecayW_at sz hsu hut hS5)
+  have h2 := StochDomAt.precomp_param h1
+    (fun n (w : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) =>
+      (⟨w, (hHi n).trans (by have := hut n; linarith)⟩ :
+        {_p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) // sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - u n}))
+  have e : (fun n (w : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+        ‖STExpEGt sz n (STflowE z n) (u n) w.1 w.2‖) =
+      (fun n (w : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) (_ : sz.SeqΩ) =>
+        ‖∫ ω, LWE sz n (STflowE z n) (u n) w.1 w.2 ω ∂(sz.seqP)‖) := by
+    funext n w ω
+    rw [st6_expEGt_eq]
+  rw [e]
+  exact h2
+
+/-- **The initial term of regimes (iii), (iv)**: `‖𝒰_{s,u} f_s‖ ≺ ((1-s)/(1-u))² T_s` uniformly in `(u,σ,a)`, from `(sum_res_Ndecay)` with `n = 2`
+(`stek_sumNdecay_holds`) applied to the deterministic tensor `f_s`, `‖f_s‖_∞ ≺ T_s` being `(Eq:Gtlp_exp+IND)`. -/
+theorem st6_ini_sumNdecay (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
+    {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (htT : ∀ n, t n ≤ lemT (z n))
+    (hExp : STExp2 sz (STflowE z) s) :
+    sz.Prec (U := fun n => TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+      (fun n p _ => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) p.2.1 (s n) (p.1 : ℝ)
+        (fun b => STExpErr sz n (STflowE z n) (s n) p.2.1 b) p.2.2‖)
+      (fun n p _ => ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n)) := by
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have ht1 := st5_t_lt_one sz hflow htT
+  have hX : ∀ n, 0 ≤ STExpTarget sz n (s n) := fun n => st6_target_nonneg sz n (lt_trans (hst n) (ht1 n))
+  refine st6_precU_of_forall_seq sz hsz (fun n => (hst n).le)
+    (W := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+    (fun n u w => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) w.1 (s n) u
+      (fun b => STExpErr sz n (STflowE z n) (s n) w.1 b) w.2‖)
+    (fun n u _ => ((1 - s n) / (1 - u)) ^ 2 * STExpTarget sz n (s n)) ?_
+  intro u hsu hut
+  have hu1 : ∀ n, u n < 1 := fun n => lt_of_le_of_lt (hut n) (ht1 n)
+  have key : ∀ σ : Fin 2 → Bool, sz.Prec (U := fun n => Fin 2 → Zd d (sz.L n))
+      (fun n a _ => ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) σ (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ b) a‖)
+      (fun n _ _ => ((1 - s n) / (1 - u n)) ^ 2 * STExpTarget sz n (s n)) := by
+    intro σ
+    have hdom := st6_prec_pi_norm sz hsz (E := STflowE z) (s := s) hX hExp σ (V := fun n => TimeIcc s u n)
+    have hk := stek_sumNdecay_holds d hd 2 le_rfl 𝔠 𝔡 sz hflow.1 s u hs0 hsu hu1
+      (fun n => mE (STflowE z n)) (fun n => norm_mE (st6_flowE_lt_two sz hκ hflow n).le) σ
+      (fun n _ _ => fun b => STExpErr sz n (STflowE z n) (s n) σ b)
+      (fun n _ _ => STExpTarget sz n (s n)) (fun n _ _ => hX n) hdom
+    have h2 := StochDomAt.precomp_param hk
+      (fun n (_ : Fin 2 → Zd d (sz.L n)) => (⟨s n, le_rfl, hsu n⟩ : TimeIcc s u n))
+    refine StochDomAt.of_le_left (ξ₁ := fun n (_ : Fin 2 → Zd d (sz.L n)) (_ : sz.SeqΩ) =>
+      ‖UN d (sz.L n) (sz.lam n) (EKsgn (mE (STflowE z n)) σ) (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ b)‖) (fun n a ω => ?_) h2
+    exact norm_le_pi_norm (UN d (sz.L n) (sz.lam n) (EKsgn (mE (STflowE z n)) σ) (s n) (u n)
+      (fun b => STExpErr sz n (STflowE z n) (s n) σ b)) a
+  exact st6_prec_of_forall_fin sz hsz
+    (fun n (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (_ : sz.SeqΩ) =>
+      ‖RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) σ (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ b) a‖)
+    (fun n _ _ _ => ((1 - s n) / (1 - u n)) ^ 2 * STExpTarget sz n (s n)) key
+
+end RBM.Gauss.Sizes
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **The initial term of regime (ii) (and (iv)-type zero modes)**: `‖Q^{(A)} 𝒰_{s,u} f_s‖ ≺ T_s` uniformly in `(u,σ,a)`, for the sign
+class `P` and `A ⊇ I_diff(σ)` (`(sum_res_Ndecay_nonzero)` of Lemma 4.17, `stek_nonzero_holds`, window `1-s ≤ ilambda²/L²`;
+no decay hypothesis, no ratio). -/
+theorem st6_ini_nonzero (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
+    {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (htT : ∀ n, t n ≤ lemT (z n))
+    (hsg : ∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n) (hExp : STExp2 sz (STflowE z) s)
+    (A : Finset (Fin 2)) (P : (Fin 2 → Bool) → Prop)
+    (hA : ∀ σ, P σ → ∀ i, σ i ≠ σ (finRotate 2 i) → i ∈ A) :
+    sz.Prec (U := STIdx2P sz P s t)
+      (fun n p _ => ‖zeroModeSet d (sz.L n) A (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) p.2.1.1 (s n)
+        (p.1 : ℝ) (fun b => STExpErr sz n (STflowE z n) (s n) p.2.1.1 b)) p.2.2‖)
+      (fun n _ _ => STExpTarget sz n (s n)) := by
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have ht1 := st5_t_lt_one sz hflow htT
+  have hX : ∀ n, 0 ≤ STExpTarget sz n (s n) := fun n => st6_target_nonneg sz n (lt_trans (hst n) (ht1 n))
+  have hκ' : 0 < Real.sqrt (2 * κ) / 2 := by positivity
+  refine st6_precU_of_forall_seq sz hsz (fun n => (hst n).le)
+    (W := fun n => {σ : Fin 2 → Bool // P σ} × (Fin 2 → Zd d (sz.L n)))
+    (fun n u w => ‖zeroModeSet d (sz.L n) A (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) w.1.1 (s n) u
+      (fun b => STExpErr sz n (STflowE z n) (s n) w.1.1 b)) w.2‖)
+    (fun n _ _ => STExpTarget sz n (s n)) ?_
+  intro u hsu hut
+  have hu1 : ∀ n, u n < 1 := fun n => lt_of_le_of_lt (hut n) (ht1 n)
+  have key : ∀ σ : {σ : Fin 2 → Bool // P σ}, sz.Prec (U := fun n => Fin 2 → Zd d (sz.L n))
+      (fun n a _ => ‖zeroModeSet d (sz.L n) A (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) σ.1 (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ.1 b)) a‖)
+      (fun n _ _ => STExpTarget sz n (s n)) := by
+    intro σ
+    have hdom := st6_prec_pi_norm sz hsz (E := STflowE z) (s := s) hX hExp σ.1 (V := fun n => TimeIcc s u n)
+    have hk := stek_nonzero_holds d hd 2 le_rfl (Real.sqrt (2 * κ) / 2) 𝔠 𝔡 hκ' sz hflow.1 s u hsg hs0 hsu hu1
+      (fun n => mE (STflowE z n)) (fun n => norm_mE (st6_flowE_lt_two sz hκ hflow n).le)
+      (fun n => st6_mE_im_ge hκ (st6_flowE_le sz hflow n)) σ.1 A (hA σ.1 σ.2)
+      (fun n _ _ => fun b => STExpErr sz n (STflowE z n) (s n) σ.1 b)
+      (fun n _ _ => STExpTarget sz n (s n)) (fun n _ _ => hX n) hdom
+    have h2 := StochDomAt.precomp_param hk
+      (fun n (_ : Fin 2 → Zd d (sz.L n)) => (⟨s n, le_rfl, hsu n⟩ : TimeIcc s u n))
+    refine StochDomAt.of_le_left (ξ₁ := fun n (_ : Fin 2 → Zd d (sz.L n)) (_ : sz.SeqΩ) =>
+      ‖zeroModeSet d (sz.L n) A (UN d (sz.L n) (sz.lam n) (EKsgn (mE (STflowE z n)) σ.1) (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ.1 b))‖) (fun n a ω => ?_) h2
+    exact norm_le_pi_norm (zeroModeSet d (sz.L n) A (UN d (sz.L n) (sz.lam n) (EKsgn (mE (STflowE z n)) σ.1)
+      (s n) (u n) (fun b => STExpErr sz n (STflowE z n) (s n) σ.1 b))) a
+  exact st6_prec_of_forall_fin sz hsz
+    (fun n (σ : {σ : Fin 2 → Bool // P σ}) (a : Fin 2 → Zd d (sz.L n)) (_ : sz.SeqΩ) =>
+      ‖zeroModeSet d (sz.L n) A (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) σ.1 (s n) (u n)
+        (fun b => STExpErr sz n (STflowE z n) (s n) σ.1 b)) a‖)
+    (fun n _ _ _ => STExpTarget sz n (s n)) key
+
+/-- Reindexing `(u,σ,a)` of `STExp2U` and of the sign class `P`: a `Prec` for the sign classes `P`, `¬P`... is combined by `st5_prec_cover`. -/
+theorem st6_cover_exp2U {s t : ℕ → ℝ} {ξ ζ : ∀ n, TimeIcc s t n → (Fin 2 → Bool) → (Fin 2 → Zd d (sz.L n)) → ℝ}
+    (hsz : sz.SizeTendsto) {P₁ P₂ : (Fin 2 → Bool) → Prop} (hcov : ∀ σ, P₁ σ ∨ P₂ σ)
+    (h₁ : sz.Prec (U := STIdx2P sz P₁ s t) (fun n p _ => ξ n p.1 p.2.1.1 p.2.2) (fun n p _ => ζ n p.1 p.2.1.1 p.2.2))
+    (h₂ : sz.Prec (U := STIdx2P sz P₂ s t) (fun n p _ => ξ n p.1 p.2.1.1 p.2.2) (fun n p _ => ζ n p.1 p.2.1.1 p.2.2)) :
+    sz.Prec (U := fun n => TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+      (fun n p _ => ξ n p.1 p.2.1 p.2.2) (fun n p _ => ζ n p.1 p.2.1 p.2.2) := by
+  refine st5_prec_cover sz hsz (V₁ := STIdx2P sz P₁ s t) (V₂ := STIdx2P sz P₂ s t)
+    (fun n p => (p.1, p.2.1.1, p.2.2)) (fun n p => (p.1, p.2.1.1, p.2.2)) ?_ h₁ h₂
+  intro n p
+  rcases hcov p.2.1 with h | h
+  · exact Or.inl ⟨(p.1, ⟨p.2.1, h⟩, p.2.2), rfl⟩
+  · exact Or.inr ⟨(p.1, ⟨p.2.1, h⟩, p.2.2), rfl⟩
+
+end RBM.Gauss.Sizes
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Loop RBM.Path RBM.Gauss
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- For `σ₁ = σ₂`, `I_diff(σ) = ∅`: `A = ∅` is allowed in `(sum_res_Ndecay_nonzero)`. -/
+theorem st6_Idiff_same {σ : Fin 2 → Bool} (h : σ 0 = σ 1) (i : Fin 2) : ¬ σ i ≠ σ (finRotate 2 i) := by
+  fin_cases i
+  · have : finRotate 2 (0 : Fin 2) = 1 := by decide
+    simp [this, h]
+  · have : finRotate 2 (1 : Fin 2) = 0 := by decide
+    simp [this, h]
+
+/-- **Step 6, regime (iii), from its ingredient statements.**  The ingredients are `(eq:Exp(L-K)1)` (`STExpLKLKHi`), `lem:LWterm_EXP`
+(`LWtermEXP`, the per-time statement, consumed through the bridges of §2 and (g)), the Duhamel identity (`STExpDuhamelZ`) and the integrated
+estimate (`STExpIntIII`); the initial term is `(sum_res_Ndecay)` (`st6_ini_sumNdecay`) closed by `st6_xB_III`, `st6_cmp_ini` with the
+constant `4`, no `𝔠_d` loss.  The constant `𝔠_d` is the minimum of the constants of the two statements. -/
+theorem ST_step6_caseIII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hDu : STExpDuhamelZ d)
+    (hInt : STExpIntIII d) : STStep6III d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₁, hc₁, hc₁', H₁⟩ := hLK hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₂, hc₂, hc₂', H₂⟩ := hInt hd κ ε 𝔡 hκ hε h𝔡
+  have hcpos : 0 < min c₁ c₂ := lt_min hc₁ hc₂
+  refine ⟨min c₁ c₂, hcpos, (min_le_left _ _).trans hc₁', ?_⟩
+  intro 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp hcon hS2 hLmax hLKU hS5
+  have ht1 := st5_t_lt_one sz hflow htT
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hHi := st6_hi_of_reg5III sz hR
+  have hlk := H₁ 𝔠 sz z hflow s t hs0 hst htT hHi hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos (min_le_left _ _)) hS2 hLmax hLKU hS5
+  have hegt := st6_EGtHi_of_LW sz hLW hd hκ hε h𝔡 hflow hs0 hst htT hHi hS2 hLmax hLKU hS5
+  have hduh := st6_duhEq_of_pin sz hDu hd hκ hflow hs0 htT
+  have hint := H₂ 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos (min_le_right _ _)) hS2 hLmax hLKU hS5 hduh ⟨hlk, hegt⟩
+  have hini := st6_ini_sumNdecay sz hd hκ hflow hs0 hst htT hExp
+  have hini' : sz.Prec (U := STIdx2P sz STSigAll s t)
+      (fun n p _ => ‖zeroModeSet d (sz.L n) ∅ (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) p.2.1.1 (s n)
+        (p.1 : ℝ) (fun b => STExpErr sz n (STflowE z n) (s n) p.2.1.1 b)) p.2.2‖)
+      (fun n p _ => ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n)) := by
+    have := StochDomAt.precomp_param hini (fun n (p : STIdx2P sz STSigAll s t n) =>
+      ((p.1, p.2.1.1, p.2.2) : TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))))
+    simp only [st5_zeroModeSet_empty]
+    exact this
+  have hF0 : ∀ n (p : STIdx2P sz STSigAll s t n),
+      0 ≤ ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n) := by
+    intro n p
+    have hx : 0 ≤ (1 - s n) / (1 - (p.1 : ℝ)) :=
+      div_nonneg (by linarith [hst n, ht1 n]) (by linarith [p.1.2.2, ht1 n])
+    exact mul_nonneg (pow_nonneg hx 2) (st6_target_nonneg sz n (lt_trans (hst n) (ht1 n)))
+  have hmain := hint (fun n p => ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n)) hF0 hini'
+  have h5 := st5_prec_mono sz hsz (c := 5) hmain
+    (Eventually.of_forall fun n p ω => ?_)
+    (fun n p ω => st6_target_nonneg sz n (lt_of_le_of_lt p.1.2.2 (ht1 n)))
+  · have h6 := StochDomAt.precomp_param h5 (fun n (p : STIdx2 sz s t n) =>
+      ((p.1, ⟨p.2.1, trivial⟩, p.2.2) : STIdx2P sz STSigAll s t n))
+    simp only [st5_zeroModeSet_empty] at h6
+    exact h6
+  · have hu1 : (p.1 : ℝ) < 1 := lt_of_le_of_lt p.1.2.2 (ht1 n)
+    have hxB := st6_xB_III sz n p.1.2.1 hu1 ((hR n).trans (by linarith [p.1.2.2]))
+    have := st6_cmp_ini sz n p.1.2.1 hu1 hxB
+    change ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n) + STExpTarget sz n (p.1 : ℝ) ≤
+      5 * STExpTarget sz n (p.1 : ℝ)
+    linarith
+
+/-- **Step 6, regime (iv), from its ingredient statements.**  `STExpDriftLo` carries `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`; its premise `(res_ELK_n=1)`
+is derived from `STImproveExpAver` (`st6_expAvgU_of_pin`, (g)); the initial term is `(sum_res_Ndecay)` closed by `st6_xB_IV` (constant `4`). -/
+theorem ST_step6_caseIV_of_pins (hAvg : STImproveExpAver d) (hDu : STExpDuhamelZ d) (hLo : STExpDriftLo d)
+    (hInt : STExpIntIV d) : STStep6IV d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₁, hc₁, hc₁', H₁⟩ := hLo hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₂, hc₂, hc₂', H₂⟩ := hInt hd κ ε 𝔡 hκ hε h𝔡
+  have hcpos : 0 < min c₁ c₂ := lt_min hc₁ hc₂
+  refine ⟨min c₁ c₂, hcpos, (min_le_left _ _).trans hc₁', ?_⟩
+  intro 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp hcon hS2 hLmax hLKU hS5
+  have ht1 := st5_t_lt_one sz hflow htT
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hAvgU := st6_expAvgU_of_pin sz hAvg hd hκ hε h𝔡 hflow hs0 hst htT hS2 hLKU
+  have hlo := H₁ 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos (min_le_left _ _)) hS2 hLmax hLKU hS5 hAvgU
+  have hduh := st6_duhEq_of_pin sz hDu hd hκ hflow hs0 htT
+  have hint := H₂ 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos (min_le_right _ _)) hS2 hLmax hLKU hS5 hduh hlo
+  have hini := st6_ini_sumNdecay sz hd hκ hflow hs0 hst htT hExp
+  have hini' : sz.Prec (U := STIdx2P sz STSigAll s t)
+      (fun n p _ => ‖zeroModeSet d (sz.L n) ∅ (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (STflowE z n) p.2.1.1 (s n)
+        (p.1 : ℝ) (fun b => STExpErr sz n (STflowE z n) (s n) p.2.1.1 b)) p.2.2‖)
+      (fun n p _ => ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n)) := by
+    have := StochDomAt.precomp_param hini (fun n (p : STIdx2P sz STSigAll s t n) =>
+      ((p.1, p.2.1.1, p.2.2) : TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))))
+    simp only [st5_zeroModeSet_empty]
+    exact this
+  have hF0 : ∀ n (p : STIdx2P sz STSigAll s t n),
+      0 ≤ ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n) := by
+    intro n p
+    have hx : 0 ≤ (1 - s n) / (1 - (p.1 : ℝ)) :=
+      div_nonneg (by linarith [hst n, ht1 n]) (by linarith [p.1.2.2, ht1 n])
+    exact mul_nonneg (pow_nonneg hx 2) (st6_target_nonneg sz n (lt_trans (hst n) (ht1 n)))
+  have hmain := hint (fun n p => ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n)) hF0 hini'
+  have h5 := st5_prec_mono sz hsz (c := 5) hmain
+    (Eventually.of_forall fun n p ω => ?_)
+    (fun n p ω => st6_target_nonneg sz n (lt_of_le_of_lt p.1.2.2 (ht1 n)))
+  · have h6 := StochDomAt.precomp_param h5 (fun n (p : STIdx2 sz s t n) =>
+      ((p.1, ⟨p.2.1, trivial⟩, p.2.2) : STIdx2P sz STSigAll s t n))
+    simp only [st5_zeroModeSet_empty] at h6
+    exact h6
+  · have hu1 : (p.1 : ℝ) < 1 := lt_of_le_of_lt p.1.2.2 (ht1 n)
+    have hxB := st6_xB_IV sz n p.1.2.1 hu1 (hR n)
+    have := st6_cmp_ini sz n p.1.2.1 hu1 hxB
+    change ((1 - s n) / (1 - (p.1 : ℝ))) ^ 2 * STExpTarget sz n (s n) + STExpTarget sz n (p.1 : ℝ) ≤
+      5 * STExpTarget sz n (p.1 : ℝ)
+    linarith
+
+/-- The `𝒬`-Duhamel identity along `[s_n,t_n]` for a mollifier family, eventually in `n`, from `STExpDuhamelQ`. -/
+theorem st6_duhEqQ_of_pin (hDu : STExpDuhamelQ d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ}
+    (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ lemT (z n))
+    (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ)
+    (hϑ : ∀ᶠ n in atTop, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) :
+    STExpDuhEqQ sz (STflowE z) s t ϑ := by
+  filter_upwards [hϑ] with n hn
+  intro u σ a
+  exact hDu hd sz n (STflowE z n) (st6_flowE_lt_two sz hκ hflow n) C c (ϑ n) hn (s n) u (hs0 n) u.2.1
+    (lt_of_le_of_lt u.2.2 (st5_t_lt_one sz hflow htT n)) σ a
+
+/-- **A mollifier family** (`Def:QtPt`, `rmk:choosechi`): from the proved `stMollifierEx_holds` (`Induction/QopAlgebra.lean`) at `m = 1`,
+`Λ = 𝔡⁻¹`; `STMollifierProps` holds eventually (`0 < lam n ≤ 𝔡⁻¹` eventually by `(eq:WO)`). -/
+theorem st6_mollifier_family (hd : 3 ≤ d) {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) (hWO : sz.WO 𝔡) :
+    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ,
+      ∀ᶠ n in atTop, STMollifierProps (d := d) (sz.lam n) C c (ϑ n) := by
+  obtain ⟨C, c, hC, hc, hex⟩ := stMollifierEx_holds d hd 1 𝔡⁻¹ (inv_pos.2 h𝔡)
+  have hall : ∀ n, ∃ ϑ : ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ,
+      (0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹) → STMollifierProps (d := d) (sz.lam n) C c ϑ := by
+    intro n
+    by_cases h : 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹
+    · obtain ⟨ϑ, hϑ⟩ := hex (sz.L n) (sz.three_le_L n) (sz.lam n) h.1 h.2
+      exact ⟨ϑ, fun _ => hϑ⟩
+    · exact ⟨fun _ _ => 0, fun h' => absurd h' h⟩
+  choose ϑ hϑ using hall
+  refine ⟨C, c, hC, hc, ϑ, ?_⟩
+  filter_upwards [st6_lam_pos sz hWO, hWO] with n hn1 hn2
+  exact hϑ n ⟨hn1, hn2.2⟩
+
+/-- **Step 6, regime (ii), from its ingredient statements.**  The drift bounds are those of the window (`STExpLKLKHi`, `LWtermEXP`); the integrated statement `STExpIntII`
+gives `Q^{({1,2})} f_u` (`σ₁ ≠ σ₂`) and `f_u` (`σ₁ = σ₂`, `A = ∅`) from the initial terms
+`st6_ini_nonzero` (`(sum_res_Ndecay_nonzero)`, constant `1`); `f_u = Q^{({1,2})} f_u + (f_u - Q^{({1,2})} f_u)` and the Ward
+decomposition `STExpWardII` (`≺ B³ ≤ T`) close `σ₁ ≠ σ₂`; the two sign classes are glued by `st6_cover_exp2U`. -/
+theorem ST_step6_caseII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hAvg : STImproveExpAver d)
+    (hDu : STExpDuhamelZ d) (hInt : STExpIntII d) (hWd : STExpWardII d) : STStep6II d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₁, hc₁, hc₁', H₁⟩ := hLK hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₂, hc₂, hc₂', H₂⟩ := hInt hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨c₃, hc₃, hc₃', H₃⟩ := hWd hd κ ε 𝔡 hκ hε h𝔡
+  have hcpos : 0 < min c₁ (min c₂ c₃) := lt_min hc₁ (lt_min hc₂ hc₃)
+  refine ⟨min c₁ (min c₂ c₃), hcpos, (min_le_left _ _).trans hc₁', ?_⟩
+  intro 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp hcon hS2 hLmax hLKU hS5
+  have ht1 := st5_t_lt_one sz hflow htT
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hHi := st6_hi_of_reg5II sz hR
+  have hAvgU := st6_expAvgU_of_pin sz hAvg hd hκ hε h𝔡 hflow hs0 hst htT hS2 hLKU
+  have hlk := H₁ 𝔠 sz z hflow s t hs0 hst htT hHi hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos (min_le_left _ _)) hS2 hLmax hLKU hS5
+  have hegt := st6_EGtHi_of_LW sz hLW hd hκ hε h𝔡 hflow hs0 hst htT hHi hS2 hLmax hLKU hS5
+  have hduh := st6_duhEq_of_pin sz hDu hd hκ hflow hs0 htT
+  have hint := H₂ 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos ((min_le_right _ _).trans (min_le_left _ _))) hS2 hLmax hLKU hS5
+    hduh ⟨hlk, hegt⟩
+  have hward := H₃ 𝔠 sz z hflow s t hs0 hst htT hR hLK0 hDec hExp
+    (st5_conStInd_mono sz hcon ht1 hcpos ((min_le_right _ _).trans (min_le_right _ _))) hS2 hLmax hLKU hS5
+    hAvgU
+  have hsg : ∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n := fun n => by linarith [(hR n).2]
+  have hT0 : ∀ n (u : ℝ), u ≤ t n → 0 ≤ STExpTarget sz n u := fun n u hu =>
+    st6_target_nonneg sz n (lt_of_le_of_lt hu (ht1 n))
+  -- initial terms: `(sum_res_Ndecay_nonzero)`
+  have hiniM := st6_ini_nonzero sz hd hκ hflow hs0 hst htT hsg hExp (Finset.univ : Finset (Fin 2)) STSigMixed
+    (fun σ _ i _ => Finset.mem_univ i)
+  have hiniS := st6_ini_nonzero sz hd hκ hflow hs0 hst htT hsg hExp (∅ : Finset (Fin 2)) STSigSame
+    (fun σ hσ i hi => absurd hi (st6_Idiff_same hσ i))
+  have hmainM := hint.1 (fun n p => STExpTarget sz n (s n))
+    (fun n p => hT0 n (s n) (hst n).le) hiniM
+  have hmainS := hint.2 (fun n p => STExpTarget sz n (s n))
+    (fun n p => hT0 n (s n) (hst n).le) hiniS
+  -- `σ₁ = σ₂`
+  have hS : sz.Prec (U := STIdx2P sz STSigSame s t)
+      (fun n p _ => ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2‖)
+      (fun n p _ => STExpTarget sz n (p.1 : ℝ)) := by
+    simp only [st5_zeroModeSet_empty] at hmainS
+    refine st5_prec_mono sz hsz (c := 2) hmainS (Eventually.of_forall fun n p ω => ?_)
+      (fun n p ω => hT0 n _ p.1.2.2)
+    have := st6_target_mono sz n p.1.2.1 (lt_of_le_of_lt p.1.2.2 (ht1 n))
+    change STExpTarget sz n (s n) + STExpTarget sz n (p.1 : ℝ) ≤ 2 * STExpTarget sz n (p.1 : ℝ)
+    linarith
+  -- `σ₁ ≠ σ₂`
+  have hM : sz.Prec (U := STIdx2P sz STSigMixed s t)
+      (fun n p _ => ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2‖)
+      (fun n p _ => STExpTarget sz n (p.1 : ℝ)) := by
+    have hsum := StochDomAt.add (tendsto_size sz hsz) hmainM hward
+    have hsum' : sz.Prec (U := STIdx2P sz STSigMixed s t)
+        (fun n p _ => ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2‖)
+        (fun n p _ => (STExpTarget sz n (s n) + STExpTarget sz n (p.1 : ℝ)) + (sz.Bctl n (p.1 : ℝ)) ^ 3) := by
+      refine StochDomAt.of_le_left (fun n p ω => ?_) hsum
+      change ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2‖ ≤
+        ‖zeroModeSet d (sz.L n) (Finset.univ : Finset (Fin 2))
+          (fun b => STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 b) p.2.2‖ +
+        ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2 -
+          zeroModeSet d (sz.L n) (Finset.univ : Finset (Fin 2))
+            (fun b => STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 b) p.2.2‖
+      calc ‖STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2‖
+          = ‖zeroModeSet d (sz.L n) (Finset.univ : Finset (Fin 2))
+              (fun b => STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 b) p.2.2 +
+            (STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 p.2.2 -
+              zeroModeSet d (sz.L n) (Finset.univ : Finset (Fin 2))
+                (fun b => STExpErr sz n (STflowE z n) (p.1 : ℝ) p.2.1.1 b) p.2.2)‖ := by ring_nf
+        _ ≤ _ := norm_add_le _ _
+    refine st5_prec_mono sz hsz (c := 3) hsum' (Eventually.of_forall fun n p ω => ?_)
+      (fun n p ω => hT0 n _ p.1.2.2)
+    have h1 := st6_target_mono sz n p.1.2.1 (lt_of_le_of_lt p.1.2.2 (ht1 n))
+    have h2 := st6_cube_le_target sz n (lt_of_le_of_lt p.1.2.2 (ht1 n))
+    change STExpTarget sz n (s n) + STExpTarget sz n (p.1 : ℝ) + (sz.Bctl n (p.1 : ℝ)) ^ 3 ≤
+      3 * STExpTarget sz n (p.1 : ℝ)
+    linarith
+  exact st6_cover_exp2U sz (ξ := fun n u σ a => ‖STExpErr sz n (STflowE z n) (u : ℝ) σ a‖)
+    (ζ := fun n u _ _ => STExpTarget sz n (u : ℝ)) hsz (P₁ := STSigSame) (P₂ := STSigMixed)
+    (fun σ => by by_cases h : σ 0 = σ 1 <;> simp [STSigSame, STSigMixed, h]) hS hM
+
+end RBM.Gauss.Sizes
+
+
+

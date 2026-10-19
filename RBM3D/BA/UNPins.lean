@@ -1,0 +1,660 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.BA.FlowPins
+import RBM3D.Universality.PinsC2
+import RBM3D.Endpoints
+import RBM3D.Defs.Neighbours
+import Mathlib.Analysis.Matrix.Spectrum
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+/-!
+# The statements of the block Anderson kind for the universality argument
+
+The model `UNModelC.ba` and the kind `UNKind.ba` of the block Anderson matrix `H = V + λΨ` ((2.30) `eq:H_blocka`), the block Anderson statements that the universality argument consumes
+(`UNLocAvgBA`, `UNMLOutBA`, `UNEMCTE2RowBA`, `UNDensBARow'`, `UNTrLocalBARow`, `UNTrLocalInitBARow'`, `UNNormBARow`, `BAEnd_QUEL`, `BAEnd_BUnivL`), the centred flow, the extreme `λ = 0`,
+the bad event of one block, and the class sequences used for instances.  The density statement uses `UNDens'` (`UNDensBARow'`), the initial-data statement `UNTrLocalInit'`
+(`UNTrLocalInitBARow'`), and the `(Meq:QUE2)` half of `BAEnd_QUEL` is the existing `RBM.Endpoints.que2BadMat`.
+Every block Anderson law is `Sizes.seqP (sz.withLam 0)` (`UNModel.ba`).
+
+Sections: 1 the model `UNModelC.ba` and the kind `UNKind.ba`; 2 the consumed statements `UNLocAvgBA`, `UNMLOutBA`, `UNEMCTE2RowBA`; 3 the statements of the core and `unMeanBound_ba`; 4 the end statements
+`BAEnd_QUEL`, `BAEnd_BUnivL`; 5 the centred flow; 6 the `λ = 0` extreme; 7 the bad event of one block; 8 the class sequences (`RBM.BA.UNPinsInst`) and the instance
+`RBM.Univ.BAInst`.
+-/
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unusedVariables false
+set_option linter.style.setOption false
+
+noncomputable section
+
+open MeasureTheory ProbabilityTheory Filter Matrix Topology
+open scoped NNReal ENNReal Kronecker
+
+namespace RBM.Univ
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA
+
+/-! ## 1. The model `UNModelC.ba` and the kind `UNKind.ba` -/
+
+/-- The block Anderson model with its mean ((2.30) `eq:H_blocka`): `UNModel.ba` (law
+`Sizes.seqP (sz.withLam 0)`, matrix `Sizes.seqHBA sz`) and the deterministic mean `E H = λ Ψ` that the centred OU flow
+holds fixed. -/
+def UNModelC.ba {d : ℕ} (sz : Sizes d) : UNModelC sz :=
+  { UNModel.ba sz with
+    mean := fun n => (sz.lam n : ℂ) • PsiI d (sz.L n) (sz.W n)
+    mean_herm := fun n => by
+      unfold Matrix.IsHermitian
+      rw [Matrix.conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
+        show star (sz.lam n : ℂ) = (sz.lam n : ℂ) from Complex.conj_ofReal _] }
+
+/-- The block Anderson kind: `UNModelC.ba`, profile coupling `0` (`S^{(B)}(0) = I`, (2.29) `bandcwV`), bulk
+`ρ_N(E) ≥ κ` (`BAbulk`), `m = m(·, λ)` of `(self_m)` (`BAm`). -/
+def UNKind.ba (d : ℕ) : UNKind d where
+  M := UNModelC.ba
+  lamV := fun _ _ => 0
+  bulk := fun sz κ E n => BAbulk d (sz.L n) (sz.lam n) κ E
+  mdet := fun sz n => BAm d (sz.L n) (sz.lam n)
+
+/-! ## 2. The consumed statements `UNLocAvgBA`, `UNMLOutBA`, `UNEMCTE2RowBA` -/
+
+section Consumed
+
+/-- `(G_bound_ave)` of the block Anderson model (`UNLocAvgk` at `UNKind.ba`). -/
+def UNLocAvgBA : Prop := UNLocAvgk (fun d => UNKind.ba d)
+
+/-- The flow outputs `ML:GLoop`, `ML:GLoop_expec`, `ML:GtLocal` of the block Anderson flow at
+every time sequence `0 ≤ t_n ≤ t₀_n` ((8.1) `eq:t0E0_BA`): the conclusions of `lem:main_ind_BA` over the carrier
+`baFMz` under the law `seqP (sz.withLam 0)`.
+It has the shape of the band `UNMLOut` with `STFlow ↦ BAFlow`, `lemT ↦ BAflowT0`, `STLK ↦ STLKgL …`.  It is supplied by
+`unMLOutBA_of_famStep` (`BA/MainIndOutBA`). -/
+def UNMLOutBA (d : ℕ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 𝔠 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ),
+    BAFlow sz κ ε 𝔠 𝔡 z → ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
+      STLKgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ∧ STLmaxgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ∧
+        STDecaygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ∧ STExp2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ∧
+        STLocalEntrygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t
+
+end Consumed
+
+section Rows
+
+/-- `UNEMCTE2RowBA`: the weighted [DYYY25, (2.21)] of the block Anderson kind (`UNEMCTE2Rowk` at `UNKind.ba`). -/
+def UNEMCTE2RowBA : Prop := UNEMCTE2Rowk (fun d => UNKind.ba d)
+
+end Rows
+
+/-! ## 3. The statements of the core and the mean bound -/
+
+section BAInputs
+
+/-- The density statement `UNDensBARow'`: the regularity data of `UNDens'` for `m = m(·, λ_n)`, `ρ_N = π⁻¹ Im m(E + i0)`, and the bulk
+stability of the window: there is `δ₀ > 0` (depending on `κ`, `E`) such that for `δ ≤ δ₀` the window
+`|x - E| ≤ δ` stays in the `κ/2`-bulk.  The uniform
+modulus of `(z, λ) ↦ m(z, λ)` is not part of it.  It is proved as `unDensBARow'_holds` (`BA/MReg`). -/
+def UNDensBARow' : Prop :=
+  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) κ E) →
+      ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ : ℝ, 0 < δ → δ ≤ δ₀ →
+        UNDens' (fun n => BAm d (sz.L n) (sz.lam n)) E (fun n => BArho d (sz.L n) (sz.lam n) E) δ ∧
+          ∀ x : ℝ, |x - E| ≤ δ → ∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) (κ / 2) x
+
+/-- The tracial law of `H`, `UNTrLocalBARow`: `UNTrLocal` of the block Anderson model at `m(·, λ_n)` from `(G_bound_ave)` (the
+average over the `L^d` blocks of the block averages).  Its per-`d` form is `UNTrLocalBAAt` (`BA/MAPins`). -/
+def UNTrLocalBARow : Prop :=
+  UNLocAvgBA → ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) κ E) → ∀ δ : ℝ, 0 < δ →
+      (∀ x : ℝ, |x - E| ≤ δ → ∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) (κ / 2) x) →
+        UNTrLocal sz (UNModelC.ba sz).toUNModel (fun n => BAm d (sz.L n) (sz.lam n)) E δ
+
+/-- The initial-data local law, `UNTrLocalInitBARow'`: `UNTrLocalInit'` of the block Anderson model at `m(·, λ_n)`.  The initial
+matrix is `ouInit = e^{-t*/2} (V + λ̂ Ψ)`, the block Anderson matrix at the coupling `λ̂ = λ e^{t*/2}`, i.e. the model
+at `sz.withLam (lamHat sz (ouTStar sz τs))`, admissible at `(𝔠, 𝔡/2)` by `admissible_lamHat`; the local law at `λ̂` and
+the shift `|a⁻¹ m(z/a; λ̂) - m(z; λ)| ≤ C t*` are absorbed by the tolerance `W^τ (Bctl + t*)`. -/
+def UNTrLocalInitBARow' : Prop :=
+  UNLocAvgBA → ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) κ E) → ∀ δ : ℝ, 0 < δ →
+      (∀ x : ℝ, |x - E| ≤ δ → ∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) (κ / 2) x) →
+        UNTrLocalInit' sz (UNModelC.ba sz) (fun n => BAm d (sz.L n) (sz.lam n)) E δ
+
+/-- The norm bound, `UNNormBARow`: `(2.3)` of Landon-Sosoe-Yau (arXiv:1609.09011v4) for `H = V + λ Ψ`: `‖H‖ ≤ ‖V‖ + λ ‖Ψ‖`, `‖Ψ‖ ≤ 2d`,
+`λ ≤ 𝔡⁻¹`, `‖V‖ ≤ N` with probability `≥ 1 - N^{-D}` (Gaussian tails). -/
+def UNNormBARow : Prop :=
+  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz (UNModelC.ba sz).toUNModel CV₀
+
+end BAInputs
+
+section MeanBound
+
+/-- Weyl-type bound by the maximal absolute row sum (the argument of the private `FlowPins_eig_le`,
+`BA/FlowPins`, at a general Hermitian matrix): if every row of `A` has
+`∑ j ‖A i j‖ ≤ R`, every eigenvalue of `A` has modulus `≤ R` (take an index of maximal `‖v i‖` in an eigenvector). -/
+private theorem UNPins_eig_le_rowsum {ι : Type} [Fintype ι] [DecidableEq ι] {A : Matrix ι ι ℂ}
+    (hA : A.IsHermitian) {R : ℝ} (hR : ∀ i, ∑ j, ‖A i j‖ ≤ R) (j : ι) : |hA.eigenvalues j| ≤ R := by
+  classical
+  have : Nonempty ι := ⟨j⟩
+  set v : ι → ℂ := ⇑(hA.eigenvectorBasis j) with hv
+  have hvne : ∃ k, v k ≠ 0 := by
+    have h0 := (hA.eigenvectorBasis.orthonormal).ne_zero j
+    by_contra hno
+    push Not at hno
+    apply h0
+    ext k
+    exact hno k
+  have heq : A *ᵥ v = ((hA.eigenvalues j : ℝ) : ℂ) • v := hA.mulVec_eigenvectorBasis j
+  obtain ⟨i, hi⟩ := Finite.exists_max (fun k => ‖v k‖)
+  obtain ⟨k0, hk0⟩ := hvne
+  have hvi : v i ≠ 0 := by
+    intro h
+    apply hk0
+    have := hi k0
+    rw [h, norm_zero] at this
+    exact norm_le_zero_iff.mp this
+  have hrow := congrFun heq i
+  simp only [Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul] at hrow
+  have hnorm : ‖((hA.eigenvalues j : ℝ) : ℂ)‖ * ‖v i‖ ≤ R * ‖v i‖ := by
+    calc ‖((hA.eigenvalues j : ℝ) : ℂ)‖ * ‖v i‖ = ‖((hA.eigenvalues j : ℝ) : ℂ) * v i‖ := (norm_mul _ _).symm
+      _ = ‖∑ b, A i b * v b‖ := by rw [hrow]
+      _ ≤ ∑ b, ‖A i b * v b‖ := norm_sum_le _ _
+      _ ≤ ∑ b, ‖A i b‖ * ‖v i‖ := by
+          refine Finset.sum_le_sum fun b _ => ?_
+          rw [norm_mul]
+          exact mul_le_mul_of_nonneg_left (hi b) (norm_nonneg _)
+      _ = (∑ b, ‖A i b‖) * ‖v i‖ := by rw [Finset.sum_mul]
+      _ ≤ R * ‖v i‖ := mul_le_mul_of_nonneg_right (hR i) (norm_nonneg _)
+  have hpos : 0 < ‖v i‖ := norm_pos_iff.mpr hvi
+  have := le_of_mul_le_mul_right hnorm hpos
+  simpa using this
+
+/-- The row sum of `Ψ` on the fine lattice: `∑_y |Ψ_{xy}| = 2d` for `L ≥ 3` (one nonzero offset per neighbouring block,
+`Ψ = Ψ^{(B)} ⊗ I_{W^d}` through `splitEquiv`; `RBM.card_adj`). -/
+private theorem UNPins_psiI_rowsum (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (x : Idx d L W) :
+    ∑ y, ‖PsiI d L W x y‖ = 2 * d := by
+  classical
+  have h1 : ∀ y, ‖PsiI d L W x y‖ =
+      ‖PsiV d L W (splitEquiv d L W x) (splitEquiv d L W y)‖ := fun y => rfl
+  simp_rw [h1]
+  rw [Equiv.sum_comp (splitEquiv d L W) (fun v => ‖PsiV d L W (splitEquiv d L W x) v‖)]
+  obtain ⟨a, p⟩ := splitEquiv d L W x
+  rw [Fintype.sum_prod_type]
+  have h2 : ∀ (b : Zd d L), ∑ q : Fin (W ^ d), ‖PsiV d L W (a, p) (b, q)‖ = ‖PsiB d L a b‖ := by
+    intro b
+    simp only [PsiV, Matrix.kroneckerMap_apply, Matrix.one_apply, mul_ite, mul_one, mul_zero]
+    simp [apply_ite norm, eq_comm]
+  simp_rw [h2]
+  have h3 : ∀ b : Zd d L, ‖PsiB d L a b‖ = if Adj d L a b then (1 : ℝ) else 0 := by
+    intro b
+    simp only [PsiB, Matrix.of_apply]
+    by_cases h : Adj d L a b <;> simp [h]
+  simp_rw [h3]
+  rw [Finset.sum_boole]
+  exact_mod_cast RBM.card_adj d L hL a
+
+/-- `1 ≤ N` at every size index. -/
+private theorem UNPins_one_le_Nsz {d : ℕ} (sz : Sizes d) (n : ℕ) : (1 : ℝ) ≤ Nsz sz n := by
+  have h1 : 1 ≤ sz.size n := by
+    simp only [Sizes.size]
+    have := sz.three_le_L n
+    have := sz.W_pos n
+    exact Nat.one_le_pow _ _ (Nat.mul_pos (sz.W_pos n) (by omega))
+  exact_mod_cast h1
+
+/-- The norm bound is monotone in the exponent: `UNNormBound sz M a → a ≤ b → UNNormBound sz M b`
+(`1 ≤ N`, `Real.rpow_le_rpow_of_exponent_le`, `measure_mono`). -/
+private theorem UNPins_normBound_mono {d : ℕ} {sz : Sizes d} {M : UNModel sz} {a b : ℝ}
+    (h : UNNormBound sz M a) (hab : a ≤ b) : UNNormBound sz M b := by
+  intro D hD
+  filter_upwards [h D hD] with n hn
+  refine le_trans (measure_mono ?_) hn
+  rintro ω ⟨i, hi⟩
+  exact ⟨i, lt_of_le_of_lt (Real.rpow_le_rpow_of_exponent_le (UNPins_one_le_Nsz sz n) hab) hi⟩
+
+/-- `UNMeanBound` of the block Anderson mean (`‖λΨ‖ ≤ 2d 𝔡⁻¹ ≤ N^{CV₀}` eventually for `CV₀ > 0`): the eigenvalues of `λ_n Ψ` on the fine lattice are `≤ 2d |λ_n|` in modulus (maximal row sum,
+`UNPins_eig_le_rowsum`, `UNPins_psiI_rowsum`), `λ_n ≤ 𝔡⁻¹` eventually (`(eq:WO)`), and `2d 𝔡⁻¹ ≤ N^{CV₀}` eventually
+(`N → ∞`). -/
+theorem unMeanBound_ba {d : ℕ} (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) (CV₀ : ℝ) (hCV : 0 < CV₀) :
+    UNMeanBound sz (UNModelC.ba sz) CV₀ := by
+  obtain ⟨h𝔠, h𝔡, hT, hB, hW⟩ := hA
+  have hlim : Tendsto (fun n => Nsz sz n ^ CV₀) atTop atTop := (tendsto_rpow_atTop hCV).comp hT
+  filter_upwards [hW, hlim.eventually_ge_atTop (2 * (d : ℝ) * 𝔡⁻¹)] with n hn hN i
+  obtain ⟨h1, h2⟩ := hn
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hl0 : 0 ≤ sz.lam n := le_trans (Real.rpow_nonneg hW0.le _) h1
+  have hrow : ∀ x, ∑ y, ‖(UNModelC.ba sz).mean n x y‖ ≤ 2 * (d : ℝ) * 𝔡⁻¹ := by
+    intro x
+    have e : ∀ y, ‖(UNModelC.ba sz).mean n x y‖ = sz.lam n * ‖PsiI d (sz.L n) (sz.W n) x y‖ := by
+      intro y
+      change ‖((sz.lam n : ℝ) : ℂ) * PsiI d (sz.L n) (sz.W n) x y‖ = _
+      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hl0]
+    simp_rw [e]
+    rw [← Finset.mul_sum, UNPins_psiI_rowsum d (sz.L n) (sz.W n) (sz.three_le_L n) x]
+    calc sz.lam n * (2 * (d : ℝ)) ≤ 𝔡⁻¹ * (2 * (d : ℝ)) :=
+          mul_le_mul_of_nonneg_right h2 (by positivity)
+      _ = 2 * (d : ℝ) * 𝔡⁻¹ := by ring
+  exact (UNPins_eig_le_rowsum ((UNModelC.ba sz).mean_herm n) hrow i).trans hN
+
+end MeanBound
+
+end RBM.Univ
+
+/-! ## 4. The end statements `BAEnd_QUEL`, `BAEnd_BUnivL` -/
+
+namespace RBM.BA
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Univ
+
+/-- `(Meq:QUE)` and `(Meq:QUE2)` for the block Anderson matrix `sz.seqHBA` under the law `μ` (Theorem 2.3 `MR:QUE`, (2.18)): for energies in the ρ-bulk `{ρ_N ≥ κ}`, the failure
+event of the first half is `queBadMat` (per block `a`), of the second half `RBM.Endpoints.que2BadMat` (per nonempty block set `A`), the bound is `queBound`. -/
+def BAqueConclL {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (𝔡 κ ε₀ c τ : ℝ) : Prop :=
+  ∀ᶠ n in atTop, ∀ E : ℝ, BAbulk d (sz.L n) (sz.lam n) κ E →
+    (∀ a : Zd d (sz.L n),
+      μ {ω | queBadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E a (sz.seqHBA n ω)} ≤
+        queBound (sz.W n) 𝔡 ε₀ c τ) ∧
+    (∀ A : Finset (Zd d (sz.L n)), A.Nonempty →
+      μ {ω | RBM.Endpoints.que2BadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E A (sz.seqHBA n ω)} ≤
+        queBound (sz.W n) 𝔡 ε₀ c τ)
+
+/-- Theorem 2.3 (`MR:QUE`) for block Anderson (Theorem 2.7 `MR:decol_BA`, third bullet): the law of `H = V + λ Ψ` is `seqP (sz.withLam 0)`;
+`2 - κ ↦ e_λ - κ` is read as `ρ_N(E) ≥ κ`. -/
+def BAEnd_QUEL (d : ℕ) : Prop :=
+  3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ κ : ℝ, 0 < κ → ∀ ε₀ c τ : ℝ, 0 < ε₀ → ε₀ < 𝔡 / 2 → 0 < c → c < ε₀ → c < 𝔡 / 5 → 0 < τ →
+      BAqueConclL sz (Sizes.seqP (sz.withLam 0)) 𝔡 κ ε₀ c τ
+
+/-- Theorem 2.4 (`Thm: B_Univ`) for block Anderson (Theorem 2.7 `MR:decol_BA`, third bullet), in the dilated form
+`UNUnivDilAt` at the density `ρ_N(E) = π⁻¹ Im m(E + i0)` of `(self_m)` (`BArho`), for the model
+`UNModel.ba sz` (law `seqP (sz.withLam 0)`), `E` eventually in the ρ-bulk, `|E'| < 2`, `k ≥ 1`, `𝒪 ∈ C_c^∞(ℝ^k)`. -/
+def BAEnd_BUnivL (d : ℕ) : Prop :=
+  3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ k : ℕ, 1 ≤ k → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, BAbulk d (sz.L n) (sz.lam n) κ E) → ∀ E' : ℝ, |E'| < 2 →
+      ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
+        UNUnivDilAt sz (UNModel.ba sz) (fun n => BArho d (sz.L n) (sz.lam n) E) E E' k O
+
+end RBM.BA
+
+namespace RBM.Univ
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA
+
+/-! ## 5. The centred flow
+
+The centred block Anderson matrix at time `s_n` is the non-centred OU matrix of the model at the coupling
+`λ̂_n = λ_n e^{s_n/2}` (`ouMatC_eq_ouMat_add`), which is admissible at `(𝔠, 𝔡/2)` (`admissible_lamHat`); and the
+centred flow minus the mean `λΨ` is the band OU matrix of `sz.withLam 0` (`ouMatC_ba_eq_band_add`). -/
+
+section Centred
+
+variable {d : ℕ}
+
+/-- The coupling `λ̂_n = λ_n e^{s_n/2}`. -/
+def lamHat (sz : Sizes d) (s : ℕ → ℝ) : ℕ → ℝ := fun n => sz.lam n * Real.exp (s n / 2)
+
+/-- Translation identity of the centred flow: `𝐇_t^{BA} - λΨ` is the band OU matrix `ouMat (UNModel.band ·) n t`
+of `sz.withLam 0` (the block Anderson Gaussian part `V`, `S^{(B)}(0) = I`).  Every Gaussian-carrier fact of the OU flow
+is therefore the band fact at `sz.withLam 0`, translated by the constant `λΨ`. -/
+theorem ouMatC_ba_eq_band_add (sz : Sizes d) (n : ℕ) (t : ℝ)
+    (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
+    ouMatC (UNModelC.ba sz) n t ω - ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) =
+      ouMat (UNModel.band (sz.withLam 0)) n t ω := by
+  obtain ⟨V, hV⟩ : ∃ V : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ,
+      V = Matrix.of fun (i j : Idx d (sz.L n) (sz.W n)) => (sz.withLam 0).seqXmat n ω.1 i j := ⟨_, rfl⟩
+  have hH0 : (UNModelC.ba sz).H n ω.1 = ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + V := by
+    rw [hV]; rfl
+  have hm : (UNModelC.ba sz).mean n = ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) := rfl
+  have hb : (UNModel.band (sz.withLam 0)).H n ω.1 = V := by rw [hV]; rfl
+  unfold ouMatC ouMat
+  rw [hm, hH0, hb]
+  change ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) +
+        Real.exp (-t / 2) • (((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + V -
+          ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) +
+      Real.sqrt (1 - Real.exp (-t)) • Xmat d (sz.L n) (sz.W n) ω.2 -
+      ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) =
+    Real.exp (-t / 2) • V + Real.sqrt (1 - Real.exp (-t)) • Xmat d (sz.L n) (sz.W n) ω.2
+  rw [add_sub_cancel_left, add_assoc, add_sub_cancel_left]
+
+/-- The DBM initial matrix of the block Anderson model is the rescaled block Anderson matrix at the coupling
+`λ̂_n = λ_n e^{s_n/2}`: `A = e^{-s/2} (V + λ̂ Ψ)`. -/
+theorem ouInit_ba (sz : Sizes d) (s : ℕ → ℝ) (n : ℕ) (ω : Sizes.SeqΩ sz) :
+    ouInit (UNModelC.ba sz) n (s n) ω =
+      Real.exp (-(s n) / 2) • (UNModel.ba (sz.withLam (lamHat sz s))).H n ω := by
+  have hsc : ((Real.exp (-(s n) / 2) : ℝ) : ℂ) * ((lamHat sz s n : ℝ) : ℂ) = ((sz.lam n : ℝ) : ℂ) := by
+    rw [← Complex.ofReal_mul]
+    congr 1
+    unfold lamHat
+    rw [mul_comm (sz.lam n), ← mul_assoc, ← Real.exp_add]
+    have : -(s n) / 2 + s n / 2 = 0 := by ring
+    rw [this, Real.exp_zero, one_mul]
+  have e1 : (Real.exp (-(s n) / 2)) • (((lamHat sz s n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) =
+      ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) := by
+    rw [← Complex.coe_smul (Real.exp _), smul_smul, hsc]
+  obtain ⟨V, hV⟩ : ∃ V : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ,
+      V = Matrix.of fun (i j : Idx d (sz.L n) (sz.W n)) => (sz.withLam 0).seqXmat n ω i j := ⟨_, rfl⟩
+  have hH0 : (UNModelC.ba sz).H n ω = ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + V := by
+    rw [hV]; rfl
+  have hH : (UNModel.ba (sz.withLam (lamHat sz s))).H n ω =
+      ((lamHat sz s n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + V := by
+    rw [hV]; rfl
+  have hm : (UNModelC.ba sz).mean n = ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) := rfl
+  unfold ouInit
+  rw [hm, hH0, hH, add_sub_cancel_left]
+  change ((sz.lam n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + Real.exp (-(s n) / 2) • V =
+    Real.exp (-(s n) / 2) • (((lamHat sz s n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n) + V)
+  rw [smul_add, e1]
+
+/-- The shifted coupling is admissible: if `sz` is admissible at `(𝔠, 𝔡)` and `0 ≤ s_n ≤ 1`, then
+`sz.withLam λ̂` is admissible at `(𝔠, 𝔡/2)`: `(eq:WO)` with `𝔡/2` holds since `λ̂ ≥ λ ≥ W^{-d/2+𝔡} ≥ W^{-d/2+𝔡/2}` and
+`λ̂ ≤ e^{1/2} λ ≤ 2 𝔡⁻¹ = (𝔡/2)⁻¹` (`s_n = t*_n = N^{-1+τ_U} ≤ 1`). -/
+theorem admissible_lamHat {sz : Sizes d} {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) (s : ℕ → ℝ) (hs0 : ∀ n, 0 ≤ s n)
+    (hs1 : ∀ n, s n ≤ 1) : (sz.withLam (lamHat sz s)).Admissible 𝔠 (𝔡 / 2) := by
+  obtain ⟨h𝔠, h𝔡, hT, hB, hW⟩ := hA
+  refine ⟨h𝔠, by linarith, hT, hB, ?_⟩
+  filter_upwards [hW] with n hn
+  obtain ⟨h1, h2⟩ := hn
+  have hW1 : (1 : ℝ) ≤ (sz.W n : ℝ) := by exact_mod_cast sz.W_pos n
+  have hexp1 : 1 ≤ Real.exp (s n / 2) := Real.one_le_exp (by linarith [hs0 n])
+  have hexp2 : Real.exp (s n / 2) ≤ 2 := by
+    have hle : Real.exp (s n / 2) ≤ Real.exp (1 / 2) := Real.exp_le_exp.mpr (by linarith [hs1 n])
+    have hsq : Real.exp (1 / 2) * Real.exp (1 / 2) = Real.exp 1 := by
+      rw [← Real.exp_add]; norm_num
+    have h3 := Real.exp_one_lt_d9
+    have h4 := Real.exp_pos (1 / 2)
+    nlinarith
+  have hlam0 : 0 ≤ sz.lam n := le_trans (by positivity) h1
+  refine ⟨?_, ?_⟩
+  · calc (sz.W n : ℝ) ^ (-(d : ℝ) / 2 + 𝔡 / 2) ≤ (sz.W n : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) :=
+          Real.rpow_le_rpow_of_exponent_le hW1 (by linarith)
+      _ ≤ sz.lam n := h1
+      _ ≤ sz.lam n * Real.exp (s n / 2) := le_mul_of_one_le_right hlam0 hexp1
+  · calc sz.lam n * Real.exp (s n / 2) ≤ 𝔡⁻¹ * 2 := mul_le_mul h2 hexp2 (by positivity) (by positivity)
+      _ = (𝔡 / 2)⁻¹ := by field_simp
+
+/-! ## 6. The extreme input `λ = 0`: no mean, `S^{(B)}(0) = I`, the block Anderson model is the band model of
+`sz.withLam 0` -/
+
+end Centred
+
+end RBM.Univ
+
+/-! ## 7. The bad event `𝓑(y)` for the block Anderson model: one block
+
+`UNBadY lamV 𝔡 E y M` uses the profile coupling `lamV` only in `M_{y,α} = N ∑_x |ψ_α(x)|² S°_{xy}`, `S = S^{(B)}(lamV)`;
+the QUE window of the conclusion carries the other coupling `lamQ` (`λ`).  For the band model they coincide
+(`unBadY_subset`); for block Anderson `lamV = 0`, `S^{(B)}(0) = I`: `M_{y,α}` is the QUE quantity of the single
+block `[a(y)]` (`unBadYBA_subset`) and `ℙ(𝓑(y)) ≤ p` with no factor `2d + 1` (`unBadYBA_measure_le`; the band
+`unBadY_measure_le` has `(2d+1) p`).  The exponent `c' = 𝔠𝔡/30` is unchanged (the factor is absorbed by `W^{τ/2}` in both
+cases). -/
+
+namespace RBM.Univ
+
+open RBM RBM.Gauss RBM.Gauss.Sizes
+
+section BadY2
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- `𝓑(y) ⊆` the union of the block QUE bad events over the support of `S^{(B)}(lamV)` with two couplings (the band `unBadY_subset`, with `lam` split into `lamV` (weights) and `lamQ` (QUE window)). -/
+theorem unBadY_subset' (hL : 3 ≤ L) {lamV lamQ 𝔡 E : ℝ} (hW : 1 ≤ (W : ℝ)) (h𝔡 : 0 < 𝔡)
+    (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lamQ) (y : Idx d L W)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (h : UNBadY d L W lamV 𝔡 E y M) :
+    ∃ b : Zd d L, SBR d L lamV b (split d L W y).1 ≠ 0 ∧
+      queBadMat d L W lamQ (𝔡 / 3) (𝔡 / 6) E b M := by
+  obtain ⟨μ, ψ, hb, α, hα, hθ⟩ := h
+  have hW0 : (0 : ℝ) < (W : ℝ) := lt_of_lt_of_le one_pos hW
+  have hN : (0 : ℝ) < (((W * L) ^ d : ℕ) : ℝ) := by
+    have : 0 < (W * L) ^ d := pow_pos (Nat.mul_pos (Nat.pos_of_ne_zero (NeZero.ne W))
+      (Nat.pos_of_ne_zero (NeZero.ne L))) _
+    exact_mod_cast this
+  have hWd : (0 : ℝ) < (W : ℝ) ^ d := by positivity
+  -- the unit vector `ψ α`
+  have hnorm : ∑ x, ‖ψ α x‖ ^ 2 = 1 := by
+    have h1 := hb.1 α α
+    simp only [ite_true, dotProduct] at h1
+    have h2 : ∑ x, ((‖ψ α x‖ ^ 2 : ℝ) : ℂ) = 1 := by
+      rw [← h1]
+      refine Finset.sum_congr rfl fun x _ => ?_
+      change ((‖ψ α x‖ ^ 2 : ℝ) : ℂ) = star (ψ α x) * ψ α x
+      rw [Complex.star_def, Complex.conj_mul']
+      push_cast; ring
+    exact_mod_cast h2
+  set a := (split d L W y).1 with ha
+  set N : ℝ := (((W * L) ^ d : ℕ) : ℝ) with hNdef
+  set S : Zd d L → ℝ := fun b => ∑ x ∈ Iblk d L W b, ‖ψ α x‖ ^ 2 with hS
+  set u : Zd d L → ℝ := fun b => N / (W : ℝ) ^ d * S b - 1 with hu
+  have hrow : ∑ b : Zd d L, SBR d L lamV b a = 1 := by
+    simp_rw [SBR_comm _ a]
+    exact sum_SBR_row hL a
+  have hwnn : ∀ b, 0 ≤ SBR d L lamV b a := fun b => sbKernelR_nonneg d L lamV _
+  have hM := unMy_eq hL lamV (ψ α) hnorm y
+  have hθ' : (W : ℝ) ^ (-(𝔡 / 6)) ≤ |∑ b, SBR d L lamV b a * u b| := by rw [← hM]; exact hθ
+  by_contra hcon
+  push Not at hcon
+  -- every block of positive weight has `|u b| < θ`
+  have hlt : ∀ b, SBR d L lamV b a ≠ 0 → |u b| < (W : ℝ) ^ (-(𝔡 / 6)) := by
+    intro b hb0
+    by_contra hge
+    push Not at hge
+    refine hcon b hb0 ⟨μ, ψ, hb, α, α, ?_, ?_, ?_⟩
+    · have := un_window_sub (d := d) hW hN h𝔡 hlam
+      exact hα.trans this
+    · have := un_window_sub (d := d) hW hN h𝔡 hlam
+      exact hα.trans this
+    · -- the block quantity
+      have hSb : (∑ x ∈ Iblk d L W b, star (ψ α x) * ψ α x) = ((S b : ℝ) : ℂ) := by
+        rw [hS]; push_cast
+        refine Finset.sum_congr rfl fun x _ => ?_
+        rw [Complex.star_def, Complex.conj_mul']
+      simp only [ite_true, mul_one]
+      rw [hSb]
+      have : ((S b : ℝ) : ℂ) - (W : ℂ) ^ d / (((W * L) ^ d : ℕ) : ℂ) =
+          (((S b - (W : ℝ) ^ d / N) : ℝ) : ℂ) := by
+        rw [hNdef]; push_cast; ring
+      rw [this, Complex.norm_real, Real.norm_eq_abs]
+      have hrel : S b - (W : ℝ) ^ d / N = (W : ℝ) ^ d / N * u b := by
+        rw [hu]; field_simp
+      rw [hrel, abs_mul, abs_of_pos (by positivity : 0 < (W : ℝ) ^ d / N)]
+      have hWc : (W : ℝ) ^ ((d : ℝ) - 𝔡 / 6) = (W : ℝ) ^ d * (W : ℝ) ^ (-(𝔡 / 6)) := by
+        rw [sub_eq_add_neg, Real.rpow_add hW0, Real.rpow_natCast]
+      rw [hWc]
+      calc (W : ℝ) ^ d * (W : ℝ) ^ (-(𝔡 / 6)) / N
+          = (W : ℝ) ^ d / N * (W : ℝ) ^ (-(𝔡 / 6)) := by ring
+        _ ≤ (W : ℝ) ^ d / N * |u b| := by gcongr
+  -- contradiction with `θ ≤ |∑ w u|`
+  obtain ⟨b₀, hb₀⟩ : ∃ b₀, SBR d L lamV b₀ a ≠ 0 := by
+    by_contra h0; push Not at h0
+    simp [h0] at hrow
+  have hsum : ∑ b, SBR d L lamV b a * |u b| < ∑ b, SBR d L lamV b a * (W : ℝ) ^ (-(𝔡 / 6)) := by
+    refine Finset.sum_lt_sum (fun b _ => ?_) ⟨b₀, Finset.mem_univ _, ?_⟩
+    · by_cases hz : SBR d L lamV b a = 0
+      · simp [hz]
+      · exact mul_le_mul_of_nonneg_left (hlt b hz).le (hwnn b)
+    · exact mul_lt_mul_of_pos_left (hlt b₀ hb₀) (lt_of_le_of_ne (hwnn b₀) (Ne.symm hb₀))
+  have habs : |∑ b, SBR d L lamV b a * u b| ≤ ∑ b, SBR d L lamV b a * |u b| := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans (le_of_eq ?_)
+    refine Finset.sum_congr rfl fun b _ => ?_
+    rw [abs_mul, abs_of_nonneg (hwnn b)]
+  rw [← Finset.sum_mul, hrow, one_mul] at hsum
+  linarith
+
+/-- At `lamV = 0`, `S^{(B)}(0) = I`: the weight `SBR 0 b a` is nonzero only at `b = a`. -/
+theorem SBR_zero_ne {b a : Zd d L} (h : SBR d L 0 b a ≠ 0) : b = a := by
+  by_contra hne
+  apply h
+  have h1 : b - a ≠ 0 := sub_ne_zero.mpr hne
+  simp [SBR, sbKernelR, h1]
+
+/-- The block Anderson bad event is a single-block QUE bad event (`lamV = 0`): `𝓑(y)` is contained in the QUE bad event at the block of `y`. -/
+theorem unBadYBA_subset (hL : 3 ≤ L) {lamQ 𝔡 E : ℝ} (hW : 1 ≤ (W : ℝ)) (h𝔡 : 0 < 𝔡)
+    (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lamQ) (y : Idx d L W)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (h : UNBadY d L W 0 𝔡 E y M) :
+    queBadMat d L W lamQ (𝔡 / 3) (𝔡 / 6) E (split d L W y).1 M := by
+  obtain ⟨b, hb, hq⟩ := unBadY_subset' hL hW h𝔡 hlam y M h
+  rwa [SBR_zero_ne hb] at hq
+
+/-- `ℙ(𝓑(y)) ≤ p` for block Anderson: if `(Meq:QUE)` holds with bound `p` at every block for the random matrix `Mf`,
+then `𝓑(y)` has probability `≤ p` (the band `unBadY_measure_le` has `(2d+1) p`). -/
+theorem unBadYBA_measure_le {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) (hL : 3 ≤ L)
+    {lamQ 𝔡 E : ℝ} (hW : 1 ≤ (W : ℝ)) (h𝔡 : 0 < 𝔡)
+    (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lamQ) (y : Idx d L W)
+    (Mf : Ω → Matrix (Idx d L W) (Idx d L W) ℂ) (p : ℝ≥0∞)
+    (hp : ∀ b : Zd d L, μ {ω | queBadMat d L W lamQ (𝔡 / 3) (𝔡 / 6) E b (Mf ω)} ≤ p) :
+    μ {ω | UNBadY d L W 0 𝔡 E y (Mf ω)} ≤ p :=
+  (measure_mono fun ω hω => unBadYBA_subset hL hW h𝔡 hlam y (Mf ω) hω).trans (hp _)
+
+end BadY2
+
+end RBM.Univ
+
+/-! ## 8. Class sequences and instances at `d = 3`
+
+(a) `RBM.BA.UNPinsInst`: the class sequences, on the flow point of `MFixedPointInst.FlowPt`; the uniqueness statement `BAmUniqReal 3` is the proved `baMUniqReal_holds 3`.
+(b) `RBM.Univ.BAInst`: the class sequence `(L, g) = (4, 3/10)` (constant `L = 4`, constant coupling
+`g₀ = (fp 4 _).g0 ≤ 3/10`, `W_n = (2(n+1))^5`, admissible at `(𝔠, 𝔡) = (1/6, 1/10)`, `κ_* > 0`, the energy
+`E_* = (fp 4 _).E` in the ρ-bulk), with the nonemptiness of the domain of `(G_bound_ave)`. -/
+
+namespace RBM.BA.UNPinsInst
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA.MFixedPointInst
+
+/-- A chosen flow point (over `MFixedPointInst.FlowPt`). -/
+noncomputable def fp (L : ℕ) [NeZero L] {g : ℝ} (hg : 0 < g) : FlowPt L g := (exists_flowPt L hg).some
+
+/-- The flow point has `κ_* = Im m₀ > 0`. -/
+theorem fp_kappa_pos (L : ℕ) [NeZero L] {g : ℝ} (hg : 0 < g) : 0 < (fp L hg).m0.im := (fp L hg).real.1.1
+
+/-- The class sequence: constant `L ≥ 3`, `W_n = (2(n+1))⁵`, constant coupling `g₀`. -/
+def clsSz (L : ℕ) (hL : 3 ≤ L) (g0 : ℝ) : Sizes 3 where
+  L := fun _ => L
+  W := fun n => (2 * (n + 1)) ^ 5
+  lam := fun _ => g0
+  three_le_L := fun _ => hL
+  W_pos := fun n => by positivity
+
+/-- `L ≤ W_n` for `n ≥ L` along the class sequence. -/
+theorem clsSz_L_le_W (L : ℕ) (hL : 3 ≤ L) (g0 : ℝ) (n : ℕ) (hn : L ≤ n) :
+    (clsSz L hL g0).L n ≤ (clsSz L hL g0).W n := by
+  have h2 : 2 * (n + 1) ≤ (2 * (n + 1)) ^ 5 := Nat.le_self_pow (by norm_num) _
+  change L ≤ (2 * (n + 1)) ^ 5
+  omega
+
+/-- `N_n → ∞` along the class sequence. -/
+theorem clsSz_tendsto (L : ℕ) (hL : 3 ≤ L) (g0 : ℝ) : (clsSz L hL g0).SizeTendsto := by
+  refine tendsto_atTop_mono (fun n => ?_) tendsto_natCast_atTop_atTop
+  have h1 : 2 * (n + 1) ≤ (2 * (n + 1)) ^ 5 := Nat.le_self_pow (by norm_num) _
+  have h2 : (2 * (n + 1)) ^ 5 ≤ (2 * (n + 1)) ^ 5 * L := Nat.le_mul_of_pos_right _ (by omega)
+  have h3 : (2 * (n + 1)) ^ 5 * L ≤ ((2 * (n + 1)) ^ 5 * L) ^ 3 := Nat.le_self_pow (by norm_num) _
+  have h4 : n ≤ (clsSz L hL g0).size n := by
+    change n ≤ ((2 * (n + 1)) ^ 5 * L) ^ 3
+    omega
+  exact_mod_cast h4
+
+/-- `(Main_DEL_COND)` along the class sequence at `𝔠 = 1/6`. -/
+theorem clsSz_bandwidth (L : ℕ) (hL : 3 ≤ L) (g0 : ℝ) : (clsSz L hL g0).Bandwidth (1 / 6) := by
+  rw [Sizes.Bandwidth, Filter.eventually_atTop]
+  refine ⟨L, fun n hn => ?_⟩
+  have hle := clsSz_L_le_W L hL g0 n hn
+  have h : (clsSz L hL g0).size n ≤ ((clsSz L hL g0).W n) ^ 6 := by
+    calc (clsSz L hL g0).size n = ((clsSz L hL g0).W n * (clsSz L hL g0).L n) ^ 3 := rfl
+      _ = ((clsSz L hL g0).W n) ^ 3 * ((clsSz L hL g0).L n) ^ 3 := by rw [mul_pow]
+      _ ≤ ((clsSz L hL g0).W n) ^ 3 * ((clsSz L hL g0).W n) ^ 3 :=
+          Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hle 3)
+      _ = ((clsSz L hL g0).W n) ^ 6 := by ring
+  have h' : (((clsSz L hL g0).size n : ℕ) : ℝ) ≤ (((clsSz L hL g0).W n : ℕ) : ℝ) ^ 6 := by exact_mod_cast h
+  calc (((clsSz L hL g0).size n : ℕ) : ℝ) ^ (1 / 6 : ℝ)
+      ≤ ((((clsSz L hL g0).W n : ℕ) : ℝ) ^ 6) ^ (1 / 6 : ℝ) :=
+        Real.rpow_le_rpow (Nat.cast_nonneg _) h' (by norm_num)
+    _ = (((clsSz L hL g0).W n : ℕ) : ℝ) := by
+        rw [show (1 / 6 : ℝ) = ((6 : ℕ) : ℝ)⁻¹ by norm_num]
+        exact Real.pow_rpow_inv_natCast (Nat.cast_nonneg _) (by norm_num)
+
+/-- `(eq:WO)` along the class sequence at `𝔡 = 1/10` for `0 < g₀ ≤ 10`. -/
+theorem clsSz_WO (L : ℕ) (hL : 3 ≤ L) {g0 : ℝ} (h0 : 0 < g0) (h10 : g0 ≤ 10) :
+    (clsSz L hL g0).WO (1 / 10) := by
+  rw [Sizes.WO, Filter.eventually_atTop]
+  refine ⟨⌈g0⁻¹⌉₊, fun n hn => ?_⟩
+  have hx0 : (0 : ℝ) < 2 * ((n : ℝ) + 1) := by positivity
+  have hx1 : (1 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by
+    have := Nat.cast_nonneg (α := ℝ) n; linarith
+  have hnR : g0⁻¹ ≤ (n : ℝ) := (Nat.le_ceil _).trans (by exact_mod_cast hn)
+  have hW : (((clsSz L hL g0).W n : ℕ) : ℝ) = (2 * ((n : ℝ) + 1)) ^ 5 := by simp [clsSz]
+  have hexp : (-((3 : ℕ) : ℝ) / 2 + 1 / 10 : ℝ) = -(7 / 5) := by norm_num
+  have hpow : ((2 * ((n : ℝ) + 1)) ^ 5) ^ (-(7 / 5) : ℝ) = ((2 * ((n : ℝ) + 1)) ^ 7)⁻¹ := by
+    rw [← Real.rpow_natCast (2 * ((n : ℝ) + 1)) 5, ← Real.rpow_mul hx0.le,
+      show ((5 : ℕ) : ℝ) * (-(7 / 5)) = -((7 : ℕ) : ℝ) by norm_num, Real.rpow_neg hx0.le,
+      Real.rpow_natCast]
+  refine ⟨?_, ?_⟩
+  · rw [hW, hexp, hpow]
+    calc ((2 * ((n : ℝ) + 1)) ^ 7)⁻¹ ≤ (2 * ((n : ℝ) + 1))⁻¹ :=
+          inv_anti₀ hx0 (le_self_pow₀ hx1 (by norm_num))
+      _ ≤ (g0⁻¹)⁻¹ := inv_anti₀ (inv_pos.mpr h0) (by linarith)
+      _ = g0 := inv_inv g0
+  · change g0 ≤ (1 / 10 : ℝ)⁻¹
+    norm_num
+    exact h10
+
+/-- The class sequence is admissible at `(𝔠, 𝔡) = (1/6, 1/10)` for every `0 < g₀ ≤ 10`. -/
+theorem clsSz_admissible (L : ℕ) (hL : 3 ≤ L) {g0 : ℝ} (h0 : 0 < g0) (h10 : g0 ≤ 10) :
+    (clsSz L hL g0).Admissible (1 / 6) (1 / 10) :=
+  ⟨by norm_num, by norm_num, clsSz_tendsto L hL g0, clsSz_bandwidth L hL g0, clsSz_WO L hL h0 h10⟩
+
+/-- The class sequence of `(L, g)`: constant coupling `g₀ = √t₀ g` of the flow point. -/
+noncomputable abbrev clsS (L : ℕ) [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) : Sizes 3 :=
+  clsSz L hL (fp L hg).g0
+
+/-- The bulk threshold `κ_* = Im m₀ / π` of the class. -/
+noncomputable abbrev clsκ (L : ℕ) [NeZero L] {g : ℝ} (hg : 0 < g) : ℝ := (fp L hg).m0.im / Real.pi
+
+/-- `κ_* > 0`. -/
+theorem clsκ_pos (L : ℕ) [NeZero L] {g : ℝ} (hg : 0 < g) : 0 < clsκ L hg :=
+  div_pos (fp_kappa_pos L hg) Real.pi_pos
+
+/-- Non-vacuity of the ρ-form: `E_*` is in the bulk `B_{κ_*}` of the class `(L, g₀)`; the uniqueness hypothesis is not needed (`baMUniqReal_holds 3`). -/
+theorem cls_bulk (L : ℕ) [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) :
+    BAbulk 3 L (fp L hg).g0 (clsκ L hg) (fp L hg).E := by
+  rw [BAbulk_iff (clsκ_pos L hg)
+    (fun m m' hm hm' => baMUniqReal_holds 3 L hL (fp L hg).g0 (fp L hg).g0_pos (fp L hg).E m m' hm hm')]
+  refine ⟨(fp L hg).m0, (fp L hg).real.1, le_of_eq ?_⟩
+  unfold clsκ
+  field_simp
+
+end RBM.BA.UNPinsInst
+
+namespace RBM.Univ.BAInst
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA RBM.BA.UNPinsInst RBM.Gauss.SizesInst RBM.Univ
+
+/-- `0 < 3/10` (the coupling parameter `g` of the class `(L, g) = (4, 3/10)`). -/
+private theorem UNPins_hg_3_10 : (0 : ℝ) < 3 / 10 := by norm_num
+
+/-- `3/10 ≤ 10` (so that the class sequence is admissible: `g₀ ≤ g ≤ 10`). -/
+private theorem UNPins_hg10 : (3 / 10 : ℝ) ≤ 10 := by norm_num
+
+/-- The class sequence `(L, g) = (4, 3/10)` and its data. -/
+noncomputable abbrev S0 : Sizes 3 := clsS 4 (by norm_num) UNPins_hg_3_10
+
+/-- The class sequence is admissible at `(𝔠, 𝔡) = (1/6, 1/10)`. -/
+theorem S0_adm : S0.Admissible (1 / 6) (1 / 10) :=
+  clsSz_admissible 4 (by norm_num) (fp 4 UNPins_hg_3_10).g0_pos ((fp 4 UNPins_hg_3_10).g0_le.trans UNPins_hg10)
+
+/-- `E_*` is in the ρ-bulk `{ρ_N ≥ κ_*}` of the class sequence at every `n` (no uniqueness hypothesis). -/
+theorem S0_bulk :
+    ∀ᶠ n in atTop, BAbulk 3 (S0.L n) (S0.lam n) (clsκ 4 UNPins_hg_3_10) (fp 4 UNPins_hg_3_10).E :=
+  Eventually.of_forall fun _ => cls_bulk 4 (by norm_num) UNPins_hg_3_10
+
+/-- The domain of `(G_bound_ave)` is nonempty at every `n`: `z = E_* + i` is in the bulk, `N^{-1+ε} ≤ 1 ≤ 1`. -/
+theorem inst_locAvg_domain {ε : ℝ} (hε : ε ≤ 1) (n : ℕ) :
+    ∃ z : ℂ, (UNKind.ba 3).bulk S0 (clsκ 4 UNPins_hg_3_10) z.re n ∧
+      ((S0.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ z.im ∧ z.im ≤ 1 := by
+  refine ⟨⟨(fp 4 UNPins_hg_3_10).E, 1⟩, cls_bulk 4 (by norm_num) UNPins_hg_3_10, ?_, le_rfl⟩
+  have hN : (1 : ℝ) ≤ (((S0.size n : ℕ)) : ℝ) := by
+    have h1 : 1 ≤ S0.size n :=
+      Nat.one_le_pow _ _ (Nat.mul_pos (S0.W_pos n) (show 0 < S0.L n by have := S0.three_le_L n; omega))
+    exact_mod_cast h1
+  exact Real.rpow_le_one_of_one_le_of_nonpos hN (by linarith)
+
+end RBM.Univ.BAInst

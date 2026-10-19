@@ -1,0 +1,1110 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Induction.Defs
+
+/-!
+# The `lem_GbEXP` statements and their bridges to the induction statements
+
+Paper: arXiv:2507.20274, Lemma 3.1 (`lem_GbEXP`), (3.1) `def_asGMc`, (3.2) `GiiGEX`,
+(3.3) `GijGEX`, (3.4) `initialGT2`, (3.5) `GavLGEX`.  The statements below are phrased on the
+fine lattice `Idx d L W`, together with the bridges to the statements `STGbEXP`, `STGijGEX`,
+`STGiiGEX`, `STGavLGEX` of `Induction/Defs.lean`.
+
+* 1. Matrix-level vocabulary on the fine lattice `Idx d L W`: `llErrMat`, `loopPM`, `greenBlk`,
+  `avgErr`, `maxLoopPM`, `gexRHS`, `omegaInd`, `offSq`, `diagSq`, and `RangeCond`.
+* 2-4. The per-sequence components, the statements `GbEXPHypV3`, `GbEXPV3Theorem`, the
+  per-time shapes `GijGEXPTSwap`, `GiiGEXPT`, `AsGMcPT` and their bridges
+  (`perTime_timeIcc_of_forall_seq`, `perSeq_of_perTime_timeIcc`, `gijGEXPTSwap_giiGEXPT_of_V3`).
+* 5-6. Private lemmas: the two-loop in entries, the loop floor, the unit-ball count, `≺` reindexing.
+* 7. **The bridges to the induction statements**: the equivalences `asGMcSeq_iff_prec`,
+  `gavLDetSeq_iff_prec`; `loopDetSeq_of_prec`;
+  `stGijGEX_of_gijOmegaSeq`, `stGiiGEX_of_omegaSeq`,
+  `stGavLGEX_of_v3`, the flow parametrization `v3_premises_of_stFlow`, and
+  `stGbEXP_of_v3 : GbEXPV3Theorem d → STGbEXP d`.
+* 8. Extreme-input checks (`t ≡ 0`).
+
+The size hypotheses of `GbEXPHypV3` are `sz.Admissible 𝔠 𝔡`: the bandwidth `W ≥ N^𝔠` together
+with the coupling window (2.10) `eq:WO`.  Entries of the resolvent are indexed by the fine
+lattice `Idx d L W`; the block label is `STblk`/`split`.  The flow enters through `STFlow`
+(`v3_premises_of_stFlow`).
+-/
+
+set_option linter.style.longLine false
+
+noncomputable section
+
+namespace RBM.Gauss.Sizes
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- The application range `1 - t ≥ N^{-1+δ}`, eventually.  Not a hypothesis of
+Theorem 2.24 (`lem:main_ind`) in the paper. -/
+def RangeCond (δ : ℝ) (t : ℕ → ℝ) : Prop :=
+  ∀ᶠ n : ℕ in Filter.atTop, ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - t n
+
+end RBM.Gauss.Sizes
+
+namespace RBM.Green
+
+open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.Loop
+open scoped NNReal ENNReal
+
+/-! ## 1. Matrix-level pieces -/
+
+section MatrixLevel
+
+variable (d L W : ℕ) [NeZero L] [NeZero W]
+
+/-- `|(G_u - m)_{ij}|` at the matrix `M` (the entries of `‖G_u - m‖_max`), spectral parameter
+`z_u^{(E)}`.  The resolvent `Gres M z true` is `(M - z)⁻¹`. -/
+def llErrMat (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (i j : Idx d L W) : ℝ :=
+  ‖Gres M (zt E u) true i j - (if i = j then mE E else 0)‖
+
+/-- `𝓛_{u,(+,-),(a,b)}` at the matrix `M` ((2.44) `Eq:defGLoop`). -/
+def loopPM (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Zd d L) : ℂ :=
+  loopFine d L W M (zt E u) ![true, false] ![a, b]
+
+/-- The block-level resolvent `G_u(σ) = (blockMat M - z_u^{(E)}(σ))⁻¹` of `M`, on the block-product
+index. -/
+def greenBlk (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) :
+    Matrix (Vtx d L W) (Vtx d L W) ℂ :=
+  Gres (blockMat d L W M) (zt E u) σ
+
+/-- `⟨G̃_u(σ) E_a⟩ = tr((G_u(σ) - m(σ)) E_a)` ((2.49) `def_EwtG`; `⟨A⟩ = tr A`). -/
+def avgErr (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) (a : Zd d L) : ℂ :=
+  Matrix.trace ((greenBlk d L W E u M σ -
+    mSigma E σ • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * Eblk d L W a)
+
+/-- `max_{a,b} |𝓛_{u,(+,-),(a,b)}|` at `M`. -/
+def maxLoopPM (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) : ℝ :=
+  Finset.univ.sup' ⟨((0 : Zd d L), (0 : Zd d L)), Finset.mem_univ _⟩
+    (fun p : Zd d L × Zd d L => ‖loopPM d L W E u M p.1 p.2‖)
+
+/-- The right side of (3.3) `GijGEX` at blocks `a, b`:
+`Σ_{|a'-a| ≤ 1} Σ_{|b'-b| ≤ 1} |𝓛_{u,(+,-),(a',b')}| + W^{-d} 1(|a-b| ≤ 1)` with the `L^∞`
+distance of the paper; the statements below use it with the two blocks swapped. -/
+def gexRHS (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Zd d L) : ℝ :=
+  (∑ a' : Zd d L, ∑ b' : Zd d L,
+      if zdistInf d L (a' - a) ≤ 1 ∧ zdistInf d L (b' - b) ≤ 1 then ‖loopPM d L W E u M a' b'‖
+      else 0) +
+    if zdistInf d L (a - b) ≤ 1 then ((W : ℝ) ^ d)⁻¹ else 0
+
+/-- The indicator of `Ω(u,c) = {‖G_u - m‖_max ≤ W^{-c}}` ((3.1) `def_asGMc`) at the matrix
+`M`, spectral parameter `z_u^{(E)}`. -/
+def omegaInd (E u c : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) : ℝ :=
+  if ∀ i j : Idx d L W, llErrMat d L W E u M i j ≤ (W : ℝ) ^ (-c) then 1 else 0
+
+/-- `|G_{pq}|²` off the diagonal, `0` on it (left side of (3.3) `GijGEX`, with the
+restriction `p ≠ q`).  The entries of `G` are on the fine lattice `Z_{WL}^d`. -/
+def offSq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (p q : Idx d L W) : ℝ :=
+  if p = q then 0 else ‖Gres M (zt E u) true p q‖ ^ 2
+
+/-- `|G_{pp} - m|²` (left side of (3.2) `GiiGEX`, on the diagonal). -/
+def diagSq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (p : Idx d L W) : ℝ :=
+  ‖Gres M (zt E u) true p p - mE E‖ ^ 2
+
+end MatrixLevel
+
+/-! ## 2. Per-sequence components (time `t n`, energy `E n` at size index `n`) -/
+
+section Components
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- (3.3) `GijGEX` on `Ω(t,c)` ((3.1) `def_asGMc`), off the diagonal, right side with the
+swapped pair.  Component of `GbEXPHypV3`. -/
+def GijOmegaSeq (E t : ℕ → ℝ) (c : ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+      offSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2.1 p.2.2)
+    (fun n p ω => gexRHS d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)
+      (STblk sz n p.2.2) (STblk sz n p.2.1))
+
+/-- (3.2) `GiiGEX` on `Ω(t,c)`, diagonal entries.  Component of `GbEXPHypV3`. -/
+def GiiOmegaSeq (E t : ℕ → ℝ) (c : ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+      diagSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2)
+    (fun n _ ω => maxLoopPM d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω))
+
+/-- (3.4) `initialGT2`, first part: `‖G_t - m‖_max ≺ W^{-c}`.  Hypothesis inside
+`GbEXPHypV3`. -/
+def AsGMcSeq (E t : ℕ → ℝ) (c : ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => llErrMat d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2.1 p.2.2)
+    (fun n _ _ => ((sz.W n : ℕ) : ℝ) ^ (-c))
+
+/-- (3.3) `GijGEX` without the indicator under `‖G_t - m‖_max ≺ W^{-c}`, off the diagonal,
+swapped right side.  Component of `GbEXPHypV3`. -/
+def GijSeq (E t : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => offSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2.1 p.2.2)
+    (fun n p ω => gexRHS d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)
+      (STblk sz n p.2.2) (STblk sz n p.2.1))
+
+/-- (3.2) `GiiGEX` without the indicator under `‖G_t - m‖_max ≺ W^{-c}`, diagonal entries.
+Component of `GbEXPHypV3`. -/
+def GiiSeq (E t : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => diagSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2)
+    (fun n _ ω => maxLoopPM d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω))
+
+/-- `max_{a,b} |𝓛_{t,(+,-),(a,b)}| ≺ Ψ²` for a deterministic `Ψ` (the second part of
+(3.4) `initialGT2`, read with `|𝓛_{(+,-),(a,b)}| = |𝓛_{(-,+),(b,a)}|`).  Hypothesis of the
+(3.5) `GavLGEX` clause of `GbEXPHypV3`. -/
+def LoopDetSeq (E t : ℕ → ℝ) (Ψ : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Zd d (sz.L n) × Zd d (sz.L n))
+    (fun n p ω => ‖loopPM d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.2.1 p.2.2‖)
+    (fun n _ _ => Ψ n ^ 2)
+
+/-- (3.5) `GavLGEX`, with a deterministic bound `Ψ²`: `max_a |⟨(G_t - m) E_a⟩| ≺ Ψ²`.
+Component of `GbEXPHypV3`. -/
+def GavLDetSeq (E t : ℕ → ℝ) (Ψ : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => Unit × Zd d (sz.L n))
+    (fun n p ω => ‖avgErr d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true p.2‖)
+    (fun n _ _ => Ψ n ^ 2)
+
+end Components
+
+/-! ## 3. The statements -/
+
+section Pins
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **`GbEXPHypV3`** (Lemma 3.1, `lem_GbEXP`).  Fixed `κ` (bulk),
+`𝔠` (bandwidth, (2.9) `Main_DEL_COND`), `𝔡` (the window (2.10) `eq:WO`), `δ` (range
+`1 - t ≥ N^{-1+δ}`), then the size data, every energy and time sequence in the bulk with the range
+condition, and every `c > 0`:
+* (3.3) `GijGEX` on `Ω(t,c)`, off the diagonal, right side `Σ_{a'∼a} Σ_{b'∼b} 𝓛_{(+,-),(b',a')} +
+  W^{-d} 1(|a-b| ≤ 1)` (swapped pair);
+* (3.2) `GiiGEX` on `Ω(t,c)`, diagonal entries;
+* under `‖G_t - m‖_max ≺ W^{-c}`: (3.3) `GijGEX`, (3.2) `GiiGEX` without the indicator, and
+  (3.5) `GavLGEX` in the deterministic-bound form: `max 𝓛 ≺ Ψ²` with `0 ≤ Ψ ≤ N^{-a}` gives
+  `max_a |⟨(G-m)E_a⟩| ≺ Ψ²`.
+The size hypotheses are `sz.Admissible 𝔠 𝔡`: the bandwidth together with the
+coupling window (2.10) `eq:WO` of the random band matrix model. -/
+def GbEXPHypV3 (κ 𝔠 𝔡 δ : ℝ) : Prop :=
+  sz.Admissible 𝔠 𝔡 →
+  ∀ E t : ℕ → ℝ, (∀ n, |E n| < 2 - κ) → (∀ n, 0 ≤ t n) → (∀ n, t n < 1) → sz.RangeCond δ t →
+  ∀ c > (0 : ℝ),
+    GijOmegaSeq sz E t c ∧ GiiOmegaSeq sz E t c ∧
+    (AsGMcSeq sz E t c →
+      GijSeq sz E t ∧ GiiSeq sz E t ∧
+      ∀ (Ψ : ℕ → ℝ) (a : ℝ), 0 < a → (∀ n, 0 ≤ Ψ n) →
+        (∀ᶠ n : ℕ in atTop, Ψ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-a)) →
+        LoopDetSeq sz E t Ψ → GavLDetSeq sz E t Ψ)
+
+/-- **`GbEXPV3Theorem`** (Lemma 3.1, `lem_GbEXP`): `GbEXPHypV3` for every size sequence of
+dimension `d` and every `κ, 𝔠, 𝔡, δ > 0`. -/
+def GbEXPV3Theorem (d : ℕ) : Prop :=
+  ∀ (sz : Sizes d) (κ 𝔠 𝔡 δ : ℝ), 0 < κ → 0 < 𝔠 → 0 < 𝔡 → 0 < δ → GbEXPHypV3 sz κ 𝔠 𝔡 δ
+
+end Pins
+
+/-! ## 4. Consumer shapes and bridges -/
+
+section Bridges
+
+/-- **Bridge: per sequence ⇒ per time over `[s,t]`.**  If a bound holds per sequence at
+every time sequence `u n ∈ [s n, t n]`, it holds per time over `TimeIcc s t` (`perTimeDomAt_iff_forall_section`,
+used twice). -/
+theorem perTime_timeIcc_of_forall_seq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    (size : ℕ → ℕ) {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) {V : ℕ → Type*}
+    (hV : ∀ n, Nonempty (V n)) (ξ ζ : ∀ n, ℝ → V n → Ω → ℝ)
+    (h : ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) →
+      PerTimeDomAt P size (U := fun n => Unit × V n)
+        (fun n p ω => ξ n (u n) p.2 ω) (fun n p ω => ζ n (u n) p.2 ω)) :
+    PerTimeDomAt P size (U := fun n => TimeIcc s t n × V n)
+      (fun n p ω => ξ n p.1 p.2 ω) (fun n p ω => ζ n p.1 p.2 ω) := by
+  have hne : ∀ n, Nonempty (TimeIcc s t n × V n) :=
+    fun n => ⟨(⟨s n, le_rfl, hst n⟩, (hV n).some)⟩
+  rw [perTimeDomAt_iff_forall_section P size hne]
+  intro sec
+  have h1 := h (fun n => ((sec n).1 : ℝ)) (fun n => (sec n).1.2)
+  have hne' : ∀ n, Nonempty (Unit × V n) := fun n => ⟨((), (hV n).some)⟩
+  rw [perTimeDomAt_iff_forall_section P size hne'] at h1
+  exact h1 (fun n => ((), (sec n).2))
+
+/-- **Bridge: per time over `[s,t]` ⇒ per sequence at any section time sequence.** -/
+theorem perSeq_of_perTime_timeIcc {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    (size : ℕ → ℕ) {s t : ℕ → ℝ} {V : ℕ → Type*} (hV : ∀ n, Nonempty (V n))
+    (ξ ζ : ∀ n, ℝ → V n → Ω → ℝ)
+    (h : PerTimeDomAt P size (U := fun n => TimeIcc s t n × V n)
+      (fun n p ω => ξ n p.1 p.2 ω) (fun n p ω => ζ n p.1 p.2 ω))
+    (u : ℕ → ℝ) (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) :
+    PerTimeDomAt P size (U := fun n => Unit × V n)
+      (fun n p ω => ξ n (u n) p.2 ω) (fun n p ω => ζ n (u n) p.2 ω) := by
+  have hne : ∀ n, Nonempty (TimeIcc s t n × V n) :=
+    fun n => ⟨(⟨u n, hu n⟩, (hV n).some)⟩
+  have hne' : ∀ n, Nonempty (Unit × V n) := fun n => ⟨((), (hV n).some)⟩
+  rw [perTimeDomAt_iff_forall_section P size hne] at h
+  rw [perTimeDomAt_iff_forall_section P size hne']
+  intro sec
+  exact h (fun n => (⟨u n, hu n⟩, (sec n).2))
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- (3.3) `GijGEX`, per time over `[s,t]`, off the diagonal, with the swapped pair of
+`gexRHS`. -/
+def GijGEXPTSwap (E : ℕ → ℝ) (s t : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => if p.2.1 = p.2.2 then 0 else ‖Gt sz n (E n) p.1 true ω p.2.1 p.2.2‖ ^ 2)
+    (fun n p ω => gexRHS d (sz.L n) (sz.W n) (E n) p.1 (sz.seqHflow n p.1 ω)
+      (STblk sz n p.2.2) (STblk sz n p.2.1))
+
+/-- (3.2) `GiiGEX`, per time over `[s,t]`, diagonal entries. -/
+def GiiGEXPT (E : ℕ → ℝ) (s t : ℕ → ℝ) : Prop :=
+  sz.PrecPT (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => ‖Gt sz n (E n) p.1 true ω p.2 p.2 - mE (E n)‖ ^ 2)
+    (fun n p ω => maxLoopPM d (sz.L n) (sz.W n) (E n) p.1 (sz.seqHflow n p.1 ω))
+
+/-- `‖G_t - m‖_max ≺ W^{-c}` ((3.4) `initialGT2`), per time over `[s,t]`, at exponent `c`.
+Hypothesis of `gijGEXPTSwap_giiGEXPT_of_V3`. -/
+def AsGMcPT (E : ℕ → ℝ) (s t : ℕ → ℝ) (c : ℝ) : Prop :=
+  sz.PrecPT (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => llErrMat d (sz.L n) (sz.W n) (E n) p.1 (sz.seqHflow n p.1 ω) p.2.1 p.2.2)
+    (fun n _ _ => ((sz.W n : ℕ) : ℝ) ^ (-c))
+
+/-- `RangeCond` passes to any time sequence below `t`. -/
+theorem rangeCond_mono {δ : ℝ} {t u : ℕ → ℝ} (h : sz.RangeCond δ t) (hut : ∀ n, u n ≤ t n) :
+    sz.RangeCond δ u :=
+  h.mono fun n hn => hn.trans (by linarith [hut n])
+
+/-- **Bridge: `GbEXPHypV3` ⇒ the per-time (3.3) `GijGEX` (swapped) and (3.2) `GiiGEX`**, given
+`‖G_t - m‖_max ≺ W^{-c}` per time over `[s,t]` (which follows from (2.86) `Gtmwc` and `RangeCond`). -/
+theorem gijGEXPTSwap_giiGEXPT_of_V3 {κ 𝔠 𝔡 δ c : ℝ} {E s t : ℕ → ℝ}
+    (hV3 : GbEXPHypV3 sz κ 𝔠 𝔡 δ) (hA : sz.Admissible 𝔠 𝔡)
+    (hE : ∀ n, |E n| < 2 - κ) (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht : ∀ n, t n < 1)
+    (hR : sz.RangeCond δ t) (hc : 0 < c) (hAs : AsGMcPT sz E s t c) :
+    GijGEXPTSwap sz E s t ∧ GiiGEXPT sz E s t := by
+  have hseq : ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) →
+      GijSeq sz E u ∧ GiiSeq sz E u := by
+    intro u hu
+    have hRu : sz.RangeCond δ u := rangeCond_mono sz hR fun n => (hu n).2
+    have hAsu : AsGMcSeq sz E u c :=
+      perSeq_of_perTime_timeIcc sz.seqP sz.size
+        (V := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+        (fun n => ⟨(0, 0)⟩)
+        (fun n v q ω => llErrMat d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω) q.1 q.2)
+        (fun n _ _ _ => ((sz.W n : ℕ) : ℝ) ^ (-c)) hAs u hu
+    have h := (hV3 hA E u hE (fun n => (hs n).trans (hu n).1)
+      (fun n => (hu n).2.trans_lt (ht n)) hRu c hc).2.2 hAsu
+    exact ⟨h.1, h.2.1⟩
+  refine ⟨?_, ?_⟩
+  · exact perTime_timeIcc_of_forall_seq sz.seqP sz.size hst
+      (V := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+      (fun n => ⟨(0, 0)⟩)
+      (fun n v q ω => offSq d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω) q.1 q.2)
+      (fun n v q ω => gexRHS d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω)
+        (STblk sz n q.2) (STblk sz n q.1))
+      fun u hu => (hseq u hu).1
+  · exact perTime_timeIcc_of_forall_seq sz.seqP sz.size hst
+      (V := fun n => Idx d (sz.L n) (sz.W n)) (fun n => ⟨0⟩)
+      (fun n v q ω => diagSq d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω) q)
+      (fun n v _ ω => maxLoopPM d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω))
+      fun u hu => (hseq u hu).2
+
+end Bridges
+
+/-! ## 5. Deterministic toolbox (private lemmas) -/
+
+section Toolbox
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+private theorem gres_blockMat_true (H : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (z : ℂ) (x y : Vtx d L W) :
+    Gres (blockMat d L W H) z true x y =
+      Gres H z true ((splitEquiv d L W).symm x) ((splitEquiv d L W).symm y) := by
+  unfold Gres blockMat
+  simp only [ite_true]
+  have e1 : H.submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm -
+        z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
+      (H - z • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)).submatrix (splitEquiv d L W).symm
+        (splitEquiv d L W).symm := by
+    ext i j
+    simp [Matrix.submatrix_apply, Matrix.one_apply]
+  rw [e1, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse,
+    Matrix.inv_submatrix_equiv]
+  rfl
+
+omit [NeZero L] [NeZero W] in
+private theorem gres_false {ι : Type*} [Fintype ι] [DecidableEq ι] (H : Matrix ι ι ℂ)
+    (hH : H.IsHermitian) (z : ℂ) : Gres H z false = (Gres H z true)ᴴ := by
+  unfold Gres
+  simp only [Bool.false_eq_true, ite_false, ite_true]
+  rw [← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse,
+    Matrix.conjTranspose_nonsing_inv]
+  congr 1
+  rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_smul, Matrix.conjTranspose_one, hH.eq]
+  rfl
+
+omit [NeZero W] in
+private theorem trace_pm_formula (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a b : Zd d L) :
+    ((G * Eblk d L W a) * (Gᴴ * Eblk d L W b)).trace =
+      ((((W : ℝ) ^ d)⁻¹ ^ 2 * ∑ v : Vtx d L W, ∑ w : Vtx d L W,
+          (if v.1 = b ∧ w.1 = a then ‖G v w‖ ^ 2 else 0) : ℝ) : ℂ) := by
+  have hE : ∀ c : Zd d L, Eblk d L W c = Matrix.diagonal fun x : Vtx d L W =>
+      if x.1 = c then (((W : ℂ)) ^ d)⁻¹ else 0 := fun c => rfl
+  rw [hE a, hE b]
+  have h1 : G * Matrix.diagonal (fun x : Vtx d L W => if x.1 = a then (((W : ℂ)) ^ d)⁻¹ else 0) =
+      Matrix.of fun i j => G i j * (if j.1 = a then (((W : ℂ)) ^ d)⁻¹ else 0) := by
+    ext i j; simp [Matrix.mul_diagonal]
+  have h2 : Gᴴ * Matrix.diagonal (fun x : Vtx d L W => if x.1 = b then (((W : ℂ)) ^ d)⁻¹ else 0) =
+      Matrix.of fun i j => star (G j i) * (if j.1 = b then (((W : ℂ)) ^ d)⁻¹ else 0) := by
+    ext i j; simp [Matrix.mul_diagonal, Matrix.conjTranspose_apply]
+  rw [h1, h2]
+  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.of_apply]
+  push_cast
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  by_cases hi : i.1 = b <;> by_cases hj : j.1 = a <;> simp [hi, hj]
+  have h := Complex.mul_conj' (G i j)
+  linear_combination (((W : ℂ) ^ d)⁻¹) ^ 2 * h
+
+/-- The two-loop on the block-product index: `𝓛_{(+,-),(a,b)} = W^{-2d} Σ_{v∈[b], w∈[a]} |G_{vw}|²`
+(rows in block `b`, columns in block `a`), for a Hermitian `H`. -/
+private theorem loopFine_pm_formula_vtx (H : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (hH : H.IsHermitian) (z : ℂ) (a b : Zd d L) :
+    loopFine d L W H z ![true, false] ![a, b] =
+      ((((W : ℝ) ^ d)⁻¹ ^ 2 * ∑ v : Vtx d L W, ∑ w : Vtx d L W,
+          (if v.1 = b ∧ w.1 = a then ‖Gres (blockMat d L W H) z true v w‖ ^ 2 else 0) : ℝ) : ℂ) := by
+  have hHb : (blockMat d L W H).IsHermitian := hH.submatrix _
+  unfold loopFine loopM
+  simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one,
+    Matrix.cons_val_zero, Matrix.cons_val_succ]
+  rw [gres_false _ hHb z, trace_pm_formula]
+
+/-- **The two-loop in entries**:
+for a Hermitian `H`, `𝓛_{(+,-),(a,b)} = W^{-2d} Σ_{y∈[b], x∈[a]} |G_{yx}|²` (rows in block `b`,
+columns in block `a`), on the fine lattice. -/
+private theorem loopFine_pm_formula (H : Matrix (Idx d L W) (Idx d L W) ℂ) (hH : H.IsHermitian)
+    (z : ℂ) (a b : Zd d L) :
+    loopFine d L W H z ![true, false] ![a, b] =
+      ((((W : ℝ) ^ d)⁻¹ ^ 2 * ∑ y : Idx d L W, ∑ x : Idx d L W,
+          (if (split d L W y).1 = b ∧ (split d L W x).1 = a then ‖Gres H z true y x‖ ^ 2
+            else 0) : ℝ) : ℂ) := by
+  rw [loopFine_pm_formula_vtx H hH z a b]
+  congr 1
+  congr 1
+  have hsum : ∀ F : Vtx d L W → Vtx d L W → ℝ, ∑ v, ∑ w, F v w =
+      ∑ y : Idx d L W, ∑ x : Idx d L W, F (splitEquiv d L W y) (splitEquiv d L W x) := by
+    intro F
+    calc ∑ v, ∑ w, F v w = ∑ y, ∑ w, F (splitEquiv d L W y) w :=
+          (Equiv.sum_comp (splitEquiv d L W) (fun v => ∑ w, F v w)).symm
+      _ = _ := Finset.sum_congr rfl fun y _ =>
+          (Equiv.sum_comp (splitEquiv d L W) (fun w => F (splitEquiv d L W y) w)).symm
+  rw [hsum]
+  refine Finset.sum_congr rfl fun y _ => Finset.sum_congr rfl fun x _ => ?_
+  rw [gres_blockMat_true, Equiv.symm_apply_apply, Equiv.symm_apply_apply]
+  rfl
+
+private theorem norm_loopPM_le_max (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (a b : Zd d L) : ‖loopPM d L W E u M a b‖ ≤ maxLoopPM d L W E u M :=
+  Finset.le_sup' (fun p : Zd d L × Zd d L => ‖loopPM d L W E u M p.1 p.2‖) (Finset.mem_univ (a, b))
+
+/-- **The loop floor**: on `Ω(u,c)` with `W^{-c} ≤ 1/2`, `W^{-d} ≤ 4 max_{a,b} |𝓛_{(+,-),(a,b)}|`; the
+diagonal entries alone contribute `≥ W^{-d}/4` to `𝓛_{(+,-),(0,0)}`. -/
+private theorem inv_W_pow_le_maxLoopPM {E u c : ℝ} {M : Matrix (Idx d L W) (Idx d L W) ℂ}
+    (hE : |E| ≤ 2) (hM : M.IsHermitian) (hc : (W : ℝ) ^ (-c) ≤ 1 / 2)
+    (hΩ : ∀ i j : Idx d L W, llErrMat d L W E u M i j ≤ (W : ℝ) ^ (-c)) :
+    ((W : ℝ) ^ d)⁻¹ ≤ 4 * maxLoopPM d L W E u M := by
+  have hW : (0 : ℝ) < W := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
+  have hWd : (0 : ℝ) < (W : ℝ) ^ d := pow_pos hW d
+  have hdiag : ∀ y : Idx d L W, (1 : ℝ) / 4 ≤ ‖Gres M (zt E u) true y y‖ ^ 2 := by
+    intro y
+    have h1 := hΩ y y
+    unfold llErrMat at h1
+    simp only [ite_true] at h1
+    have hm := norm_mE hE
+    have h2 : ‖mE E‖ ≤ ‖Gres M (zt E u) true y y‖ + ‖Gres M (zt E u) true y y - mE E‖ := by
+      have := norm_sub_le (Gres M (zt E u) true y y) (Gres M (zt E u) true y y - mE E)
+      rwa [sub_sub_cancel] at this
+    have h3 : (1 : ℝ) / 2 ≤ ‖Gres M (zt E u) true y y‖ := by linarith
+    nlinarith
+  set G := Gres M (zt E u) true with hG
+  have hS : (W : ℝ) ^ d / 4 ≤ ∑ y : Idx d L W, ∑ x : Idx d L W,
+      (if (split d L W y).1 = 0 ∧ (split d L W x).1 = 0 then ‖G y x‖ ^ 2 else 0) := by
+    calc (W : ℝ) ^ d / 4
+        = ∑ y : Idx d L W, (if (split d L W y).1 = 0 then (1 : ℝ) / 4 else 0) := by
+          rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+          have := card_Iblk d L W (0 : Zd d L)
+          simp only [Iblk] at this
+          rw [this]; push_cast; ring
+      _ ≤ _ := by
+          refine Finset.sum_le_sum fun y _ => ?_
+          split_ifs with hy
+          · calc (1 : ℝ) / 4 ≤ ‖G y y‖ ^ 2 := hdiag y
+              _ = (if (split d L W y).1 = 0 ∧ (split d L W y).1 = 0 then ‖G y y‖ ^ 2 else 0) := by
+                  simp [hy]
+              _ ≤ _ := Finset.single_le_sum
+                  (f := fun x => if (split d L W y).1 = 0 ∧ (split d L W x).1 = 0 then
+                    ‖G y x‖ ^ 2 else 0)
+                  (fun x _ => by split_ifs <;> positivity) (Finset.mem_univ y)
+          · exact Finset.sum_nonneg fun x _ => by split_ifs <;> positivity
+  have hL : ((W : ℝ) ^ d)⁻¹ / 4 ≤ ‖loopPM d L W E u M 0 0‖ := by
+    unfold loopPM
+    rw [loopFine_pm_formula M hM (zt E u) 0 0, Complex.norm_real, Real.norm_of_nonneg
+      (mul_nonneg (by positivity) (Finset.sum_nonneg fun y _ => Finset.sum_nonneg fun x _ => by
+        split_ifs <;> positivity))]
+    calc ((W : ℝ) ^ d)⁻¹ / 4 = (((W : ℝ) ^ d)⁻¹) ^ 2 * ((W : ℝ) ^ d / 4) := by
+          field_simp
+      _ ≤ _ := mul_le_mul_of_nonneg_left hS (by positivity)
+  have h5 := norm_loopPM_le_max (d := d) (L := L) (W := W) E u M 0 0
+  linarith
+
+private theorem loopFine_mp_eq_pm (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (a b : Zd d L) :
+    loopFine d L W H z ![false, true] ![a, b] = loopFine d L W H z ![true, false] ![b, a] := by
+  unfold loopFine loopM
+  simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one,
+    Matrix.cons_val_zero, Matrix.cons_val_succ]
+  exact Matrix.trace_mul_comm _ _
+
+private theorem zdistInf_neg (d L : ℕ) [NeZero L] (x : Zd d L) :
+    zdistInf d L (-x) = zdistInf d L x := by
+  unfold zdistInf
+  exact Finset.sup_congr rfl fun i _ => by simp [zdist_neg]
+
+private theorem zdist_le_one {L : ℕ} [NeZero L] {y : ZMod L} (h : zdist L y ≤ 1) :
+    y = 0 ∨ y = 1 ∨ y = -1 := by
+  unfold zdist at h
+  have hv : y.val < L := ZMod.val_lt y
+  have hy : ((y.val : ℕ) : ZMod L) = y := ZMod.natCast_zmod_val y
+  by_cases h1 : y.val ≤ 1
+  · rcases Nat.le_one_iff_eq_zero_or_eq_one.mp h1 with h0 | h1'
+    · left; rw [← hy, h0]; simp
+    · right; left; rw [← hy, h1']; simp
+  · right; right
+    have h2 : L - y.val ≤ 1 := by omega
+    have h3 : y.val = L - 1 := by omega
+    rw [← hy, h3]
+    have : 1 ≤ L := Nat.one_le_iff_ne_zero.mpr (NeZero.ne L)
+    rw [Nat.cast_sub this]; simp
+
+/-- The `L^∞` unit ball of `Z_L^d` has at most `3^d` points. -/
+private theorem card_ball_le (d L : ℕ) [NeZero L] (a : Zd d L) :
+    (Finset.univ.filter fun x : Zd d L => zdistInf d L (x - a) ≤ 1).card ≤ 3 ^ d := by
+  classical
+  let T : Finset (ZMod L) := {0, 1, -1}
+  have hT : T.card ≤ 3 := Finset.card_le_three
+  have hsub : (Finset.univ.filter fun x : Zd d L => zdistInf d L (x - a) ≤ 1) ⊆
+      (Fintype.piFinset fun _ : Fin d => T).image (fun f => f + a) := by
+    intro x hx
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx
+    simp only [Finset.mem_image, Fintype.mem_piFinset]
+    refine ⟨x - a, fun i => ?_, by simp⟩
+    have h1 : zdist L ((x - a) i) ≤ 1 := by
+      unfold zdistInf at hx
+      exact le_trans (Finset.le_sup (f := fun j => zdist L ((x - a) j)) (Finset.mem_univ i)) hx
+    rcases zdist_le_one h1 with h | h | h <;> simp [T, h]
+  calc _ ≤ _ := Finset.card_le_card hsub
+    _ ≤ (Fintype.piFinset fun _ : Fin d => T).card := Finset.card_image_le
+    _ = T.card ^ d := by simp [Fintype.card_piFinset]
+    _ ≤ 3 ^ d := Nat.pow_le_pow_left hT d
+
+private theorem double_sum_ite {α β : Type*} [Fintype α] [Fintype β] (A : α → Prop) (B : β → Prop)
+    [DecidablePred A] [DecidablePred B] (m : ℝ) :
+    ∑ a : α, ∑ b : β, (if A a ∧ B b then m else 0) =
+      ((Finset.univ.filter A).card : ℝ) * (((Finset.univ.filter B).card : ℝ) * m) := by
+  have h1 : ∀ a : α, ∑ b : β, (if A a ∧ B b then m else 0) =
+      if A a then ((Finset.univ.filter B).card : ℝ) * m else 0 := by
+    intro a
+    by_cases ha : A a
+    · simp only [ha, true_and, ite_true]
+      rw [← Finset.sum_filter]; simp [Finset.sum_const, nsmul_eq_mul]
+    · simp [ha]
+  simp_rw [h1]
+  rw [← Finset.sum_filter]; simp [Finset.sum_const, nsmul_eq_mul]
+
+/-- `gexRHS ≤ 9^d max𝓛 + W^{-d}`: the two unit balls have at most `3^d` points each. -/
+private theorem gexRHS_le_ball (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Zd d L) :
+    gexRHS d L W E u M a b ≤ (9 : ℝ) ^ d * maxLoopPM d L W E u M + ((W : ℝ) ^ d)⁻¹ := by
+  have hmax : ∀ a' b' : Zd d L, ‖loopPM d L W E u M a' b'‖ ≤ maxLoopPM d L W E u M :=
+    fun a' b' => norm_loopPM_le_max E u M a' b'
+  have hm0 : 0 ≤ maxLoopPM d L W E u M := (norm_nonneg _).trans (hmax 0 0)
+  unfold gexRHS
+  refine add_le_add ?_ ?_
+  · calc (∑ a' : Zd d L, ∑ b' : Zd d L,
+          if zdistInf d L (a' - a) ≤ 1 ∧ zdistInf d L (b' - b) ≤ 1 then
+            ‖loopPM d L W E u M a' b'‖ else 0)
+        ≤ ∑ a' : Zd d L, ∑ b' : Zd d L,
+          if zdistInf d L (a' - a) ≤ 1 ∧ zdistInf d L (b' - b) ≤ 1 then
+            maxLoopPM d L W E u M else 0 := by
+          refine Finset.sum_le_sum fun a' _ => Finset.sum_le_sum fun b' _ => ?_
+          split_ifs
+          · exact hmax a' b'
+          · exact le_rfl
+      _ = ((Finset.univ.filter fun x : Zd d L => zdistInf d L (x - a) ≤ 1).card : ℝ) *
+          (((Finset.univ.filter fun x : Zd d L => zdistInf d L (x - b) ≤ 1).card : ℝ) *
+            maxLoopPM d L W E u M) :=
+          double_sum_ite (fun x : Zd d L => zdistInf d L (x - a) ≤ 1)
+            (fun x : Zd d L => zdistInf d L (x - b) ≤ 1) _
+      _ ≤ (3 ^ d : ℝ) * ((3 ^ d : ℝ) * maxLoopPM d L W E u M) := by
+          have h1 : ((Finset.univ.filter fun x : Zd d L => zdistInf d L (x - a) ≤ 1).card : ℝ) ≤
+              (3 ^ d : ℝ) := by exact_mod_cast card_ball_le d L a
+          have h2 : ((Finset.univ.filter fun x : Zd d L => zdistInf d L (x - b) ≤ 1).card : ℝ) ≤
+              (3 ^ d : ℝ) := by exact_mod_cast card_ball_le d L b
+          gcongr
+      _ = (9 : ℝ) ^ d * maxLoopPM d L W E u M := by
+          rw [← mul_assoc, ← mul_pow]; norm_num
+  · split_ifs
+    · exact le_rfl
+    · positivity
+
+private theorem sum_sum_ite_and {α β : Type*} [Fintype α] [Fintype β] (A : α → Prop) (B : β → Prop)
+    [DecidablePred A] [DecidablePred B] (f : α → β → ℝ) :
+    ∑ a : α, ∑ b : β, (if A a ∧ B b then f a b else 0) =
+      ∑ a ∈ Finset.univ.filter A, ∑ b ∈ Finset.univ.filter B, f a b := by
+  rw [Finset.sum_filter]
+  refine Finset.sum_congr rfl fun a _ => ?_
+  by_cases ha : A a
+  · simp only [ha, true_and, ite_true]
+    rw [Finset.sum_filter]
+  · simp [ha]
+
+end Toolbox
+
+section ModelLevel
+
+variable {d : ℕ} (sz : Sizes d)
+
+private theorem stmaxLoop2_eq_maxLoopPM (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) :
+    STmaxLoop2 sz n E τ ω = maxLoopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) := by
+  unfold STmaxLoop2 maxLoopPM
+  apply le_antisymm
+  · refine Finset.sup'_le _ _ fun p _ => ?_
+    have h : ‖Lloop sz n E τ ![false, true] ![p.1, p.2] ω‖ =
+        ‖loopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) p.2 p.1‖ := by
+      unfold Lloop loopPM
+      rw [loopFine_mp_eq_pm]
+    rw [h]
+    exact Finset.le_sup' (fun q : Zd d (sz.L n) × Zd d (sz.L n) =>
+      ‖loopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) q.1 q.2‖) (Finset.mem_univ (p.2, p.1))
+  · refine Finset.sup'_le _ _ fun p _ => ?_
+    have h : ‖loopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) p.1 p.2‖ =
+        ‖Lloop sz n E τ ![false, true] ![p.2, p.1] ω‖ := by
+      unfold Lloop loopPM
+      rw [loopFine_mp_eq_pm]
+    rw [h]
+    exact Finset.le_sup' (fun q : Zd d (sz.L n) × Zd d (sz.L n) =>
+      ‖Lloop sz n E τ ![false, true] ![q.1, q.2] ω‖) (Finset.mem_univ (p.2, p.1))
+
+private theorem gexRHS_swap_le (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (a b : Zd d (sz.L n)) :
+    gexRHS d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) b a ≤ STgexRHS sz n E τ ω a b := by
+  unfold gexRHS STgexRHS
+  have hne : (![true, false] : Fin 2 → Bool) ≠ ![false, true] := by decide
+  rw [Finset.sum_pair hne]
+  rw [sum_sum_ite_and (fun a' : Zd d (sz.L n) => zdistInf d (sz.L n) (a' - b) ≤ 1)
+    (fun b' : Zd d (sz.L n) => zdistInf d (sz.L n) (b' - a) ≤ 1)
+    (fun a' b' => ‖loopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) a' b'‖)]
+  have hswap : ∑ a' ∈ Finset.univ.filter (fun a' : Zd d (sz.L n) => zdistInf d (sz.L n) (a' - b) ≤ 1),
+      ∑ b' ∈ Finset.univ.filter (fun b' : Zd d (sz.L n) => zdistInf d (sz.L n) (b' - a) ≤ 1),
+        ‖loopPM d (sz.L n) (sz.W n) E τ (sz.seqHflow n τ ω) a' b'‖ =
+      ∑ a' ∈ Finset.univ.filter (fun a' : Zd d (sz.L n) => zdistInf d (sz.L n) (a' - a) ≤ 1),
+        ∑ b' ∈ Finset.univ.filter (fun b' : Zd d (sz.L n) => zdistInf d (sz.L n) (b' - b) ≤ 1),
+          ‖sz.Lloop n E τ ![false, true] ![a', b'] ω‖ := by
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
+    unfold Lloop loopPM
+    rw [loopFine_mp_eq_pm]
+  have h0 : 0 ≤ ∑ a' ∈ Finset.univ.filter (fun a' : Zd d (sz.L n) => zdistInf d (sz.L n) (a' - a) ≤ 1),
+      ∑ b' ∈ Finset.univ.filter (fun b' : Zd d (sz.L n) => zdistInf d (sz.L n) (b' - b) ≤ 1),
+        ‖sz.Lloop n E τ ![true, false] ![a', b'] ω‖ :=
+    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _
+  have hlast : (if zdistInf d (sz.L n) (b - a) ≤ 1 then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0) =
+      (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (if zdistInf d (sz.L n) (a - b) ≤ 1 then 1 else 0) := by
+    rw [← neg_sub a b, zdistInf_neg]
+    split_ifs <;> simp
+  rw [hswap, hlast]
+  linarith
+
+end ModelLevel
+
+/-! ## 6. The `≺` toolbox: reindexing and monotonicity (private lemmas) -/
+
+section StochTools
+
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U V : ℕ → Type*}
+
+/-- Reindexing and monotonicity of the per-time domination: a smaller family along a map `φ` of
+parameters, against a larger bound. -/
+private theorem perTimeDomAt_mono {ξ ζ : ∀ l, U l → Ω → ℝ} {ξ' ζ' : ∀ l, V l → Ω → ℝ}
+    (φ : ∀ l, V l → U l) (h : PerTimeDomAt P size ξ ζ)
+    (hξ : ∀ᶠ l in atTop, ∀ v ω, ξ' l v ω ≤ ξ l (φ l v) ω)
+    (hζ : ∀ᶠ l in atTop, ∀ v ω, ζ l (φ l v) ω ≤ ζ' l v ω) :
+    PerTimeDomAt P size ξ' ζ' := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD, hξ, hζ] with l hl h1 h2 v
+  refine le_trans (measure_mono ?_) (hl (φ l v))
+  intro ω hω
+  simp only [Set.mem_ofPred_eq] at hω ⊢
+  have hn : (0 : ℝ) ≤ (size l : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  calc (size l : ℝ) ^ τ * ζ l (φ l v) ω ≤ (size l : ℝ) ^ τ * ζ' l v ω :=
+        mul_le_mul_of_nonneg_left (h2 v ω) hn
+    _ < ξ' l v ω := hω
+    _ ≤ ξ l (φ l v) ω := h1 v ω
+
+/-- The same for the uniform domination. -/
+private theorem stochDomAt_mono {ξ ζ : ∀ l, U l → Ω → ℝ} {ξ' ζ' : ∀ l, V l → Ω → ℝ}
+    (φ : ∀ l, V l → U l) (h : StochDomAt P size ξ ζ)
+    (hξ : ∀ᶠ l in atTop, ∀ v ω, ξ' l v ω ≤ ξ l (φ l v) ω)
+    (hζ : ∀ᶠ l in atTop, ∀ v ω, ζ l (φ l v) ω ≤ ζ' l v ω) :
+    StochDomAt P size ξ' ζ' := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD, hξ, hζ] with l hl h1 h2
+  refine le_trans (measure_mono ?_) hl
+  rintro ω ⟨v, hv⟩
+  refine ⟨φ l v, ?_⟩
+  have hn : (0 : ℝ) ≤ (size l : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  calc (size l : ℝ) ^ τ * ζ l (φ l v) ω ≤ (size l : ℝ) ^ τ * ζ' l v ω :=
+        mul_le_mul_of_nonneg_left (h2 v ω) hn
+    _ < ξ' l v ω := hv
+    _ ≤ ξ l (φ l v) ω := h1 v ω
+
+/-- Uniform ⇒ per-time (each event is contained in the union). -/
+private theorem perTimeDomAt_of_stochDomAt {ξ ζ : ∀ l, U l → Ω → ℝ}
+    (h : StochDomAt P size ξ ζ) : PerTimeDomAt P size ξ ζ := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD] with l hl u
+  refine le_trans (measure_mono ?_) hl
+  intro ω hω
+  exact ⟨u, hω⟩
+
+end StochTools
+
+/-! ## 7. Bridges to the induction statements -/
+
+section Bridge
+
+variable {d : ℕ} (sz : Sizes d)
+
+private theorem card_Zd (d L : ℕ) [NeZero L] : Fintype.card (Zd d L) = L ^ d := by
+  simp [Zd, ZMod.card]
+
+private theorem card_Zd_le_size (n : ℕ) : Fintype.card (Zd d (sz.L n)) ≤ sz.size n := by
+  rw [card_Zd]
+  unfold Sizes.size
+  exact Nat.pow_le_pow_left (Nat.le_mul_of_pos_left _ (sz.W_pos n)) d
+
+private theorem card_Idx_real (n : ℕ) :
+    ((Fintype.card (Idx d (sz.L n) (sz.W n)) : ℕ) : ℝ) = ((sz.size n : ℕ) : ℝ) := by
+  rw [Sizes.card_Idx]
+
+private theorem card_Idx_prod_le (n : ℕ) :
+    ((Fintype.card (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) : ℕ) : ℝ) ≤
+      ((sz.size n : ℕ) : ℝ) ^ (2 : ℝ) := by
+  rw [Fintype.card_prod, Nat.cast_mul, card_Idx_real, Real.rpow_two]
+  ring_nf; exact le_rfl
+
+private theorem card_Idx_le (n : ℕ) :
+    ((Fintype.card (Idx d (sz.L n) (sz.W n)) : ℕ) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) := by
+  rw [card_Idx_real, Real.rpow_one]
+
+/-- `AsGMcSeq` is the same as `‖G_t - M‖_max ≺ W^{-c}` at the scale `N`
+(`≺` over the entries `(x,y)`): the union over `|Idx²| = N²` entries is absorbed. -/
+theorem asGMcSeq_iff_prec (E t : ℕ → ℝ) (c : ℝ) :
+    AsGMcSeq sz E t c ↔
+      sz.Prec (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+        (fun n p ω => ‖STGM sz n (E n) (t n) ω p.1 p.2‖)
+        (fun n _ _ => ((sz.W n : ℕ) : ℝ) ^ (-c)) := by
+  constructor
+  · intro h
+    have h1 : sz.PrecPT (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+        (fun n p ω => ‖STGM sz n (E n) (t n) ω p.1 p.2‖)
+        (fun n _ _ => ((sz.W n : ℕ) : ℝ) ^ (-c)) :=
+      perTimeDomAt_mono (fun n (p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) => ((), p)) h
+        (Eventually.of_forall fun n v ω => le_of_eq rfl)
+        (Eventually.of_forall fun n v ω => le_rfl)
+    exact Path.stochDomAt_of_perTimeDomAt sz.seqP sz.size (C := 2) (by norm_num)
+      (Eventually.of_forall fun n => card_Idx_prod_le sz n) h1
+  · intro h
+    exact perTimeDomAt_mono
+      (fun n (p : Unit × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) => p.2)
+      (perTimeDomAt_of_stochDomAt h)
+      (Eventually.of_forall fun n v ω => le_of_eq rfl) (Eventually.of_forall fun n v ω => le_rfl)
+
+/-- **Bridge `GijOmegaSeq ⇒ STGijGEX`** ((3.3) `GijGEX`).  `GijOmegaSeq` is per time (the
+union over the entries outside `P`), off the diagonal, with the one-orientation right side
+`gexRHS … [y] [x]`; the statement `STGijGEX` is uniform (`Prec`), over the pairs `x ≠ y`, with the right side
+of the paper (both `σ ∈ {(+,-),(-,+)}`): the right side is monotone
+(`gexRHS … [y] [x] ≤ STgexRHS … [x] [y]`, the `σ = (-,+)` terms are the `gexRHS` terms by
+`|𝓛_{(-,+),(a,b)}| = |𝓛_{(+,-),(b,a)}|`) and the union over `≤ N²` pairs is absorbed.  The converse
+is not derivable: `STgexRHS` has the extra `σ = (+,-)` terms. -/
+theorem stGijGEX_of_gijOmegaSeq {E t : ℕ → ℝ} {c : ℝ} (h : GijOmegaSeq sz E t c) :
+    STGijGEX sz E t c := by
+  have h1 : sz.PrecPT
+      (U := fun n => {p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) // p.1 ≠ p.2})
+      (fun n p ω => STindMax sz n (E n) (t n) (((sz.W n : ℕ) : ℝ) ^ (-c)) ω *
+        ‖Gt sz n (E n) (t n) true ω p.1.1 p.1.2‖ ^ 2)
+      (fun n p ω => STgexRHS sz n (E n) (t n) ω (STblk sz n p.1.1) (STblk sz n p.1.2)) :=
+    perTimeDomAt_mono
+      (fun n (p : {p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) // p.1 ≠ p.2}) =>
+        ((), p.1)) h
+      (Eventually.of_forall fun n v ω => by
+        have hv : v.1.1 ≠ v.1.2 := v.2
+        refine le_of_eq ?_
+        simp only [omegaInd, offSq, hv, ↓reduceIte]
+        rfl)
+      (Eventually.of_forall fun n v ω =>
+        gexRHS_swap_le sz n (E n) (t n) ω (STblk sz n v.1.1) (STblk sz n v.1.2))
+  refine Path.stochDomAt_of_perTimeDomAt sz.seqP sz.size (C := 2) (by norm_num)
+    (Eventually.of_forall fun n => ?_) h1
+  refine le_trans ?_ (card_Idx_prod_le sz n)
+  exact_mod_cast Fintype.card_subtype_le _
+
+private theorem stGM_self (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (x : Idx d (sz.L n) (sz.W n)) :
+    STGM sz n E τ ω x x = Gt sz n E τ true ω x x - mE E := by
+  unfold STGM
+  simp
+
+private theorem omegaInd_eq (n : ℕ) (E u c : ℝ) (ω : sz.SeqΩ) :
+    omegaInd d (sz.L n) (sz.W n) E u c (sz.seqHflow n u ω) =
+      STindMax sz n E u (((sz.W n : ℕ) : ℝ) ^ (-c)) ω := rfl
+
+private theorem diagSq_eq (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (x : Idx d (sz.L n) (sz.W n)) :
+    diagSq d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) x = ‖STGM sz n E u ω x x‖ ^ 2 := by
+  rw [stGM_self]
+  rfl
+
+/-- `W → ∞` along an admissible sequence (`W ≥ N^𝔠` and `N → ∞`). -/
+private theorem W_tendsto_of_admissible {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) :
+    Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop := by
+  obtain ⟨h𝔠, -, hN, hB, -⟩ := hA
+  have h1 : Tendsto (fun n => ((sz.size n : ℕ) : ℝ) ^ 𝔠) atTop atTop :=
+    (tendsto_rpow_atTop h𝔠).comp hN
+  exact tendsto_atTop_mono' atTop hB h1
+
+private theorem eventually_W_rpow_neg_le {𝔠 𝔡 c : ℝ} (hA : sz.Admissible 𝔠 𝔡) (hc : 0 < c) :
+    ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-c) ≤ 1 / 2 := by
+  have h := (tendsto_rpow_neg_atTop hc).comp (W_tendsto_of_admissible sz hA)
+  exact (h.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2))).mono fun n hn => hn.le
+
+private theorem stGM_ne (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) {x y : Idx d (sz.L n) (sz.W n)}
+    (hxy : x ≠ y) : STGM sz n E τ ω x y = Gt sz n E τ true ω x y := by
+  unfold STGM
+  simp [hxy]
+
+/-- **Bridge `GiiOmegaSeq ∧ GijOmegaSeq ⇒ STGiiGEX`** ((3.2) `GiiGEX`, all entries of
+`G_t - M`).  The statement `STGiiGEX` is the all-entries statement `1(Ω) ‖G_t - M‖²_max ≺ max_{a,b} 𝓛^{(2)}`;
+`GiiOmegaSeq` and `GijOmegaSeq` split it into the diagonal entries and the off-diagonal entries
+(right side `gexRHS`).  On `Ω` the loop floor `W^{-d} ≤ 4 max 𝓛` (`W^{-c} ≤ 1/2`,
+eventually) absorbs the term `W^{-d}` of `gexRHS`, the ball count `|{a' : |a'-a| ≤ 1}| ≤ 3^d`
+gives `gexRHS ≤ (9^d + 4) max 𝓛`, and the constant is absorbed in `N^{τ/2}`.  Needs `N → ∞`,
+`W → ∞` (`Admissible`) and `|E| ≤ 2`. -/
+theorem stGiiGEX_of_omegaSeq {E t : ℕ → ℝ} {c 𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡)
+    (hE : ∀ n, |E n| ≤ 2) (hc : 0 < c)
+    (hii : GiiOmegaSeq sz E t c) (hij : GijOmegaSeq sz E t c) : STGiiGEX sz E t c := by
+  have hsize : Tendsto sz.size atTop atTop := sz.tendsto_size hA.2.2.1
+  have h1 : StochDomAt sz.seqP sz.size (U := fun n => Idx d (sz.L n) (sz.W n))
+      (fun n x ω => omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+        diagSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) x)
+      (fun n _ ω => maxLoopPM d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)) := by
+    have h := perTimeDomAt_mono (fun n (x : Idx d (sz.L n) (sz.W n)) => ((), x)) hii
+      (Eventually.of_forall fun n v ω => le_rfl) (Eventually.of_forall fun n v ω => le_rfl)
+    exact Path.stochDomAt_of_perTimeDomAt sz.seqP sz.size (C := 1) (by norm_num)
+      (Eventually.of_forall fun n => card_Idx_le sz n) h
+  have h2 : StochDomAt sz.seqP sz.size
+      (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+      (fun n p ω => omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+        offSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.1 p.2)
+      (fun n p ω => gexRHS d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)
+        (STblk sz n p.2) (STblk sz n p.1)) := by
+    have h := perTimeDomAt_mono
+      (fun n (p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) => ((), p)) hij
+      (Eventually.of_forall fun n v ω => le_rfl) (Eventually.of_forall fun n v ω => le_rfl)
+    exact Path.stochDomAt_of_perTimeDomAt sz.seqP sz.size (C := 2) (by norm_num)
+      (Eventually.of_forall fun n => card_Idx_prod_le sz n) h
+  unfold STGiiGEX Prec
+  refine StochDomAt.of_subset_union hsize h1 h2 ?_
+  intro τ hτ
+  refine ⟨τ / 2, half_pos hτ, ?_⟩
+  filter_upwards [eventually_W_rpow_neg_le sz hA hc,
+    hsize.eventually (eventually_le_rpow ((9 : ℝ) ^ d + 4) (half_pos hτ))] with n hWn hNn
+  rintro ω ⟨p, hp⟩
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hN
+  have hN1 : (1 : ℝ) ≤ N := by rw [hN]; exact_mod_cast sz.one_le_size n
+  have hN0 : 0 < N := by linarith
+  set m := maxLoopPM d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) with hm
+  have hm0 : 0 ≤ m := (norm_nonneg _).trans (norm_loopPM_le_max _ _ _ 0 0)
+  have hp' : N ^ τ * m <
+      omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+        ‖STGM sz n (E n) (t n) ω p.1 p.2‖ ^ 2 := by
+    rw [omegaInd_eq, hm, ← stmaxLoop2_eq_maxLoopPM]; exact hp
+  have hNτ : N ^ (τ / 2) ≤ N ^ τ :=
+    Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
+  have hNN : N ^ (τ / 2) * N ^ (τ / 2) = N ^ τ := by
+    rw [← Real.rpow_add hN0]; congr 1; ring
+  have hNh : 0 ≤ N ^ (τ / 2) := Real.rpow_nonneg hN0.le _
+  by_cases hcond : ∀ i j : Idx d (sz.L n) (sz.W n),
+      llErrMat d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) i j ≤
+        ((sz.W n : ℕ) : ℝ) ^ (-c)
+  · have hind : omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) = 1 := by
+      unfold omegaInd; exact ite_eq_left hcond
+    rw [hind, one_mul] at hp'
+    by_cases hxy : p.1 = p.2
+    · refine Or.inl ⟨p.1, ?_⟩
+      change N ^ (τ / 2) * m <
+        omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+          diagSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.1
+      rw [hind, one_mul, diagSq_eq]
+      have hsq : ‖STGM sz n (E n) (t n) ω p.1 p.2‖ ^ 2 =
+          ‖STGM sz n (E n) (t n) ω p.1 p.1‖ ^ 2 := by rw [hxy]
+      calc N ^ (τ / 2) * m ≤ N ^ τ * m := mul_le_mul_of_nonneg_right hNτ hm0
+        _ < ‖STGM sz n (E n) (t n) ω p.1 p.2‖ ^ 2 := hp'
+        _ = ‖STGM sz n (E n) (t n) ω p.1 p.1‖ ^ 2 := hsq
+    · refine Or.inr ⟨p, ?_⟩
+      by_contra hnot
+      have hnot' : omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) *
+          offSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.1 p.2 ≤
+          N ^ (τ / 2) * gexRHS d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)
+            (STblk sz n p.2) (STblk sz n p.1) := not_lt.mp hnot
+      rw [hind, one_mul] at hnot'
+      have hoff : offSq d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) p.1 p.2 =
+          ‖STGM sz n (E n) (t n) ω p.1 p.2‖ ^ 2 := by
+        rw [stGM_ne sz n _ _ ω hxy]
+        unfold offSq
+        rw [ite_eq_right hxy]
+        rfl
+      rw [hoff] at hnot'
+      have hfloor := inv_W_pow_le_maxLoopPM (hE n) (sz.seqHflow_isHermitian n (t n) ω) hWn hcond
+      have hg := gexRHS_le_ball (d := d) (L := sz.L n) (W := sz.W n) (E n) (t n)
+        (sz.seqHflow n (t n) ω) (STblk sz n p.2) (STblk sz n p.1)
+      have h3 : N ^ (τ / 2) * gexRHS d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω)
+            (STblk sz n p.2) (STblk sz n p.1) ≤
+          N ^ (τ / 2) * (((9 : ℝ) ^ d + 4) * m) :=
+        mul_le_mul_of_nonneg_left (by linarith) hNh
+      have h4 : N ^ (τ / 2) * (((9 : ℝ) ^ d + 4) * m) ≤ N ^ (τ / 2) * (N ^ (τ / 2) * m) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hNn hm0) hNh
+      have h5 : N ^ (τ / 2) * (N ^ (τ / 2) * m) = N ^ τ * m := by rw [← mul_assoc, hNN]
+      linarith
+  · exfalso
+    have hind : omegaInd d (sz.L n) (sz.W n) (E n) (t n) c (sz.seqHflow n (t n) ω) = 0 := by
+      unfold omegaInd; exact ite_eq_right hcond
+    rw [hind, zero_mul] at hp'
+    have : 0 ≤ N ^ τ * m := mul_nonneg (Real.rpow_nonneg hN0.le _) hm0
+    linarith
+
+/-- `⟨(G_t - m) E_a⟩ = 𝓛^{(1)}_{t,+,a} - m(E)` (`tr E_a = 1`). -/
+private theorem avgErr_eq_loop (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (a : Zd d (sz.L n)) :
+    avgErr d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) true a =
+      Lloop sz n E u (fun _ : Fin 1 => true) (fun _ => a) ω - mE E := by
+  unfold avgErr greenBlk Lloop loopFine loopM
+  simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one]
+  rw [Matrix.sub_mul, Matrix.trace_sub, Matrix.smul_mul, Matrix.trace_smul, Matrix.one_mul,
+    trace_Eblk]
+  simp [mSigma]
+
+/-- **Bridge `GavLDetSeq ⇔ ‖𝓛^{(1)} - m‖ ≺ Ψ²`** ((3.5) `GavLGEX`; `⟨(G-m)E_a⟩ =
+𝓛^{(1)}_{+,a} - m(E)`): the union over the `L^d ≤ N` blocks is absorbed. -/
+theorem gavLDetSeq_iff_prec (E t Ψ : ℕ → ℝ) :
+    GavLDetSeq sz E t Ψ ↔
+      sz.Prec (U := fun n => Zd d (sz.L n))
+        (fun n a ω => ‖Lloop sz n (E n) (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - mE (E n)‖)
+        (fun n _ _ => Ψ n ^ 2) := by
+  constructor
+  · intro h
+    have h1 : sz.PrecPT (U := fun n => Zd d (sz.L n))
+        (fun n a ω => ‖Lloop sz n (E n) (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - mE (E n)‖)
+        (fun n _ _ => Ψ n ^ 2) :=
+      perTimeDomAt_mono (fun n (a : Zd d (sz.L n)) => ((), a)) h
+        (Eventually.of_forall fun n v ω => le_of_eq (by rw [avgErr_eq_loop]))
+        (Eventually.of_forall fun n v ω => le_rfl)
+    refine Path.stochDomAt_of_perTimeDomAt sz.seqP sz.size (C := 1) (by norm_num)
+      (Eventually.of_forall fun n => ?_) h1
+    rw [Real.rpow_one]
+    exact_mod_cast card_Zd_le_size sz n
+  · intro h
+    exact perTimeDomAt_mono (fun n (p : Unit × Zd d (sz.L n)) => p.2)
+      (perTimeDomAt_of_stochDomAt h)
+      (Eventually.of_forall fun n v ω => le_of_eq (by rw [avgErr_eq_loop]))
+      (Eventually.of_forall fun n v ω => le_rfl)
+
+/-- **Bridge `max 𝓛 ≺ Ψ² ⇒ LoopDetSeq`** ((3.4) `initialGT2`): each `|𝓛_{(+,-),(a,b)}|`
+is at most `max_{a,b} 𝓛^{(2)}_{(-,+),(a,b)}` (`|𝓛_{(+,-),(a,b)}| = |𝓛_{(-,+),(b,a)}|`). -/
+theorem loopDetSeq_of_prec {E t Ψ : ℕ → ℝ}
+    (h : sz.Prec (U := fun _ => Unit) (fun n _ ω => STmaxLoop2 sz n (E n) (t n) ω)
+      (fun n _ _ => Ψ n ^ 2)) : LoopDetSeq sz E t Ψ := by
+  refine perTimeDomAt_mono (fun n (p : Unit × Zd d (sz.L n) × Zd d (sz.L n)) => p.1)
+    (perTimeDomAt_of_stochDomAt h) (Eventually.of_forall fun n v ω => ?_)
+    (Eventually.of_forall fun n v ω => le_rfl)
+  rw [stmaxLoop2_eq_maxLoopPM]
+  exact norm_loopPM_le_max _ _ _ _ _
+
+/-- **The flow parametrization** (from `STFlow`): at the energy `E = lemE z` of
+Lemma 2.10 (`zztE`) and a time `t ≤ t₀ = lemT z`, `z_n ∈ 𝐃_{κ,ε}` gives the premises of
+`GbEXPHypV3` with `κ/2` and `δ = ε/2`: `|E_n| ≤ |Re z_n| ≤ 2 - κ`, `t_n < 1`, and
+`1 - t_n ≥ 1 - t₀ ≥ Im z_n / 4 ≥ N^{-1+ε}/4 ≥ N^{-1+ε/2}` eventually
+(`lemma28_quant`: `t₀ ≥ 1/16`, `(1 - t₀) Im m(E) = √t₀ Im z`, by (2.43) `eq:zztE`). -/
+theorem v3_premises_of_stFlow {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε)
+    (h : STFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (h1 : ∀ n, t n ≤ lemT (z n)) :
+    sz.Admissible 𝔠 𝔡 ∧ (∀ n, |STflowE z n| < 2 - κ / 2) ∧ (∀ n, t n < 1) ∧
+      sz.RangeCond (ε / 2) t := by
+  obtain ⟨hA, hD⟩ := h
+  have hN0 : ∀ n, (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := fun n => by
+    exact_mod_cast sz.one_le_size n
+  have him : ∀ n, 0 < (z n).im := fun n =>
+    lt_of_lt_of_le (Real.rpow_pos_of_pos (hN0 n) _) (hD n).2.1
+  refine ⟨hA, fun n => ?_, fun n => (h1 n).trans_lt (lemT_lt_one (him n)), ?_⟩
+  · have h2 := (abs_lemE_le (him n)).trans (hD n).1
+    change |lemE (z n)| < 2 - κ / 2
+    linarith
+  · have hN := sz.tendsto_size hA.2.2.1
+    filter_upwards [hN.eventually (eventually_le_rpow 4 (half_pos hε))] with n hn
+    have hz := him n
+    obtain ⟨-, hq2, -, -⟩ := lemma28_quant (z := z n) hκ hz (hD n).2.2 (hD n).1
+    have hmeq : (1 - lemT (z n)) * (mE (lemE (z n))).im =
+        Real.sqrt (lemT (z n)) * (z n).im := by
+      rw [← zt_im, zt_im_lemma28 hz]
+    have hm1 : (mE (lemE (z n))).im ≤ 1 := by
+      rw [mE_im]
+      have : Real.sqrt (4 - lemE (z n) ^ 2) ≤ 2 :=
+        Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [sq_nonneg (lemE (z n))]⟩
+      linarith
+    have hs4 : (1 / 4 : ℝ) ≤ Real.sqrt (lemT (z n)) :=
+      (Real.le_sqrt (by norm_num) (by linarith)).mpr (by linarith)
+    have hlt : 0 < 1 - lemT (z n) := by linarith [lemT_lt_one hz]
+    have h3 : (1 / 4) * (z n).im ≤ 1 - lemT (z n) := by
+      have h4 : (1 - lemT (z n)) * (mE (lemE (z n))).im ≤ (1 - lemT (z n)) * 1 :=
+        mul_le_mul_of_nonneg_left hm1 hlt.le
+      nlinarith [mul_le_mul_of_nonneg_right hs4 hz.le]
+    set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+    have hNpos : 0 < N := hN0 n
+    have hsplit : N ^ (-1 + ε) = N ^ (-1 + ε / 2) * N ^ (ε / 2) := by
+      rw [← Real.rpow_add hNpos]; congr 1; ring
+    have hpos : 0 ≤ N ^ (-1 + ε / 2) := Real.rpow_nonneg hNpos.le _
+    have h5 : N ^ (-1 + ε / 2) * 4 ≤ N ^ (-1 + ε) := by
+      rw [hsplit]; exact mul_le_mul_of_nonneg_left hn hpos
+    have h6 := (hD n).2.1
+    change N ^ (-1 + ε / 2) ≤ 1 - t n
+    linarith [h1 n]
+
+/-- **Bridge `GbEXPHypV3` (third clause) ⇒ `STGavLGEX`** ((3.5) `GavLGEX`, under
+(3.4) `initialGT2`).  The statement `STGavLGEX` carries the window `W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}` of
+the paper (`GbEXPHypV3` has `0 ≤ Ψ ≤ N^{-a}`): `a = 𝔠 ε₀` (`W ≥ N^𝔠`), `Ψ` is replaced by `max Ψ 0` (equal to `Ψ`
+eventually) for the pointwise `0 ≤ Ψ` of the clause, `AsGMcSeq` and `LoopDetSeq` are the
+two `Prec` premises of (3.4) `initialGT2` (`asGMcSeq_iff_prec`, `loopDetSeq_of_prec`), and the
+conclusion `GavLDetSeq` is the conclusion of `STGavLGEX` (`gavLDetSeq_iff_prec`). -/
+theorem stGavLGEX_of_v3 {κ 𝔠 𝔡 δ : ℝ} (hV3 : GbEXPHypV3 sz κ 𝔠 𝔡 δ) (hA : sz.Admissible 𝔠 𝔡)
+    {E t : ℕ → ℝ} (hE : ∀ n, |E n| < 2 - κ) (h0 : ∀ n, 0 ≤ t n) (h1 : ∀ n, t n < 1)
+    (hR : sz.RangeCond δ t) {ε₀ : ℝ} (hε₀ : 0 < ε₀) : STGavLGEX sz E t ε₀ := by
+  intro Ψ hΨ1 hΨ2 hG hL
+  have hAs : AsGMcSeq sz E t ε₀ := (asGMcSeq_iff_prec sz E t ε₀).2 hG
+  have hv := (hV3 hA E t hE h0 h1 hR ε₀ hε₀).2.2 hAs
+  -- the nonnegative bound `Ψ' = max Ψ 0`
+  have hpos : ∀ᶠ n in atTop, 0 ≤ Ψ n := hΨ1.mono fun n hn =>
+    le_trans (Real.rpow_nonneg (Nat.cast_nonneg _) _) hn
+  have hΨ'0 : ∀ n, 0 ≤ max (Ψ n) 0 := fun n => le_max_right _ _
+  have heq : ∀ᶠ n in atTop, max (Ψ n) 0 = Ψ n := hpos.mono fun n hn => max_eq_left hn
+  have hΨ'a : ∀ᶠ n : ℕ in atTop,
+      max (Ψ n) 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * ε₀)) := by
+    filter_upwards [hΨ2, hA.2.2.2.1] with n hn hB
+    have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+    have hW : ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ≤ ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * ε₀)) := by
+      have h := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hN0 𝔠) hB (by linarith :
+        -ε₀ ≤ 0)
+      rwa [← Real.rpow_mul hN0.le, show 𝔠 * -ε₀ = -(𝔠 * ε₀) by ring] at h
+    exact max_le (hn.trans hW) (Real.rpow_nonneg hN0.le _)
+  have hL' : sz.Prec (U := fun _ => Unit) (fun n _ ω => STmaxLoop2 sz n (E n) (t n) ω)
+      (fun n _ _ => max (Ψ n) 0 ^ 2) :=
+    stochDomAt_mono (fun n (v : Unit) => v) hL (Eventually.of_forall fun n v ω => le_rfl)
+      (heq.mono fun n hn v ω => by rw [hn])
+  have hLoop : LoopDetSeq sz E t (fun n => max (Ψ n) 0) := loopDetSeq_of_prec sz hL'
+  have hGav := hv.2.2 (fun n => max (Ψ n) 0) (𝔠 * ε₀) (mul_pos hA.1 hε₀) hΨ'0 hΨ'a hLoop
+  have hP := (gavLDetSeq_iff_prec sz E t (fun n => max (Ψ n) 0)).1 hGav
+  exact stochDomAt_mono (fun n (a : Zd d (sz.L n)) => a) hP (Eventually.of_forall fun n v ω => le_rfl)
+    (heq.mono fun n hn v ω => by rw [hn])
+
+/-- `GbEXPV3Theorem ⇒ STGbEXPii`: (3.2) `GiiGEX` for the flow, every `ε₀ > 0`, every `t ∈ [0, t₀]`. -/
+theorem stGbEXPii_of_v3 (h : GbEXPV3Theorem d) : STGbEXPii d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t h0 h1 ε₀ hε₀
+  obtain ⟨hA, hE, ht1, hR⟩ := v3_premises_of_stFlow sz hκ hε hflow h1
+  have hV := h sz (κ / 2) 𝔠 𝔡 (ε / 2) (by positivity) hA.1 h𝔡 (by positivity)
+  have hc := hV hA (STflowE z) t hE h0 ht1 hR ε₀ hε₀
+  exact stGiiGEX_of_omegaSeq sz hA (fun n => by linarith [hE n]) hε₀ hc.2.1 hc.1
+
+/-- `GbEXPV3Theorem ⇒ STGbEXPij`: (3.3) `GijGEX` for the flow. -/
+theorem stGbEXPij_of_v3 (h : GbEXPV3Theorem d) : STGbEXPij d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t h0 h1 ε₀ hε₀
+  obtain ⟨hA, hE, ht1, hR⟩ := v3_premises_of_stFlow sz hκ hε hflow h1
+  have hV := h sz (κ / 2) 𝔠 𝔡 (ε / 2) (by positivity) hA.1 h𝔡 (by positivity)
+  exact stGijGEX_of_gijOmegaSeq sz (hV hA (STflowE z) t hE h0 ht1 hR ε₀ hε₀).1
+
+/-- `GbEXPV3Theorem ⇒ STGbEXPav`: (3.5) `GavLGEX` for the flow. -/
+theorem stGbEXPav_of_v3 (h : GbEXPV3Theorem d) : STGbEXPav d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t h0 h1 ε₀ hε₀
+  obtain ⟨hA, hE, ht1, hR⟩ := v3_premises_of_stFlow sz hκ hε hflow h1
+  have hV := h sz (κ / 2) 𝔠 𝔡 (ε / 2) (by positivity) hA.1 h𝔡 (by positivity)
+  exact stGavLGEX_of_v3 sz hV hA hE h0 ht1 hR hε₀
+
+/-- **`GbEXPV3Theorem ⇒ STGbEXP`**: the three parts of Lemma 3.1 (`lem_GbEXP`) in the form of
+`Induction/Defs.lean` follow from `GbEXPV3Theorem`. -/
+theorem stGbEXP_of_v3 (h : GbEXPV3Theorem d) : STGbEXP d :=
+  ⟨stGbEXPii_of_v3 h, stGbEXPij_of_v3 h, stGbEXPav_of_v3 h⟩
+
+end Bridge
+
+/-! ## 8. Extreme-input checks -/
+
+section Extreme
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+theorem gexRHS_nonneg (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Zd d L) :
+    0 ≤ gexRHS d L W E u M a b := by
+  unfold gexRHS
+  refine add_nonneg (Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => ?_) ?_
+  · split_ifs <;> simp
+  · split_ifs <;> positivity
+
+theorem maxLoopPM_nonneg (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) :
+    0 ≤ maxLoopPM d L W E u M :=
+  (norm_nonneg _).trans (norm_loopPM_le_max E u M 0 0)
+
+omit [NeZero W] in
+/-- `Σ_{v : Vtx} (if v.1 = b then F v else 0) = Σ_β F (b, β)`. -/
+private theorem sum_vtx_ite (F : Vtx d L W → ℝ) (b : Zd d L) :
+    ∑ v : Vtx d L W, (if v.1 = b then F v else 0) = ∑ β : Fin (W ^ d), F (b, β) := by
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single b]
+  · simp
+  · intro x _ hx
+    simp [hx]
+  · intro hb
+    exact absurd (Finset.mem_univ b) hb
+
+/-- **`|𝓛_{(+,-),(a,b)}|` in the entries of the block resolvent**: for Hermitian `M`,
+`|𝓛_{u,(+,-),(a,b)}| = (W^{-d})² Σ_{β,α} |G_{(b,β),(a,α)}|²`: rows in block `b`, columns in
+block `a`. -/
+theorem norm_loopPM_eq {E u : ℝ} (M : Matrix (Idx d L W) (Idx d L W) ℂ) (hM : M.IsHermitian)
+    (a b : Zd d L) :
+    ‖loopPM d L W E u M a b‖ = (((W : ℝ)⁻¹ ^ d) ^ 2) *
+      ∑ β : Fin (W ^ d), ∑ α : Fin (W ^ d), ‖greenBlk d L W E u M true (b, β) (a, α)‖ ^ 2 := by
+  unfold loopPM
+  rw [loopFine_pm_formula_vtx M hM (zt E u) a b, Complex.norm_real, Real.norm_of_nonneg
+    (mul_nonneg (by positivity) (Finset.sum_nonneg fun y _ => Finset.sum_nonneg fun x _ => by
+      split_ifs <;> positivity))]
+  have h1 : ∀ v : Vtx d L W, (∑ w : Vtx d L W, if v.1 = b ∧ w.1 = a then
+      ‖Gres (blockMat d L W M) (zt E u) true v w‖ ^ 2 else 0) =
+      if v.1 = b then ∑ w : Vtx d L W, (if w.1 = a then
+        ‖Gres (blockMat d L W M) (zt E u) true v w‖ ^ 2 else 0) else 0 := fun v => by
+    by_cases hv : v.1 = b <;> simp [hv]
+  have hsum : (∑ v : Vtx d L W, ∑ w : Vtx d L W, if v.1 = b ∧ w.1 = a then
+      ‖Gres (blockMat d L W M) (zt E u) true v w‖ ^ 2 else 0) =
+      ∑ β : Fin (W ^ d), ∑ α : Fin (W ^ d),
+        ‖greenBlk d L W E u M true (b, β) (a, α)‖ ^ 2 := by
+    simp only [h1]
+    rw [sum_vtx_ite (fun v => ∑ w : Vtx d L W, (if w.1 = a then
+      ‖Gres (blockMat d L W M) (zt E u) true v w‖ ^ 2 else 0)) b]
+    refine Finset.sum_congr rfl fun β _ => ?_
+    rw [sum_vtx_ite (fun w => ‖Gres (blockMat d L W M) (zt E u) true (b, β) w‖ ^ 2) a]
+    rfl
+  rw [hsum, show ((W : ℝ)⁻¹ ^ d) = ((W : ℝ) ^ d)⁻¹ from inv_pow _ _]
+
+end Extreme
+
+end RBM.Green

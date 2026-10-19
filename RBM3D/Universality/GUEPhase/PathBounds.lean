@@ -1,0 +1,669 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Universality.GUEPhase.HypB
+import RBM3D.Universality.GUEPhase.BoundsA
+import RBM3D.Universality.GUEPhase.DuhamelC
+import RBM3D.Universality.GUEPhase.EntryGrid
+import RBM3D.Universality.GUEPhase.BootstrapAt
+import RBM3D.Universality.GUEPhase.ProcK
+
+/-!
+# The output of the §7.2 random layer on the grid: `gueGrid_pathBounds`, `d ≥ 3`
+
+The argument follows the two-dimensional formalization (`GUEPhase/PathBounds` of RBM2D); the equation number (7.28)
+is that of [YY_25, §7.2].  Under the
+hypotheses of `gueGrid_pathBounds`, the GUE-phase grid path `gueH` satisfies `GUEPathBounds`
+(`Grid.lean`): (7.28) at every grid time `k ≤ K n` for `1 ≤ m ≤ n₀` against the primitive family
+`Kt`, and `‖G̃ − m‖_max ≺ (N η_u)^{-1/2}`, `N = sz.size n = (W L)^d`, on the size scale.
+
+## Contents
+
+* `gueBds_h745E`, `gueBds_h746` (public): the inputs `h745`, `h746` of the size-scale bootstraps
+  `eq727GEAt` (at `2 n₀`) and `eq728GAt` (`BootstrapAt.lean`) for the stopped, interpolated
+  processes `gueLproc`, `gueDproc` (`Proc.lean`) with `δ = gueDelta sz τU`, `K = gueGridK sz n₀`;
+* `gueGrid_pathBounds` (public): the two bootstraps, the entry bound at `δ = gueDelta sz τU`,
+  `c₀ = τU/4`, the step-`0` local law, the truncation `gue_highProb_incr_le`, and the pathwise
+  unfreezing `Bounds_path` on their intersection, concluded by
+  `BoundsACheck.pathBounds_of_forall_highProbAt`;
+* `PathBounds_init_loops`, `PathBounds_init_local` (private): the step-`0` laws.
+
+## Differences from RBM2D (`d = 2` to `d ≥ 3`)
+
+RBM2D's `d : Sizes` becomes `sz : Sizes d`; `Z2 L` becomes `Zd d L`; `spectralZ`, `spectralM` become `zt`, `mE`;
+`gloop … (blockMat M)` becomes `loopL d L W (blockMat d L W M)`; `KLoop.Kcal` becomes `sz.STKloop`
+(on `loopOf`, as in `Hyp_Kt_detDom`); `N = (W L)^2` becomes `N = (W L)^d = sz.size n`.
+
+* The loop estimate `RBM.Ind.MLConcl d E t1` of RBM2D has no counterpart here; its two consumed conjuncts
+  `InitLK`, `InitLocal` are `hLK : sz.STLK E t1` and `hLoc : sz.STLocalEntry E t1` (conclusions
+  of `UNMLOut`, at the flow `(E, t₁)`).  The scale `scaleM = N η_{t₁}`
+  (with `ℓ_{t₁} = L`, `d = 2`) becomes the inequality `W^{-d} B_{t₁,0} ≤ 2 (N η_{t₁})⁻¹` under
+  `hell : L^d (1 - t₁) ≤ ilambda²` (`PathBounds_Bctl_le`), the constant `2` absorbed in `N^τ`.
+  The union over `(σ, a)` and `(x, y)` is inside `Prec` (`STLK`, `STLocalEntry`), so the
+  counting lemmas of RBM2D are not needed.
+* `gueGrid_pathBounds` carries the extra hypothesis `hell1 : L^d (1 - t₁) ≤ 1`: the
+  `Bounds_path` has `hellN : L^d (1 - t₁) ≤ 1` while (2.10) `eq:WO` gives only
+  `ilambda ≤ 𝔡⁻¹`, so `hell : L^d (1 - t₁) ≤ ilambda²` does not imply it.  `gueBds_h745E`,
+  `gueBds_h746` do not need it.
+* `h𝔠 : 0 < 𝔠` and `Admissible 𝔠 d` of RBM2D become `hd : 3 ≤ d` and
+  `hadm : sz.Admissible 𝔠 𝔡` (as in `gueGrid_entry_bound`); in `gueBds_h746` RBM2D's
+  `hsz` is replaced by `hadm` (`ilambda ≤ 𝔡⁻¹` gives the constant `A = 1 + 2 ilambda²` of the
+  `hbig` threshold of `HypB_fixed`).
+-/
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+
+noncomputable section
+
+namespace RBM.Univ.GUEPhase
+
+open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Path RBM.Univ
+open scoped NNReal ENNReal
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-! ### The step-0 laws (private) -/
+
+section PathBoundsInit
+
+/-- The step-`0` marginal of the grid measure is the band law `seqP sz`. -/
+private theorem PathBounds_map_eval0 :
+    (Pgue sz).map (fun ω : PathΩ sz => ω 0) = Sizes.seqP sz := by
+  unfold Pgue
+  rw [Measure.infinitePi_map_eval]
+  rfl
+
+/-- A bad set at step `0` is bounded by its image under the coordinate marginal, with no
+measurability (`Measure.le_map_apply`). -/
+private theorem PathBounds_step0_le (B : Set (Sizes.SeqΩ sz)) :
+    Pgue sz ((fun ω : PathΩ sz => ω 0) ⁻¹' B) ≤ Sizes.seqP sz B := by
+  have h := Measure.le_map_apply (μ := Pgue sz) (measurable_pi_apply (0 : ℕ)).aemeasurable B
+  rwa [PathBounds_map_eval0] at h
+
+/-- `H_0 = H^{band}_{t₁}(ω 0)` (the pointwise identity inside `map_gueH_zero`). -/
+private theorem PathBounds_gueH_zero (t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (ω : PathΩ sz) :
+    gueH sz t1 t0 K n 0 ω = Sizes.seqHflow sz n (t1 n) (ω 0) := by
+  unfold gueH
+  simp [Sizes.seqHflow_eq_smul]
+
+/-- The conversion `W^{-d} B_{t,0} ≤ 2 (N η_t)⁻¹` under the zero-mode condition
+`L^d (1 - t) ≤ ilambda²` (`hell`): `(ilambda² + x)⁻¹ ≤ (L^d x)⁻¹`, so
+`Bctl ≤ 2 W^{-d} (L^d x)⁻¹ = 2 (N x)⁻¹ ≤ 2 (N x Im m)⁻¹` (`Im m ≤ 1`).  It replaces
+RBM2D's `scaleM = N η` (`d = 2`); a private re-derivation of the private `Hyp_Bctl_le`. -/
+private theorem PathBounds_Bctl_le (n : ℕ) {E t : ℝ} (hE : |E| < 2) (ht : t < 1)
+    (hell : ((sz.L n : ℕ) : ℝ) ^ d * (1 - t) ≤ sz.lam n ^ 2) :
+    sz.Bctl n t ≤ 2 * (((sz.size n : ℕ) : ℝ) * etaT E t)⁻¹ := by
+  have hx : 0 < 1 - t := by linarith
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hL : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by
+    have := sz.three_le_L n
+    exact_mod_cast (by omega : 0 < sz.L n)
+  have hWd : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := pow_pos hW d
+  have hLd : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) ^ d := pow_pos hL d
+  have hsize : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    unfold Sizes.size; push_cast; ring
+  have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by rw [hsize]; positivity
+  have hηpos : 0 < etaT E t := etaT_pos hE ht
+  have hmim : (mE E).im ≤ 1 := by
+    rw [mE_im]
+    have : Real.sqrt (4 - E ^ 2) ≤ 2 :=
+      Real.sqrt_le_iff.2 ⟨by norm_num, by nlinarith [sq_nonneg E]⟩
+    linarith
+  have hηle : etaT E t ≤ 1 - t := by
+    unfold etaT
+    calc (1 - t) * (mE E).im ≤ (1 - t) * 1 := mul_le_mul_of_nonneg_left hmim hx.le
+      _ = 1 - t := mul_one _
+  have h1 : (sz.lam n ^ 2 + (1 - t))⁻¹ ≤ (((sz.L n : ℕ) : ℝ) ^ d * (1 - t))⁻¹ :=
+    inv_anti₀ (mul_pos hLd hx) (by nlinarith [sq_nonneg (sz.lam n)])
+  have hB : Bparam d (sz.L n) (sz.lam n) t 0 ≤ 2 * (((sz.L n : ℕ) : ℝ) ^ d * (1 - t))⁻¹ := by
+    unfold Bparam
+    rw [abs_of_pos hx]
+    have e : ((((0 : ℕ) : ℝ) + 1) ^ (d - 2))⁻¹ = 1 := by simp
+    rw [e, mul_one]
+    linarith
+  have hNx : (((sz.size n : ℕ) : ℝ) * (1 - t))⁻¹ ≤ (((sz.size n : ℕ) : ℝ) * etaT E t)⁻¹ :=
+    inv_anti₀ (mul_pos hN hηpos) (mul_le_mul_of_nonneg_left hηle hN.le)
+  have hid : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (2 * (((sz.L n : ℕ) : ℝ) ^ d * (1 - t))⁻¹)
+      = 2 * (((sz.size n : ℕ) : ℝ) * (1 - t))⁻¹ := by
+    rw [hsize]
+    field_simp
+  unfold Sizes.Bctl
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * Bparam d (sz.L n) (sz.lam n) t 0
+      ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (2 * (((sz.L n : ℕ) : ℝ) ^ d * (1 - t))⁻¹) :=
+        mul_le_mul_of_nonneg_left hB (inv_nonneg.2 hWd.le)
+    _ = 2 * (((sz.size n : ℕ) : ℝ) * (1 - t))⁻¹ := hid
+    _ ≤ 2 * (((sz.size n : ℕ) : ℝ) * etaT E t)⁻¹ := by linarith
+
+/-- `Bctl ≥ 0`. -/
+private theorem PathBounds_Bctl_nonneg (n : ℕ) (t : ℝ) : 0 ≤ sz.Bctl n t := by
+  unfold Sizes.Bctl Bparam
+  positivity
+
+/-- `sz.STWB n t K ≤ sz.Bctl n t` (`((K + 1)^{d-2})⁻¹ ≤ 1`, no hypothesis on `d`). -/
+private theorem PathBounds_STWB_le (n : ℕ) (t : ℝ) (K : ℕ) : sz.STWB n t K ≤ sz.Bctl n t := by
+  unfold Sizes.STWB Sizes.Bctl Bparam
+  refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+  have h1 : (((K : ℝ) + 1) ^ (d - 2))⁻¹ ≤ 1 :=
+    inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg K : (0 : ℝ) ≤ K)]))
+  have h0 : 0 ≤ (sz.lam n ^ 2 + |1 - t|)⁻¹ := by positivity
+  have e : ((((0 : ℕ) : ℝ) + 1) ^ (d - 2))⁻¹ = 1 := by simp
+  rw [e, mul_one]
+  have := mul_le_mul_of_nonneg_left h1 h0
+  rw [mul_one] at this
+  linarith
+
+/-- The loop of the band flow is the list-based loop on `blockMat`. -/
+private theorem PathBounds_Lloop_eq (n : ℕ) (E t : ℝ) {k : ℕ} (σ : Fin k → Bool)
+    (a : Fin k → Zd d (sz.L n)) (ω : Sizes.SeqΩ sz) :
+    sz.Lloop n E t σ a ω =
+      loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (Sizes.seqHflow sz n t ω))
+        (zt E t) (loopOf σ a) :=
+  loopM_eq_loopL d (sz.L n) (sz.W n) _ _ σ a
+
+/-- `Gres H z true = green H z` (a private twin of `HypB_Gres_true`). -/
+private theorem PathBounds_Gres_true {ι : Type*} [Fintype ι] [DecidableEq ι] (H : Matrix ι ι ℂ)
+    (z : ℂ) : Gres H z true = green H z := by
+  simp only [green, Gres, Matrix.nonsing_inv_eq_ringInverse, ite_true]
+
+/-- `STGM` is the entry `(G − m)_{xy}` of the band flow at `t`. -/
+private theorem PathBounds_STGM_eq (n : ℕ) (E t : ℝ) (ω : Sizes.SeqΩ sz)
+    (x y : Idx d (sz.L n) (sz.W n)) :
+    sz.STGM n E t ω x y =
+      (green (Sizes.seqHflow sz n t ω) (zt E t) -
+        mE E • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) x y := by
+  unfold Sizes.STGM Sizes.Gt
+  rw [PathBounds_Gres_true]
+  by_cases h : x = y
+  · subst h; simp [Matrix.sub_apply, Matrix.smul_apply]
+  · simp [h, Matrix.sub_apply, Matrix.smul_apply]
+
+/-- **The loops at step `0`**: the step-`0` input `‖L_0 − K̃_{t₁}‖ ≺ (N η_{t₁})^{-k}` on `Pgue`,
+from `STLK` at `t₁` (a conclusion of `UNMLOut`) transferred through the coordinate marginal, with
+`K̃_{t₁} = STKloop` (`hKinit`) and `W^{-d} B_{t₁,0} ≤ 2 (N η_{t₁})⁻¹` (`hell`).  The union over
+`(σ, a)` is inside `STLK`. -/
+private theorem PathBounds_init_loops {E t1 : ℕ → ℝ} (t0 : ℕ → ℝ) (K : ℕ → ℕ)
+    (hsz : Tendsto sz.size atTop atTop) (hE : ∀ n, |E n| < 2)
+    (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1)
+    (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
+    (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ)
+    (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+      Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a)
+    (hLK : sz.STLK E t1) (k : ℕ) (hk : 1 ≤ k) :
+    StochDomAt (Pgue sz) sz.size
+      (fun n (x : (Fin k → Bool) × (Fin k → Zd d (sz.L n))) ω =>
+        ‖loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueH sz t1 t0 K n 0 ω))
+            (zt (E n) (gridTime t1 t0 K n 0)) (loopOf x.1 x.2) -
+          Kt n (gridTime t1 t0 K n 0) (loopOf x.1 x.2)‖)
+      (fun n _ _ => (gueScale sz E n (t1 n))⁻¹ ^ k) := by
+  intro τ hτ D hD
+  have hτ2 : 0 < τ / 2 := half_pos hτ
+  filter_upwards [hLK k hk (τ / 2) hτ2 D hD, hell,
+    hsz.eventually (eventually_le_rpow ((2 : ℝ) ^ k) hτ2),
+    hsz.eventually (eventually_ge_atTop 1)] with n hn hellN h2k hN1
+  refine le_trans (measure_mono ?_) (le_trans (PathBounds_step0_le sz _) hn)
+  intro ω hω
+  simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_preimage] at hω ⊢
+  obtain ⟨x, hx⟩ := hω
+  refine ⟨x, ?_⟩
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  have hlt : t1 n < 1 := lt_of_le_of_lt (ht10 n) (ht0 n)
+  have hB := PathBounds_Bctl_le sz n (hE n) hlt hellN
+  have hB0 := PathBounds_Bctl_nonneg sz n (t1 n)
+  have hΛ : (gueScale sz E n (t1 n))⁻¹ = (((sz.size n : ℕ) : ℝ) * etaT (E n) (t1 n))⁻¹ := rfl
+  have hpow : sz.Bctl n (t1 n) ^ k ≤ (2 : ℝ) ^ k * (gueScale sz E n (t1 n))⁻¹ ^ k := by
+    rw [← mul_pow]
+    exact pow_le_pow_left₀ hB0 (by rw [hΛ]; exact hB) k
+  have hΛ0 : 0 ≤ (gueScale sz E n (t1 n))⁻¹ ^ k := by
+    have : 0 < gueScale sz E n (t1 n) := mul_pos hN0 (etaT_pos (hE n) hlt)
+    positivity
+  have hrpow : ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) =
+      ((sz.size n : ℕ) : ℝ) ^ τ := by
+    rw [← Real.rpow_add hN0]; ring_nf
+  have hc0 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := Real.rpow_nonneg hN0.le _
+  have hkey : ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * sz.Bctl n (t1 n) ^ k ≤
+      ((sz.size n : ℕ) : ℝ) ^ τ * (gueScale sz E n (t1 n))⁻¹ ^ k := by
+    calc ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * sz.Bctl n (t1 n) ^ k
+        ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((2 : ℝ) ^ k * (gueScale sz E n (t1 n))⁻¹ ^ k) :=
+          mul_le_mul_of_nonneg_left hpow hc0
+      _ = ((2 : ℝ) ^ k * ((sz.size n : ℕ) : ℝ) ^ (τ / 2)) * (gueScale sz E n (t1 n))⁻¹ ^ k := by
+          ring
+      _ ≤ (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2)) *
+            (gueScale sz E n (t1 n))⁻¹ ^ k := by
+          refine mul_le_mul_of_nonneg_right ?_ hΛ0
+          rw [mul_comm]; exact mul_le_mul_of_nonneg_left h2k hc0
+      _ = ((sz.size n : ℕ) : ℝ) ^ τ * (gueScale sz E n (t1 n))⁻¹ ^ k := by rw [hrpow]
+  have hgt : gridTime t1 t0 K n 0 = t1 n := by simp [gridTime]
+  rw [PathBounds_gueH_zero, hgt, hKinit, ← PathBounds_Lloop_eq] at hx
+  exact lt_of_le_of_lt hkey hx
+
+/-- **The local law at step `0`**: `STLocalEntry` at `t₁` (a conclusion of `UNMLOut`) transferred
+to `Pgue` through the coordinate marginal: `‖(G − m)_{xy}‖² ≺ STWB(K) ≤ Bctl ≤ 2 (N η_{t₁})⁻¹`
+(`hell`), so `‖(G − m)_{xy}‖ ≺ (N η_{t₁})^{-1/2}` with the factor `2` absorbed in `N^τ`; the union
+over `(x, y)` is inside `STLocalEntry`. -/
+private theorem PathBounds_init_local {E t1 : ℕ → ℝ} (t0 : ℕ → ℝ) (K : ℕ → ℕ)
+    (hsz : Tendsto sz.size atTop atTop) (hE : ∀ n, |E n| < 2)
+    (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1)
+    (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
+    (hLoc : sz.STLocalEntry E t1) :
+    StochDomAt (Pgue sz) sz.size
+      (fun n (ij : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) ω =>
+        ‖(green (gueH sz t1 t0 K n 0 ω) (zt (E n) (t1 n)) -
+          mE (E n) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ))
+            ij.1 ij.2‖)
+      (fun n _ _ => (gueScale sz E n (t1 n))⁻¹ ^ ((1 : ℝ) / 2)) := by
+  intro τ hτ D hD
+  filter_upwards [hLoc τ hτ D hD, hell, hsz.eventually (eventually_le_rpow (2 : ℝ) hτ),
+    hsz.eventually (eventually_ge_atTop 1)] with n hn hellN h2 hN1
+  refine le_trans (measure_mono ?_) (le_trans (PathBounds_step0_le sz _) hn)
+  intro ω hω
+  simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_preimage] at hω ⊢
+  obtain ⟨ij, hij⟩ := hω
+  refine ⟨ij, ?_⟩
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  have hlt : t1 n < 1 := lt_of_le_of_lt (ht10 n) (ht0 n)
+  have hB := PathBounds_Bctl_le sz n (hE n) hlt hellN
+  have hW := PathBounds_STWB_le sz n (t1 n) (zdistInf d (sz.L n) (sz.STblk n ij.1 - sz.STblk n ij.2))
+  have hsc : 0 < gueScale sz E n (t1 n) := mul_pos hN0 (etaT_pos (hE n) hlt)
+  have hΛ : (gueScale sz E n (t1 n))⁻¹ = (((sz.size n : ℕ) : ℝ) * etaT (E n) (t1 n))⁻¹ := rfl
+  have hΛ0 : 0 ≤ (gueScale sz E n (t1 n))⁻¹ := inv_nonneg.2 hsc.le
+  have hcp : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_nonneg hN0.le _
+  have hsqrt : ((gueScale sz E n (t1 n))⁻¹ ^ ((1 : ℝ) / 2)) ^ 2 = (gueScale sz E n (t1 n))⁻¹ := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hΛ0]; norm_num
+  have hrhs0 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (gueScale sz E n (t1 n))⁻¹ ^ ((1 : ℝ) / 2) :=
+    mul_nonneg hcp (Real.rpow_nonneg hΛ0 _)
+  have hsq : (((sz.size n : ℕ) : ℝ) ^ τ * (gueScale sz E n (t1 n))⁻¹ ^ ((1 : ℝ) / 2)) ^ 2 <
+      ‖(green (Sizes.seqHflow sz n (t1 n) (ω 0)) (zt (E n) (t1 n)) -
+        mE (E n) • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ))
+          ij.1 ij.2‖ ^ 2 := by
+    rw [PathBounds_gueH_zero] at hij
+    exact pow_lt_pow_left₀ hij hrhs0 (by norm_num)
+  rw [PathBounds_STGM_eq]
+  refine lt_of_le_of_lt ?_ hsq
+  rw [mul_pow, hsqrt, ← Real.rpow_natCast, ← Real.rpow_mul hN0.le]
+  have h2' : ((sz.size n : ℕ) : ℝ) ^ τ * (((sz.size n : ℕ) : ℝ) ^ τ) =
+      ((sz.size n : ℕ) : ℝ) ^ ((τ * (2 : ℕ)) : ℝ) := by
+    rw [← Real.rpow_add hN0]; push_cast; ring_nf
+  calc ((sz.size n : ℕ) : ℝ) ^ τ * sz.STWB n (t1 n) (zdistInf d (sz.L n) (sz.STblk n ij.1 - sz.STblk n ij.2))
+      ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (2 * (gueScale sz E n (t1 n))⁻¹) :=
+        mul_le_mul_of_nonneg_left (hW.trans (by rw [hΛ]; exact hB)) hcp
+    _ = (((sz.size n : ℕ) : ℝ) ^ τ * 2) * (gueScale sz E n (t1 n))⁻¹ := by ring
+    _ ≤ (((sz.size n : ℕ) : ℝ) ^ τ * ((sz.size n : ℕ) : ℝ) ^ τ) * (gueScale sz E n (t1 n))⁻¹ :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h2 hcp) hΛ0
+    _ = _ := by rw [h2']
+
+end PathBoundsInit
+
+/-! ### (7.45)G and (7.46)G for the stopped, interpolated processes -/
+
+section PathBoundsHyp
+
+open RBM.Ind.PerTimeCalc
+
+/-- `0 ≤ ilambda ≤ 𝔡⁻¹` eventually (from `(eq:WO)`, `hadm.2.2.2.2`). -/
+private theorem PathBounds_lam_bd {𝔠 𝔡 : ℝ} (hadm : sz.Admissible 𝔠 𝔡) :
+    ∀ᶠ n in atTop, 0 ≤ sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
+  filter_upwards [hadm.2.2.2.2] with n hn
+  exact ⟨(Real.rpow_nonneg (Nat.cast_nonneg _) _).trans hn.1, hn.2⟩
+
+/-- The `hbig` threshold of `HypB_fixed` (`2 + 2^{2n₀} + (3 + 4A)(2n₀)² ≤ N^{τ/2}`, `A = 1 + 2 lam²`)
+holds eventually: `lam ≤ 𝔡⁻¹` bounds `A` (the source has the constant `7`, `A = 3`). -/
+private theorem PathBounds_hbig {𝔠 𝔡 : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
+    (hsz : Tendsto sz.size atTop atTop) (n0 : ℕ) {τ2 : ℝ} (hτ2 : 0 < τ2) :
+    ∀ᶠ n in atTop, 2 + 2 ^ (2 * n0) + (3 + 4 * (1 + 2 * sz.lam n ^ 2)) *
+      ((2 * n0 : ℕ) : ℝ) ^ 2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ2 := by
+  filter_upwards [hsz.eventually (eventually_le_rpow
+    (2 + 2 ^ (2 * n0) + (3 + 4 * (1 + 2 * (𝔡⁻¹) ^ 2)) * ((2 * n0 : ℕ) : ℝ) ^ 2) hτ2),
+    PathBounds_lam_bd sz hadm] with n h1 h2
+  refine le_trans ?_ h1
+  have : sz.lam n ^ 2 ≤ (𝔡⁻¹) ^ 2 := pow_le_pow_left₀ h2.1 h2.2 2
+  gcongr
+
+/-- **(7.45)G at even lengths `2 ≤ m ≤ 2n₀`** for the stopped, interpolated processes: the `h745`
+of `eq727GEAt` (with `n₀' = 2 n₀`), over the whole interval `[t₁, t₀]`, on `Pgue sz` and the size
+scale.  The step-`0` input is `STLK` at `t₁` (the loop conclusion of `UNMLOut`, in place of
+RBM2D's `InitLK` of `MLConcl`); `Admissible 𝔠 𝔡` gives `sz.size → ∞`, `ilambda ≤ 𝔡⁻¹` and the hypothesis
+of `gueGrid_entry_bound`; constants and counts are on `N = sz.size n` (`HypB_*`). -/
+theorem gueBds_h745E (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
+    (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (_hn0 : 2 ≤ n0) {E t1 t0 : ℕ → ℝ}
+    (hE : ∀ n, |E n| ≤ 2 - κ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
+    (ht0 : ∀ n, t0 n < 1)
+    (h730 : ∀ᶠ n in atTop, t0 n - t1 n ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) (t0 n))
+    (hscale : ∀ᶠ n in atTop, (gueScale sz E n (t0 n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU))
+    (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
+    (hKb : sz.STKbound E)
+    (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ)
+    (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+      Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a)
+    (hK : ∀ n, ∀ t ∈ Set.Icc (t1 n) (t0 n), ∀ I : RBM.Loop.LoopIdx (Zd d (sz.L n)), I.WF →
+      1 ≤ I.length → I.length ≤ 4 * n0 →
+      HasDerivWithinAt (fun s => Kt n s I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n t) I)
+        (Set.Icc (t1 n) (t0 n)) t)
+    (hLK : sz.STLK E t1) :
+    StochDomAt (Pgue sz) sz.size
+      (fun n (p : TimeIcc t1 t0 n × {m : ℕ // m ∈ Set.Icc 2 (2 * n0) ∧ Even m}) ω =>
+        gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n p.2.1 p.1 ω)
+      (fun n p ω => rhs745G ((sz.size n : ℕ) : ℝ) (etaT (E n)) (t1 n)
+        (fun m t => gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n m t ω)
+        (fun m t => gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n m t ω) p.2.1 p.1) := by
+  classical
+  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hadm.2.2.1
+  have hEb : ∀ n, |E n| < 2 := fun n => by linarith [hE n]
+  have hI := fun k (hk : 1 ≤ k) =>
+    PathBounds_init_loops sz t0 (gueGridK sz n0) hsz hEb ht10 ht0 hell Kt hKinit hLK k hk
+  have hKtd := Hyp_Kt_detDom sz hκ hτU n0 hE ht1 ht10 ht0 hsz h730 hell hKb Kt hKinit hK
+  have hD4 := gueGrid_entry_bound sz hd hadm hκ n0 hE ht1 ht10 ht0 (δ := gueDelta sz τU)
+    (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) (c₀ := τU / 4) (by positivity)
+    (Eventually.of_forall fun n => le_of_eq rfl)
+  intro τ hτ D hD
+  have hτ2 : 0 < τ / 2 := by positivity
+  have hG1 := HypB_highProb_range sz hsz (2 * n0) _
+    (fun k h1 _ => perTimeCalc_highProbAt_of_stochDomAt (hI k h1) hτ2)
+  have hG2 := HypB_highProb_range sz hsz (2 * n0) _
+    (fun k h1 h2 => perTimeCalc_highProbAt_of_stochDomAt
+      (gueGrid_loop_duhamel sz hκ hτU n0 hsz hE ht1 ht10 ht0 hscale k h1 h2) hτ2)
+  have hG3 := perTimeCalc_highProbAt_of_stochDomAt hD4 hτ2
+  filter_upwards [(perTimeCalc_highProbAt_inter hsz (perTimeCalc_highProbAt_inter hsz hG1 hG2) hG3)
+      D hD, hKtd (τ / 2) hτ2, hKtd (τU / 2) (by positivity), hell, hscale, h730,
+    HypB_ev_grid sz hsz n0, HypB_ev_delta sz hκ hτU hsz hE,
+    PathBounds_hbig sz hadm hsz n0 hτ2,
+    hsz.eventually (eventually_ge_atTop 1)]
+    with n hGn hKtN hKt1N hellN hscaleN h730N hgridN hδN hbigN hN1
+  refine (measure_mono ?_).trans hGn
+  rintro ω ⟨⟨⟨t, ht⟩, ⟨m, ⟨hm2, hmn⟩, heven⟩⟩, hp⟩ hω
+  obtain ⟨⟨hω1, hω2⟩, hω3⟩ := hω
+  obtain ⟨l, hl⟩ := heven
+  have hnl : m = 2 * l := by omega
+  subst hnl
+  have hl1 : 1 ≤ l := by omega
+  refine absurd hp (not_lt.2 ?_)
+  have hω1' := hω1 (2 * l) (by omega) hmn
+  have hω2' := hω2 (2 * l) (by omega) hmn
+  simp only [Set.mem_ofPred_eq] at hω1' hω2' hω3
+  have hN1R : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  have hc1 : (1 : ℝ) ≤ N ^ (τ / 2) := Real.one_le_rpow hN1R hτ2.le
+  have hS0 : (0 : ℝ) ≤ N := Nat.cast_nonneg _
+  have hA1 : (1 : ℝ) ≤ 1 + 2 * sz.lam n ^ 2 := by nlinarith [sq_nonneg (sz.lam n)]
+  exact HypB_fixed sz hτ n0 τU Kt hK n (2 * l) ω
+    (fun u => gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n 2 u ω *
+      gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * l) u ω)
+    (fun u => Real.sqrt (N⁻¹ * (etaT (E n) u)⁻¹ ^ 2) *
+      gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * l) u ω)
+    (Ce := ((2 * l : ℕ) : ℝ) * (1 + 2 * sz.lam n ^ 2) * N ^ (τ / 2) * N)
+    (hEb n) (ht1 n) (ht10 n) (ht0 n) (by omega) hmn
+    (HypB_step_le sz n0 n (hEb n) (ht10 n) (ht0 n) h730N hτU) hgridN.1 hgridN.2
+    (HypB_Kt_le_one sz hτU n0 n Kt (hEb n) (ht0 n)
+      (fun p => hKt1N p.1.1 p.1.2 p.2.1 p.2.2.1 p.2.2.2.1 p.2.2.2.2) hscaleN)
+    hKtN hbigN (by positivity)
+    (by
+      have hl' : (1 : ℝ) ≤ ((2 * l : ℕ) : ℝ) := by exact_mod_cast (by omega : 1 ≤ 2 * l)
+      have hc0 : (0 : ℝ) ≤ N ^ (τ / 2) := by linarith
+      have h1 : ((2 * l : ℕ) : ℝ) ≤ 4 * ((2 * l : ℕ) : ℝ) ^ 2 := by nlinarith
+      have h2 : 0 ≤ (1 + 2 * sz.lam n ^ 2) * N ^ (τ / 2) * N :=
+        mul_nonneg (mul_nonneg (by linarith) hc0) hS0
+      have h3 := mul_le_mul_of_nonneg_right h1 h2
+      nlinarith)
+    (fun u _ => mul_nonneg (gueLproc_nonneg _ _ _ _ _ _ _ _ _ _)
+      (gueLproc_nonneg _ _ _ _ _ _ _ _ _ _))
+    (fun u _ => mul_nonneg (Real.sqrt_nonneg _) (gueLproc_nonneg _ _ _ _ _ _ _ _ _ _))
+    ((gueLproc_continuousOn _ _ _ _ _ _ _ _ _).mul (gueLproc_continuousOn _ _ _ _ _ _ _ _ _))
+    ((HypB_sqrt_cont sz n (hEb n) (ht0 n)).mul (gueLproc_continuousOn _ _ _ _ _ _ _ _ _))
+    (fun x => hω1' x)
+    (fun k hk x => hω2' (⟨k, Nat.lt_succ_of_le hk⟩, x))
+    (fun j hj => by
+      rw [HypB_Lproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * l) j ω (ht10 n) hj]
+      exact HypB_q_745 ((gueH_isHermitian sz t1 t0 (gueGridK sz n0) n j ω).submatrix _) _
+        (by positivity) hl1)
+    (fun j hj x => by
+      rw [HypB_Lproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n 2 j ω (ht10 n) hj,
+        HypB_Lproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * l) j ω (ht10 n) hj]
+      exact HypB_eG_745 sz (gueGridK sz n0) n j ω hc1 hl1
+        (fun q => HypB_entry_le sz (by omega) hκ n0 hE ht10 ht0 n hellN hδN ω (by linarith)
+          (fun k i j' => hω3 (k, (i, j'))) hj q) x)
+    ht
+
+/-- **(7.46)G at lengths `1 ≤ m ≤ n₀`** for the stopped, interpolated processes: the `h746` of
+`eq728GAt`, over the whole interval `[t₁, t₀]`.  The step-`0` input is `STLK` at `t₁`; the entry
+bound is not needed; `Admissible 𝔠 𝔡` gives `sz.size → ∞` and `ilambda ≤ 𝔡⁻¹` (the constant of
+`hbig`). -/
+theorem gueBds_h746 {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
+    (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (hn0 : 2 ≤ n0) {E t1 t0 : ℕ → ℝ}
+    (hE : ∀ n, |E n| ≤ 2 - κ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
+    (ht0 : ∀ n, t0 n < 1)
+    (h730 : ∀ᶠ n in atTop, t0 n - t1 n ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) (t0 n))
+    (hscale : ∀ᶠ n in atTop, (gueScale sz E n (t0 n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU))
+    (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
+    (hKb : sz.STKbound E)
+    (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ)
+    (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+      Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a)
+    (hK : ∀ n, ∀ t ∈ Set.Icc (t1 n) (t0 n), ∀ I : RBM.Loop.LoopIdx (Zd d (sz.L n)), I.WF →
+      1 ≤ I.length → I.length ≤ 4 * n0 →
+      HasDerivWithinAt (fun s => Kt n s I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n t) I)
+        (Set.Icc (t1 n) (t0 n)) t)
+    (hLK : sz.STLK E t1) :
+    StochDomAt (Pgue sz) sz.size
+      (fun n (p : TimeIcc t1 t0 n × Set.Icc 1 n0) ω =>
+        gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n p.2 p.1 ω)
+      (fun n p ω => rhs746G ((sz.size n : ℕ) : ℝ) (etaT (E n)) (t1 n)
+        (fun m t => gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n m t ω)
+        (fun m t => gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n m t ω) p.2 p.1) := by
+  classical
+  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hadm.2.2.1
+  have hEb : ∀ n, |E n| < 2 := fun n => by linarith [hE n]
+  have hI := fun k (hk : 1 ≤ k) =>
+    PathBounds_init_loops sz t0 (gueGridK sz n0) hsz hEb ht10 ht0 hell Kt hKinit hLK k hk
+  have hKtd := Hyp_Kt_detDom sz hκ hτU n0 hE ht1 ht10 ht0 hsz h730 hell hKb Kt hKinit hK
+  intro τ hτ D hD
+  have hτ2 : 0 < τ / 2 := by positivity
+  have hG1 := HypB_highProb_range sz hsz (2 * n0) _
+    (fun k h1 _ => perTimeCalc_highProbAt_of_stochDomAt (hI k h1) hτ2)
+  have hG2 := HypB_highProb_range sz hsz (2 * n0) _
+    (fun k h1 h2 => perTimeCalc_highProbAt_of_stochDomAt
+      (gueGrid_loop_duhamel sz hκ hτU n0 hsz hE ht1 ht10 ht0 hscale k h1 h2) hτ2)
+  filter_upwards [(perTimeCalc_highProbAt_inter hsz hG1 hG2) D hD, hKtd (τ / 2) hτ2,
+    hKtd (τU / 2) (by positivity), hscale, h730, HypB_ev_grid sz hsz n0,
+    PathBounds_hbig sz hadm hsz n0 hτ2,
+    hsz.eventually (eventually_ge_atTop 1)]
+    with n hGn hKtN hKt1N hscaleN h730N hgridN hbigN hN1
+  refine (measure_mono ?_).trans hGn
+  rintro ω ⟨⟨⟨t, ht⟩, ⟨m, hmem⟩⟩, hp⟩ hω
+  have hm1 : 1 ≤ m := hmem.1
+  have hmn : m ≤ n0 := hmem.2
+  obtain ⟨hω1, hω2⟩ := hω
+  refine absurd hp (not_lt.2 ?_)
+  have hm' : m ≤ 2 * n0 := by omega
+  have hω1' := hω1 m hm1 hm'
+  have hω2' := hω2 m hm1 hm'
+  have hN1R : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  have hc1 : (1 : ℝ) ≤ N ^ (τ / 2) := Real.one_le_rpow hN1R hτ2.le
+  have hS0 : (0 : ℝ) ≤ N := Nat.cast_nonneg _
+  have hA1 : (1 : ℝ) ≤ 1 + 2 * sz.lam n ^ 2 := by nlinarith [sq_nonneg (sz.lam n)]
+  exact HypB_fixed sz hτ n0 τU Kt hK n m ω
+    (fun u => gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n 1 u ω *
+      gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (m + 1) u ω)
+    (fun u => Real.sqrt (N⁻¹ * (etaT (E n) u)⁻¹ ^ 2) *
+      Real.sqrt (gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * m) u ω))
+    (Ce := (m : ℝ) * N)
+    (hEb n) (ht1 n) (ht10 n) (ht0 n) hm1 hm'
+    (HypB_step_le sz n0 n (hEb n) (ht10 n) (ht0 n) h730N hτU) hgridN.1 hgridN.2
+    (HypB_Kt_le_one sz hτU n0 n Kt (hEb n) (ht0 n)
+      (fun p => hKt1N p.1.1 p.1.2 p.2.1 p.2.2.1 p.2.2.2.1 p.2.2.2.2) hscaleN)
+    hKtN hbigN (by positivity)
+    (by
+      have hn1' : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm1
+      have hc0 : (0 : ℝ) ≤ N ^ (τ / 2) := by linarith
+      have h1 : (m : ℝ) ≤ 4 * (1 + 2 * sz.lam n ^ 2) * (m : ℝ) ^ 2 * N ^ (τ / 2) := by
+        have hAc : (1 : ℝ) ≤ (1 + 2 * sz.lam n ^ 2) * N ^ (τ / 2) := by nlinarith
+        nlinarith
+      calc (m : ℝ) * N ≤ (4 * (1 + 2 * sz.lam n ^ 2) * (m : ℝ) ^ 2 * N ^ (τ / 2)) * N :=
+            mul_le_mul_of_nonneg_right h1 hS0
+        _ = _ := by ring)
+    (fun u _ => mul_nonneg (gueDproc_nonneg _ _ _ _ _ _ _ _ _ _ _)
+      (gueLproc_nonneg _ _ _ _ _ _ _ _ _ _))
+    (fun u _ => mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+    ((gueDproc_continuousOn _ _ _ _ _ _ _ _ _ _).mul (gueLproc_continuousOn _ _ _ _ _ _ _ _ _))
+    ((HypB_sqrt_cont sz n (hEb n) (ht0 n)).mul
+      (Real.continuous_sqrt.comp_continuousOn (gueLproc_continuousOn _ _ _ _ _ _ _ _ _)))
+    (fun x => hω1' x)
+    (fun k hk x => hω2' (⟨k, Nat.lt_succ_of_le hk⟩, x))
+    (fun j hj => by
+      rw [HypB_Lproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (2 * m) j ω (ht10 n) hj,
+        ← Real.sqrt_mul (by positivity)])
+    (fun j hj x => by
+      rw [HypB_Dproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n 1 j ω (ht10 n) hj,
+        HypB_Lproc_grid sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n (m + 1) j ω (ht10 n) hj]
+      exact HypB_eG_746 sz (gueGridK sz n0) n0 (by omega) Kt hKinit hK n j m
+        (Hyp_time_mem (ht10 n) (gueGridK_ne_zero sz n0 n)
+          ((le_of_lt hj).trans (firstHit_le _ _ _ ω))) ω x)
+    ht
+
+end PathBoundsHyp
+
+/-! ### The main statement -/
+
+section PathBoundsMain
+
+open RBM.Ind.PerTimeCalc
+
+/-- **The output of the §7.2 random layer on the grid**: under the hypotheses of the theorem,
+the GUE-phase grid path `gueH` satisfies `GUEPathBounds`: (7.28) at every grid time `k ≤ K n` for
+`1 ≤ m ≤ n₀` against the primitive family `Kt`, and `‖G̃ − m‖_max ≺ (N η_u)^{-1/2}`.
+
+Proof: the two bootstraps `eq727GEAt` (at `2 n₀`, with the processes of `Proc.lean`,
+`gueBds_h745E`) and `eq728GAt` (`gueBds_h746`); the other random inputs (the entry bound
+`gueGrid_entry_bound` at `δ = gueDelta sz τU`, `c₀ = τU/4`, the step-`0` local law, the increment
+truncation `gue_highProb_incr_le`); the pathwise unfreezing `Bounds_path` on their intersection
+(`τ₁ = min(τ, τU)/16`); `BoundsACheck.pathBounds_of_forall_highProbAt`.
+
+Here `hLK : sz.STLK E t1` and `hLoc : sz.STLocalEntry E t1` (conclusions of `UNMLOut`) replace the
+loop estimate `MLConcl d E t1` of RBM2D: `STLK` gives the step-`0` loops, `STLocalEntry` the
+step-`0` local law; `Admissible 𝔠 𝔡` gives `sz.size → ∞`, `ilambda ≤ 𝔡⁻¹` and the hypothesis of the
+entry bound; the size scale `N = sz.size n = (W L)^d` is used throughout;
+`hsmallN : N^{2τ₁ − τU/2} ≤ 1/32`, `h4N : 2 ≤ N^{τ − τ₁}` as in `Bounds_path`.  `hell1`
+is the hypothesis `hellN` of `Bounds_path`. -/
+theorem gueGrid_pathBounds (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
+    (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (hn0 : 2 ≤ n0) {E t1 t0 : ℕ → ℝ}
+    (hE : ∀ n, |E n| ≤ 2 - κ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
+    (ht0 : ∀ n, t0 n < 1)
+    (h730 : ∀ᶠ n in atTop, t0 n - t1 n ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) (t0 n))
+    (hscale : ∀ᶠ n in atTop, (gueScale sz E n (t0 n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU))
+    (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
+    (hell1 : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ 1)
+    (hKb : sz.STKbound E)
+    (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ)
+    (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+      Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a)
+    (hK : ∀ n, ∀ t ∈ Set.Icc (t1 n) (t0 n), ∀ I : RBM.Loop.LoopIdx (Zd d (sz.L n)), I.WF →
+      1 ≤ I.length → I.length ≤ 4 * n0 →
+      HasDerivWithinAt (fun s => Kt n s I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n t) I)
+        (Set.Icc (t1 n) (t0 n)) t)
+    (hLK : sz.STLK E t1) (hLoc : sz.STLocalEntry E t1) :
+    GUEPathBounds sz E t1 t0 (gueGridK sz n0) n0 Kt := by
+  classical
+  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hadm.2.2.1
+  /- Deterministic facts on `η = etaT (E n)` (the side conditions of the bootstraps). -/
+  have hEb : ∀ n, |E n| < 2 := fun n => by linarith [hE n]
+  have hmim : ∀ n, 0 < (mE (E n)).im := fun n => mE_im_pos (hEb n)
+  have hη : ∀ n, ∀ t ∈ Set.Icc (t1 n) (t0 n), 0 < etaT (E n) t := fun n t ht =>
+    mul_pos (by linarith [ht.2, ht0 n]) (hmim n)
+  have hanti : ∀ n, ∀ u ∈ Set.Icc (t1 n) (t0 n), ∀ t ∈ Set.Icc (t1 n) (t0 n), u ≤ t →
+      etaT (E n) t ≤ etaT (E n) u := fun n u _ t _ hut => by
+    unfold etaT
+    exact mul_le_mul_of_nonneg_right (by linarith) (hmim n).le
+  have hηc : ∀ n, ContinuousOn (etaT (E n)) (Set.Icc (t1 n) (t0 n)) := fun n => by
+    unfold etaT
+    exact ((continuous_const.sub continuous_id).mul continuous_const).continuousOn
+  have hNpos : ∀ n, (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := fun n => by
+    have h1 : 0 < sz.size n := by
+      unfold Sizes.size
+      have hW := sz.W_pos n
+      have hL := sz.three_le_L n
+      positivity
+    exact_mod_cast h1
+  have ht0mem : ∀ n, t0 n ∈ Set.Icc (t1 n) (t0 n) := fun n => ⟨ht10 n, le_rfl⟩
+  have h730' : ∀ᶠ n in atTop, ∀ t ∈ Set.Icc (t1 n) (t0 n),
+      t - t1 n ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) t := by
+    filter_upwards [h730] with n hN t ht
+    have h1 := hanti n t ht (t0 n) (ht0mem n) ht.2
+    calc t - t1 n ≤ t0 n - t1 n := by linarith [ht.2]
+      _ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) (t0 n) := hN
+      _ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaT (E n) t :=
+          mul_le_mul_of_nonneg_left h1 (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+  have hscale' : ∀ᶠ n in atTop, ∀ t ∈ Set.Icc (t1 n) (t0 n),
+      (((sz.size n : ℕ) : ℝ) * etaT (E n) t)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) := by
+    filter_upwards [hscale] with n hN t ht
+    refine le_trans ?_ hN
+    unfold gueScale
+    have h0 := hη n (t0 n) (ht0mem n)
+    have h1 := hanti n t ht (t0 n) (ht0mem n) ht.2
+    exact inv_anti₀ (mul_pos (hNpos n) h0) (mul_le_mul_of_nonneg_left h1 (hNpos n).le)
+  /- The bootstraps: `eq727GEAt` at `2 n₀`, then `eq728GAt`. -/
+  have h727 := eq727GEAt (Pgue sz) sz.size hsz (n0 := 2 * n0) (even_two_mul n0)
+    (fun n => ((sz.size n : ℕ) : ℝ)) (fun n => etaT (E n)) t1 t0
+    (fun n m t ω => gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n m t ω)
+    (fun n m t ω => gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n m t ω)
+    (fun n m t => gueKproc sz t1 t0 (gueGridK sz n0) Kt n m t)
+    hNpos ht10 hη hanti hηc hτU h730' hscale'
+    (fun n m t ω => gueLproc_nonneg sz E t1 t0 _ _ n m t ω)
+    (fun n m t ω => gueDproc_nonneg sz E t1 t0 _ _ Kt n m t ω)
+    (fun n ω m _ t _ => gueLproc_le sz E t1 t0 _ _ Kt n m t ω)
+    (fun n ω m _ t _ => gueDproc_le sz E t1 t0 _ _ Kt n m t ω)
+    (fun n ω l hl _ t _ => gueLproc_odd sz E t1 t0 _ _ n l hl t ω)
+    (fun ε hε => (gueKproc_detDom sz hκ hτU n0 hE ht1 ht10 ht0 hsz h730 hscale hell hKb Kt hKinit hK
+      ε hε).mono fun n hn u => hn u.1 u.2)
+    (perTimeCalc_highProbAt_mono (highProbAt_univ _ _)
+      (Eventually.of_forall fun n ω _ m _ _ => gueLproc_continuousOn sz E t1 t0 _ _ n m ω))
+    (gueBds_h745E sz hd hadm hκ hτU n0 hn0 hE ht1 ht10 ht0 h730 hscale hell hKb Kt hKinit hK hLK)
+  have h728 := eq728GAt (Pgue sz) sz.size hsz (n0 := n0)
+    (fun n => ((sz.size n : ℕ) : ℝ)) (fun n => etaT (E n)) t1 t0
+    (fun n m t ω => gueLproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) n m t ω)
+    (fun n m t ω => gueDproc sz E t1 t0 (gueGridK sz n0) (gueDelta sz τU) Kt n m t ω)
+    hNpos ht10 hη hanti hηc hτU h730' hscale'
+    (fun n m t ω => gueLproc_nonneg sz E t1 t0 _ _ n m t ω)
+    (fun n m t ω => gueDproc_nonneg sz E t1 t0 _ _ Kt n m t ω) h727
+    (perTimeCalc_highProbAt_mono (highProbAt_univ _ _)
+      (Eventually.of_forall fun n ω _ m _ => gueDproc_continuousOn sz E t1 t0 _ _ Kt n m ω))
+    (gueBds_h746 sz hadm hκ hτU n0 hn0 hE ht1 ht10 ht0 h730 hscale hell hKb Kt hKinit hK hLK)
+  /- The other random inputs: the entry bound with `δ = N^{-τU/4}`, the step-`0` local law, truncation. -/
+  have hD4 := gueGrid_entry_bound sz hd hadm hκ n0 hE ht1 ht10 ht0 (δ := gueDelta sz τU)
+    (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) (c₀ := τU / 4) (by positivity)
+    (Eventually.of_forall fun n => le_of_eq rfl)
+  have hinit := PathBounds_init_local sz t0 (gueGridK sz n0) hsz hEb ht10 ht0 hell hLoc
+  /- Unfreezing and conclusion on the intersection of the good events. -/
+  have hmain : ∀ τ : ℝ, 0 < τ → HighProbAt (Pgue sz) sz.size
+      (fun n => {ω : PathΩ sz | BoundsACheck.Concl sz E t1 t0 n0 Kt τ n ω}) := by
+    intro τ hτ
+    set τ₁ : ℝ := min τ τU / 16 with hτ₁
+    have hτ₁0 : 0 < τ₁ := by have := lt_min hτ hτU; positivity
+    have hτ₁τ : τ₁ < τ := by have := min_le_left τ τU; have := lt_min hτ hτU; linarith
+    have hneg : 2 * τ₁ - τU / 2 < 0 := by have := min_le_right τ τU; linarith
+    have hev := perTimeCalc_highProbAt_inter hsz
+      (perTimeCalc_highProbAt_inter hsz
+        (perTimeCalc_highProbAt_inter hsz
+          (perTimeCalc_highProbAt_inter hsz
+            (BoundsACheck.highProbAt_hA sz E t1 t0 n0 τU hτ₁0 h727)
+            (BoundsACheck.highProbAt_hB sz E t1 t0 n0 τU hτ₁0 Kt h728))
+          (BoundsACheck.highProbAt_HC sz E t1 t0 n0 τU hτ₁0 hD4))
+        (BoundsACheck.highProbAt_hD sz E t1 t0 n0 hτ₁0 hinit))
+      (BoundsACheck.highProbAt_hF sz n0 hsz)
+    refine perTimeCalc_highProbAt_mono hev ?_
+    filter_upwards [hscale', hell1,
+      hsz.eventually (eventually_rpow_le_of_neg hneg (by norm_num : (0 : ℝ) < 1 / 32)),
+      hsz.eventually (eventually_le_rpow 2 (sub_pos.2 hτ₁τ))]
+      with n hscN hellN hsmallN h4N
+    rintro ω ⟨⟨⟨⟨hA, hBω⟩, hC⟩, hD⟩, hFω⟩
+    exact Bounds_path sz n0 hn0 Kt n hτU (hEb n) (ht1 n) (ht10 n) (ht0 n) hτ₁0 hτ₁τ hscN hellN
+      hsmallN h4N ω hA hBω hC hD hFω
+  exact BoundsACheck.pathBounds_of_forall_highProbAt sz E t1 t0 n0 Kt hmain
+
+end PathBoundsMain
+
+end RBM.Univ.GUEPhase
+
+
+end

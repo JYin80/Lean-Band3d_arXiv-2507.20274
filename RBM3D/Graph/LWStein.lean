@@ -1,0 +1,1302 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Graph.LWVocab
+import RBM3D.Graph.Expansions
+import RBM3D.Green.LDEQuad
+import RBM3D.Gauss.FineModel
+import RBM3D.Gauss.FlowCalculus
+import Mathlib.Algebra.MvPolynomial.Basic
+import Mathlib.LinearAlgebra.Matrix.Gershgorin
+
+/-!
+# The Stein bridge of the expansions `(Owx)`, `(Oe1x)`, `(Oe2x)`
+
+Paper: Lemma 7.11 (`ssl`, `(Owx)` (7.20)), Lemma 7.12 (`Oe14`, `(Oe1x)` (7.22)) and Lemma 7.13
+(`T eq0`, `(Oe2x)` (7.23)); the paper cites Lemmas 3.5, 3.10, 3.14 of
+`[yang2021delocalization]` and gives no proof.  The vocabulary is `Graph/LWVocab.lean`; the model
+is `Gauss/FineModel.lean`.
+
+## Contents (namespace `RBM.Graph`)
+
+* **The weight expansion as a Stein identity**: `owxDefect`, `owx_defect_identity` (`(Owx)` is
+  the Stein identity plus linear algebra: pathwise, with the Stein defect `Z_w` of the row `w`).
+* **The derivative** `dhSample` (`∂_{h_{αw}}` on functions of the sample), through the real
+  coordinates of the entry `(α, w)` of the model: the Wirtinger derivative that treats `h_{αw}`
+  and `h_{wα} = \bar h_{αw}` as independent, the real derivative on the diagonal (the docstring
+  of `dhSample` fixes the convention).  Closed forms
+  `dhSample_lwG : ∂_{h_{αw}} G_{ij} = -G_{iα} G_{wj}` and
+  `dhSample_lwG_star : ∂_{h_{αw}} \bar G_{ij} = -\overline{G_{iw} G_{αj}}` for
+  `G = (H_u - z)⁻¹`, `Im z > 0`, `u > 0` (the real-direction derivative of the inverse,
+  `lwStein_hasDerivAt_inv`, is proved here from `hasFDerivAt_ringInverse`; the complex direction
+  `E_{αw}` is `hasDerivAt_inverse_apply`).
+* **Complex Stein on the model**: the class `Tame1` of `C¹`-tame functions of the sample,
+  resolvent polynomials `lwPoly` (`MvPolynomial` in `G_{ij}`, `\bar G_{ij}`) and
+  `lwPoly_tame1` (bounded by `(Im z)⁻¹` per entry, continuous, finitely dependent, with tame
+  derivatives), the Leibniz rule `lwStein_dh_mul`, and `stein_sample`:
+  `E[(H_u)_{wα} F] = u S_{wα} E[∂_{h_{αw}} F]`, `S = svarF`, for every `w, α` including `w = α`
+  (case analysis on the orientation of the entry by `idxKey`, two applications of
+  `GaussIBP.stein`, the variances of `CoordF`: `S_{wα}/2` off the diagonal, `S_{ww}` on it).
+* **`(Owx)` in expectation**: `integral_owxDefect` (`E Z_w = 0` for every resolvent polynomial
+  `f`, `df α w = ∂_{h_{αw}} f`, from `stein_sample` and the resolvent identity
+  `Σ_α H_{wα} G_{αw} = 1 + z G_{ww}`) and `owx_integral` (`(Owx)` in expectation for every
+  resolvent polynomial), with `S⁺ = lwSplus`, `lwS_isUnit`, `lwSplus_spec`, `lwS_row_sum` (the
+  rows of `S^{(u)} = u · svarF` sum to `u`).
+* **The graph derivative**: the sample data `lwSampleData`, the derivative of one edge factor
+  `lwStein_dh_sedge_val`, the term of a graph as the sample-independent part `lwK` times the
+  product of the solid edge factors (`lwStein_term_eq`, `lwStein_term_tame1`), and the molecule
+  counter of the derivative graphs (`lwStein_nM_congr`).
+
+## Hypotheses carried
+
+`GaussIBP sz` (`RBM3D/Green/LDEQuad.lean`; proved: `gaussIBP sz`) is the only hypothesis of the
+probabilistic statements (`stein_sample`, `integral_owxDefect`, `owx_integral`).  The closed
+forms, the Leibniz calculus and the graph derivative are deterministic.
+
+## Imports
+
+`RBM3D.Gauss.FlowCalculus` (`Gres`, the sample continuity of the resolvent, and through it the
+envelope `‖(H - z)⁻¹_{ij}‖ ≤ |Im z|⁻¹` of `RBM3D/Analysis/Resolvent.lean`) and
+`Mathlib.LinearAlgebra.Matrix.Gershgorin` (strict diagonal dominance, for `1 - m² S` invertible).
+-/
+
+set_option linter.style.setOption false
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.flexible false
+
+noncomputable section
+
+open MeasureTheory ProbabilityTheory Filter Matrix
+open scoped NNReal ENNReal
+
+namespace RBM.Graph
+
+/-! ## The weight expansion on the vocabulary
+
+`(Owx)` (7.20): `Ǧ_{xx} f(G) =_𝔼 m Σ_α S_{xα} Ǧ_{xx} Ǧ_{αα} f + m³ Σ_{α,β} S⁺_{xα} S_{αβ} Ǧ_{αα}
+Ǧ_{ββ} f - m Σ_α S_{xα} G_{αx} ∂_{h_{αx}} f - m³ Σ_{α,β} S⁺_{xα} S_{αβ} G_{βα} ∂_{h_{βα}} f`.
+Pathwise it is an identity with the Stein defect `Z_w` of each row (`owx_defect_identity`);
+`E Z_w = 0` is the Stein identity. -/
+
+section OwxAlg
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+
+/-- The Stein defect at row `w` of the weight expansion `(Owx)` (7.20) for `Ǧ_{xx} f(G)`:
+`Z_w = (Σ_α H_{wα} G_{αw}) f - Σ_α S_{wα} ∂_{h_{αw}}(G_{αw} f)` with the resolvent identity
+`Σ_α H_{wα} G_{αw} = 1 + z G_{ww}` and `∂_{h_{αw}} G_{αw} = -G_{αα} G_{ww}` inserted; `f` and the array
+`df α w = ∂_{h_{αw}} f` are data.  `E Z_w = 0` is Gaussian integration by parts (`GaussIBP.stein`). -/
+def owxDefect (z : ℂ) (G S : Matrix ι ι ℂ) (f : ℂ) (df : ι → ι → ℂ) (w : ι) : ℂ :=
+  (1 + z * G w w) * f + (∑ α, S w α * G α α) * G w w * f - ∑ α, S w α * G α w * df α w
+
+/-- **`(Owx)` is the Stein identity plus linear algebra**: for every `f`, `df`, the difference of the two
+sides of `(Owx)` is, pathwise and exactly, `-m Σ_w (δ_{xw} + m² S⁺_{xw}) Z_w` (the weight `Ǧ_{αα} = G_{αα} - m`).
+Hypotheses: `m ≠ 0`, the rows of `S` sum to `s`, `z + s m = -m⁻¹` and `S⁺ (1 - m² S) = S`.  The flow is
+`s = t`, `S = t S^{(B)}`, `z = z_t = E + (1 - t) m` (`z_t + t m = -m⁻¹`); `s = 1` is the static case. -/
+theorem owx_defect_identity (z m s : ℂ) (hm0 : m ≠ 0) (hzm : z + s * m = -m⁻¹)
+    (G S Sp : Matrix ι ι ℂ) (hS : ∀ i, ∑ j, S i j = s)
+    (hSp : ∀ i j, Sp i j - m ^ 2 * ∑ w, Sp i w * S w j = S i j) (f : ℂ) (df : ι → ι → ℂ) (x : ι) :
+    (G x x - m) * f -
+      (m * ∑ α, S x α * (G x x - m) * (G α α - m) * f +
+        m ^ 3 * ∑ α, ∑ β, Sp x α * S α β * (G α α - m) * (G β β - m) * f -
+        m * ∑ α, S x α * G α x * df α x -
+        m ^ 3 * ∑ α, ∑ β, Sp x α * S α β * G β α * df β α) =
+      -m * ∑ w, ((if x = w then 1 else 0) + m ^ 2 * Sp x w) * owxDefect z G S f df w := by
+  set u : ι → ℂ := fun i => G i i - m with hu
+  -- `(S u)_w`
+  set Su : ι → ℂ := fun w => ∑ α, S w α * u α with hSu
+  have hrow : ∀ w, ∑ α, S w α * G α α = s * m + Su w := by
+    intro w
+    have h1 : ∑ α, S w α * G α α = ∑ α, S w α * m + ∑ α, S w α * u α := by
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun α _ => ?_
+      simp only [hu]; ring
+    rw [h1, ← Finset.sum_mul, hS]
+  -- `r w`
+  set r : ι → ℂ := fun w => m * u w * Su w * f - m * ∑ α, S w α * G α w * df α w with hr
+  have hD : ∀ w, -m * owxDefect z G S f df w = f * u w - m ^ 2 * f * Su w - r w := by
+    intro w
+    unfold owxDefect
+    rw [hrow w]
+    have hzm' : z = -m⁻¹ - s * m := by linear_combination hzm
+    have hGw : G w w = m + u w := by simp only [hu]; ring
+    rw [hzm', hGw]
+    simp only [hr]
+    field_simp
+    ring
+  -- `Sp (1 - m² S) = S` on vectors
+  have hvec : ∀ v : ι → ℂ, m ^ 2 * ∑ w, Sp x w * v w - m ^ 4 * ∑ w, Sp x w * ∑ α, S w α * v α =
+      m ^ 2 * ∑ α, S x α * v α := by
+    intro v
+    have h1 : ∑ α, S x α * v α = ∑ α, (Sp x α - m ^ 2 * ∑ w, Sp x w * S w α) * v α :=
+      Finset.sum_congr rfl fun α _ => by rw [hSp x α]
+    have h2 : ∑ α, (Sp x α - m ^ 2 * ∑ w, Sp x w * S w α) * v α =
+        ∑ α, Sp x α * v α - m ^ 2 * ∑ w, Sp x w * ∑ α, S w α * v α := by
+      simp only [sub_mul, Finset.sum_sub_distrib, Finset.mul_sum, Finset.sum_mul]
+      congr 1
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun w _ => Finset.sum_congr rfl fun α _ => by ring
+    rw [h1, h2]
+    ring
+  -- the right side as a sum over `w` of `c_w (f u_w - m² f Su_w - r_w)`
+  have hR : -m * ∑ w, ((if x = w then 1 else 0) + m ^ 2 * Sp x w) * owxDefect z G S f df w =
+      ∑ w, ((if x = w then 1 else 0) + m ^ 2 * Sp x w) * (f * u w - m ^ 2 * f * Su w - r w) := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun w _ => ?_
+    rw [← hD w]; ring
+  rw [hR]
+  simp only [add_mul, Finset.sum_add_distrib, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq,
+    Finset.mem_univ, ite_true]
+  have hf1 := hvec (fun w => f * u w)
+  have hSf : ∀ w, ∑ α, S w α * (f * u α) = f * Su w := by
+    intro w
+    simp only [hSu, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun α _ => by ring
+  have hsplit : ∑ w, m ^ 2 * Sp x w * (f * u w - m ^ 2 * f * Su w - r w) =
+      m ^ 2 * ∑ w, Sp x w * (f * u w) - m ^ 4 * ∑ w, Sp x w * ∑ α, S w α * (f * u α) -
+        m ^ 2 * ∑ w, Sp x w * r w := by
+    simp only [Finset.mul_sum, ← Finset.sum_sub_distrib, hSf]
+    exact Finset.sum_congr rfl fun w _ => by ring
+  rw [hsplit]
+  have hxx : ∑ α, S x α * (G x x - m) * (G α α - m) * f = u x * Su x * f := by
+    simp only [hSu, Finset.sum_mul, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun α _ => by simp only [hu]; ring
+  have h2 : ∑ α, ∑ β, Sp x α * S α β * (G α α - m) * (G β β - m) * f =
+      ∑ α, Sp x α * (u α * Su α * f) := by
+    refine Finset.sum_congr rfl fun α _ => ?_
+    simp only [hSu, Finset.sum_mul, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun β _ => by simp only [hu]; ring
+  have h3 : ∑ α, ∑ β, Sp x α * S α β * G β α * df β α =
+      ∑ α, Sp x α * ∑ β, S α β * G β α * df β α := by
+    refine Finset.sum_congr rfl fun α _ => ?_
+    simp only [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun β _ => by ring
+  have hrsum : ∑ w, Sp x w * r w = m * ∑ α, Sp x α * (u α * Su α * f) -
+      m * ∑ α, Sp x α * ∑ β, S α β * G β α * df β α := by
+    rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun w _ => ?_
+    simp only [hr]
+    ring
+  have hux : G x x - m = u x := rfl
+  rw [hux, hxx, h2, h3]
+  have hrx : r x = m * u x * Su x * f - m * ∑ α, S x α * G α x * df α x := rfl
+  have hSf' := hSf x
+  linear_combination (-1 : ℂ) * hf1 + (-m ^ 2) * hSf' + m ^ 2 * hrsum + hrx
+
+end OwxAlg
+
+open RBM RBM.Gauss RBM.Green
+
+section CoordMat
+variable (d L W : ℕ) [NeZero L] [NeZero W]
+
+/-- The matrix direction of the real part of the entry `(a, b)`, `key a < key b`: `E_{ab} + E_{ba}`. -/
+theorem lwStein_coordMat_true_lt (a b : Idx d L W) (h : idxKey d L W a < idxKey d L W b) :
+    coordinateMatrix d L W (a, b, true) = single a b (1 : ℂ) + single b a (1 : ℂ) := by
+  ext i j
+  have hab : a ≠ b := fun e => absurd (e ▸ h) (lt_irrefl _)
+  simp only [coordinateMatrix, Xmat, Xentry, Matrix.of_apply, Matrix.add_apply, Matrix.single_apply, Pi.single_apply, Prod.mk.injEq]
+  rcases idxKey_lt_or_eq_or_lt d L W i j with hij | rfl | hij
+  · have h2 : ¬ idxKey d L W j < idxKey d L W i := not_lt.mpr hij.le
+    by_cases h1 : a = i ∧ b = j
+    · obtain ⟨rfl, rfl⟩ := h1
+      simp [hij, hab]
+    · by_cases h3 : b = i ∧ a = j
+      · obtain ⟨rfl, rfl⟩ := h3; omega
+      · simp [hij, h1, h3, eq_comm]
+  · have e1 : ¬ (i = a ∧ i = b) := fun ⟨h1, h2⟩ => hab (h1.symm.trans h2)
+    have e2 : ¬ (a = i ∧ b = i) := fun ⟨h1, h2⟩ => hab (h1.trans h2.symm)
+    have e3 : ¬ (b = i ∧ a = i) := fun ⟨h1, h2⟩ => hab (h2.trans h1.symm)
+    simp [e1, e2, e3]
+  · have h2 : ¬ idxKey d L W i < idxKey d L W j := not_lt.mpr hij.le
+    by_cases h3 : b = i ∧ a = j
+    · obtain ⟨rfl, rfl⟩ := h3
+      simp [hij, hab, h2, eq_comm]
+    · by_cases h1 : a = i ∧ b = j
+      · obtain ⟨rfl, rfl⟩ := h1; omega
+      · have h3' : ¬ (a = j ∧ b = i) := fun ⟨x, y⟩ => h3 ⟨y, x⟩
+        simp [hij, h2, h1, h3]
+        intro ha hb
+        exact h3' ⟨ha.symm, hb.symm⟩
+
+/-- The matrix direction of the imaginary part of the entry `(a, b)`, `key a < key b`: `i E_{ab} - i E_{ba}`. -/
+theorem lwStein_coordMat_false_lt (a b : Idx d L W) (h : idxKey d L W a < idxKey d L W b) :
+    coordinateMatrix d L W (a, b, false) = single a b Complex.I + single b a (-Complex.I) := by
+  ext i j
+  have hab : a ≠ b := fun e => absurd (e ▸ h) (lt_irrefl _)
+  simp only [coordinateMatrix, Xmat, Xentry, Matrix.of_apply, Matrix.add_apply, Matrix.single_apply, Pi.single_apply, Prod.mk.injEq]
+  rcases idxKey_lt_or_eq_or_lt d L W i j with hij | rfl | hij
+  · have h2 : ¬ idxKey d L W j < idxKey d L W i := not_lt.mpr hij.le
+    by_cases h1 : a = i ∧ b = j
+    · obtain ⟨rfl, rfl⟩ := h1
+      simp [hij, hab]
+    · by_cases h3 : b = i ∧ a = j
+      · obtain ⟨rfl, rfl⟩ := h3; omega
+      · simp [hij, h1, h3, eq_comm]
+  · have e2 : ¬ (a = i ∧ b = i) := fun ⟨h1, h2⟩ => hab (h1.trans h2.symm)
+    have e3 : ¬ (b = i ∧ a = i) := fun ⟨h1, h2⟩ => hab (h2.trans h1.symm)
+    simp [e2, e3]
+  · have h2 : ¬ idxKey d L W i < idxKey d L W j := not_lt.mpr hij.le
+    by_cases h3 : b = i ∧ a = j
+    · obtain ⟨rfl, rfl⟩ := h3
+      simp [hij, hab, h2, eq_comm]
+    · by_cases h1 : a = i ∧ b = j
+      · obtain ⟨rfl, rfl⟩ := h1; omega
+      · have h3' : ¬ (a = j ∧ b = i) := fun ⟨x, y⟩ => h3 ⟨y, x⟩
+        simp [hij, h2, h1, h3]
+        intro ha hb
+        exact h3' ⟨ha.symm, hb.symm⟩
+
+/-- The matrix direction of the diagonal coordinate `(a, a, true)`: `E_{aa}`. -/
+theorem lwStein_coordMat_diag (a : Idx d L W) :
+    coordinateMatrix d L W (a, a, true) = single a a (1 : ℂ) := by
+  ext i j
+  simp only [coordinateMatrix, Xmat, Xentry, Matrix.of_apply, Matrix.single_apply, Pi.single_apply, Prod.mk.injEq]
+  rcases idxKey_lt_or_eq_or_lt d L W i j with hij | rfl | hij
+  · have h2 : ¬ idxKey d L W j < idxKey d L W i := not_lt.mpr hij.le
+    by_cases h1 : a = i ∧ a = j
+    · obtain ⟨rfl, rfl⟩ := h1; omega
+    · have h1' : ¬ (i = a ∧ j = a) := fun ⟨x, y⟩ => h1 ⟨x.symm, y.symm⟩
+      simp [hij, h1, h1']
+  · by_cases h : a = i
+    · subst h; simp
+    · simp [h, Ne.symm h]
+  · have h2 : ¬ idxKey d L W i < idxKey d L W j := not_lt.mpr hij.le
+    by_cases h1 : a = i ∧ a = j
+    · obtain ⟨rfl, rfl⟩ := h1; omega
+    · have h1' : ¬ (j = a ∧ i = a) := fun ⟨x, y⟩ => h1 ⟨y.symm, x.symm⟩
+      simp [hij, h2, h1, h1']
+end CoordMat
+
+section RealDeriv
+open scoped Matrix.Norms.Operator
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+/-- The derivative of the entries of the inverse along a real line: `d/dt (A + (t - t₀) B)⁻¹ |_{t=t₀} =
+-A⁻¹ B A⁻¹`. -/
+theorem lwStein_hasDerivAt_inv {A B : Matrix ι ι ℂ} (hA : IsUnit A) (t₀ : ℝ) (i j : ι) :
+    HasDerivAt (fun t : ℝ => Ring.inverse (A + (t - t₀) • B) i j)
+      (-(Ring.inverse A * B * Ring.inverse A) i j) t₀ := by
+  obtain ⟨u, rfl⟩ := hA
+  have hpath : HasDerivAt (fun t : ℝ => (u : Matrix ι ι ℂ) + (t - t₀) • B) B t₀ := by
+    have h := (((hasDerivAt_id t₀).sub_const t₀).smul_const B).const_add (u : Matrix ι ι ℂ)
+    simp only [id, one_smul] at h
+    exact h
+  set D := -ContinuousLinearMap.mulLeftRight ℝ (Matrix ι ι ℂ) ↑u⁻¹ ↑u⁻¹ with hD
+  have hinv : HasFDerivAt Ring.inverse D ((u : Matrix ι ι ℂ) + (t₀ - t₀) • B) := by
+    rw [sub_self, zero_smul, add_zero]
+    exact hasFDerivAt_ringInverse (𝕜 := ℝ) u
+  have hcomp := hinv.comp_hasDerivAt t₀ hpath
+  let ent : Matrix ι ι ℂ →L[ℝ] ℂ := LinearMap.toContinuousLinearMap (entryLinearMap ℝ ℂ i j)
+  have hent := ent.hasFDerivAt.comp_hasDerivAt t₀ hcomp
+  have hval : ent (D B) = -(Ring.inverse (u : Matrix ι ι ℂ) * B * Ring.inverse (u : Matrix ι ι ℂ)) i j := by
+    simp only [D, Ring.inverse_unit]
+    simp [ent]
+  exact hent.congr_deriv hval
+
+end RealDeriv
+
+section Sample
+
+variable {d : ℕ} (sz : Sizes d) (n : ℕ)
+
+/-- The resolvent matrix `G = (H_u - z)⁻¹` of the flow `H_u = √u X` at size `n`, as a function of the
+sample (`Gres`). -/
+def lwGm (z : ℂ) (u : ℝ) (ω : Sizes.SeqΩ sz) :
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  Gres (sz.seqHflow n u ω) z true
+
+/-- The entry `G_{ij}` of the resolvent of the flow. -/
+def lwG (z : ℂ) (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) : ℂ :=
+  lwGm sz n z u ω i j
+
+/-- Moving one real coordinate `c` of the sample moves `H_u = √u X` by `(t - ω c) √u D_c`. -/
+theorem lwStein_seqHflow_update (u : ℝ) (ω : Sizes.SeqΩ sz) (c : CoordF d (sz.L n) (sz.W n)) (t : ℝ) :
+    sz.seqHflow n u (Function.update ω ⟨n, c⟩ t) = sz.seqHflow n u ω +
+      (t - ω ⟨n, c⟩) • ((Real.sqrt u : ℂ) • coordinateMatrix d (sz.L n) (sz.W n) c) := by
+  unfold Sizes.seqHflow
+  rw [Sizes.seqXmat_update, smul_add, smul_comm (Real.sqrt u : ℂ) (t - ω ⟨n, c⟩)]
+
+/-- **The derivative of `G_{ij}` along one real coordinate** of the sample: moving the coordinate `c`
+moves `H_u` by `√u · D_c` (`Xmat_update`, `D_c = coordinateMatrix c`), so
+`∂_c G_{ij} = -√u (G D_c G)_{ij}`. -/
+theorem lwStein_hasDerivAt_lwG {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (ω : Sizes.SeqΩ sz)
+    (c : CoordF d (sz.L n) (sz.W n)) (i j : Idx d (sz.L n) (sz.W n)) :
+    HasDerivAt (fun t : ℝ => lwG sz n z u i j (Function.update ω ⟨n, c⟩ t))
+      (-((Real.sqrt u : ℂ) * (lwGm sz n z u ω * coordinateMatrix d (sz.L n) (sz.W n) c *
+        lwGm sz n z u ω) i j)) (ω ⟨n, c⟩) := by
+  have hU : IsUnit (sz.seqHflow n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) :=
+    isUnit_sub_smul_of_isHermitian (Sizes.seqHflow_isHermitian sz n u ω) hz
+  have h := lwStein_hasDerivAt_inv hU (ω ⟨n, c⟩) i j
+    (B := (Real.sqrt u : ℂ) • coordinateMatrix d (sz.L n) (sz.W n) c)
+  have hfun : (fun t : ℝ => lwG sz n z u i j (Function.update ω ⟨n, c⟩ t)) = fun t : ℝ =>
+      Ring.inverse ((sz.seqHflow n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) +
+        (t - ω ⟨n, c⟩) • ((Real.sqrt u : ℂ) • coordinateMatrix d (sz.L n) (sz.W n) c)) i j := by
+    funext t
+    simp only [lwG, lwGm, Gres, ite_true, lwStein_seqHflow_update]
+    rw [add_sub_right_comm]
+  rw [hfun]
+  refine h.congr_deriv ?_
+  simp only [lwGm, Gres, ite_true, Matrix.mul_smul, Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul]
+
+
+/-- The real partial derivative `∂/∂ω_c` at size `n` of a function of the sample: the derivative at
+`ω c` of `t ↦ F (ω with the coordinate `c` replaced by `t`)`. -/
+def lwPartial (c : CoordF d (sz.L n) (sz.W n)) (F : Sizes.SeqΩ sz → ℂ) (ω : Sizes.SeqΩ sz) : ℂ :=
+  deriv (fun t : ℝ => F (Function.update ω ⟨n, c⟩ t)) (ω ⟨n, c⟩)
+
+/-- **`∂_{h_{αw}}` on functions of the sample**: `h_{αw} = (H_u)_{αw} = √u X_{αw}`,
+where the entry `X_{αw}` of the model (`Xentry`) is oriented by `idxKey`, and `h_{αw}`, `h_{wα} =
+\bar h_{αw}` are treated as independent (Wirtinger).  In the real coordinates `a = ω(·,·,true)`,
+`b = ω(·,·,false)` of the entry:
+* `key α < key w`: `X_{αw} = a + i b`, `∂_{h_{αw}} = (2√u)⁻¹ (∂_a - i ∂_b)` on `(α, w, ·)`;
+* `key w < key α`: `X_{αw} = a - i b`, `∂_{h_{αw}} = (2√u)⁻¹ (∂_a + i ∂_b)` on `(w, α, ·)`;
+* `α = w`: `X_{αα} = a` real, `∂_{h_{αα}} = u^{-1/2} ∂_a` on `(α, α, true)` (the real derivative).
+So `∂_{h_{αw}} h_{αw} = 1`, `∂_{h_{αw}} h_{wα} = 0`.  It is `0` at `u = 0` (Lean's `0⁻¹ = 0`); every theorem
+below that needs the closed forms takes `0 < u`. -/
+def dhSample (u : ℝ) (α w : Idx d (sz.L n) (sz.W n)) (F : Sizes.SeqΩ sz → ℂ)
+    (ω : Sizes.SeqΩ sz) : ℂ :=
+  if idxKey d (sz.L n) (sz.W n) α < idxKey d (sz.L n) (sz.W n) w then
+    (2 * (Real.sqrt u : ℂ))⁻¹ *
+      (lwPartial sz n (α, w, true) F ω - Complex.I * lwPartial sz n (α, w, false) F ω)
+  else if idxKey d (sz.L n) (sz.W n) w < idxKey d (sz.L n) (sz.W n) α then
+    (2 * (Real.sqrt u : ℂ))⁻¹ *
+      (lwPartial sz n (w, α, true) F ω + Complex.I * lwPartial sz n (w, α, false) F ω)
+  else (Real.sqrt u : ℂ)⁻¹ * lwPartial sz n (α, α, true) F ω
+
+/-- `lwPartial` of `G_{ij}` along `c`: `-√u (G D_c G)_{ij}`. -/
+theorem lwStein_partial_lwG {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (ω : Sizes.SeqΩ sz)
+    (c : CoordF d (sz.L n) (sz.W n)) (i j : Idx d (sz.L n) (sz.W n)) :
+    lwPartial sz n c (lwG sz n z u i j) ω =
+      -((Real.sqrt u : ℂ) * (lwGm sz n z u ω * coordinateMatrix d (sz.L n) (sz.W n) c *
+        lwGm sz n z u ω) i j) :=
+  (lwStein_hasDerivAt_lwG sz n hz u ω c i j).deriv
+
+/-- `(P (c E_{ab}) Q)_{ij} = c P_{ia} Q_{bj}`. -/
+theorem lwStein_mul_single_mul_apply {ι : Type*} [Fintype ι] [DecidableEq ι] (P Q : Matrix ι ι ℂ)
+    (a b : ι) (c : ℂ) (i j : ι) : (P * single a b c * Q) i j = c * (P i a * Q b j) := by
+  have : single a b c = c • single a b (1 : ℂ) := by
+    rw [Matrix.smul_single, smul_eq_mul, mul_one]
+  rw [this, Matrix.mul_smul, Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul]
+  rw [mul_single_mul_apply]
+
+
+/-- `√u ≠ 0` for `u > 0`, as a complex number. -/
+theorem lwStein_sqrt_ne {u : ℝ} (hu : 0 < u) : (Real.sqrt u : ℂ) ≠ 0 := by
+  exact_mod_cast (Real.sqrt_pos.2 hu).ne'
+
+/-- The real partial derivative commutes with complex conjugation. -/
+theorem lwStein_partial_star (c : CoordF d (sz.L n) (sz.W n)) (F : Sizes.SeqΩ sz → ℂ)
+    (ω : Sizes.SeqΩ sz) :
+    lwPartial sz n c (fun ω => star (F ω)) ω = star (lwPartial sz n c F ω) := by
+  unfold lwPartial
+  exact deriv.star
+
+/-- **`∂_{h_{αw}} G_{ij} = -G_{iα} G_{wj}`** (`(Owx)` (7.20); the convention of `dhSample`):
+for `0 < u` and `Im z > 0`, the resolvent `G = (H_u - z)⁻¹` of the flow `H_u = √u X`. -/
+theorem dhSample_lwG {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u) (α w i j : Idx d (sz.L n) (sz.W n))
+    (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (lwG sz n z u i j) ω = -(lwG sz n z u i α ω * lwG sz n z u w j ω) := by
+  have hz' : z.im ≠ 0 := hz.ne'
+  have hs := lwStein_sqrt_ne hu
+  have h2s : (2 * (Real.sqrt u : ℂ)) ≠ 0 := mul_ne_zero two_ne_zero hs
+  unfold dhSample
+  rcases idxKey_lt_or_eq_or_lt d (sz.L n) (sz.W n) α w with h | rfl | h
+  · rw [ite_eq_left h, lwStein_partial_lwG sz n hz', lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_true_lt _ _ _ _ _ h, lwStein_coordMat_false_lt _ _ _ _ _ h]
+    simp only [Matrix.mul_add, Matrix.add_mul, Matrix.add_apply, lwStein_mul_single_mul_apply]
+    simp only [lwG]
+    rw [inv_mul_eq_iff_eq_mul₀ h2s]
+    linear_combination ((Real.sqrt u : ℂ) * (lwGm sz n z u ω i α * lwGm sz n z u ω w j
+      - lwGm sz n z u ω i w * lwGm sz n z u ω α j)) * Complex.I_sq
+  · rw [ite_eq_right (lt_irrefl _), ite_eq_right (lt_irrefl _), lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_diag]
+    simp only [lwStein_mul_single_mul_apply, lwG]
+    field_simp
+  · rw [ite_eq_right h.not_gt, ite_eq_left h, lwStein_partial_lwG sz n hz', lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_true_lt _ _ _ _ _ h, lwStein_coordMat_false_lt _ _ _ _ _ h]
+    simp only [Matrix.mul_add, Matrix.add_mul, Matrix.add_apply, lwStein_mul_single_mul_apply]
+    simp only [lwG]
+    rw [inv_mul_eq_iff_eq_mul₀ h2s]
+    linear_combination ((Real.sqrt u : ℂ) * (lwGm sz n z u ω i α * lwGm sz n z u ω w j
+      - lwGm sz n z u ω i w * lwGm sz n z u ω α j)) * Complex.I_sq
+
+
+/-- **`∂_{h_{αw}} \bar G_{ij} = -\overline{G_{iw} G_{αj}}`** (the conjugate rule: the derivative in the
+independent variable `h_{αw}` of `\bar G = conj G` is the conjugate of the derivative of `G` in `h_{wα}`). -/
+theorem dhSample_lwG_star {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u)
+    (α w i j : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => star (lwG sz n z u i j ω)) ω =
+      -star (lwG sz n z u i w ω * lwG sz n z u α j ω) := by
+  have hz' : z.im ≠ 0 := hz.ne'
+  have hs := lwStein_sqrt_ne hu
+  have h2s : (2 * (Real.sqrt u : ℂ)) ≠ 0 := mul_ne_zero two_ne_zero hs
+  unfold dhSample
+  simp only [lwStein_partial_star]
+  rcases idxKey_lt_or_eq_or_lt d (sz.L n) (sz.W n) α w with h | rfl | h
+  · rw [ite_eq_left h, lwStein_partial_lwG sz n hz', lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_true_lt _ _ _ _ _ h, lwStein_coordMat_false_lt _ _ _ _ _ h]
+    simp only [Matrix.mul_add, Matrix.add_mul, Matrix.add_apply, lwStein_mul_single_mul_apply]
+    simp only [lwG, star_neg, star_mul', star_add, Complex.star_def, Complex.conj_ofReal, Complex.conj_I,
+      one_mul]
+    rw [inv_mul_eq_iff_eq_mul₀ h2s]
+    linear_combination ((Real.sqrt u : ℂ) * ((starRingEnd ℂ) (lwGm sz n z u ω i w) * (starRingEnd ℂ) (lwGm sz n z u ω α j)
+      - (starRingEnd ℂ) (lwGm sz n z u ω i α) * (starRingEnd ℂ) (lwGm sz n z u ω w j))) * Complex.I_sq
+  · rw [ite_eq_right (lt_irrefl _), ite_eq_right (lt_irrefl _), lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_diag]
+    simp only [lwStein_mul_single_mul_apply, lwG, star_neg, star_mul', Complex.star_def,
+      Complex.conj_ofReal, one_mul]
+    field_simp
+  · rw [ite_eq_right h.not_gt, ite_eq_left h, lwStein_partial_lwG sz n hz', lwStein_partial_lwG sz n hz',
+      lwStein_coordMat_true_lt _ _ _ _ _ h, lwStein_coordMat_false_lt _ _ _ _ _ h]
+    simp only [Matrix.mul_add, Matrix.add_mul, Matrix.add_apply, lwStein_mul_single_mul_apply]
+    simp only [lwG, star_neg, star_mul', star_add, Complex.star_def, Complex.conj_ofReal, Complex.conj_I,
+      one_mul]
+    rw [inv_mul_eq_iff_eq_mul₀ h2s]
+    linear_combination ((Real.sqrt u : ℂ) * ((starRingEnd ℂ) (lwGm sz n z u ω i w) * (starRingEnd ℂ) (lwGm sz n z u ω α j)
+      - (starRingEnd ℂ) (lwGm sz n z u ω i α) * (starRingEnd ℂ) (lwGm sz n z u ω w j))) * Complex.I_sq
+
+
+/-! ### Tameness of the resolvent entries -/
+
+open Classical in
+theorem lwStein_finDep_of_slice {V : Type*} (F : Sizes.SeqΩ sz → V)
+    (h : ∀ ω ω' : Sizes.SeqΩ sz, Sizes.slice sz n ω = Sizes.slice sz n ω' → F ω = F ω') :
+    FinDep sz F :=
+  ⟨Finset.univ.image (fun c : CoordF d (sz.L n) (sz.W n) => (⟨n, c⟩ : Sizes.SeqCoord sz)),
+    fun ω ω' hh => h ω ω' (funext fun c =>
+      hh ⟨n, c⟩ (Finset.mem_image_of_mem _ (Finset.mem_univ c)))⟩
+
+/-- The size projection of the common sample space is continuous. -/
+theorem lwStein_continuous_slice : Continuous (Sizes.slice sz n) :=
+  continuous_pi fun c => continuous_apply (⟨n, c⟩ : Sizes.SeqCoord sz)
+
+/-- The flow `H_u` is a continuous function of the sample. -/
+theorem lwStein_continuous_seqHflow (u : ℝ) : Continuous (sz.seqHflow n u) := by
+  have h : sz.seqHflow n u = fun ω => (Real.sqrt u : ℂ) • Xmat d (sz.L n) (sz.W n) (Sizes.slice sz n ω) :=
+    rfl
+  rw [h]
+  exact ((continuous_Xmat d (sz.L n) (sz.W n)).comp (lwStein_continuous_slice sz n)).const_smul (Real.sqrt u : ℂ)
+
+/-- The resolvent of the flow is a continuous function of the sample (`Im z ≠ 0`). -/
+theorem lwStein_continuous_lwGm {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) : Continuous (lwGm sz n z u) :=
+  continuous_green_of_isHermitian (lwStein_continuous_seqHflow sz n u)
+    (fun ω => Sizes.seqHflow_isHermitian sz n u ω) hz
+
+/-- The entries of the resolvent obey the envelope `|G_{ij}| ≤ |Im z|⁻¹` at every sample. -/
+theorem lwStein_norm_lwG_le {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (i j : Idx d (sz.L n) (sz.W n))
+    (ω : Sizes.SeqΩ sz) : ‖lwG sz n z u i j ω‖ ≤ |z.im|⁻¹ := by
+  simpa [lwG, lwGm, Gres] using
+    norm_inverse_entry_le (Sizes.seqHflow_isHermitian sz n u ω) hz i j
+
+/-- A resolvent entry is tame: continuous, finitely dependent, bounded by `|Im z|⁻¹`. -/
+theorem lwStein_tame_lwG {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) :
+    Tame sz (lwG sz n z u i j) :=
+  Tame.ofBdd (((continuous_apply j).comp ((continuous_apply i).comp (lwStein_continuous_lwGm sz n hz u))))
+    (lwStein_finDep_of_slice sz n _ fun ω ω' h => by
+      have : sz.seqHflow n u ω = sz.seqHflow n u ω' := by
+        unfold Sizes.seqHflow Sizes.seqXmat; rw [h]
+      simp only [lwG, lwGm, this])
+    (lwStein_norm_lwG_le sz n hz u i j)
+
+/-- An entry of `H_u` is tame (a polynomial of degree one in at most two coordinates). -/
+theorem lwStein_tame_hflow (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) :
+    Tame sz (fun ω => sz.seqHflow n u ω i j) := by
+  have h : (fun ω : Sizes.SeqΩ sz => sz.seqHflow n u ω i j) = fun ω =>
+      (Real.sqrt u : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) i j := rfl
+  rw [h]
+  refine Tame.mul (Tame.const _) ?_
+  unfold Xentry
+  split_ifs
+  · exact (Tame.coord (⟨n, (i, j, true)⟩ : Sizes.SeqCoord sz)).add
+      ((Tame.const Complex.I).mul (Tame.coord (⟨n, (i, j, false)⟩ : Sizes.SeqCoord sz)))
+  · exact (Tame.coord (⟨n, (j, i, true)⟩ : Sizes.SeqCoord sz)).sub
+      ((Tame.const Complex.I).mul (Tame.coord (⟨n, (j, i, false)⟩ : Sizes.SeqCoord sz)))
+  · exact Tame.coord (⟨n, (i, j, true)⟩ : Sizes.SeqCoord sz)
+
+
+/-! ### `C¹`-tame functions and the calculus of `∂_{h_{αw}}` -/
+
+/-- **`F` is `C¹`-tame at size `n`**: tame (continuous, finitely dependent, polynomially bounded), differentiable
+along every real coordinate of size `n` (at every sample), with tame partial derivatives.  This is the
+class on which the Stein identity of `GaussIBP` applies to `F` and to its derivatives (the first
+condition is `RBM.Green.Tame`). -/
+structure Tame1 (sz : Sizes d) (n : ℕ) (F : Sizes.SeqΩ sz → ℂ) : Prop where
+  /-- `F` is tame. -/
+  tame : Tame sz F
+  /-- `F` is differentiable along each real coordinate of size `n`. -/
+  diff : ∀ (c : CoordF d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz),
+    DifferentiableAt ℝ (fun t : ℝ => F (Function.update ω ⟨n, c⟩ t)) (ω ⟨n, c⟩)
+  /-- The partial derivatives along the coordinates of size `n` are tame. -/
+  tame_partial : ∀ c : CoordF d (sz.L n) (sz.W n), Tame sz (lwPartial sz n c F)
+
+variable {sz n}
+
+theorem lwStein_partial_add {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G)
+    (c : CoordF d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    lwPartial sz n c (fun ω => F ω + G ω) ω = lwPartial sz n c F ω + lwPartial sz n c G ω :=
+  deriv_add (hF.diff c ω) (hG.diff c ω)
+
+/-- `lwPartial` of a difference. -/
+theorem lwStein_partial_sub {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G)
+    (c : CoordF d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    lwPartial sz n c (fun ω => F ω - G ω) ω = lwPartial sz n c F ω - lwPartial sz n c G ω :=
+  deriv_sub (hF.diff c ω) (hG.diff c ω)
+
+/-- `lwPartial` of a product (Leibniz). -/
+theorem lwStein_partial_mul {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G)
+    (c : CoordF d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    lwPartial sz n c (fun ω => F ω * G ω) ω =
+      lwPartial sz n c F ω * G ω + F ω * lwPartial sz n c G ω := by
+  have h := deriv_mul (hF.diff c ω) (hG.diff c ω)
+  simp only [Function.update_eq_self] at h
+  exact h
+
+/-- `lwPartial` of a constant is `0`. -/
+theorem lwStein_partial_const (a : ℂ) (c : CoordF d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    lwPartial sz n c (fun _ => a) ω = 0 := by
+  simp [lwPartial]
+
+/-- A constant is `C¹`-tame. -/
+theorem Tame1.const (a : ℂ) : Tame1 sz n (fun _ => a) where
+  tame := Tame.const a
+  diff := fun _ _ => differentiableAt_const _
+  tame_partial := fun c => by
+    have : lwPartial sz n c (fun _ => a) = fun _ => 0 := funext (lwStein_partial_const a c)
+    rw [this]
+    exact Tame.const 0
+
+/-- `C¹`-tame functions are closed under sums. -/
+theorem Tame1.add {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G) :
+    Tame1 sz n (fun ω => F ω + G ω) where
+  tame := hF.tame.add hG.tame
+  diff := fun c ω => (hF.diff c ω).add (hG.diff c ω)
+  tame_partial := fun c => by
+    have : lwPartial sz n c (fun ω => F ω + G ω) =
+        fun ω => lwPartial sz n c F ω + lwPartial sz n c G ω :=
+      funext (lwStein_partial_add hF hG c)
+    rw [this]
+    exact (hF.tame_partial c).add (hG.tame_partial c)
+
+/-- `C¹`-tame functions are closed under differences. -/
+theorem Tame1.sub {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G) :
+    Tame1 sz n (fun ω => F ω - G ω) where
+  tame := hF.tame.sub hG.tame
+  diff := fun c ω => (hF.diff c ω).sub (hG.diff c ω)
+  tame_partial := fun c => by
+    have : lwPartial sz n c (fun ω => F ω - G ω) =
+        fun ω => lwPartial sz n c F ω - lwPartial sz n c G ω :=
+      funext (lwStein_partial_sub hF hG c)
+    rw [this]
+    exact (hF.tame_partial c).sub (hG.tame_partial c)
+
+/-- `C¹`-tame functions are closed under products. -/
+theorem Tame1.mul {F G : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (hG : Tame1 sz n G) :
+    Tame1 sz n (fun ω => F ω * G ω) where
+  tame := hF.tame.mul hG.tame
+  diff := fun c ω => (hF.diff c ω).mul (hG.diff c ω)
+  tame_partial := fun c => by
+    have : lwPartial sz n c (fun ω => F ω * G ω) =
+        fun ω => lwPartial sz n c F ω * G ω + F ω * lwPartial sz n c G ω :=
+      funext (lwStein_partial_mul hF hG c)
+    rw [this]
+    exact ((hF.tame_partial c).mul hG.tame).add (hF.tame.mul (hG.tame_partial c))
+
+/-- `C¹`-tame functions are closed under complex conjugation (`star`). -/
+theorem Tame1.conj {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) :
+    Tame1 sz n (fun ω => star (F ω)) where
+  tame := by simpa [Complex.star_def] using hF.tame.conj
+  diff := fun c ω => (hF.diff c ω).star
+  tame_partial := fun c => by
+    have : lwPartial sz n c (fun ω => star (F ω)) =
+        fun ω => star (lwPartial sz n c F ω) :=
+      funext (lwStein_partial_star sz n c F)
+    rw [this]
+    simpa [Complex.star_def] using (hF.tame_partial c).conj
+
+/-- `C¹`-tame functions are closed under finite sums. -/
+theorem Tame1.sum {κ : Type*} (s : Finset κ) {F : κ → Sizes.SeqΩ sz → ℂ}
+    (h : ∀ i ∈ s, Tame1 sz n (F i)) : Tame1 sz n (fun ω => ∑ i ∈ s, F i ω) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simpa using Tame1.const (sz := sz) (n := n) 0
+  | insert i₀ s hi₀ ih =>
+    have h₀ := h i₀ (Finset.mem_insert_self _ _)
+    have hs := ih fun i hi => h i (Finset.mem_insert_of_mem hi)
+    simpa [Finset.sum_insert hi₀] using h₀.add hs
+
+/-- `C¹`-tame functions are closed under products over a list. -/
+theorem Tame1.listProd {κ : Type*} (l : List κ) {F : κ → Sizes.SeqΩ sz → ℂ}
+    (h : ∀ a ∈ l, Tame1 sz n (F a)) : Tame1 sz n (fun ω => (l.map fun a => F a ω).prod) := by
+  induction l with
+  | nil => simpa using Tame1.const (sz := sz) (n := n) 1
+  | cons a l ih =>
+    have h₀ := h a (List.mem_cons_self ..)
+    have hs := ih fun b hb => h b (List.mem_cons_of_mem _ hb)
+    simpa using h₀.mul hs
+
+/-- `∂_{h_{αw}}` is determined by the real partials of its argument: if the partials of `H` at `ω` are
+`a` times those of `F` plus `b` times those of `G`, so is `dhSample`. -/
+theorem lwStein_dh_of_partial {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} {H F G : Sizes.SeqΩ sz → ℂ}
+    {ω : Sizes.SeqΩ sz} (a b : ℂ)
+    (h : ∀ c, lwPartial sz n c H ω = a * lwPartial sz n c F ω + b * lwPartial sz n c G ω) :
+    dhSample sz n u α w H ω = a * dhSample sz n u α w F ω + b * dhSample sz n u α w G ω := by
+  unfold dhSample
+  split_ifs <;> simp only [h] <;> ring
+
+/-- `∂_{h_{αw}}` is additive on `C¹`-tame functions. -/
+theorem lwStein_dh_add {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} {F G : Sizes.SeqΩ sz → ℂ}
+    (hF : Tame1 sz n F) (hG : Tame1 sz n G) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => F ω + G ω) ω = dhSample sz n u α w F ω + dhSample sz n u α w G ω := by
+  have := lwStein_dh_of_partial (u := u) (α := α) (w := w) (ω := ω) (H := fun ω => F ω + G ω)
+    (F := F) (G := G) 1 1 (fun c => by rw [lwStein_partial_add hF hG]; ring)
+  simpa using this
+
+/-- `∂_{h_{αw}}` of a difference. -/
+theorem lwStein_dh_sub {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} {F G : Sizes.SeqΩ sz → ℂ}
+    (hF : Tame1 sz n F) (hG : Tame1 sz n G) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => F ω - G ω) ω = dhSample sz n u α w F ω - dhSample sz n u α w G ω := by
+  have := lwStein_dh_of_partial (u := u) (α := α) (w := w) (ω := ω) (H := fun ω => F ω - G ω)
+    (F := F) (G := G) 1 (-1) (fun c => by rw [lwStein_partial_sub hF hG]; ring)
+  simpa [sub_eq_add_neg] using this
+
+/-- **The Leibniz rule for `∂_{h_{αw}}`.** -/
+theorem lwStein_dh_mul {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} {F G : Sizes.SeqΩ sz → ℂ}
+    (hF : Tame1 sz n F) (hG : Tame1 sz n G) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => F ω * G ω) ω =
+      dhSample sz n u α w F ω * G ω + F ω * dhSample sz n u α w G ω := by
+  have := lwStein_dh_of_partial (u := u) (α := α) (w := w) (ω := ω) (H := fun ω => F ω * G ω)
+    (F := F) (G := G) (G ω) (F ω) (fun c => by rw [lwStein_partial_mul hF hG]; ring)
+  rw [this]; ring
+
+/-- `∂_{h_{αw}}` of a constant is `0`. -/
+theorem lwStein_dh_const (a : ℂ) {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun _ => a) ω = 0 := by
+  unfold dhSample
+  split_ifs <;> simp [lwStein_partial_const]
+
+/-- `∂_{h_{αw}}` commutes with multiplication by a constant. -/
+theorem lwStein_dh_const_mul (a : ℂ) {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} {F : Sizes.SeqΩ sz → ℂ}
+    (hF : Tame1 sz n F) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => a * F ω) ω = a * dhSample sz n u α w F ω := by
+  rw [lwStein_dh_mul (Tame1.const a) hF, lwStein_dh_const]; ring
+
+/-- `∂_{h_{αw}}` of a finite sum. -/
+theorem lwStein_dh_sum {κ : Type*} (s : Finset κ) {F : κ → Sizes.SeqΩ sz → ℂ}
+    (h : ∀ i ∈ s, Tame1 sz n (F i)) {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => ∑ i ∈ s, F i ω) ω = ∑ i ∈ s, dhSample sz n u α w (F i) ω := by
+  classical
+  induction s using Finset.induction with
+  | empty => simpa using lwStein_dh_const (sz := sz) (n := n) (u := u) (α := α) (w := w) 0 ω
+  | insert i₀ s hi₀ ih =>
+    have h₀ := h i₀ (Finset.mem_insert_self _ _)
+    have hs := Tame1.sum s fun i hi => h i (Finset.mem_insert_of_mem hi)
+    have := lwStein_dh_add (u := u) (α := α) (w := w) h₀ hs ω
+    simp only [Finset.sum_insert hi₀]
+    rw [this, ih fun i hi => h i (Finset.mem_insert_of_mem hi)]
+
+/-- The Leibniz rule for a product over a list: the sum over the positions of the list of the
+derivative of one factor times the product of the others. -/
+def lwSplit {κ : Type*} : List κ → List (κ × List κ)
+  | [] => []
+  | a :: l => (a, l) :: (lwSplit l).map fun p => (p.1, a :: p.2)
+
+/-- `∂_{h_{αw}}` of a product over a list (`lwSplit`): the sum over the positions of the derivative of one factor times the product of the others. -/
+theorem lwStein_dh_listProd {κ : Type*} (l : List κ) {F : κ → Sizes.SeqΩ sz → ℂ}
+    (h : ∀ a ∈ l, Tame1 sz n (F a)) {u : ℝ} {α w : Idx d (sz.L n) (sz.W n)} (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => (l.map fun a => F a ω).prod) ω =
+      ((lwSplit l).map fun p => dhSample sz n u α w (F p.1) ω * (p.2.map fun a => F a ω).prod).sum := by
+  induction l with
+  | nil => simpa [lwSplit] using lwStein_dh_const (sz := sz) (n := n) (u := u) (α := α) (w := w) 1 ω
+  | cons a l ih =>
+    have h₀ := h a (List.mem_cons_self ..)
+    have hs := Tame1.listProd l fun b hb => h b (List.mem_cons_of_mem _ hb)
+    have ih' := ih fun b hb => h b (List.mem_cons_of_mem _ hb)
+    simp only [List.map_cons, List.prod_cons]
+    rw [lwStein_dh_mul h₀ hs, ih']
+    simp only [lwSplit, List.map_cons, List.sum_cons, List.map_map, Function.comp_def, List.prod_cons,
+      ]
+    congr 1
+    rw [← List.sum_map_mul_left]
+    congr 1
+    exact List.map_congr_left fun x _ => by ring
+
+
+variable (sz n) in
+theorem lwStein_tame_GDG {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (i j : Idx d (sz.L n) (sz.W n)) :
+    Tame sz (fun ω => (lwGm sz n z u ω * D * lwGm sz n z u ω) i j) := by
+  have h : (fun ω => (lwGm sz n z u ω * D * lwGm sz n z u ω) i j) = fun ω =>
+      ∑ k, (∑ l, lwG sz n z u i l ω * D l k) * lwG sz n z u k j ω := by
+    funext ω
+    simp [Matrix.mul_apply, lwG]
+  rw [h]
+  exact Tame.sum _ fun k _ => (Tame.sum _ fun l _ =>
+    (lwStein_tame_lwG sz n hz u i l).mul (Tame.const _)).mul (lwStein_tame_lwG sz n hz u k j)
+
+/-- A resolvent entry `G_{ij}` is `C¹`-tame (`Im z > 0`). -/
+theorem lwG_tame1 {z : ℂ} (hz : 0 < z.im) (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) :
+    Tame1 sz n (lwG sz n z u i j) where
+  tame := lwStein_tame_lwG sz n hz.ne' u i j
+  diff := fun c ω => (lwStein_hasDerivAt_lwG sz n hz.ne' u ω c i j).differentiableAt
+  tame_partial := fun c => by
+    have : lwPartial sz n c (lwG sz n z u i j) = fun ω =>
+        -((Real.sqrt u : ℂ) * (lwGm sz n z u ω * coordinateMatrix d (sz.L n) (sz.W n) c *
+          lwGm sz n z u ω) i j) := funext (lwStein_partial_lwG sz n hz.ne' u · c i j)
+    rw [this]
+    exact ((Tame.const _).mul (lwStein_tame_GDG sz n hz.ne' u _ i j)).neg
+
+variable (sz n) in
+/-- **A resolvent polynomial**: a polynomial in the entries `G_{ij}` (variable `(i, j, true)`)
+and `\bar G_{ij}` (variable `(i, j, false)`) of the resolvent `G = (H_u - z)⁻¹` of the flow, evaluated at the
+sample.  The paper's "differentiable function of `G`" (Lemmas 7.11-7.13) is read as this class. -/
+def lwVar (z : ℂ) (u : ℝ) (v : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool)
+    (ω : Sizes.SeqΩ sz) : ℂ :=
+  if v.2.2 then lwG sz n z u v.1 v.2.1 ω else star (lwG sz n z u v.1 v.2.1 ω)
+
+variable (sz n) in
+def lwPoly (z : ℂ) (u : ℝ)
+    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
+    (ω : Sizes.SeqΩ sz) : ℂ :=
+  MvPolynomial.eval (fun v => lwVar sz n z u v ω) P
+
+/-- A variable of a resolvent polynomial (`G_{ij}` or `\bar G_{ij}`) is `C¹`-tame. -/
+theorem lwVar_tame1 {z : ℂ} (hz : 0 < z.im) (u : ℝ)
+    (v : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) :
+    Tame1 sz n (lwVar sz n z u v) := by
+  unfold lwVar
+  cases h : v.2.2
+  · simpa using (lwG_tame1 (sz := sz) (n := n) hz u v.1 v.2.1).conj
+  · simpa using lwG_tame1 (sz := sz) (n := n) hz u v.1 v.2.1
+
+/-- **A resolvent polynomial is `C¹`-tame**: bounded (`‖G_{ij}‖ ≤ (Im z)⁻¹`), continuous, finitely
+dependent, with tame derivatives along every coordinate. -/
+theorem lwPoly_tame1 {z : ℂ} (hz : 0 < z.im) (u : ℝ)
+    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ) :
+    Tame1 sz n (lwPoly sz n z u P) := by
+  induction P using MvPolynomial.induction_on with
+  | C a =>
+    convert Tame1.const (sz := sz) (n := n) a using 1
+    funext ω; simp [lwPoly]
+  | add p q hp hq =>
+    convert hp.add hq using 1
+    funext ω; simp [lwPoly, map_add]
+  | mul_X p v hp =>
+    convert hp.mul (lwVar_tame1 hz u v) using 1
+    funext ω; simp [lwPoly, map_mul, MvPolynomial.eval_X]
+
+
+/-! ### The complex Stein identity on the model -/
+
+theorem lwStein_gvar_off (i j : Idx d (sz.L n) (sz.W n)) (b : Bool) (hij : i ≠ j) :
+    ((Sizes.seqGvar sz ⟨n, (i, j, b)⟩ : ℝ≥0) : ℝ) = svarF d (sz.L n) (sz.W n) (sz.lam n) i j / 2 := by
+  change (if i = j then svarF d (sz.L n) (sz.W n) (sz.lam n) i j
+    else svarF d (sz.L n) (sz.W n) (sz.lam n) i j / 2) = _
+  simp [hij]
+
+/-- The variance of a diagonal coordinate is `S_{ii}`. -/
+theorem lwStein_gvar_diag (i : Idx d (sz.L n) (sz.W n)) (b : Bool) :
+    ((Sizes.seqGvar sz ⟨n, (i, i, b)⟩ : ℝ≥0) : ℝ) = svarF d (sz.L n) (sz.W n) (sz.lam n) i i := by
+  change (if i = i then svarF d (sz.L n) (sz.W n) (sz.lam n) i i
+    else svarF d (sz.L n) (sz.W n) (sz.lam n) i i / 2) = _
+  simp
+
+variable (sz n) in
+/-- The variance matrix `S^{(u)} = u · svarF` of the flow `H_u = √u X` (`E|(H_u)_{ij}|² = S^{(u)}_{ij}`,
+`integral_normSq_seqHflow`). -/
+def lwS (u : ℝ) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  Matrix.of fun i j => ((u * svarF d (sz.L n) (sz.W n) (sz.lam n) i j : ℝ) : ℂ)
+
+/-- The one-coordinate Stein identity for a `C¹`-tame function (from `GaussIBP`). -/
+theorem lwStein_coord (hG : GaussIBP sz) {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F)
+    (c : CoordF d (sz.L n) (sz.W n)) :
+    ∫ ω, ((ω ⟨n, c⟩ : ℝ) : ℂ) * F ω ∂(Sizes.seqP sz) =
+      ((Sizes.seqGvar sz ⟨n, c⟩ : ℝ≥0) : ℝ) * ∫ ω, lwPartial sz n c F ω ∂(Sizes.seqP sz) :=
+  hG.stein ⟨n, c⟩ F (lwPartial sz n c F) hF.tame (hF.tame_partial c)
+    (fun ω => (hF.diff c ω).hasDerivAt)
+
+/-- **The complex Stein identity on the model** (`(Owx)` (7.20); Stein's identity for the Hermitian Gaussian
+matrix `H_u = √u X`, the entry `(H_u)_{wα}` against the Wirtinger derivative in `h_{αw}`): for a `C¹`-tame `F`,
+`E[(H_u)_{wα} F] = u S_{wα} E[∂_{h_{αw}} F]` with `S = svarF`, for every `w, α`, including `w = α`.
+Hypothesis: `GaussIBP sz` (proved: `gaussIBP sz`). -/
+theorem stein_sample (hG : GaussIBP sz) {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) {u : ℝ}
+    (hu : 0 ≤ u) (α w : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, sz.seqHflow n u ω w α * F ω ∂(Sizes.seqP sz) =
+      lwS sz n u w α * ∫ ω, dhSample sz n u α w F ω ∂(Sizes.seqP sz) := by
+  have hSw : lwS sz n u w α = ((u * svarF d (sz.L n) (sz.W n) (sz.lam n) w α : ℝ) : ℂ) := rfl
+  rw [hSw]
+  rcases hu.eq_or_lt with rfl | hu
+  · simp [Sizes.seqHflow]
+  have hs := lwStein_sqrt_ne hu
+  have h2s : (2 * (Real.sqrt u : ℂ)) ≠ 0 := mul_ne_zero two_ne_zero hs
+  have hsq : (Real.sqrt u : ℂ) * (Real.sqrt u : ℂ) = (u : ℂ) := by
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt hu.le]
+  have iF : ∀ c : CoordF d (sz.L n) (sz.W n),
+      Integrable (fun ω => ((ω ⟨n, c⟩ : ℝ) : ℂ) * F ω) (Sizes.seqP sz) := fun c =>
+    Tame.integrable hG ((Tame.coord (⟨n, c⟩ : Sizes.SeqCoord sz)).mul hF.tame)
+  have iD : ∀ c : CoordF d (sz.L n) (sz.W n),
+      Integrable (fun ω => lwPartial sz n c F ω) (Sizes.seqP sz) := fun c =>
+    Tame.integrable hG (hF.tame_partial c)
+  rcases idxKey_lt_or_eq_or_lt d (sz.L n) (sz.W n) w α with h | rfl | h
+  · -- `key w < key α`: `X_{wα} = a + i b` on `(w, α, ·)`
+    have hwα : w ≠ α := fun e => absurd (e ▸ h) (lt_irrefl _)
+    have e : ∀ ω : Sizes.SeqΩ sz, sz.seqHflow n u ω w α * F ω =
+        (Real.sqrt u : ℂ) * (((ω ⟨n, (w, α, true)⟩ : ℝ) : ℂ) * F ω) +
+          ((Real.sqrt u : ℂ) * Complex.I) * (((ω ⟨n, (w, α, false)⟩ : ℝ) : ℂ) * F ω) := by
+      intro ω
+      change (Real.sqrt u : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) w α * F ω = _
+      rw [Xentry, ite_eq_left h]
+      simp only [Sizes.slice]
+      ring
+    have hdh : ∀ ω : Sizes.SeqΩ sz, dhSample sz n u α w F ω = (2 * (Real.sqrt u : ℂ))⁻¹ *
+        (lwPartial sz n (w, α, true) F ω + Complex.I * lwPartial sz n (w, α, false) F ω) := by
+      intro ω
+      unfold dhSample
+      rw [ite_eq_right h.not_gt, ite_eq_left h]
+    simp_rw [e, hdh]
+    rw [integral_add ((iF _).const_mul _) ((iF _).const_mul _), integral_const_mul, integral_const_mul,
+      lwStein_coord hG hF, lwStein_coord hG hF, integral_const_mul,
+      integral_add (iD _) ((iD _).const_mul _), integral_const_mul,
+      lwStein_gvar_off w α true hwα, lwStein_gvar_off w α false hwα]
+    push_cast
+    rw [← hsq]
+    field_simp
+  · -- `w = α`: `X_{ww} = a` is real
+    have e : ∀ ω : Sizes.SeqΩ sz, sz.seqHflow n u ω w w * F ω =
+        (Real.sqrt u : ℂ) * (((ω ⟨n, (w, w, true)⟩ : ℝ) : ℂ) * F ω) := by
+      intro ω
+      change (Real.sqrt u : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) w w * F ω = _
+      rw [Xentry, ite_eq_right (lt_irrefl _), ite_eq_right (lt_irrefl _)]
+      simp only [Sizes.slice]
+      ring
+    have hdh : ∀ ω : Sizes.SeqΩ sz, dhSample sz n u w w F ω =
+        (Real.sqrt u : ℂ)⁻¹ * lwPartial sz n (w, w, true) F ω := by
+      intro ω
+      unfold dhSample
+      rw [ite_eq_right (lt_irrefl _), ite_eq_right (lt_irrefl _)]
+    simp_rw [e, hdh]
+    rw [integral_const_mul, lwStein_coord hG hF, integral_const_mul, lwStein_gvar_diag w true]
+    push_cast
+    rw [← hsq]
+    field_simp
+  · -- `key α < key w`: `X_{wα} = a - i b` on `(α, w, ·)`
+    have hαw : α ≠ w := fun e => absurd (e ▸ h) (lt_irrefl _)
+    have e : ∀ ω : Sizes.SeqΩ sz, sz.seqHflow n u ω w α * F ω =
+        (Real.sqrt u : ℂ) * (((ω ⟨n, (α, w, true)⟩ : ℝ) : ℂ) * F ω) -
+          ((Real.sqrt u : ℂ) * Complex.I) * (((ω ⟨n, (α, w, false)⟩ : ℝ) : ℂ) * F ω) := by
+      intro ω
+      change (Real.sqrt u : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) w α * F ω = _
+      rw [Xentry, ite_eq_right h.not_gt, ite_eq_left h]
+      simp only [Sizes.slice]
+      ring
+    have hdh : ∀ ω : Sizes.SeqΩ sz, dhSample sz n u α w F ω = (2 * (Real.sqrt u : ℂ))⁻¹ *
+        (lwPartial sz n (α, w, true) F ω - Complex.I * lwPartial sz n (α, w, false) F ω) := by
+      intro ω
+      unfold dhSample
+      rw [ite_eq_left h]
+    simp_rw [e, hdh]
+    rw [integral_sub ((iF _).const_mul _) ((iF _).const_mul _), integral_const_mul, integral_const_mul,
+      lwStein_coord hG hF, lwStein_coord hG hF, integral_const_mul,
+      integral_sub (iD _) ((iD _).const_mul _), integral_const_mul,
+      lwStein_gvar_off α w true hαw, lwStein_gvar_off α w false hαw]
+    push_cast
+    rw [← hsq, svarF_comm d (sz.L n) (sz.W n) (sz.lam n) w α]
+    field_simp
+
+
+/-- `∂_{h_{αw}}` of a `C¹`-tame function is tame. -/
+theorem lwStein_tame_dhSample {F : Sizes.SeqΩ sz → ℂ} (hF : Tame1 sz n F) (u : ℝ) (α w : Idx d (sz.L n) (sz.W n)) :
+    Tame sz (dhSample sz n u α w F) := by
+  unfold dhSample
+  split_ifs
+  · exact (Tame.const _).mul ((hF.tame_partial _).sub ((Tame.const _).mul (hF.tame_partial _)))
+  · exact (Tame.const _).mul ((hF.tame_partial _).add ((Tame.const _).mul (hF.tame_partial _)))
+  · exact (Tame.const _).mul (hF.tame_partial _)
+
+/-- The resolvent identity `Σ_α H_{wα} G_{αw} = 1 + z G_{ww}`. -/
+theorem lwStein_resolvent_id {z : ℂ} (hz : z.im ≠ 0) (u : ℝ) (ω : Sizes.SeqΩ sz)
+    (w : Idx d (sz.L n) (sz.W n)) :
+    ∑ α, sz.seqHflow n u ω w α * lwG sz n z u α w ω = 1 + z * lwG sz n z u w w ω := by
+  have hU : IsUnit (sz.seqHflow n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) :=
+    isUnit_sub_smul_of_isHermitian (Sizes.seqHflow_isHermitian sz n u ω) hz
+  have h : ((sz.seqHflow n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) *
+      Ring.inverse (sz.seqHflow n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ))) w w =
+      (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) w w := by
+    rw [Ring.mul_inverse_cancel _ hU]
+  simp only [lwG, lwGm, Gres, ite_true]
+  simp only [Matrix.mul_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, sub_mul,
+    Finset.sum_sub_distrib, mul_ite, mul_one, mul_zero, ite_mul, zero_mul, Finset.sum_ite_eq,
+    Finset.mem_univ, ite_true] at h
+  linear_combination h
+
+
+/-- **`E Z_w = 0`** (`(Owx)` (7.20)): for a resolvent polynomial `f`, `df α w = ∂_{h_{αw}} f`, the
+Stein defect `Z_w` of the row `w` (`owxDefect`, with `S = S^{(u)} = u · svarF`) has mean zero.  From
+the complex Stein identity (`stein_sample`, applied to `G_{αw} f`) and the resolvent identity
+`Σ_α H_{wα} G_{αw} = 1 + z G_{ww}`. -/
+theorem integral_owxDefect (hG : GaussIBP sz) {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u)
+    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
+    (w : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, owxDefect z (lwGm sz n z u ω) (lwS sz n u) (lwPoly sz n z u P ω)
+      (fun α w' => dhSample sz n u α w' (lwPoly sz n z u P) ω) w ∂(Sizes.seqP sz) = 0 := by
+  classical
+  have hf : Tame1 sz n (lwPoly sz n z u P) := lwPoly_tame1 hz u P
+  have hQ : ∀ α : Idx d (sz.L n) (sz.W n),
+      Tame1 sz n (fun ω => lwG sz n z u α w ω * lwPoly sz n z u P ω) :=
+    fun α => (lwG_tame1 hz u α w).mul hf
+  have hdQ : ∀ (α : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz),
+      dhSample sz n u α w (fun ω => lwG sz n z u α w ω * lwPoly sz n z u P ω) ω =
+        -(lwG sz n z u α α ω * lwG sz n z u w w ω) * lwPoly sz n z u P ω +
+          lwG sz n z u α w ω * dhSample sz n u α w (lwPoly sz n z u P) ω := by
+    intro α ω
+    rw [lwStein_dh_mul (lwG_tame1 hz u α w) hf, dhSample_lwG sz n hz hu]
+  have hpt : ∀ ω : Sizes.SeqΩ sz,
+      owxDefect z (lwGm sz n z u ω) (lwS sz n u) (lwPoly sz n z u P ω)
+        (fun α w' => dhSample sz n u α w' (lwPoly sz n z u P) ω) w =
+      ∑ α, sz.seqHflow n u ω w α * (lwG sz n z u α w ω * lwPoly sz n z u P ω) -
+        ∑ α, lwS sz n u w α *
+          dhSample sz n u α w (fun ω => lwG sz n z u α w ω * lwPoly sz n z u P ω) ω := by
+    intro ω
+    have hres := lwStein_resolvent_id (sz := sz) (n := n) hz.ne' u ω w
+    have h1 : ∑ α, sz.seqHflow n u ω w α * (lwG sz n z u α w ω * lwPoly sz n z u P ω) =
+        (1 + z * lwG sz n z u w w ω) * lwPoly sz n z u P ω := by
+      rw [← hres, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun α _ => by ring
+    have h2 : ∑ α, lwS sz n u w α *
+          dhSample sz n u α w (fun ω => lwG sz n z u α w ω * lwPoly sz n z u P ω) ω =
+        -((∑ α, lwS sz n u w α * lwGm sz n z u ω α α) * lwG sz n z u w w ω * lwPoly sz n z u P ω) +
+          ∑ α, lwS sz n u w α * lwGm sz n z u ω α w *
+            dhSample sz n u α w (lwPoly sz n z u P) ω := by
+      simp only [hdQ, mul_add, Finset.sum_add_distrib, Finset.sum_mul, ← Finset.sum_neg_distrib]
+      congr 1
+      · exact Finset.sum_congr rfl fun α _ => by simp only [lwG]; ring
+      · exact Finset.sum_congr rfl fun α _ => by simp only [lwG]; ring
+    rw [h1, h2]
+    unfold owxDefect
+    simp only [lwG]
+    ring
+  simp_rw [hpt]
+  have iA : ∀ α : Idx d (sz.L n) (sz.W n), Integrable (fun ω => sz.seqHflow n u ω w α *
+      (lwG sz n z u α w ω * lwPoly sz n z u P ω)) (Sizes.seqP sz) := fun α =>
+    Tame.integrable hG ((lwStein_tame_hflow sz n u w α).mul (hQ α).tame)
+  have iB : ∀ α : Idx d (sz.L n) (sz.W n), Integrable (fun ω => lwS sz n u w α *
+      dhSample sz n u α w (fun ω => lwG sz n z u α w ω * lwPoly sz n z u P ω) ω) (Sizes.seqP sz) := fun α =>
+    Tame.integrable hG ((Tame.const _).mul (lwStein_tame_dhSample (hQ α) u α w))
+  rw [integral_sub (integrable_finsetSum _ fun α _ => iA α) (integrable_finsetSum _ fun α _ => iB α),
+    integral_finsetSum _ fun α _ => iA α, integral_finsetSum _ fun α _ => iB α,
+    ← Finset.sum_sub_distrib]
+  refine Finset.sum_eq_zero fun α _ => ?_
+  rw [integral_const_mul]
+  have := stein_sample hG (hQ α) hu.le α w
+  rw [this]
+  simp [lwS]
+
+
+/-- The rows of the fine-lattice variance profile sum to `1` (from `sum_sbKernelR`, `3 ≤ L`). -/
+private theorem lwStein_sum_svarF_row (L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g : ℝ)
+    (i : Idx d L W) : ∑ j, svarF d L W g i j = 1 := by
+  classical
+  have h1 : ∑ j : Idx d L W, svarF d L W g i j =
+      ∑ p : Vtx d L W, ((W : ℝ) ^ d)⁻¹ * SBR d L g (split d L W i).1 p.1 :=
+    Fintype.sum_equiv (splitEquiv d L W) _ _ fun j => rfl
+  have hW : ((W : ℝ) ^ d) ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.mpr (NeZero.ne W))
+  have h2 : ∑ x : Zd d L, SBR d L g (split d L W i).1 x = 1 := by
+    simp only [SBR, Matrix.of_apply]
+    rw [← sum_sbKernelR d L g hL]
+    exact Fintype.sum_equiv (Equiv.subLeft (split d L W i).1) _ _ fun x => rfl
+  rw [h1, Fintype.sum_prod_type]
+  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+  rw [← h2]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  push_cast
+  field_simp
+
+/-- The rows of `S^{(u)} = u · svarF` sum to `u`. -/
+theorem lwS_row_sum (u : ℝ) (i : Idx d (sz.L n) (sz.W n)) : ∑ j, lwS sz n u i j = (u : ℂ) := by
+  have h := lwStein_sum_svarF_row (d := d) (sz.L n) (sz.W n) (sz.three_le_L n) (sz.lam n) i
+  simp only [lwS, Matrix.of_apply]
+  rw [← Complex.ofReal_sum, ← Finset.mul_sum, h, mul_one]
+
+
+/-- Closure of `Tame` under the operations that occur in the expansions (finite sums, products,
+differences, constants), with the resolvent entries and the derivatives as leaves. -/
+local macro "lw_tame" : tactic =>
+  `(tactic| repeat' first
+    | exact Tame.const _
+    | assumption
+    | (apply lwStein_tame_lwG; assumption)
+    | (apply lwStein_tame_dhSample; assumption)
+    | apply Tame.mul
+    | apply Tame.add
+    | apply Tame.sub
+    | apply Tame.neg
+    | (apply Tame.sum; intros; skip))
+
+/-- **`(Owx)` in expectation, for every resolvent polynomial** (Lemma 7.11, `ssl`).
+Hypotheses: `GaussIBP sz` (proved: `gaussIBP sz`); `m ≠ 0`, `z + u m = -m⁻¹` (`z_u + u m = -1/m`,
+the flow of `(self_m)`), and `S⁺ = Sp` with `S⁺ (1 - m² S) = S` for `S = S^{(u)} = u · svarF` (`(eq:def-Spm)`;
+the rows of `S^{(u)}` sum to `u`, `lwS_row_sum`).  `df α x = ∂_{h_{αx}} f` (`dhSample`).  With `Ǧ = G - m`. -/
+theorem owx_integral (hG : GaussIBP sz) {z : ℂ} (hz : 0 < z.im) {u : ℝ} (hu : 0 < u) {m : ℂ}
+    (hm0 : m ≠ 0) (hzm : z + (u : ℂ) * m = -m⁻¹)
+    (Sp : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hSp : ∀ i j, Sp i j - m ^ 2 * ∑ w, Sp i w * lwS sz n u w j = lwS sz n u i j)
+    (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
+    (x : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, (lwG sz n z u x x ω - m) * lwPoly sz n z u P ω ∂(Sizes.seqP sz) =
+      ∫ ω, (m * ∑ α, lwS sz n u x α * (lwG sz n z u x x ω - m) * (lwG sz n z u α α ω - m) *
+            lwPoly sz n z u P ω +
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * (lwG sz n z u α α ω - m) *
+            (lwG sz n z u β β ω - m) * lwPoly sz n z u P ω -
+          m * ∑ α, lwS sz n u x α * lwG sz n z u α x ω * dhSample sz n u α x (lwPoly sz n z u P) ω -
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * lwG sz n z u β α ω *
+            dhSample sz n u β α (lwPoly sz n z u P) ω) ∂(Sizes.seqP sz) := by
+  classical
+  have hz' : z.im ≠ 0 := hz.ne'
+  have hf : Tame1 sz n (lwPoly sz n z u P) := lwPoly_tame1 hz u P
+  have tf : Tame sz (lwPoly sz n z u P) := hf.tame
+  have tD : ∀ α β : Idx d (sz.L n) (sz.W n), Tame sz (dhSample sz n u α β (lwPoly sz n z u P)) :=
+    fun α β => lwStein_tame_dhSample hf u α β
+  have hpt : ∀ ω : Sizes.SeqΩ sz,
+      ((lwG sz n z u x x ω - m) * lwPoly sz n z u P ω -
+        (m * ∑ α, lwS sz n u x α * (lwG sz n z u x x ω - m) * (lwG sz n z u α α ω - m) *
+            lwPoly sz n z u P ω +
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * (lwG sz n z u α α ω - m) *
+            (lwG sz n z u β β ω - m) * lwPoly sz n z u P ω -
+          m * ∑ α, lwS sz n u x α * lwG sz n z u α x ω * dhSample sz n u α x (lwPoly sz n z u P) ω -
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * lwG sz n z u β α ω *
+            dhSample sz n u β α (lwPoly sz n z u P) ω)) =
+      -m * ∑ w, ((if x = w then 1 else 0) + m ^ 2 * Sp x w) *
+        owxDefect z (lwGm sz n z u ω) (lwS sz n u) (lwPoly sz n z u P ω)
+          (fun α w' => dhSample sz n u α w' (lwPoly sz n z u P) ω) w :=
+    fun ω => owx_defect_identity z m (u : ℂ) hm0 hzm (lwGm sz n z u ω) (lwS sz n u) Sp
+      (lwS_row_sum u) hSp (lwPoly sz n z u P ω) (fun α w' => dhSample sz n u α w' (lwPoly sz n z u P) ω) x
+  have iZ : ∀ w : Idx d (sz.L n) (sz.W n), Integrable (fun ω => owxDefect z (lwGm sz n z u ω)
+      (lwS sz n u) (lwPoly sz n z u P ω) (fun α w' => dhSample sz n u α w' (lwPoly sz n z u P) ω) w)
+      (Sizes.seqP sz) := by
+    intro w
+    refine Tame.integrable hG ?_
+    unfold owxDefect
+    lw_tame
+  have hzero : ∫ ω, ((lwG sz n z u x x ω - m) * lwPoly sz n z u P ω -
+        (m * ∑ α, lwS sz n u x α * (lwG sz n z u x x ω - m) * (lwG sz n z u α α ω - m) *
+            lwPoly sz n z u P ω +
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * (lwG sz n z u α α ω - m) *
+            (lwG sz n z u β β ω - m) * lwPoly sz n z u P ω -
+          m * ∑ α, lwS sz n u x α * lwG sz n z u α x ω * dhSample sz n u α x (lwPoly sz n z u P) ω -
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * lwG sz n z u β α ω *
+            dhSample sz n u β α (lwPoly sz n z u P) ω)) ∂(Sizes.seqP sz) = 0 := by
+    simp_rw [hpt]
+    rw [integral_const_mul, integral_finsetSum _ fun w _ => (iZ w).const_mul _]
+    simp [integral_const_mul, integral_owxDefect hG hz hu P]
+  have iL : Integrable (fun ω => (lwG sz n z u x x ω - m) * lwPoly sz n z u P ω) (Sizes.seqP sz) := by
+    refine Tame.integrable hG ?_
+    lw_tame
+  have iR : Integrable (fun ω => (m * ∑ α, lwS sz n u x α * (lwG sz n z u x x ω - m) * (lwG sz n z u α α ω - m) *
+            lwPoly sz n z u P ω +
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * (lwG sz n z u α α ω - m) *
+            (lwG sz n z u β β ω - m) * lwPoly sz n z u P ω -
+          m * ∑ α, lwS sz n u x α * lwG sz n z u α x ω * dhSample sz n u α x (lwPoly sz n z u P) ω -
+          m ^ 3 * ∑ α, ∑ β, Sp x α * lwS sz n u α β * lwG sz n z u β α ω *
+            dhSample sz n u β α (lwPoly sz n z u P) ω)) (Sizes.seqP sz) := by
+    refine Tame.integrable hG ?_
+    lw_tame
+  rw [integral_sub iL iR] at hzero
+  linear_combination hzero
+
+variable (sz n) in
+/-- **`S⁺ = S (1 - m² S)⁻¹`** (`(eq:def-Spm)`) for `S = S^{(u)} = u · svarF`. -/
+def lwSplus (u : ℝ) (m : ℂ) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  lwS sz n u * Ring.inverse (1 - m ^ 2 • lwS sz n u)
+
+/-- `1 - m² S^{(u)}` is invertible when `|m|² u < 1` (strict diagonal dominance: the rows of `S^{(u)}` are
+non-negative and sum to `u`). -/
+theorem lwS_isUnit {u : ℝ} (hu : 0 ≤ u) {m : ℂ} (hm : ‖m‖ ^ 2 * u < 1) :
+    IsUnit (1 - m ^ 2 • lwS sz n u) := by
+  classical
+  rw [Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero]
+  refine det_ne_zero_of_sum_row_lt_diag fun k => ?_
+  set s : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℝ := svarF d (sz.L n) (sz.W n) (sz.lam n)
+    with hs
+  have hs0 : ∀ i j, 0 ≤ s i j := svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n)
+  have hrow : ∑ j, s k j = 1 := lwStein_sum_svarF_row (d := d) (sz.L n) (sz.W n) (sz.three_le_L n) (sz.lam n) k
+  have hoff : ∀ j ∈ Finset.univ.erase k, ‖(1 - m ^ 2 • lwS sz n u) k j‖ = ‖m‖ ^ 2 * (u * s k j) := by
+    intro j hj
+    have hjk : k ≠ j := fun e => (Finset.ne_of_mem_erase hj) e.symm
+    simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply_ne hjk, lwS, Matrix.of_apply,
+      smul_eq_mul, zero_sub, norm_neg, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs]
+    rw [abs_of_nonneg hu, abs_of_nonneg (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) k j)]
+  rw [Finset.sum_congr rfl hoff, ← Finset.mul_sum, ← Finset.mul_sum]
+  have hsum : ∑ j ∈ Finset.univ.erase k, s k j = 1 - s k k := by
+    rw [← hrow, ← Finset.add_sum_erase _ _ (Finset.mem_univ k)]
+    ring
+  have hdiag : 1 - ‖m‖ ^ 2 * (u * s k k) ≤ ‖(1 - m ^ 2 • lwS sz n u) k k‖ := by
+    have h := norm_sub_norm_le (1 : ℂ) (m ^ 2 * (lwS sz n u k k))
+    have e : (1 - m ^ 2 • lwS sz n u) k k = 1 - m ^ 2 * lwS sz n u k k := by simp
+    rw [e]
+    have e2 : ‖m ^ 2 * lwS sz n u k k‖ = ‖m‖ ^ 2 * (u * s k k) := by
+      simp only [lwS, Matrix.of_apply, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs]
+      rw [abs_of_nonneg hu, abs_of_nonneg (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) k k)]
+    rw [e2] at h
+    simpa using h
+  rw [hsum]
+  have : 0 ≤ ‖m‖ ^ 2 * u := by positivity
+  nlinarith [hs0 k k, mul_nonneg this (hs0 k k)]
+
+/-- `S⁺ (1 - m² S) = S` entrywise: `S⁺_{ij} - m² Σ_w S⁺_{iw} S_{wj} = S_{ij}` for `S = S^{(u)}`, `|m|² u < 1`. -/
+theorem lwSplus_spec {u : ℝ} (hu : 0 ≤ u) {m : ℂ} (hm : ‖m‖ ^ 2 * u < 1) (i j : Idx d (sz.L n) (sz.W n)) :
+    lwSplus sz n u m i j - m ^ 2 * ∑ w, lwSplus sz n u m i w * lwS sz n u w j = lwS sz n u i j := by
+  have hU := lwS_isUnit (sz := sz) (n := n) hu hm
+  have h : lwSplus sz n u m * (1 - m ^ 2 • lwS sz n u) = lwS sz n u := by
+    unfold lwSplus
+    rw [Matrix.mul_assoc, Ring.inverse_mul_cancel _ hU, Matrix.mul_one]
+  have := congrFun (congrFun h i) j
+  rw [Matrix.mul_sub, Matrix.mul_one, Matrix.mul_smul] at this
+  simpa [Matrix.sub_apply, Matrix.smul_apply, Matrix.mul_apply] using this
+
+end Sample
+
+/-! ## The derivative of a graph value
+
+The vertices of the derivative graphs are those of `Γ` (`inl a ↦ inl (inl a)`, `inr i ↦ inr i`) and two
+*new external* vertices `α = inl (inr 0)`, `w = inl (inr 1)`, with the labels `α, w` of `∂_{h_{αw}}`. -/
+
+section GraphDeriv
+
+/-- Each entry of `lwSplit l` leaves one element out of `l`. -/
+theorem lwSplit_snd_length {κ : Type*} (l : List κ) :
+    ∀ p ∈ lwSplit l, p.2.length + 1 = l.length := by
+  induction l with
+  | nil => simp [lwSplit]
+  | cons a l ih =>
+    intro p hp
+    simp only [lwSplit, List.mem_cons, List.mem_map] at hp
+    rcases hp with rfl | ⟨q, hq, rfl⟩
+    · simp
+    · simpa using ih q hq
+
+
+end GraphDeriv
+
+section GraphDerivVal
+
+variable {d : ℕ} (sz : Sizes d) (n : ℕ) {E I : Type*}
+
+/-- The graph data at the sample `ω`: the resolvent `G` of the flow (the only random matrix), and the
+deterministic `M`, `S`, `S⁺`. -/
+def lwSampleData (z : ℂ) (u : ℝ) (M S Sp : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (ω : Sizes.SeqΩ sz) : LData (Idx d (sz.L n) (sz.W n)) :=
+  ⟨lwGm sz n z u ω, M, S, Sp⟩
+
+variable {sz n}
+variable {z : ℂ} {u : ℝ} {M S Sp : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+
+theorem lwStein_sedge_val_blue {V : Type*} (e : SEdge V) (hσ : e.σ = true) (ℓ : V → Idx d (sz.L n) (sz.W n))
+    (ω : Sizes.SeqΩ sz) :
+    SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e =
+      lwG sz n z u (ℓ e.src) (ℓ e.dst) ω - (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0) := by
+  simp [SEdge.val, hσ, lwSampleData, lwG]
+
+/-- The factor of a red solid edge: `\overline{G_{ab}} - \overline{M_{ab}}` (or without `M`). -/
+theorem lwStein_sedge_val_red {V : Type*} (e : SEdge V) (hσ : e.σ = false) (ℓ : V → Idx d (sz.L n) (sz.W n))
+    (ω : Sizes.SeqΩ sz) :
+    SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e =
+      star (lwG sz n z u (ℓ e.src) (ℓ e.dst) ω) - star (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0) := by
+  simp [SEdge.val, hσ, lwSampleData, lwG, star_sub]
+
+/-- The factor of a solid edge is `C¹`-tame as a function of the sample. -/
+theorem lwStein_sedge_val_tame1 (hz : 0 < z.im) {V : Type*} (e : SEdge V)
+    (ℓ : V → Idx d (sz.L n) (sz.W n)) :
+    Tame1 sz n (fun ω => SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e) := by
+  have hG := lwG_tame1 (sz := sz) (n := n) hz u (ℓ e.src) (ℓ e.dst)
+  cases hσ : e.σ
+  · have h := hG.conj.sub (Tame1.const (n := n) (sz := sz) (star (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0)))
+    convert h using 1
+    funext ω
+    exact lwStein_sedge_val_red e hσ ℓ ω
+  · have h := hG.sub (Tame1.const (n := n) (sz := sz) (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0))
+    convert h using 1
+    funext ω
+    exact lwStein_sedge_val_blue e hσ ℓ ω
+
+/-- **The derivative of one edge factor** (`(Owx)` (7.20)): `∂_{h_{αw}} (G-M)_{ab} = -G_{aα} G_{wb}`
+(blue, with or without circle), `∂_{h_{αw}} \overline{(G-M)_{ab}} = -\bar G_{aw} \bar G_{αb}` (red): the factor
+is replaced by the product of the two factors. -/
+theorem lwStein_dh_sedge_val (hz : 0 < z.im) (hu : 0 < u) {V : Type*} (e : SEdge V) (α w : Idx d (sz.L n) (sz.W n))
+    (ℓ : V → Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    dhSample sz n u α w (fun ω => SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e) ω =
+      if e.σ then -(lwG sz n z u (ℓ e.src) α ω * lwG sz n z u w (ℓ e.dst) ω)
+      else -(star (lwG sz n z u (ℓ e.src) w ω) * star (lwG sz n z u α (ℓ e.dst) ω)) := by
+  cases hσ : e.σ
+  · have hfun : (fun ω => SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e) = fun ω =>
+        star (lwG sz n z u (ℓ e.src) (ℓ e.dst) ω) - star (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0) :=
+      funext (lwStein_sedge_val_red e hσ ℓ)
+    rw [hfun, lwStein_dh_sub (lwG_tame1 hz u _ _).conj (Tame1.const _), lwStein_dh_const,
+      dhSample_lwG_star sz n hz hu]
+    simp [star_mul']
+  · have hfun : (fun ω => SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ e) = fun ω =>
+        lwG sz n z u (ℓ e.src) (ℓ e.dst) ω - (if e.circ then M (ℓ e.src) (ℓ e.dst) else 0) :=
+      funext (lwStein_sedge_val_blue e hσ ℓ)
+    rw [hfun, lwStein_dh_sub (lwG_tame1 hz u _ _) (Tame1.const _), lwStein_dh_const, dhSample_lwG sz n hz hu]
+    simp
+
+
+/-- The part of the value of a term that does not depend on the sample: coefficient, waved and dotted
+factors. -/
+def lwK {ι : Type*} [DecidableEq ι] (Γ : LGraph E I) (M S Sp : Matrix ι ι ℂ) (ℓ : E ⊕ I → ι) : ℂ :=
+  Γ.coeff * (Γ.waved.map (WEdge.val (⟨0, M, S, Sp⟩ : LData ι) ℓ)).prod * (Γ.dotted.map (DEdge.val ℓ)).prod
+
+/-- The term of a graph is the sample-independent part times the product of the solid edge factors. -/
+theorem lwStein_term_eq (Γ : LGraph E I) (ℓ : E ⊕ I → Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    Γ.term (lwSampleData sz n z u M S Sp ω) ℓ =
+      lwK Γ M S Sp ℓ * (Γ.solid.map (SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ)).prod := by
+  have hW : WEdge.val (lwSampleData sz n z u M S Sp ω) ℓ = WEdge.val (⟨0, M, S, Sp⟩ : LData _) ℓ := rfl
+  simp only [LGraph.term, lwK, hW]
+  ring
+
+/-- The term of a graph is `C¹`-tame as a function of the sample. -/
+theorem lwStein_term_tame1 (hz : 0 < z.im) (Γ : LGraph E I) (ℓ : E ⊕ I → Idx d (sz.L n) (sz.W n)) :
+    Tame1 sz n (fun ω => Γ.term (lwSampleData sz n z u M S Sp ω) ℓ) := by
+  have hfun : (fun ω => Γ.term (lwSampleData sz n z u M S Sp ω) ℓ) = fun ω =>
+      lwK Γ M S Sp ℓ * (Γ.solid.map (SEdge.val (lwSampleData sz n z u M S Sp ω) ℓ)).prod :=
+    funext (lwStein_term_eq Γ ℓ)
+  rw [hfun]
+  exact (Tame1.const _).mul (Tame1.listProd _ fun e _ => lwStein_sedge_val_tame1 hz e ℓ)
+
+/-- A finite sum of list sums is the list of the finite sums. -/
+theorem lwStein_sum_list {β κ : Type*} [Fintype β] (L : List κ) (f : κ → β → ℂ) :
+    ∑ b, (L.map fun x => f x b).sum = (L.map fun x => ∑ b, f x b).sum := by
+  induction L with
+  | nil => simp
+  | cons a L ih => simp [Finset.sum_add_distrib, ih]
+
+end GraphDerivVal
+
+
+/-! ### The counters of the derivative graphs -/
+
+section DCounters
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- The molecule counter only reads the waved and the `=`-dotted edges. -/
+theorem lwStein_nM_congr (Γ₁ Γ₂ : LGraph E I) (hW : Γ₁.waved = Γ₂.waved) (hD : Γ₁.dotted = Γ₂.dotted) :
+    Γ₁.nM = Γ₂.nM := by
+  have hadj : Γ₁.adj = Γ₂.adj := by
+    funext u v
+    simp only [LGraph.adj, hW, hD]
+  have hstep : Γ₁.step = Γ₂.step := by
+    funext s
+    simp only [LGraph.step, hadj]
+  have hmol : Γ₁.mol = Γ₂.mol := by
+    funext v
+    simp only [LGraph.mol, hstep]
+  simp only [LGraph.nM, hmol]
+
+end DCounters
+
+end RBM.Graph

@@ -1,0 +1,1193 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Induction.EMn2Exp1
+import RBM3D.BA.FlowPins
+import RBM3D.Evolution.PropTInf
+
+/-!
+# `lem: EMn2_N`, third estimate (3.35) `eq:MG_conclusion3`, part 2: the far sum `S̃₃`
+
+Lemma 3.13 (`lem: EMn2_N`), third estimate (3.35) `eq:MG_conclusion3`, the proof of the far sum
+`S̃₃` (`eq_L2-J`, the six legs of the 6-loop, (3.21) `TTT2`).  The near case and `S̃₁ + S̃₂` are in
+`EMn2Exp1.lean` (`emn2Exp_nearg`, `emn2Exp_far12g`); this file proves the far sum `S̃₃` and the
+statement `STEMn2Exp`.
+
+**The argument.**  The paper bounds all six legs by
+`(Ĵ + W^{-D}) W^{-d} 𝒯̃` and then needs `W^{-2D} Σ_c 1 ≲ (1-t)⁻¹ W^{-D}`, i.e.
+`D ≥ (d-2) log_W ℓ_t` (the paper's "large `D`").  The statement has `∀ D > 0`,
+so `S̃₃` is split by the value of the profile `P = W^{-d} 𝒯̃^ℓ_{t,D}` on the `(b,c')` leg:
+
+* `A^f = {P(|c'-b|) ≤ P(|a-b|)}`: the contraction inequality exactly as for `S̃₁`
+  (`stContractPt_holds`, `emn2Poly_norm_loop4_alt_le`, `emn2Poly_norm_loop3_le`), with
+  `M = y² P(|a-b|)`: `emn2Exp2_partF`; no sum over `c`, no `Ĵ`, no condition on `D`;
+* `A^n = {P(|a-b|) < P(|c'-b|)}`: there `P(|c'-b|) = W^{-d} 𝒯_t(|c'-b|)` is a genuine tail
+  (`P ≥ W^{-d-D}`), the 6-loop is bounded by the product of three 2-loops
+  `|𝓛⁶| ≤ |𝓛²_{(a,c)}| |𝓛²_{(b,a)}| |𝓛²_{(c',b)}|` (each pair twice, `emn2Exp2_loop6_le`: block
+  Cauchy-Schwarz, `‖XY‖_HS ≤ ‖X‖_HS ‖Y‖_HS`; **no entry bound (3.3) `GijGEX`**), each 2-loop at
+  distance `> ℓ*` is at most `(Ĵ + W^{-d}) P` (`eq_L2-J`: `𝒦^{(2)} = W^{-d} Θ_t` and the far
+  field `kellStarEv`), and the sum over `c, c'` is (3.21) `TTT2` (`ekPropTInf_holds`) plus
+  `Σ_c 𝒯_t(|c|_∞) ≲ (1-t)⁻¹` (`emn2Exp2_sum_tailT_le`): `emn2Exp2_partN`, `emn2Exp2_profile_sum`.
+
+`emn2Exp2_S3_le` is the deterministic bound of `S̃₃` at a Hermitian matrix; `emn2Exp_far3g` is the
+stochastic form on the good event of (3.31) `eq:LW_assm_exp` with the random bound `Ĵ`;
+`stEMn2ExpJgL_of`, `stEMn2ExpgL_of` give the far sum and the statement over a carrier (the `J` form,
+far field `emn2ExpHK`); `stEMn2Exp_holds` is the band corollary.  **`3 ≤ d` is a hypothesis** of
+these: `kellStarEv` and `ekPropTInf_holds` (the propagator decay (2.66) `prop:ThfadC` and (3.21)
+`TTT2`) are statements for `d ≥ 3`; the definition `STEMn2Exp d` itself has no such premise.
+The private lemmas of the other `EMn2*` files are reached with `open private` instead of being
+copied.
+-/
+
+set_option linter.style.longLine false
+
+open private emn2Exp_zdistInf_zero emn2Exp_zdistInf_tri emn2Exp_zdistInf_sub_comm
+  emn2Exp_loop3_ctrl emn2Exp_stochDomAt_of_subset emn2Exp_tailT_shift emn2Exp_sw_dist
+  from RBM3D.Induction.EMn2Exp1
+open private hs hs_nonneg trace_mul_conjTranspose_eq Gres_conjTranspose Pm Eblk_eq_smul_Pm
+  Pm_conjTranspose Pm_mul_Pm_mul trace_Pm_sandwich loop2_eq from RBM3D.Induction.EMn2Poly
+open private card_ball_le from RBM3D.Induction.ContractPt
+open private pti_sum_radial from RBM3D.Evolution.PropTInf
+open private KLWard_mSigma_mul from RBM3D.Loop.KLWard
+
+noncomputable section
+
+open Matrix Finset Filter MeasureTheory
+
+namespace RBM.Gauss.Sizes
+
+open RBM RBM.Gauss RBM.Loop RBM.Path
+open RBM.BA (FlowFM PrecL STEEg STJhatg STInitialGT2gL STLWassmgL STLWassmExpgL STEMn2ExpgL)
+
+/-! ## 1. Hilbert-Schmidt submultiplicativity -/
+
+section Generic
+
+variable {ι : Type*} [Fintype ι]
+
+/-- **Submultiplicativity of the Hilbert-Schmidt norm**: `‖AB‖²_HS ≤ ‖A‖²_HS ‖B‖²_HS`
+(Cauchy-Schwarz on each entry of `AB`). -/
+private lemma emn2Exp2_hs_mul_le (A B : Matrix ι ι ℂ) : hs (A * B) ≤ hs A * hs B := by
+  unfold hs
+  have h1 : ∀ i k, ‖(A * B) i k‖ ^ 2 ≤ (∑ j, ‖A i j‖ ^ 2) * (∑ j, ‖B j k‖ ^ 2) := by
+    intro i k
+    rw [Matrix.mul_apply]
+    calc ‖∑ j, A i j * B j k‖ ^ 2 ≤ (∑ j, ‖A i j‖ * ‖B j k‖) ^ 2 := by
+          gcongr
+          refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => (norm_mul _ _).le)
+      _ ≤ (∑ j, ‖A i j‖ ^ 2) * (∑ j, ‖B j k‖ ^ 2) :=
+          Finset.sum_mul_sq_le_sq_mul_sq _ _ _
+  calc ∑ i, ∑ k, ‖(A * B) i k‖ ^ 2
+      ≤ ∑ i, ∑ k, (∑ j, ‖A i j‖ ^ 2) * (∑ j, ‖B j k‖ ^ 2) :=
+        Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun k _ => h1 i k
+    _ = (∑ i, ∑ j, ‖A i j‖ ^ 2) * (∑ k, ∑ j, ‖B j k‖ ^ 2) := by
+        rw [Finset.sum_mul_sum]
+    _ = (∑ i, ∑ j, ‖A i j‖ ^ 2) * (∑ j, ∑ k, ‖B j k‖ ^ 2) := by
+        rw [Finset.sum_comm (f := fun k j => ‖B j k‖ ^ 2)]
+
+end Generic
+
+/-! ## 2. The Hölder bound of the 6-loop by three 2-loops -/
+
+section Holder
+
+variable {d L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
+
+/-- The 6-loop of the cut `k = 0`: `𝓛^{(6)} = W^{-6d} tr(G P_a G P_b G P_{c'} Ḡ P_b Ḡ P_a Ḡ P_c)`. -/
+private lemma emn2Exp2_loop6_eq (s0 s1 : Bool) (a b c c' : Zd d L) :
+    loopFine d L W H z ![s0, s1, s0, !s0, !s1, !s0] ![a, b, c', b, a, c] =
+      (((W : ℂ) ^ d)⁻¹) ^ 6 *
+        (Gres (blockMat d L W H) z s0 * Pm d L W a *
+          Gres (blockMat d L W H) z s1 * Pm d L W b *
+          Gres (blockMat d L W H) z s0 * Pm d L W c' *
+          Gres (blockMat d L W H) z (!s0) * Pm d L W b *
+          Gres (blockMat d L W H) z (!s1) * Pm d L W a *
+          Gres (blockMat d L W H) z (!s0) * Pm d L W c).trace := by
+  conv_lhs => simp [loopFine, loopM, List.ofFn_succ]
+  simp only [Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul,
+    Matrix.trace_smul, smul_eq_mul, Matrix.mul_assoc]
+  ring
+
+/-- `𝓛^{(2)}_{(s,-s),(y,x)} = W^{-2d} ‖P_x G(s) P_y‖²_HS`. -/
+private lemma emn2Exp2_loop2_hs (hH : H.IsHermitian) (s : Bool) (x y : Zd d L) :
+    loopFine d L W H z ![s, !s] ![y, x] =
+      (((W : ℂ) ^ d)⁻¹) ^ 2 *
+        (hs (Pm d L W x * Gres (blockMat d L W H) z s * Pm d L W y) : ℂ) := by
+  have hHb : (blockMat d L W H).IsHermitian := hH.submatrix _
+  set G : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ := Gres (blockMat d L W H) z with hGdef
+  have hG : ∀ s, (G s)ᴴ = G (!s) := Gres_conjTranspose hHb z
+  obtain ⟨Y, hYdef⟩ : ∃ Y : Matrix (Vtx d L W) (Vtx d L W) ℂ,
+      Y = Pm d L W x * G s * Pm d L W y := ⟨_, rfl⟩
+  have hYH : Yᴴ = Pm d L W y * G (!s) * Pm d L W x := by
+    rw [hYdef]
+    simp only [Matrix.conjTranspose_mul, Pm_conjTranspose, hG, Matrix.mul_assoc]
+  rw [← hYdef, loop2_eq, ← trace_mul_conjTranspose_eq, hYH]
+  have h1 : Y * (Pm d L W y * G (!s) * Pm d L W x) =
+      Pm d L W x * (G s * Pm d L W y * G (!s)) * Pm d L W x := by
+    rw [hYdef]; simp only [Matrix.mul_assoc, Pm_mul_Pm_mul]
+  rw [h1, trace_Pm_sandwich]
+
+/-- **Hölder bound of the 6-loop by three 2-loops** (the six legs of the 6-loop in the proof of (3.35) `eq:MG_conclusion3`): for
+every Hermitian `H` and every `z`, `|𝓛^{(6)}_{(σ⊗σ̄)^{(1)},(a,b,c',b,a,c)}| ≤ |𝓛^{(2)}_{(σ₀,-σ₀),(a,c)}|
+|𝓛^{(2)}_{(σ₁,-σ₁),(b,a)}| |𝓛^{(2)}_{(σ₀,-σ₀),(c',b)}|`.  The 6-loop is `W^{-6d} ‖Y₁Y₂Y₃‖²_HS` with
+`Y₁ = P_c G(σ₀) P_a`, `Y₂ = P_a G(σ₁) P_b`, `Y₃ = P_b G(σ₀) P_{c'}` (the last three factors are the adjoints of
+these), and the HS norm is submultiplicative: no entry bound (3.3) `GijGEX` is used. -/
+theorem emn2Exp2_loop6_le (hH : H.IsHermitian) (σ₀ σ₁ : Bool) (a b c c' : Zd d L) :
+    ‖loopFine d L W H z ![σ₀, σ₁, σ₀, !σ₀, !σ₁, !σ₀] ![a, b, c', b, a, c]‖ ≤
+      ‖loopFine d L W H z ![σ₀, !σ₀] ![a, c]‖ * ‖loopFine d L W H z ![σ₁, !σ₁] ![b, a]‖ *
+        ‖loopFine d L W H z ![σ₀, !σ₀] ![c', b]‖ := by
+  have hHb : (blockMat d L W H).IsHermitian := hH.submatrix _
+  set G : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ := Gres (blockMat d L W H) z with hGdef
+  have hG : ∀ s, (G s)ᴴ = G (!s) := Gres_conjTranspose hHb z
+  set P : Zd d L → Matrix (Vtx d L W) (Vtx d L W) ℂ := fun x => Pm d L W x with hPdef
+  have hPH : ∀ x, (P x)ᴴ = P x := fun x => Pm_conjTranspose x
+  have hPPm : ∀ x (X : Matrix (Vtx d L W) (Vtx d L W) ℂ), P x * (P x * X) = P x * X :=
+    fun x X => Pm_mul_Pm_mul x X
+  set w : ℝ := ((W : ℕ) : ℝ) ^ d with hwdef
+  have hWpos : (0 : ℝ) < ((W : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
+  have hw : 0 < w := pow_pos hWpos d
+  have hκ : ‖((W : ℂ) ^ d)⁻¹‖ = w⁻¹ := by
+    rw [norm_inv, norm_pow, Complex.norm_natCast]
+  obtain ⟨Y1, hY1⟩ : ∃ Y : Matrix (Vtx d L W) (Vtx d L W) ℂ, Y = P c * G σ₀ * P a := ⟨_, rfl⟩
+  obtain ⟨Y2, hY2⟩ : ∃ Y : Matrix (Vtx d L W) (Vtx d L W) ℂ, Y = P a * G σ₁ * P b := ⟨_, rfl⟩
+  obtain ⟨Y3, hY3⟩ : ∃ Y : Matrix (Vtx d L W) (Vtx d L W) ℂ, Y = P b * G σ₀ * P c' := ⟨_, rfl⟩
+  have hY1H : Y1ᴴ = P a * G (!σ₀) * P c := by
+    rw [hY1]; simp only [Matrix.conjTranspose_mul, hPH, hG, Matrix.mul_assoc]
+  have hY2H : Y2ᴴ = P b * G (!σ₁) * P a := by
+    rw [hY2]; simp only [Matrix.conjTranspose_mul, hPH, hG, Matrix.mul_assoc]
+  have hY3H : Y3ᴴ = P c' * G (!σ₀) * P b := by
+    rw [hY3]; simp only [Matrix.conjTranspose_mul, hPH, hG, Matrix.mul_assoc]
+  obtain ⟨Z, hZ⟩ : ∃ Z : Matrix (Vtx d L W) (Vtx d L W) ℂ, Z = Y1 * Y2 * Y3 := ⟨_, rfl⟩
+  have hZH : Zᴴ = Y3ᴴ * (Y2ᴴ * Y1ᴴ) := by
+    rw [hZ]; simp only [Matrix.conjTranspose_mul, Matrix.mul_assoc]
+  have hZZ : Z * Zᴴ = P c * (G σ₀ * P a * G σ₁ * P b * G σ₀ * P c' * G (!σ₀) * P b * G (!σ₁) *
+      P a * G (!σ₀)) * P c := by
+    rw [hZH, hY1H, hY2H, hY3H, hZ, hY1, hY2, hY3]
+    simp only [Matrix.mul_assoc, hPPm]
+  have h6 : loopFine d L W H z ![σ₀, σ₁, σ₀, !σ₀, !σ₁, !σ₀] ![a, b, c', b, a, c] =
+      (((W : ℂ) ^ d)⁻¹) ^ 6 * (hs Z : ℂ) := by
+    rw [emn2Exp2_loop6_eq, ← trace_mul_conjTranspose_eq, hZZ, trace_Pm_sandwich]
+  have h2a := emn2Exp2_loop2_hs H z hH σ₀ c a
+  have h2b := emn2Exp2_loop2_hs H z hH σ₁ a b
+  have h2c := emn2Exp2_loop2_hs H z hH σ₀ b c'
+  have n6 : ‖loopFine d L W H z ![σ₀, σ₁, σ₀, !σ₀, !σ₁, !σ₀] ![a, b, c', b, a, c]‖ =
+      w⁻¹ ^ 6 * hs Z := by
+    rw [h6, norm_mul, norm_pow, hκ, Complex.norm_real, Real.norm_of_nonneg (hs_nonneg _)]
+  have n2a : ‖loopFine d L W H z ![σ₀, !σ₀] ![a, c]‖ = w⁻¹ ^ 2 * hs Y1 := by
+    rw [h2a, ← hY1, norm_mul, norm_pow, hκ, Complex.norm_real,
+      Real.norm_of_nonneg (hs_nonneg _)]
+  have n2b : ‖loopFine d L W H z ![σ₁, !σ₁] ![b, a]‖ = w⁻¹ ^ 2 * hs Y2 := by
+    rw [h2b, ← hY2, norm_mul, norm_pow, hκ, Complex.norm_real,
+      Real.norm_of_nonneg (hs_nonneg _)]
+  have n2c : ‖loopFine d L W H z ![σ₀, !σ₀] ![c', b]‖ = w⁻¹ ^ 2 * hs Y3 := by
+    rw [h2c, ← hY3, norm_mul, norm_pow, hκ, Complex.norm_real,
+      Real.norm_of_nonneg (hs_nonneg _)]
+  have hs3 : hs Z ≤ hs Y1 * hs Y2 * hs Y3 := by
+    rw [hZ]
+    calc hs (Y1 * Y2 * Y3) ≤ hs (Y1 * Y2) * hs Y3 := emn2Exp2_hs_mul_le _ _
+      _ ≤ (hs Y1 * hs Y2) * hs Y3 :=
+          mul_le_mul_of_nonneg_right (emn2Exp2_hs_mul_le _ _) (hs_nonneg _)
+  rw [n6, n2a, n2b, n2c]
+  calc w⁻¹ ^ 6 * hs Z ≤ w⁻¹ ^ 6 * (hs Y1 * hs Y2 * hs Y3) := by
+        gcongr
+    _ = _ := by ring
+
+end Holder
+
+
+/-! ## 3. Lattice: the neighbour count -/
+
+section Lattice
+
+/-- Each `c` has at most `3^d` neighbours `c'` (`|c - c'|_∞ ≤ 1`): for `q ≥ 0` and a relation `P` inside
+the neighbour relation, `Σ_c Σ_{c'} 1_{P c c'} q(c) ≤ 3^d Σ_c q(c)`. -/
+private lemma emn2Exp2_sum_nbr_le (d L : ℕ) [NeZero L] (q : Zd d L → ℝ) (hq : ∀ c, 0 ≤ q c)
+    (P : Zd d L → Zd d L → Prop) [∀ c c', Decidable (P c c')]
+    (hP : ∀ c c', P c c' → zdistInf d L (c - c') ≤ 1) :
+    ∑ c : Zd d L, ∑ c' : Zd d L, (if P c c' then q c else 0) ≤ 3 ^ d * ∑ c, q c := by
+  rw [Finset.mul_sum]
+  refine Finset.sum_le_sum fun c _ => ?_
+  have h1 : ∑ c' : Zd d L, (if P c c' then q c else 0) ≤
+      ∑ c' : Zd d L, (if zdistInf d L (c - c') ≤ 1 then q c else 0) := by
+    refine Finset.sum_le_sum fun c' _ => ?_
+    by_cases hc : P c c'
+    · simp [hc, hP c c' hc]
+    · simp only [hc, ↓reduceIte]
+      split_ifs <;> simp [hq c]
+  refine h1.trans ?_
+  rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+  have hcard : ((Finset.univ.filter (fun c' : Zd d L => zdistInf d L (c - c') ≤ 1)).card : ℝ) ≤
+      3 ^ d := by
+    have : (Finset.univ.filter (fun c' : Zd d L => zdistInf d L (c - c') ≤ 1)).card ≤ 3 ^ d := by
+      refine le_trans (Finset.card_le_card_of_injOn (fun c' => c - c') ?_ ?_)
+        (card_ball_le d L)
+      · intro c' hc'
+        simpa using (Finset.mem_filter.mp hc').2
+      · intro x _ y _ hxy
+        simpa using hxy
+    exact_mod_cast this
+  exact mul_le_mul_of_nonneg_right hcard (hq c)
+
+end Lattice
+
+/-! ## 4. The profile `𝒯_t`: the unit shift and the radial sum `Σ_c 𝒯_t(|c - b|) ≤ C/(1-t)` -/
+
+section Profile
+
+variable {d L : ℕ} {g t : ℝ}
+
+/-- **The unit shift of `𝒯_t`**: `𝒯_t(x) ≤ 2^{d-2} e 𝒯_t(x + 1)` for `x ≥ 0` (`ℓ_t ≥ 1`; `K₁ = 2^{d-2} e`,
+the `|c - c'| ≤ 1` comparison of `𝒯_t` at the end of the proof of (3.35) `eq:MG_conclusion3`); the shift `emn2Exp_tailT_shift` with `s = 1`. -/
+private lemma emn2Exp2_tailT_shift1 (hL : 1 ≤ (L : ℝ)) {x : ℝ} (hx : 0 ≤ x) :
+    tailT d L g t x ≤ 2 ^ (d - 2) * Real.exp 1 * tailT d L g t (x + 1) := by
+  have hℓ : 1 ≤ ellT L g t := one_le_ellT hL
+  have hℓ0 : 0 < ellT L g t := by linarith
+  have h := emn2Exp_tailT_shift (d := d) (L := L) (g := g) (t := t) hL hx (y := x + 1) (s := 1)
+    (by linarith) (by linarith) zero_le_one (by linarith)
+  have hsq : Real.sqrt (1 / ellT L g t) ≤ 1 := by
+    rw [Real.sqrt_le_one]
+    exact (div_le_one hℓ0).mpr hℓ
+  have hT1 := tailT_nonneg (d := d) (L := L) (g := g) (t := t) (by linarith : 0 ≤ x + 1)
+  calc tailT d L g t x ≤ 2 ^ (d - 2) * Real.exp (Real.sqrt (1 / ellT L g t)) *
+        tailT d L g t (x + 1) := h
+    _ ≤ 2 ^ (d - 2) * Real.exp 1 * tailT d L g t (x + 1) := by
+        gcongr
+
+/-- **The radial sum** (`Σ_a 𝒯_t(|a|) ≲ (1 - t)⁻¹`): for `d = k + 2` and `t < 1`,
+`Σ_c 𝒯_t(|c - b|_∞) ≤ (C_rad + 1)/(1 - t)`, `C_rad = d^d 2^d C(1)` depends on `d` only.  The decay term
+is `A_t Σ_x (|x|+1)^{-k} e^{-√(|x|/ℓ_t)} ≤ C_rad A_t ℓ_t²` (`pti_sum_radial`) with `A_t ℓ_t² ≤ (1 - t)⁻¹`,
+the zero mode `Z_t Σ_x e^{...} ≤ Z_t L^d = (1 - t)⁻¹`. -/
+private theorem emn2Exp2_sum_tailT_le (k : ℕ) {L : ℕ} [NeZero L] {g t : ℝ} (hg : 0 ≤ g) (ht : t < 1)
+    (b : Zd (k + 2) L) :
+    ∑ c : Zd (k + 2) L, tailT (k + 2) L g t (zdistInf (k + 2) L (c - b))
+      ≤ (((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1) + 1) / (1 - t) := by
+  have hL1 : (1 : ℝ) ≤ L := by
+    have := NeZero.ne L
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr this
+  have hv : 0 < 1 - t := by linarith
+  have hℓ1 : 1 ≤ ellT L g t := one_le_ellT hL1
+  have hre : ∑ c : Zd (k + 2) L, tailT (k + 2) L g t (zdistInf (k + 2) L (c - b)) =
+      ∑ x : Zd (k + 2) L, tailT (k + 2) L g t (zdistInf (k + 2) L x) :=
+    Equiv.sum_comp (Equiv.subRight b) (fun x => tailT (k + 2) L g t (zdistInf (k + 2) L x))
+  rw [hre]
+  set A := (g ^ 2 + |1 - t|)⁻¹ with hA
+  set Z := ((L : ℝ) ^ (k + 2) * |1 - t|)⁻¹ with hZ
+  have hA0 : 0 ≤ A := inv_nonneg.mpr (by positivity)
+  have hZ0 : 0 ≤ Z := inv_nonneg.mpr (by positivity)
+  have hrad := pti_sum_radial (L := L) k (κ := 1) (ℓ := ellT L g t) one_pos hℓ1
+  simp only [one_mul] at hrad
+  have hAℓ : A * ellT L g t ^ 2 ≤ (1 - t)⁻¹ := inv_mul_ellT_sq_le hg hv
+  have hcrad : 0 ≤ ((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1) := by
+    have := radC_pos (one_pos : (0 : ℝ) < 1)
+    positivity
+  calc ∑ x : Zd (k + 2) L, tailT (k + 2) L g t (zdistInf (k + 2) L x)
+      = ∑ x : Zd (k + 2) L, (A * (((zdistInf (k + 2) L x : ℝ) + 1) ^ k)⁻¹ *
+          Real.exp (-√((zdistInf (k + 2) L x : ℝ) / ellT L g t)) +
+        Z * Real.exp (-√((zdistInf (k + 2) L x : ℝ) / ellT L g t))) := by
+        refine Finset.sum_congr rfl fun x _ => ?_
+        rw [tailT_natCast]
+        simp only [powW]
+        ring
+    _ = A * ∑ x : Zd (k + 2) L, (((zdistInf (k + 2) L x : ℝ) + 1) ^ k)⁻¹ *
+          Real.exp (-√((zdistInf (k + 2) L x : ℝ) / ellT L g t)) +
+        Z * ∑ x : Zd (k + 2) L, Real.exp (-√((zdistInf (k + 2) L x : ℝ) / ellT L g t)) := by
+        rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
+        simp only [mul_assoc]
+    _ ≤ A * (((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1) * ellT L g t ^ 2) +
+        Z * ∑ x : Zd (k + 2) L, (1 : ℝ) := by
+        refine add_le_add (mul_le_mul_of_nonneg_left hrad hA0)
+          (mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun x _ => ?_) hZ0)
+        exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (Real.sqrt_nonneg _))
+    _ = (((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1)) * (A * ellT L g t ^ 2) +
+        Z * (L : ℝ) ^ (k + 2) := by
+        rw [sum_one_torus]; ring
+    _ ≤ (((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1)) * (1 - t)⁻¹ + (1 - t)⁻¹ := by
+        refine add_le_add (mul_le_mul_of_nonneg_left hAℓ hcrad) (le_of_eq ?_)
+        rw [hZ, abs_of_pos hv]
+        have : (L : ℝ) ^ (k + 2) ≠ 0 := by positivity
+        field_simp
+    _ = _ := by rw [div_eq_mul_inv]; ring
+
+/-- The radial sum with a constant that depends on `d ≥ 3` only. -/
+private theorem emn2Exp2_exists_CR (d : ℕ) (hd : 3 ≤ d) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L] (g t : ℝ), 0 ≤ g → t < 1 → ∀ b : Zd d L,
+      ∑ c : Zd d L, tailT d L g t (zdistInf d L (c - b)) ≤ C / (1 - t) := by
+  obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
+  have := radC_pos (one_pos : (0 : ℝ) < 1)
+  exact ⟨((k + 2 : ℕ) : ℝ) ^ (k + 2) * (2 ^ (k + 2) * radC 1) + 1, by positivity,
+    fun L _ g t hg ht b => emn2Exp2_sum_tailT_le k hg ht b⟩
+
+end Profile
+
+
+/-! ## 5. The region `R₃`, and the sum of the product of the two profile legs on `A^n` -/
+
+section Region
+
+/-- The condition of the region `R₃` of `emn2ExpS3` (`eq;S123`): `|c - c'| ≤ 1`, `ℓ* < |c'-b| ≤ ℓ`,
+`ℓ* < |c-a| ≤ ℓ`. -/
+private abbrev emn2Exp2_R3 (d L : ℕ) [NeZero L] (ℓs ℓ : ℝ) (a b c c' : Zd d L) : Prop :=
+  zdistInf d L (c - c') ≤ 1 ∧
+    ((ℓs < (zdistInf d L (c' - b) : ℝ) ∧ (zdistInf d L (c' - b) : ℝ) ≤ ℓ) ∧
+      (ℓs < (zdistInf d L (c - a) : ℝ) ∧ (zdistInf d L (c - a) : ℝ) ≤ ℓ))
+
+variable {d L : ℕ} [NeZero L] {g t : ℝ}
+
+/-- **The profile sum on `A^n`** (the end of the proof of (3.35) `eq:MG_conclusion3`: (3.21) `TTT2` and `Σ_a 𝒯_t(|a|) ≲ (1 - t)⁻¹`): with
+`P(m) = W^{-d} 𝒯̃^ℓ_{t,D}(m)` (`hPfdef`), `T = 𝒯_t`, the pairs `(c, c')` of `R₃` with `P(|a-b|) < P(|c'-b|)` satisfy
+`Σ P(|a-c|) P(|c'-b|) ≤ 3^d K₁ W^{-d} (C_T + C_R) P(|a-b|)`, `K₁ = 2^{d-2} e`, where
+`Σ_c T(|a-c|) T(|c-b|) ≤ C_T T(|a-b|)` and `Σ_c T(|c-b|) ≤ C_R`.  On `A^n` the leg `P(|c'-b|)` is the tail
+`W^{-d} T(|c'-b|)` (it exceeds `P(|a-b|) ≥ W^{-d-D}`), so the floor-floor term `W^{-2D} Σ_c 1` never
+occurs; the shift `T(|c'-b|) ≤ K₁ T(|c-b|)` is the unit shift. -/
+private theorem emn2Exp2_profile_sum {Wr D ℓ ℓs : ℝ} (hWr : 0 < Wr) (hℓ : 0 ≤ ℓ) (a b : Zd d L)
+    {CT CR : ℝ} (hCT : 0 ≤ CT) (hCR : 0 ≤ CR) {Pf : ℕ → ℝ}
+    (hPfdef : ∀ m : ℕ, Pf m = (Wr ^ d)⁻¹ * tailW d L g t ℓ Wr D (m : ℝ))
+    (hTTT : ∑ c : Zd d L, tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) *
+        tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤
+      CT * tailT d L g t ((zdistInf d L (a - b) : ℕ) : ℝ))
+    (hrad : ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤ CR) :
+    ∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b)) then
+          Pf (zdistInf d L (a - c)) * Pf (zdistInf d L (c' - b))
+        else 0) ≤
+      3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (Wr ^ d)⁻¹ * (CT + CR) *
+        Pf (zdistInf d L (a - b)) := by
+  classical
+  have hL1 : (1 : ℝ) ≤ (L : ℝ) := by
+    have := NeZero.ne L
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr this
+  set w : ℝ := (Wr ^ d)⁻¹ with hwdef
+  have hw : 0 < w := inv_pos.mpr (pow_pos hWr d)
+  set K1 : ℝ := 2 ^ (d - 2) * Real.exp 1 with hK1def
+  have hK1 : 0 ≤ K1 := by positivity
+  set fl : ℝ := Wr ^ (-D) with hfl
+  have hfl0 : 0 < fl := Real.rpow_pos_of_pos hWr _
+  have hPf0 : ∀ m, 0 ≤ Pf m := fun m => by
+    rw [hPfdef m]
+    exact mul_nonneg hw.le (tailW_pos (d := d) (L := L) (g := g) (t := t) (ℓ := ℓ) (D := D) hWr _).le
+  -- the floor is below every value of `P`
+  have hfloor : ∀ m : ℕ, w * fl ≤ Pf m := fun m => by
+    rw [hPfdef m]
+    exact mul_le_mul_of_nonneg_left (rpow_neg_le_tailW (d := d) (L := L) (g := g) (t := t) (ℓ := ℓ)
+      (W := Wr) (D := D) (m : ℝ)) hw.le
+  have hPfeq : ∀ m : ℕ, Pf m = w * max (tailT d L g t (min (m : ℝ) ℓ)) fl := fun m => by
+    rw [hPfdef m]; rfl
+  -- (i) on `A^n` the near leg is the tail
+  have hnearTail : ∀ m : ℕ, (m : ℝ) ≤ ℓ → Pf (zdistInf d L (a - b)) < Pf m →
+      Pf m ≤ w * tailT d L g t (m : ℝ) := by
+    intro m hmℓ hlt
+    by_contra hcon
+    have h1 : tailT d L g t (m : ℝ) < fl := by
+      by_contra h
+      apply hcon
+      rw [hPfeq m, min_eq_left hmℓ, max_eq_left (not_lt.mp h)]
+    have h2 : Pf m = w * fl := by rw [hPfeq m, min_eq_left hmℓ, max_eq_right h1.le]
+    have := hfloor (zdistInf d L (a - b))
+    linarith
+  -- the pointwise bound
+  have hterm : ∀ c c' : Zd d L, (emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+      Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b))) →
+      Pf (zdistInf d L (a - c)) * Pf (zdistInf d L (c' - b)) ≤
+        w ^ 2 * K1 * ((tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) + fl) *
+          tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ)) := by
+    rintro c c' ⟨⟨hn, ⟨hc'b1, hc'b2⟩, ⟨hca1, hca2⟩⟩, hlt⟩
+    have hsc : zdistInf d L (a - c) = zdistInf d L (c - a) := emn2Exp_zdistInf_sub_comm d L a c
+    have hm'ℓ : ((zdistInf d L (c' - b) : ℕ) : ℝ) ≤ ℓ := hc'b2
+    have hpℓ : ((zdistInf d L (a - c) : ℕ) : ℝ) ≤ ℓ := by rw [hsc]; exact hca2
+    have hmc : ((zdistInf d L (c - b) : ℕ) : ℝ) ≤ ((zdistInf d L (c' - b) : ℕ) : ℝ) + 1 := by
+      have := emn2Exp_zdistInf_tri d L c c' b
+      have h' : zdistInf d L (c - b) ≤ zdistInf d L (c' - b) + 1 := by omega
+      exact_mod_cast h'
+    have h1 : Pf (zdistInf d L (c' - b)) ≤ w * tailT d L g t ((zdistInf d L (c' - b) : ℕ) : ℝ) :=
+      hnearTail _ hm'ℓ hlt
+    have h2 : Pf (zdistInf d L (a - c)) ≤
+        w * (tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) + fl) := by
+      rw [hPfeq, min_eq_left hpℓ]
+      exact mul_le_mul_of_nonneg_left
+        (max_le_add_of_nonneg (tailT_nonneg (Nat.cast_nonneg _)) hfl0.le) hw.le
+    have h3 : tailT d L g t ((zdistInf d L (c' - b) : ℕ) : ℝ) ≤
+        K1 * tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) :=
+      (emn2Exp2_tailT_shift1 hL1 (Nat.cast_nonneg _)).trans
+        (mul_le_mul_of_nonneg_left (tailT_antitone (Nat.cast_nonneg _) hmc) hK1)
+    have hT1 : 0 ≤ tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) :=
+      tailT_nonneg (Nat.cast_nonneg _)
+    calc Pf (zdistInf d L (a - c)) * Pf (zdistInf d L (c' - b))
+        ≤ (w * (tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) + fl)) *
+            (w * (K1 * tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ))) :=
+          mul_le_mul h2 (h1.trans (mul_le_mul_of_nonneg_left h3 hw.le)) (hPf0 _) (by positivity)
+      _ = _ := by ring
+  -- sum over the neighbours
+  set q : Zd d L → ℝ := fun c => w ^ 2 * K1 * ((tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) + fl) *
+    tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ)) with hq
+  have hq0 : ∀ c, 0 ≤ q c := fun c => by
+    have h1 : 0 ≤ tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) := tailT_nonneg (Nat.cast_nonneg _)
+    have h2 : 0 ≤ tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) := tailT_nonneg (Nat.cast_nonneg _)
+    simp only [hq]; positivity
+  have hsumq : ∑ c, q c = w ^ 2 * K1 * (∑ c : Zd d L, tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) *
+      tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) +
+        fl * ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ)) := by
+    simp only [hq]
+    rw [← Finset.mul_sum]
+    congr 1
+    rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun c _ => by ring
+  -- the right-hand side: `T(r) ≤ w⁻¹ P(r)` and `fl ≤ w⁻¹ P(r)`
+  have hM : w⁻¹ * Pf (zdistInf d L (a - b)) =
+      max (tailT d L g t (min ((zdistInf d L (a - b) : ℕ) : ℝ) ℓ)) fl := by
+    rw [hPfeq, ← mul_assoc, inv_mul_cancel₀ hw.ne', one_mul]
+  have hTr : tailT d L g t ((zdistInf d L (a - b) : ℕ) : ℝ) ≤ w⁻¹ * Pf (zdistInf d L (a - b)) := by
+    rw [hM]
+    refine le_trans ?_ (le_max_left _ _)
+    exact tailT_antitone (le_min (Nat.cast_nonneg _) hℓ) (min_le_left _ _)
+  have hflM : fl ≤ w⁻¹ * Pf (zdistInf d L (a - b)) := by
+    rw [hM]; exact le_max_right _ _
+  calc ∑ c : Zd d L, ∑ c' : Zd d L, _
+      ≤ ∑ c : Zd d L, ∑ c' : Zd d L,
+          (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b)) then q c else 0) := by
+        refine Finset.sum_le_sum fun c _ => Finset.sum_le_sum fun c' _ => ?_
+        split_ifs with h
+        · exact hterm c c' h
+        · exact le_rfl
+    _ ≤ 3 ^ d * ∑ c, q c :=
+        emn2Exp2_sum_nbr_le d L q hq0 (fun c c' => emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+          Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b))) (fun c c' h => h.1.1)
+    _ = 3 ^ d * (w ^ 2 * K1 * (∑ c : Zd d L, tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) *
+          tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) +
+        fl * ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ))) := by rw [hsumq]
+    _ ≤ 3 ^ d * (w ^ 2 * K1 * (CT * (w⁻¹ * Pf (zdistInf d L (a - b))) +
+          CR * (w⁻¹ * Pf (zdistInf d L (a - b))))) := by
+        have hA : ∑ c : Zd d L, tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) *
+            tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤
+            CT * (w⁻¹ * Pf (zdistInf d L (a - b))) :=
+          hTTT.trans (mul_le_mul_of_nonneg_left hTr hCT)
+        have hB : fl * ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤
+            CR * (w⁻¹ * Pf (zdistInf d L (a - b))) := by
+          calc fl * ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ)
+              ≤ fl * CR := mul_le_mul_of_nonneg_left hrad hfl0.le
+            _ = CR * fl := by ring
+            _ ≤ CR * (w⁻¹ * Pf (zdistInf d L (a - b))) := mul_le_mul_of_nonneg_left hflM hCR
+        have hAB := add_le_add hA hB
+        exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hAB (by positivity))
+          (by positivity)
+    _ = 3 ^ d * K1 * w * (CT + CR) * Pf (zdistInf d L (a - b)) := by
+        have h2 : w ^ 2 * w⁻¹ = w := by field_simp
+        calc 3 ^ d * (w ^ 2 * K1 * (CT * (w⁻¹ * Pf (zdistInf d L (a - b))) +
+              CR * (w⁻¹ * Pf (zdistInf d L (a - b)))))
+            = 3 ^ d * ((w ^ 2 * w⁻¹) * K1 * (CT + CR) * Pf (zdistInf d L (a - b))) := by ring
+          _ = _ := by rw [h2]; ring
+
+end Region
+
+/-! ## 6. The two parts of `S̃₃`: the contraction on `A^f`, the Hölder bound on `A^n` -/
+
+section RegionSums
+
+variable {d L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
+
+/-- **`S̃₃` on `A^f`** (the contraction inequality, as for `S̃₁`, `emn2Exp_part1`): the pairs of `R₃` with
+`P(|c'-b|) ≤ P(|a-b|)`, through `stContractPt_holds` with `𝒜 = {c' : ∃ c, …}` and `M = y² P(|a-b|)` (`K = 1`):
+`Σ ≤ 3^d/(W^d η) · y² P(|a-b|) · y √P(0) · y² P(|a-b|)`.  No sum over `c`, no `Ĵ`, no condition on `D`. -/
+private lemma emn2Exp2_partF (hH : H.IsHermitian) (hz : 0 < z.im) (σ : Fin 2 → Bool)
+    (a b : Zd d L) {y ℓs ℓ : ℝ} (hy : 0 ≤ y) {Pf : ℕ → ℝ} (hPf : ∀ m, 0 ≤ Pf m)
+    (h2 : ∀ (s : Bool) (x x' : Zd d L), ‖loopFine d L W H z ![s, !s] ![x, x']‖ ≤
+      y ^ 2 * Pf (zdistInf d L (x - x'))) :
+    ∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0) ≤
+      3 ^ d / (((W : ℕ) : ℝ) ^ d * z.im) * (y ^ 2 * Pf (zdistInf d L (a - b))) *
+        (y * Real.sqrt (Pf 0) * (y ^ 2 * Pf (zdistInf d L (a - b)))) := by
+  set 𝒜 : Finset (Zd d L) := Finset.univ.filter (fun c' : Zd d L => ∃ c : Zd d L,
+    emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+      Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b))) with h𝒜
+  have hM0 : 0 ≤ y ^ 2 * Pf (zdistInf d L (a - b)) := by
+    have := hPf (zdistInf d L (a - b)); positivity
+  have hM : ∀ c' ∈ 𝒜, ‖loopFine d L W H z ![σ 0, !(σ 0), σ 0, !(σ 0)] ![c', b, c', b]‖ ^
+      (1 / 2 : ℝ) ≤ y ^ 2 * Pf (zdistInf d L (a - b)) := by
+    intro c' hc'
+    obtain ⟨c, _, hcmp⟩ := (Finset.mem_filter.mp hc').2
+    calc ‖loopFine d L W H z ![σ 0, !(σ 0), σ 0, !(σ 0)] ![c', b, c', b]‖ ^ (1 / 2 : ℝ)
+        ≤ ‖loopFine d L W H z ![σ 0, !(σ 0)] ![c', b]‖ := emn2Poly_norm_loop4_alt_le H z hH (σ 0) b c'
+      _ ≤ y ^ 2 * Pf (zdistInf d L (c' - b)) := h2 (σ 0) c' b
+      _ ≤ y ^ 2 * Pf (zdistInf d L (a - b)) := mul_le_mul_of_nonneg_left hcmp (sq_nonneg y)
+  have hpin := stContractPt_holds d L W H z hH hz σ a b 𝒜 _ hM0 hM
+  have hmax : max ‖loopFine d L W H z ![true, σ 1, !(σ 1)] ![a, b, a]‖
+      ‖loopFine d L W H z ![false, σ 1, !(σ 1)] ![a, b, a]‖ ≤
+      y * Real.sqrt (Pf 0) * (y ^ 2 * Pf (zdistInf d L (a - b))) := by
+    have e : zdistInf d L (b - a) = zdistInf d L (a - b) := emn2Exp_zdistInf_sub_comm d L b a
+    have h3 := emn2Exp_loop3_ctrl H z hH hy h2
+    refine max_le ?_ ?_
+    · have := h3 true (σ 1) a b; rwa [e] at this
+    · have := h3 false (σ 1) a b; rwa [e] at this
+  have hK' : 0 ≤ 3 ^ d / (((W : ℕ) : ℝ) ^ d * z.im) * (y ^ 2 * Pf (zdistInf d L (a - b))) := by
+    have : (0 : ℝ) < ((W : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
+    positivity
+  have hrearr : ∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0) ≤
+      ∑ c' ∈ 𝒜, ∑ c ∈ Finset.univ.filter (fun c : Zd d L => zdistInf d L (c - c') ≤ 1),
+        ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖ := by
+    rw [Finset.sum_comm]
+    have hz0 : ∀ c' ∉ 𝒜, ∑ c : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0) = 0 := by
+      intro c' hc'
+      refine Finset.sum_eq_zero fun c _ => ?_
+      have hn : ¬ (emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b))) := fun hn =>
+        hc' (Finset.mem_filter.mpr ⟨Finset.mem_univ _, c, hn⟩)
+      simp only [hn, ↓reduceIte]
+    calc ∑ c' : Zd d L, ∑ c : Zd d L,
+          (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+              Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+            ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+            else 0)
+        = ∑ c' ∈ 𝒜, ∑ c : Zd d L,
+          (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+              Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+            ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+            else 0) := by
+          symm
+          exact Finset.sum_subset (Finset.filter_subset _ _) fun c' _ hc' => hz0 c' hc'
+      _ ≤ _ := by
+          refine Finset.sum_le_sum fun c' _ => ?_
+          rw [← Finset.sum_filter]
+          refine Finset.sum_le_sum_of_subset_of_nonneg ?_ (fun _ _ _ => norm_nonneg _)
+          intro c hc
+          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, (Finset.mem_filter.mp hc).2.1.1⟩
+  calc _ ≤ _ := hrearr
+    _ ≤ _ := hpin
+    _ ≤ _ := mul_le_mul_of_nonneg_left hmax hK'
+
+/-- **`S̃₃` on `A^n`** (Hölder): if every 2-loop of the pattern `(s,-s)` at a distance `> ℓ*`
+is at most `F P(|x-x'|)`, then on the pairs of `R₃` with `P(|a-b|) < P(|c'-b|)` (and `|a-b| > ℓ*`),
+`Σ |𝓛^{(6)}| ≤ F³ P(|a-b|) Σ P(|a-c|) P(|c'-b|)`: the six legs are `(a,c),(b,a),(c',b)` twice
+(`emn2Exp2_loop6_le`). -/
+private lemma emn2Exp2_partN (hH : H.IsHermitian) (σ : Fin 2 → Bool) (a b : Zd d L)
+    {F ℓs ℓ : ℝ} (hF0 : 0 ≤ F) {Pf : ℕ → ℝ} (hPf : ∀ m, 0 ≤ Pf m)
+    (hF : ∀ (s : Bool) (x x' : Zd d L), ℓs < (zdistInf d L (x - x') : ℝ) →
+      ‖loopFine d L W H z ![s, !s] ![x, x']‖ ≤ F * Pf (zdistInf d L (x - x')))
+    (hr : ℓs < (zdistInf d L (a - b) : ℝ)) :
+    ∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0) ≤
+      F ^ 3 * Pf (zdistInf d L (a - b)) * ∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b)) then
+          Pf (zdistInf d L (a - c)) * Pf (zdistInf d L (c' - b)) else 0) := by
+  rw [Finset.mul_sum]
+  refine Finset.sum_le_sum fun c _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_le_sum fun c' _ => ?_
+  by_cases h : emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+      Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b))
+  · rw [ite_eq_left_iff.mpr (fun hn => absurd h hn), ite_eq_left_iff.mpr (fun hn => absurd h hn)]
+    obtain ⟨⟨_, ⟨hc'b, _⟩, ⟨hca, _⟩⟩, _⟩ := h
+    have hac : ℓs < (zdistInf d L (a - c) : ℝ) := by
+      rw [emn2Exp_zdistInf_sub_comm d L a c]; exact hca
+    have hba : ℓs < (zdistInf d L (b - a) : ℝ) := by
+      rw [emn2Exp_zdistInf_sub_comm d L b a]; exact hr
+    have e : zdistInf d L (b - a) = zdistInf d L (a - b) := emn2Exp_zdistInf_sub_comm d L b a
+    have h1 := emn2Exp2_loop6_le H z hH (σ 0) (σ 1) a b c c'
+    have l1 := hF (σ 0) a c hac
+    have l2 := hF (σ 1) b a hba
+    have l3 := hF (σ 0) c' b hc'b
+    rw [e] at l2
+    refine h1.trans ?_
+    calc ‖loopFine d L W H z ![σ 0, !(σ 0)] ![a, c]‖ * ‖loopFine d L W H z ![σ 1, !(σ 1)] ![b, a]‖ *
+          ‖loopFine d L W H z ![σ 0, !(σ 0)] ![c', b]‖
+        ≤ (F * Pf (zdistInf d L (a - c))) * (F * Pf (zdistInf d L (a - b))) *
+            (F * Pf (zdistInf d L (c' - b))) := by
+          refine mul_le_mul (mul_le_mul l1 l2 (norm_nonneg _) (mul_nonneg hF0 (hPf _))) l3
+            (norm_nonneg _) (mul_nonneg (mul_nonneg hF0 (hPf _)) (mul_nonneg hF0 (hPf _)))
+      _ = _ := by ring
+  · rw [ite_eq_right_iff.mpr (fun hh => absurd hh h), ite_eq_right_iff.mpr (fun hh => absurd hh h),
+      mul_zero]
+
+end RegionSums
+
+
+/-! ## 7. The deterministic bound of `S̃₃` -/
+
+section S3
+
+variable {d L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
+
+/-- **`S̃₃`, deterministically** (the split argument): for every Hermitian `H` and `Im z > 0`, if every
+2-loop of the pattern `(s,-s)` is at most `y² P(|x-x'|)` and, at distances `> ℓ*`, at most `F P(|x-x'|)`
+(`P = W^{-d} 𝒯̃^ℓ_{t,D}`), if `|a-b| > ℓ*` and (3.21) `TTT2`, `Σ_c 𝒯_t(|c-b|) ≤ C_R` hold, then
+`S̃₃ ≤ 3^d η⁻¹ y⁵ √P(0) P(|a-b|)² + 3^d K₁ (C_T + C_R) F³ P(|a-b|)²`, `K₁ = 2^{d-2} e`, `η = Im z`.
+The first term is the contraction on `A^f`, the second the Hölder bound on `A^n`. -/
+theorem emn2Exp2_S3_le (hH : H.IsHermitian) (hz : 0 < z.im) (σ : Fin 2 → Bool) (a b : Zd d L)
+    {g t D ℓ ℓs y F CT CR : ℝ} (hℓ : 0 ≤ ℓ) (hy : 0 ≤ y) (hF0 : 0 ≤ F) (hCT : 0 ≤ CT)
+    (hCR : 0 ≤ CR) {Pf : ℕ → ℝ}
+    (hPfdef : ∀ m : ℕ, Pf m =
+      (((W : ℕ) : ℝ) ^ d)⁻¹ * tailW d L g t ℓ ((W : ℕ) : ℝ) D (m : ℝ))
+    (h2 : ∀ (s : Bool) (x x' : Zd d L), ‖loopFine d L W H z ![s, !s] ![x, x']‖ ≤
+      y ^ 2 * Pf (zdistInf d L (x - x')))
+    (hF : ∀ (s : Bool) (x x' : Zd d L), ℓs < (zdistInf d L (x - x') : ℝ) →
+      ‖loopFine d L W H z ![s, !s] ![x, x']‖ ≤ F * Pf (zdistInf d L (x - x')))
+    (hr : ℓs < (zdistInf d L (a - b) : ℝ))
+    (hTTT : ∑ c : Zd d L, tailT d L g t ((zdistInf d L (a - c) : ℕ) : ℝ) *
+        tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤
+      CT * tailT d L g t ((zdistInf d L (a - b) : ℕ) : ℝ))
+    (hrad : ∑ c : Zd d L, tailT d L g t ((zdistInf d L (c - b) : ℕ) : ℝ) ≤ CR) :
+    emn2ExpS3 H z ℓs ℓ σ a b ≤
+      3 ^ d / z.im * y ^ 5 * Real.sqrt (Pf 0) * Pf (zdistInf d L (a - b)) ^ 2 +
+        3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CT + CR) * F ^ 3 * Pf (zdistInf d L (a - b)) ^ 2 := by
+  classical
+  have hW : (0 : ℝ) < ((W : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
+  have hWd : (0 : ℝ) < ((W : ℕ) : ℝ) ^ d := pow_pos hW d
+  have hPf0 : ∀ m, 0 ≤ Pf m := fun m => by
+    rw [hPfdef m]
+    exact mul_nonneg (inv_nonneg.mpr hWd.le) (tailW_pos hW _).le
+  -- the split `R₃ = (R₃ ∩ A^f) ⊔ (R₃ ∩ A^n)`
+  have hsplit : emn2ExpS3 H z ℓs ℓ σ a b =
+      ((W : ℕ) : ℝ) ^ d * ((∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0)) +
+        (∑ c : Zd d L, ∑ c' : Zd d L,
+        (if emn2Exp2_R3 d L ℓs ℓ a b c c' ∧
+            Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b)) then
+          ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖
+          else 0))) := by
+    unfold emn2ExpS3
+    congr 1
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun c _ => ?_
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun c' _ => ?_
+    by_cases h : emn2Exp2_R3 d L ℓs ℓ a b c c'
+    · rcases le_or_gt (Pf (zdistInf d L (c' - b))) (Pf (zdistInf d L (a - b))) with hle | hlt
+      · have hnlt : ¬ (Pf (zdistInf d L (a - b)) < Pf (zdistInf d L (c' - b))) := not_lt.mpr hle
+        rw [ite_eq_left h, ite_eq_left ⟨h, hle⟩, ite_eq_right (fun hh => hnlt hh.2), add_zero]
+      · have hnle : ¬ (Pf (zdistInf d L (c' - b)) ≤ Pf (zdistInf d L (a - b))) := not_le.mpr hlt
+        rw [ite_eq_left h, ite_eq_right (fun hh => hnle hh.2), ite_eq_left ⟨h, hlt⟩, zero_add]
+    · rw [ite_eq_right h, ite_eq_right (fun hh => h hh.1), ite_eq_right (fun hh => h hh.1), add_zero]
+  have hFA := emn2Exp2_partF H z hH hz σ a b (ℓs := ℓs) (ℓ := ℓ) hy hPf0 h2
+  have hNA := emn2Exp2_partN H z hH σ a b (ℓs := ℓs) (ℓ := ℓ) hF0 hPf0 hF hr
+  have hPS := emn2Exp2_profile_sum (g := g) (t := t) (D := D) (ℓs := ℓs) hW hℓ a b hCT hCR hPfdef
+    hTTT hrad
+  have hF3 : 0 ≤ F ^ 3 * Pf (zdistInf d L (a - b)) := by
+    have := hPf0 (zdistInf d L (a - b)); positivity
+  rw [hsplit]
+  calc ((W : ℕ) : ℝ) ^ d * (_ + _)
+      ≤ ((W : ℕ) : ℝ) ^ d * (3 ^ d / (((W : ℕ) : ℝ) ^ d * z.im) *
+          (y ^ 2 * Pf (zdistInf d L (a - b))) *
+          (y * Real.sqrt (Pf 0) * (y ^ 2 * Pf (zdistInf d L (a - b)))) +
+        F ^ 3 * Pf (zdistInf d L (a - b)) *
+          (3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (((W : ℕ) : ℝ) ^ d)⁻¹ * (CT + CR) *
+            Pf (zdistInf d L (a - b)))) := by
+        refine mul_le_mul_of_nonneg_left (add_le_add hFA (hNA.trans ?_)) hWd.le
+        exact mul_le_mul_of_nonneg_left hPS hF3
+    _ = _ := by
+        field_simp
+
+end S3
+
+
+/-! ## 8. (3.76) `eq_L2-J`: the 2-loop at distance `> ℓ*` is at most `(Ĵ + W^{-d}) P` -/
+
+section L2J
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `m(σ) m(-σ) = |m|² = 1` for `|E| ≤ 2`. -/
+private lemma emn2Exp2_mSigma_mul {E : ℝ} (hE : |E| ≤ 2) (s : Bool) :
+    mSigma E s * mSigma E (!s) = 1 := by
+  cases s
+  · simpa [mul_comm] using KLWard_mSigma_mul hE
+  · simpa using KLWard_mSigma_mul hE
+
+/-- `𝒦^{(2)} = W^{-d} m₁ m₂ Θ_{u m₁ m₂}(a₁, a₂)` for the model's `STKloop` (`KLK_two`). -/
+private lemma emn2Exp2_STKloop_two (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool)
+    (a : Fin 2 → Zd d (sz.L n)) :
+    STKloop sz n E u σ a =
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (mSigma E (σ 0) * mSigma E (σ 1)) *
+        Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E (σ 0) * mSigma E (σ 1))) (a 0) (a 1) := by
+  have h2 : KLloopOf d (sz.L n) σ a = ⟨[σ 0, σ 1], [a 0, a 1]⟩ := by
+    simp [KLloopOf, List.ofFn_succ]
+  unfold STKloop
+  rw [h2, KLK_two]
+
+/-- For the pattern `(s,-s)`: `‖𝒦^{(2)}_{(s,-s),(x,x')}‖ = W^{-d} ‖Θ_u(x,x')‖`. -/
+private lemma emn2Exp2_norm_STKloop {E : ℝ} (hE : |E| ≤ 2) (n : ℕ) (u : ℝ) (s : Bool)
+    (x x' : Zd d (sz.L n)) :
+    ‖STKloop sz n E u ![s, !s] ![x, x']‖ =
+      (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖Theta d (sz.L n) (sz.lam n) (u : ℂ) x x'‖ := by
+  rw [emn2Exp2_STKloop_two]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one]
+  rw [emn2Exp2_mSigma_mul hE s, mul_one, mul_one, norm_mul, norm_inv, norm_pow,
+    Complex.norm_natCast]
+
+variable {sz}
+
+private lemma emn2Exp2_Jhatg_nonneg (C : FlowFM sz) (n : ℕ) (D ℓ u : ℝ) (ω : sz.SeqΩ) :
+    0 ≤ STJhatg C n D ℓ u ω :=
+  le_trans (div_nonneg (norm_nonneg _) (ST_STprof_pos sz n u D ℓ (0 : Zd d (sz.L n)) 0).le)
+    (Finset.le_sup' (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
+      ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
+      (Finset.mem_univ ((fun _ => true), (fun _ => 0))))
+
+/-- **(3.76) `eq_L2-J` over a carrier**: if
+`‖𝒦^{(2)}_{(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}`, then `‖𝓛^{(2)}_{(s,-s),(x,x')}‖ ≤ (Ĵ + W^{-d}) W^{-d} 𝒯̃^ℓ_{u,D}(|x-x'|)`. -/
+theorem emn2Exp2_loop2_far_leg {C : FlowFM sz} (n : ℕ) (u D ℓ : ℝ) (ω : sz.SeqΩ) (s : Bool)
+    (x x' : Zd d (sz.L n))
+    (hK : ‖C.K n u ![s, !s] ![x, x']‖ ≤
+      (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ)))) :
+    ‖C.L n u ![s, !s] ![x, x'] ω‖ ≤
+      (STJhatg C n D ℓ u ω + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) * STprof sz n u D ℓ x x' := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  set w : ℝ := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ with hwdef
+  have hw : 0 < w := inv_pos.mpr (pow_pos hW d)
+  have hP := ST_STprof_pos sz n u D ℓ x x'
+  have hJ : ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ ≤
+      STJhatg C n D ℓ u ω * STprof sz n u D ℓ x x' := by
+    have h := Finset.le_sup' (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
+      ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
+      (Finset.mem_univ (![s, !s], ![x, x']))
+    have h' : ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ / STprof sz n u D ℓ x x' ≤
+        STJhatg C n D ℓ u ω := h
+    rwa [div_le_iff₀ hP] at h'
+  -- `w · W^{-(D+d)} ≤ w · P` (`P ≥ W^{-d-D}`)
+  have hrpow : ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ))) = ((sz.W n : ℕ) : ℝ) ^ (-D) * w := by
+    rw [hwdef, neg_add, Real.rpow_add hW, ← Real.rpow_natCast, ← Real.rpow_neg hW.le]
+  have hfloor : ((sz.W n : ℕ) : ℝ) ^ (-D) ≤
+      tailW d (sz.L n) (sz.lam n) u ℓ ((sz.W n : ℕ) : ℝ) D
+        ((zdistInf d (sz.L n) (x - x') : ℕ) : ℝ) := rpow_neg_le_tailW _
+  have hPle : w * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ))) ≤ w * STprof sz n u D ℓ x x' := by
+    rw [hrpow]
+    unfold STprof
+    calc w * (((sz.W n : ℕ) : ℝ) ^ (-D) * w)
+        = w * (w * ((sz.W n : ℕ) : ℝ) ^ (-D)) := by ring
+      _ ≤ w * (w * tailW d (sz.L n) (sz.lam n) u ℓ ((sz.W n : ℕ) : ℝ) D
+          ((zdistInf d (sz.L n) (x - x') : ℕ) : ℝ)) := by gcongr
+  calc ‖C.L n u ![s, !s] ![x, x'] ω‖
+      = ‖(C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']) + C.K n u ![s, !s] ![x, x']‖ := by
+        rw [sub_add_cancel]
+    _ ≤ ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ + ‖C.K n u ![s, !s] ![x, x']‖ :=
+        norm_add_le _ _
+    _ ≤ STJhatg C n D ℓ u ω * STprof sz n u D ℓ x x' + w * STprof sz n u D ℓ x x' :=
+        add_le_add hJ (hK.trans hPle)
+    _ = _ := by ring
+
+end L2J
+
+
+/-! ## 9. The far sum `S̃₃` on the good event -/
+
+section Far3
+
+private lemma emn2Exp2_cube_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    (a + b) ^ 3 ≤ 4 * (a ^ 3 + b ^ 3) := by
+  nlinarith [mul_nonneg (add_nonneg ha hb) (sq_nonneg (a - b))]
+
+/-- `W^{-3d} ≤ (cB W^{-d})^{1/2}` once `W^{-5d} ≤ cB`: `w³ ≤ B^{1/2}` from `c w ≤ B` and `w⁵ ≤ c`. -/
+private lemma emn2Exp2_w3_le {w c B : ℝ} (hw : 0 < w) (hB : c * w ≤ B) (hw5 : w ^ 5 ≤ c) :
+    w ^ 3 ≤ B ^ (1 / 2 : ℝ) := by
+  have h6 : (w ^ 3) ^ 2 ≤ B := by
+    calc (w ^ 3) ^ 2 = w * w ^ 5 := by ring
+      _ ≤ w * c := mul_le_mul_of_nonneg_left hw5 hw.le
+      _ = c * w := by ring
+      _ ≤ B := hB
+  rw [← Real.sqrt_eq_rpow]
+  calc w ^ 3 = Real.sqrt ((w ^ 3) ^ 2) := (Real.sqrt_sq (by positivity)).symm
+    _ ≤ Real.sqrt B := Real.sqrt_le_sqrt h6
+
+/-- **The real-number assembly of the bound of `S̃₃`**: with `ζ = η⁻¹ (B + J³) P²`, `B = Bctl^{1/2}`,
+if `S ≤ c₃ η⁻¹ Y s₀ P² + c₃ K (C_I/v + C_R/v) (J + w)³ P²`, `s₀ ≤ q B`, `w³ ≤ B`, `η ≤ v` and
+`2 (A₁ + A₂ + 1) ≤ Y` (`A₁ = c₃ q`, `A₂ = 4 c₃ K (C_I + C_R)`), then `S ≤ Y² ζ`. -/
+private lemma emn2Exp2_assemble {S Y η v B q J w P2 s0 c3 K CI CR A1 A2 : ℝ} (hη : 0 < η)
+    (hηv : η ≤ v) (hc3 : 0 ≤ c3) (hK : 0 ≤ K) (hCI : 0 ≤ CI) (hCR : 0 ≤ CR)
+    (hJ : 0 ≤ J) (hw : 0 ≤ w) (hB : 0 ≤ B) (hP2 : 0 ≤ P2) (hs0 : s0 ≤ q * B)
+    (hw3 : w ^ 3 ≤ B)
+    (hS : S ≤ c3 / η * Y * s0 * P2 + c3 * K * (CI / v + CR / v) * (J + w) ^ 3 * P2)
+    (hA1 : A1 = c3 * q) (hA2 : A2 = 4 * (c3 * K * (CI + CR))) (hA10 : 0 ≤ A1) (hA20 : 0 ≤ A2)
+    (hY : 2 * (A1 + A2 + 1) ≤ Y) :
+    S ≤ Y * Y * (η⁻¹ * (B + J ^ 3) * P2) := by
+  have hv : 0 < v := lt_of_lt_of_le hη hηv
+  have hY0 : 0 ≤ Y := by linarith
+  have hY1 : 1 ≤ Y := by linarith
+  have hJ3 : 0 ≤ J ^ 3 := by positivity
+  have hζ0 : 0 ≤ η⁻¹ * (B + J ^ 3) * P2 := by positivity
+  -- term 1 (`A^f`)
+  have h1 : c3 / η * Y * s0 * P2 ≤ A1 * Y * (η⁻¹ * (B + J ^ 3) * P2) := by
+    calc c3 / η * Y * s0 * P2 ≤ c3 / η * Y * (q * B) * P2 := by gcongr
+      _ = A1 * Y * (η⁻¹ * B * P2) := by rw [hA1]; field_simp
+      _ ≤ A1 * Y * (η⁻¹ * (B + J ^ 3) * P2) := by
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
+          apply mul_le_mul_of_nonneg_right _ hP2
+          exact mul_le_mul_of_nonneg_left (by linarith) (inv_nonneg.mpr hη.le)
+  -- term 2 (`A^n`)
+  have h2 : c3 * K * (CI / v + CR / v) * (J + w) ^ 3 * P2 ≤ A2 * (η⁻¹ * (B + J ^ 3) * P2) := by
+    have hcube : (J + w) ^ 3 ≤ 4 * (B + J ^ 3) := by
+      have := emn2Exp2_cube_le hJ hw
+      linarith
+    have hvη : v⁻¹ ≤ η⁻¹ := inv_anti₀ hη hηv
+    have hKK : 0 ≤ c3 * K * (CI + CR) := by positivity
+    calc c3 * K * (CI / v + CR / v) * (J + w) ^ 3 * P2
+        = (c3 * K * (CI + CR)) * v⁻¹ * (J + w) ^ 3 * P2 := by field_simp
+      _ ≤ (c3 * K * (CI + CR)) * η⁻¹ * (4 * (B + J ^ 3)) * P2 := by
+          apply mul_le_mul_of_nonneg_right _ hP2
+          exact mul_le_mul (mul_le_mul_of_nonneg_left hvη hKK) hcube (by positivity) (by positivity)
+      _ = A2 * (η⁻¹ * (B + J ^ 3) * P2) := by rw [hA2]; ring
+  -- the loss
+  have hloss : A1 * Y + A2 ≤ Y * Y := by
+    have ha : A1 + A2 ≤ Y / 2 := by linarith
+    have hb : (A1 + A2) * Y ≤ Y / 2 * Y := mul_le_mul_of_nonneg_right ha hY0
+    have hc : A2 ≤ A2 * Y := le_mul_of_one_le_right hA20 hY1
+    have hd : 0 ≤ Y * Y := mul_nonneg hY0 hY0
+    linarith
+  calc S ≤ c3 / η * Y * s0 * P2 + c3 * K * (CI / v + CR / v) * (J + w) ^ 3 * P2 := hS
+    _ ≤ A1 * Y * (η⁻¹ * (B + J ^ 3) * P2) + A2 * (η⁻¹ * (B + J ^ 3) * P2) := add_le_add h1 h2
+    _ = (A1 * Y + A2) * (η⁻¹ * (B + J ^ 3) * P2) := by ring
+    _ ≤ (Y * Y) * (η⁻¹ * (B + J ^ 3) * P2) := mul_le_mul_of_nonneg_right hloss hζ0
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- `ℓ*_t ≤ ℓ†_t` once `log W ≥ 1`. -/
+private lemma emn2Exp2_star_le_dag (n : ℕ) (u : ℝ) (hLg1 : 1 ≤ Real.log ((sz.W n : ℕ) : ℝ)) :
+    emn2ExpEllStar sz n u ≤ emn2ExpEllDag sz n u := by
+  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  have hlt1 : 1 ≤ ellT (sz.L n) (sz.lam n) u := one_le_ellT hL1
+  unfold emn2ExpEllStar emn2ExpEllDag
+  exact mul_le_mul_of_nonneg_right
+    (Real.rpow_le_rpow_of_exponent_le hLg1 (by norm_num)) (by linarith)
+
+/-- **The far field of the two-loop kernel**, the one input of `S̃₃` that the model supplies: for every
+`D > 0`, eventually, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}` once `ℓ*_{t_n} ≤ |x - x'|` (`emn2ExpEllStar`).
+Band: `emn2Exp2_bandHK`; block Anderson: (2.71) `Kn2sol` of `BAKsolve` with `BAProp5`, as in the proof of Step 2 for
+Theorem 8.2 (`lem:main_ind_BA`). -/
+def emn2ExpHK (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
+    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+      ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ T0 sz z n) → ∀ D : ℝ, 0 < D →
+        ∀ᶠ n in atTop, ∀ (x x' : Zd d (sz.L n)) (s : Bool),
+          emn2ExpEllStar sz n (t n) ≤ (zdistInf d (sz.L n) (x - x') : ℝ) →
+            ‖(mk sz z).K n (t n) ![s, !s] ![x, x']‖ ≤
+              (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ)))
+
+/-- **`emn2ExpHK` at the band**: `‖𝒦^{(2)}‖ = W^{-d} ‖Θ_u‖` (`emn2Exp2_norm_STKloop`) and `kellStarEv` at `δ = 1`, `D + d`. -/
+theorem emn2Exp2_bandHK (d : ℕ) (hd : 3 ≤ d) :
+    emn2ExpHK d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => RBM.BA.bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
+  obtain ⟨-, -, ht1, hrange⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htT
+  have hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
+    filter_upwards [hflow.1.2.2.2.2] with n hn
+    exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1, hn.2⟩
+  have hK := emn2Exp_kellStar_far sz 𝔠 𝔡⁻¹ (ε / 2) 1 (D + (d : ℝ)) t hd hflow.1.1 (inv_pos.mpr h𝔡)
+    (half_pos hε) one_pos hflow.1.2.2.1 hflow.1.2.2.2.1 hrange ht1 hlam
+  filter_upwards [hK] with n hKn x x' s hfar
+  have h := (hKn 0 (t n) le_rfl (ht0 n) le_rfl x x' (by rw [one_mul]; exact hfar)).1
+  change ‖STKloop sz n (STflowE z n) (t n) ![s, !s] ![x, x']‖ ≤ _
+  have hE2 : |STflowE z n| ≤ 2 := (abs_lemE_lt_two (ST_flow_im_pos sz hflow n)).le
+  rw [emn2Exp2_norm_STKloop sz hE2 n (t n) s x x']
+  exact mul_le_mul_of_nonneg_left h (inv_nonneg.mpr (pow_nonneg (by positivity) d))
+
+variable (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
+  {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
+  {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
+  {Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+  {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
+
+/-- **`S̃₃` on the far pairs**: under the premises
+of `STEMn2Exp` and `3 ≤ d`, on the pairs with `|a-b| > ℓ†_t`,
+`S̃₃ ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + (Ĵ^ℓ_{t,D})³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`, for **every** `D > 0`.
+Proof: on the good event of (3.31) `eq:LW_assm_exp` at `τ/5`, `emn2Exp2_S3_le` with `y = N^{τ/10}`,
+`F = Ĵ + W^{-d}` (`emn2Exp2_loop2_far_leg`, the far field of `kellStarEv` at `δ = 1`, `D_K = D + d`),
+(3.21) `TTT2` (`ekPropTInf_holds`) and the radial sum; `(1-t)⁻¹ ≤ η⁻¹`, `(Ĵ + W^{-d})³ ≤ 4(Ĵ³ + W^{-3d})`,
+`W^{-3d} ≤ Bctl^{1/2}` eventually, and the constants `3^d, K₁, C_I, C_R, √(1+cB⁻¹)` are `≤ N^{τ/2}` eventually.
+The premises `Ψ`, its window, `STInitialGT2`, `ε₀` and the upper bound on `ℓ` are not used. -/
+theorem emn2Exp_far3g (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    emn2ExpPrem d law Flow mk T0 (fun sz z t ℓ D =>
+      ∀ J : ℕ → sz.SeqΩ → ℝ, (∀ n ω, 0 ≤ J n ω) →
+        PrecL sz (law sz) (U := fun _ => Unit)
+          (fun n _ ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω) (fun n _ ω => J n ω) →
+        PrecL sz (law sz) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+          (fun n p ω => if emn2ExpEllDag sz n (t n) <
+              (zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1) : ℝ) then
+            emn2ExpS3g sz n (Hf sz z n (t n) ω) (ζf sz z n (t n)) (t n) (ℓ n) p.1 p.2.1 p.2.2 else 0)
+          (fun n p ω => ((mk sz z).eta n (t n))⁻¹ *
+            ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + (J n ω) ^ 3) *
+            (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ _hΨ _hI ℓ hℓ hA D hD J hJ0 hJ
+  classical
+  obtain ⟨hadm, hR, -⟩ := hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  obtain ⟨hT1, hEv, cB, c, hcB, hc, hbd⟩ := hF.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  have hsz : sz.SizeTendsto := hadm.2.2.1
+  have hsize : Tendsto sz.size atTop atTop := tendsto_size sz hsz
+  have h𝔠 : 0 < 𝔠 := hadm.1
+  have hband : sz.Bandwidth 𝔠 := hadm.2.2.2.1
+  have hWO : sz.WO 𝔡 := hadm.2.2.2.2
+  have hd0 : 0 < d := by omega
+  have hWt := ST_W_tendsto sz hsz h𝔠 hband
+  have ht1 : ∀ n, t n < 1 := fun n => (htT n).trans_lt (hT1 n)
+  have hη : ∀ n, 0 < (mk sz z).eta n (t n) := by
+    intro n
+    obtain ⟨-, h1, h2, -⟩ := hR n (t n) (ht0 n) (htT n)
+    rw [← h2]; exact h1
+  have hηv : ∀ n, (mk sz z).eta n (t n) ≤ 1 - t n := fun n => hEv n (t n) (ht0 n) (htT n)
+  have hW1 : ∀ n, (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz.W_pos n
+  have hWpos : ∀ n, (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz.W_pos n
+  have hBt : ∀ᶠ n in atTop, cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n (t n) :=
+    hbd.mono fun n hn => (hn (t n) (ht0 n) (htT n)).1
+  have hLg1 : ∀ᶠ n in atTop, 1 ≤ Real.log ((sz.W n : ℕ) : ℝ) :=
+    (Real.tendsto_log_atTop.comp hWt).eventually (eventually_ge_atTop _)
+  have hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
+    filter_upwards [hWO] with n hn
+    exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos (hWpos n) _) hn.1, hn.2⟩
+  -- the far field of `𝒦^{(2)}_t` beyond `ℓ*_t` at `D_K = D + d`
+  have hK := hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
+  -- (3.21) `TTT2` and the radial sum: constants depending on `d` only
+  obtain ⟨CI, hCI, hTTT⟩ := ekPropTInf_holds d hd
+  obtain ⟨CR, hCR, hrad⟩ := emn2Exp2_exists_CR d hd
+  obtain ⟨A1, hA1⟩ : ∃ A1 : ℝ, A1 = 3 ^ d * Real.sqrt (1 + cB⁻¹) := ⟨_, rfl⟩
+  obtain ⟨A2, hA2⟩ : ∃ A2 : ℝ, A2 = 4 * (3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI + CR)) := ⟨_, rfl⟩
+  have hA1' : 0 ≤ A1 := by rw [hA1]; positivity
+  have hA2' : 0 ≤ A2 := by rw [hA2]; positivity
+  -- `W^{-5d} ≤ cB` eventually
+  have hw5 : ∀ᶠ n in atTop, ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 ≤ cB := by
+    filter_upwards [hWt.eventually (eventually_ge_atTop (max 1 cB⁻¹))] with n hn
+    have hW1' : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := (le_max_left _ _).trans hn
+    have hWc : cB⁻¹ ≤ ((sz.W n : ℕ) : ℝ) := (le_max_right _ _).trans hn
+    have hwd : ((sz.W n : ℕ) : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d := le_self_pow₀ hW1' hd0.ne'
+    have hw_le : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ cB := by
+      calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ ((sz.W n : ℕ) : ℝ)⁻¹ :=
+            inv_anti₀ (hWpos n) hwd
+        _ ≤ cB := by
+            rw [inv_le_comm₀ (hWpos n) hcB]; exact hWc
+    have hw_le1 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 :=
+      inv_le_one_of_one_le₀ (one_le_pow₀ hW1')
+    calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ :=
+          pow_le_of_le_one (inv_nonneg.mpr (pow_nonneg (hWpos n).le d)) hw_le1 (by norm_num)
+      _ ≤ cB := hw_le
+  refine StochDomAt.of_subset_union hsize (hA D hD) hJ ?_
+  intro τ hτ
+  refine ⟨τ / 10, by positivity, ?_⟩
+  have hQ := ST_size_pow_big sz hsize (a := τ / 5) (M := 2 * (A1 + A2 + 1)) (by positivity)
+  filter_upwards [hℓ, hBt, hLg1, hK, hw5, hlam, hQ] with n hℓn hBn hLg1n hKn hw5n hlamn hQn
+  intro ω hω
+  obtain ⟨p, hp⟩ := hω
+  by_contra hno
+  have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hgood : ∀ u' : {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)),
+      ‖(mk sz z).L n (t n) u'.1.1 u'.2 ω‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ (τ / 5) * STprof sz n (t n) D (ℓ n) (u'.2 0) (u'.2 1) :=
+    fun u' => (not_lt.mp fun h => hno (Or.inl ⟨u', h⟩)).trans (mul_le_mul_of_nonneg_right
+      (Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)) (ST_STprof_pos sz n _ _ _ _ _).le)
+  have hJhat : STJhatg (mk sz z) n D (ℓ n) (t n) ω ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 10) * J n ω :=
+    not_lt.mp fun h => hno (Or.inr ⟨(), h⟩)
+  obtain ⟨k, σ, a⟩ := p
+  have hBpos : 0 ≤ sz.Bctl n (t n) :=
+    (mul_nonneg hcB.le (inv_nonneg.mpr (pow_nonneg (hWpos n).le d))).trans hBn
+  have hηn := hη n
+  by_cases hfar : emn2ExpEllDag sz n (t n) < (zdistInf d (sz.L n) (a 0 - a 1) : ℝ)
+  · simp only [hfar, ↓reduceIte] at hp
+    set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+    set y : ℝ := N ^ (τ / 10) with hy
+    have hy0 : 0 ≤ y := Real.rpow_nonneg hNpos.le _
+    have hy2 : y ^ 2 = N ^ (τ / 5) := by
+      rw [hy, ← Real.rpow_natCast, ← Real.rpow_mul hNpos.le]
+      congr 1; push_cast; ring
+    have hy5 : y ^ 5 = N ^ (τ / 2) := by
+      rw [hy, ← Real.rpow_natCast, ← Real.rpow_mul hNpos.le]
+      congr 1; push_cast; ring
+    have hNτ : N ^ τ = N ^ (τ / 2) * N ^ (τ / 2) := by
+      rw [← Real.rpow_add hNpos]; congr 1; ring
+    -- the profile `P`
+    set Pf : ℕ → ℝ := fun m => emn2ExpPf sz n (t n) D (ℓ n) (m : ℝ) with hPfdef
+    have hPfdef' : ∀ m : ℕ, Pf m = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ *
+        tailW d (sz.L n) (sz.lam n) (t n) (ℓ n) ((sz.W n : ℕ) : ℝ) D (m : ℝ) := fun m => rfl
+    have hPf0 : ∀ m, 0 ≤ Pf m := fun m => by
+      change 0 ≤ emn2ExpPf sz n (t n) D (ℓ n) (m : ℝ)
+      unfold emn2ExpPf
+      exact mul_nonneg (inv_nonneg.mpr (pow_nonneg (hWpos n).le d))
+        (tailW_pos (hWpos n) _).le
+    obtain ⟨hH, hz', hzeta, hLoop⟩ := hR n (t n) (ht0 n) (htT n)
+    have h2 : ∀ (s : Bool) (x x' : Zd d (sz.L n)),
+        ‖loopFine d (sz.L n) (sz.W n) (Hf sz z n (t n) ω) (ζf sz z n (t n))
+            ![s, !s] ![x, x']‖ ≤ y ^ 2 * Pf (zdistInf d (sz.L n) (x - x')) := by
+      intro s x x'
+      have hne : (![s, !s] : Fin 2 → Bool) 0 ≠ (![s, !s] : Fin 2 → Bool) 1 := by
+        cases s <;> simp
+      rw [hy2, ← hLoop ω ![s, !s] ![x, x']]
+      exact hgood (⟨![s, !s], hne⟩, ![x, x'])
+    -- the random bound and (3.76) `eq_L2-J`
+    obtain ⟨Jh, hJh⟩ : ∃ Jh : ℝ, Jh = STJhatg (mk sz z) n D (ℓ n) (t n) ω := ⟨_, rfl⟩
+    have hJh0 : 0 ≤ Jh := by
+      rw [hJh]; exact emn2Exp2_Jhatg_nonneg _ n _ _ _ _
+    obtain ⟨w, hwdef⟩ : ∃ w : ℝ, w = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := ⟨_, rfl⟩
+    have hw : 0 < w := by rw [hwdef]; exact inv_pos.mpr (pow_pos (hWpos n) d)
+    have hF : ∀ (s : Bool) (x x' : Zd d (sz.L n)),
+        emn2ExpEllStar sz n (t n) < (zdistInf d (sz.L n) (x - x') : ℝ) →
+        ‖loopFine d (sz.L n) (sz.W n) (Hf sz z n (t n) ω) (ζf sz z n (t n))
+            ![s, !s] ![x, x']‖ ≤ (Jh + w) * Pf (zdistInf d (sz.L n) (x - x')) := by
+      intro s x x' hfar'
+      rw [← hLoop ω ![s, !s] ![x, x']]
+      have := emn2Exp2_loop2_far_leg (C := mk sz z) n (t n) D (ℓ n) ω s x x' (hKn x x' s hfar'.le)
+      rw [hJh, hwdef]
+      exact this
+    have hsw := emn2Exp_sw_dist sz n k a
+    have hr : emn2ExpEllStar sz n (t n) <
+        (zdistInf d (sz.L n) (emn2ExpSw k a 0 - emn2ExpSw k a 1) : ℝ) := by
+      rw [hsw]
+      exact lt_of_le_of_lt (emn2Exp2_star_le_dag sz n (t n) hLg1n) hfar
+    have hv : 0 < 1 - t n := by linarith [ht1 n]
+    have hTTTn := hTTT (sz.L n) (sz.lam n) (t n) (t n) hlamn.1 (ht0 n) le_rfl (ht1 n)
+      (le_total _ _) (emn2ExpSw k a 0) (emn2ExpSw k a 1)
+    have hradn := hrad (sz.L n) (sz.lam n) (t n) hlamn.1.le (ht1 n) (emn2ExpSw k a 1)
+    have hyJ : Jh + w ≤ y * (J n ω + w) := by
+      have hy1 : 1 ≤ y := Real.one_le_rpow hN1 (by positivity)
+      calc Jh + w ≤ y * J n ω + y * w := add_le_add (by rw [hJh]; exact hJhat) (by nlinarith)
+        _ = y * (J n ω + w) := by ring
+    have hF3 : (Jh + w) ^ 3 ≤ y ^ 3 * (J n ω + w) ^ 3 := by
+      rw [← mul_pow]; exact pow_le_pow_left₀ (by positivity) hyJ 3
+    have hS := emn2Exp2_S3_le (Hf sz z n (t n) ω) (ζf sz z n (t n)) (hH ω) hz'
+      (emn2ExpSw k σ) (emn2ExpSw k a 0) (emn2ExpSw k a 1) (g := sz.lam n) (t := t n) (D := D)
+      (ℓ := ℓ n) (ℓs := emn2ExpEllStar sz n (t n)) (y := y) (F := Jh + w) (CT := CI / (1 - t n))
+      (CR := CR / (1 - t n)) hℓn.1 hy0 (by positivity) (div_nonneg hCI.le hv.le)
+      (div_nonneg hCR.le hv.le) hPfdef' h2 hF hr hTTTn hradn
+    rw [hsw] at hS
+    -- `Pf 0 ≤ (1 + cB⁻¹) Bctl`
+    have hP0 : Pf 0 ≤ (1 + cB⁻¹) * sz.Bctl n (t n) := by
+      have := ST_prof_le_Bctl sz n hcB hℓn.1 hD hBn (0 : Zd d (sz.L n)) 0
+      rw [emn2Exp_STprof_eq, sub_self, emn2Exp_zdistInf_zero] at this
+      simpa [hPfdef] using this
+    have hsq0 : Real.sqrt (Pf 0) ≤ Real.sqrt (1 + cB⁻¹) * (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := by
+      rw [← Real.sqrt_eq_rpow, ← Real.sqrt_mul (by positivity)]
+      exact Real.sqrt_le_sqrt hP0
+    have hw3 : w ^ 3 ≤ (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := by
+      rw [hwdef] at hw ⊢
+      exact emn2Exp2_w3_le hw hBn hw5n
+    unfold emn2ExpS3g at hp
+    rw [hzeta] at hS
+    have hb0 : 0 ≤ (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := Real.rpow_nonneg hBpos _
+    -- the loss `(Ĵ + w)³ ≤ y³ (J + w)³` of `Ĵ ≤ N^{τ/10} J`, absorbed in `A₂' = y³ A₂`
+    have hcoef : 0 ≤ (3 : ℝ) ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) :=
+      mul_nonneg (by positivity) (add_nonneg (div_nonneg hCI.le hv.le) (div_nonneg hCR.le hv.le))
+    have hsecond : 3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) *
+          (Jh + w) ^ 3 * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 ≤
+        3 ^ d * (y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) * (CI / (1 - t n) + CR / (1 - t n)) *
+          (J n ω + w) ^ 3 * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 :=
+      calc _ ≤ 3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) *
+            (y ^ 3 * (J n ω + w) ^ 3) * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 :=
+          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hF3 hcoef) (sq_nonneg _)
+        _ = _ := by ring
+    obtain ⟨A2', hA2'⟩ : ∃ A2' : ℝ, A2' = 4 * (3 ^ d * (y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) *
+      (CI + CR)) := ⟨_, rfl⟩
+    have hA2'0 : 0 ≤ A2' := by rw [hA2']; positivity
+    have hY' : 2 * (A1 + A2' + 1) ≤ y ^ 5 := by
+      have h3 : 1 ≤ y ^ 3 := one_le_pow₀ (Real.one_le_rpow hN1 (by positivity))
+      have hA2e : A2' = y ^ 3 * A2 := by rw [hA2', hA2]; ring
+      calc 2 * (A1 + A2' + 1) ≤ y ^ 3 * (2 * (A1 + A2 + 1)) := by
+            rw [hA2e]
+            have := mul_nonneg (sub_nonneg.2 h3) (add_nonneg hA1' zero_le_one)
+            linear_combination 2 * this
+        _ ≤ y ^ 3 * N ^ (τ / 5) := mul_le_mul_of_nonneg_left hQn (by positivity)
+        _ = y ^ 5 := by rw [← hy2]; ring
+    have hfinal := emn2Exp2_assemble (hηn) (hηv n) (by positivity : (0 : ℝ) ≤ 3 ^ d)
+      (by positivity : (0 : ℝ) ≤ y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) hCI.le hCR.le (hJ0 n ω)
+      hw.le hb0 (sq_nonneg _) hsq0 hw3 (hS.trans (add_le_add le_rfl hsecond)) hA1 hA2' hA1' hA2'0 hY'
+    rw [hy5, ← hNτ] at hfinal
+    exact absurd hp (not_lt.mpr (hfinal.trans (le_of_eq rfl)))
+  · exfalso
+    simp only [hfar, ↓reduceIte] at hp
+    have : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (((mk sz z).eta n (t n))⁻¹ *
+        ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + J n ω ^ 3) *
+        (STprof sz n (t n) D (ℓ n) (a 0) (a 1)) ^ 2) := by
+      have := hJ0 n ω
+      positivity
+    linarith
+
+end Far3
+
+
+/-! ## 10. The statement `STEMn2Exp` over the carrier -/
+
+section Pin
+
+variable {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
+  {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
+  {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
+  {Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+  {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
+
+/-- **`lem: EMn2_N`, third estimate over a carrier, with a bound `J`** (`eq:MG_conclusion3` and its form (8.14) `eq:MG_conclusion3_BA`
+for the block Anderson model): for every `D > 0` and `J ≥ 0` with `Ĵ^ℓ_{t,D} ≺ J`,
+`(𝓔⊗𝓔)^{M,(2;k)} ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + J³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`.  `J ≥ W^{-d}` is not required and
+`J` may depend on `ω`.  Assembly of `emn2Exp_nearg`, `emn2Exp_far12g`, `emn2Exp_far3g`
+by `emn2Exp_assemble`; **`3 ≤ d` is a hypothesis**; the model enters through `emn2ExpFacts` and `emn2ExpHK`. -/
+theorem stEMn2ExpJgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    emn2ExpPrem d law Flow mk T0 (fun sz z t ℓ D =>
+      ∀ J : ℕ → sz.SeqΩ → ℝ, (∀ n ω, 0 ≤ J n ω) →
+        PrecL sz (law sz) (U := fun _ => Unit)
+          (fun n _ ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω) (fun n _ ω => J n ω) →
+        PrecL sz (law sz) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+          (fun n p ω => ‖STEEg (mk sz z) n (t n) p.1 p.2.1 p.2.2 ω‖)
+          (fun n p ω => ((mk sz z).eta n (t n))⁻¹ *
+            ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + (J n ω) ^ 3) *
+            (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD J hJ0 hJ
+  obtain ⟨hadm, hR, hS⟩ := hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  obtain ⟨hT1, -, -⟩ := hF.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  have hη : ∀ n, 0 < (mk sz z).eta n (t n) := by
+    intro n
+    obtain ⟨-, h1, h2, -⟩ := hR n (t n) (ht0 n) (htT n)
+    rw [← h2]; exact h1
+  exact emn2Exp_assemble (law sz) (tendsto_size sz hadm.2.2.1) (fun n => (mk sz z).eta n (t n))
+    (fun n => (sz.Bctl n (t n)) ^ (1 / 2 : ℝ))
+    (fun n p => STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) J hη
+    (fun n => Real.rpow_nonneg (STBctl_pos sz n ((htT n).trans_lt (hT1 n))).le _) hJ0
+    (fun n p ω => by
+      obtain ⟨hH, hz', hzeta, hLoop⟩ := hR n (t n) (ht0 n) (htT n)
+      obtain ⟨g, hg⟩ := hS n
+      exact emn2Exp_EEg_split n (t n) (ℓ n) ω (Hf sz z n (t n) ω) (ζf sz z n (t n)) g hg (hLoop ω)
+        p.1 p.2.1 p.2.2)
+    (emn2Exp_nearg law hF κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD)
+    (emn2Exp_far12g law hF κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD)
+    (emn2Exp_far3g law hd hF hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+      J hJ0 hJ)
+
+/-- **`lem: EMn2_N`, third estimate (3.35) `eq:MG_conclusion3` over a carrier**: the statement `STEMn2ExpgL`
+(`Chain/Step2Gen.lean`, with the bound `Ĵ`) for `d ≥ 3`, from `stEMn2ExpJgL_of` at `J = Ĵ`; every `D > 0`.
+**`3 ≤ d` is a hypothesis** (`STEMn2ExpgL` has none). -/
+theorem stEMn2ExpgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    STEMn2ExpgL d law Flow mk T0 := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+  have hsize := tendsto_size sz (hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow).1.2.2.1
+  exact stEMn2ExpJgL_of law hd hF hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+    (fun n ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω)
+    (fun n ω => emn2Exp2_Jhatg_nonneg _ n D (ℓ n) (t n) ω)
+    (StochDomAt.refl hsize fun n _ ω => emn2Exp2_Jhatg_nonneg _ n D (ℓ n) (t n) ω)
+
+end Pin
+
+/-- **`lem: EMn2_N`, third estimate (3.35) `eq:MG_conclusion3`**: the statement `STEMn2Exp d` for `d ≥ 3`, the
+corollary of `stEMn2ExpgL_of` at the band carrier (`bandFM_STEMn2Exp`, `Iff.rfl`); **`3 ≤ d` is a hypothesis**, see the
+module docstring. -/
+theorem stEMn2Exp_holds (d : ℕ) (hd : 3 ≤ d) : STEMn2Exp d :=
+  (RBM.BA.bandFM_STEMn2Exp d).2
+    (stEMn2ExpgL_of (fun sz => Sizes.seqP sz) hd (emn2Exp_bandFacts d) (emn2Exp2_bandHK d hd))
+
+
+
+end RBM.Gauss.Sizes

@@ -1,0 +1,98 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Universality.PinsK
+import RBM3D.Universality.OUInterfaceK
+
+/-!
+# The dimension-filtered generic statements
+
+Each generic statement that reads an input for every `d` has a form with a **dimension filter** `Dm : ℕ → Prop`
+(not `D`: the bodies bind the exponent `D : ℝ`): the text is the unfiltered one with `(Dm : ℕ → Prop)` added first and
+`Dm d →` inserted before `3 ≤ d →`.  The two statements that consume the claim take the filtered claim.  At
+`Dm = fun _ => True` each filtered statement is the unfiltered one; at `Dm = (· = d)` it is the statement at the one
+dimension `d`.  The unfiltered statements are `UNLocAvgk`, `UNOUClaimsk`, `UNEMCTE2Rowk`, `UNJakUywRowk`,
+`UNClaimRowk` (`PinsK.lean`) and `UNG1Rowk` (`OUInterfaceK.lean`).  No block Anderson and no band vocabulary
+appears in the eight statements.
+-/
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+
+noncomputable section
+
+namespace RBM.Univ
+
+open MeasureTheory Filter Topology
+open RBM RBM.Gauss RBM.Gauss.Sizes
+
+/-! ## The eight filtered statements -/
+
+/-- `UNQuekD`: the estimate (2.18) `Meq:QUE` for the model class `K` (the generic form of `UNQueBand`), read only at
+the dimensions `d` with `Dm d`. -/
+def UNQuekD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : Prop :=
+  ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ ε₀ c τ : ℝ, 0 < ε₀ → ε₀ < 𝔡 / 2 → 0 < c → c < ε₀ → c < 𝔡 / 5 → 0 < τ →
+      ∀ᶠ n in atTop, ∀ E : ℝ, (K d).bulk sz κ E n → ∀ a : Zd d (sz.L n),
+        ((K d).M sz).μ {ω | queBadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E a (((K d).M sz).H n ω)} ≤
+          queBound (sz.W n) 𝔡 ε₀ c τ
+
+/-- `UNLocAvgkD`: `UNLocAvgk` with the filter. -/
+def UNLocAvgkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : Prop :=
+  ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ κ ε τ D : ℝ, 0 < κ → 0 < ε → 0 < τ → 0 < D → ∀ᶠ n in atTop,
+      ((K d).M sz).μ {ω | ∃ z : ℂ, ((K d).bulk sz κ z.re n ∧ ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ z.im ∧ z.im ≤ 1) ∧
+          ∃ a : Zd d (sz.L n),
+          ((sz.W n : ℕ) : ℝ) ^ τ * sz.Bctl n (1 - z.im) <
+            ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a,
+                Gres (((K d).M sz).H n ω) z true x x - (K d).mdet sz n z‖} ≤
+        ENNReal.ofReal (Nsz sz n ^ (-D))
+
+/-- `UNOUClaimskD`: `UNOUClaimsk` with the filter. -/
+def UNOUClaimskD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : Prop :=
+  ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ → UNOUQUEk (K d) sz 𝔡 τU ∧ UNOUDiagk (K d) sz τU
+
+/-- `UNOURowkD`: the filtered `𝐇_t` claims `UNOUClaimskD` from the `G`-loop outputs `ML`, the local law `Loc` and
+the estimate `Que`. -/
+def UNOURowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (ML Loc Que : Prop) : Prop :=
+  ML → Loc → Que → UNOUClaimskD Dm K
+
+/-- `UNEMCTE2RowkD`: `UNEMCTE2Rowk` with the filter. -/
+def UNEMCTE2RowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : Prop :=
+  ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, (K d).bulk sz κ E n) → ∀ nf : ℕ, ∃ Cn τ₀ : ℝ, 0 < τ₀ ∧
+      ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ → UNEMCTE2k (K d) sz E nf τU Cn
+
+/-- `UNJakUywRowkD`: `UNJakUywRowk` with the filter; the claim it consumes is the filtered one. -/
+def UNJakUywRowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (Loc : Prop) : Prop :=
+  Loc → UNOUClaimskD Dm K → ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ κ : ℝ, 0 < κ → ∀ E : ℝ, (∀ᶠ n in atTop, (K d).bulk sz κ E n) → ∀ nf : ℕ, ∃ C τ₀ : ℝ, 0 < τ₀ ∧
+      ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+        UNJakk (K d) sz E nf τU C (𝔠 * 𝔡 / 30) ∧ UNUywk (K d) sz E nf τU C (𝔠 * 𝔡 / 30)
+
+/-- `UNClaimRowkD`: `UNClaimRowk` with the filter on the hypothesis and on the conclusion. -/
+def UNClaimRowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : Prop :=
+  (∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, (K d).bulk sz κ E n) → ∀ nf : ℕ, ∃ Cn C τ₀ : ℝ, 0 < τ₀ ∧
+      ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+        UNEMCTE2k (K d) sz E nf τU Cn ∧ UNJakk (K d) sz E nf τU C (𝔠 * 𝔡 / 30) ∧
+          UNUywk (K d) sz E nf τU C (𝔠 * 𝔡 / 30)) →
+  ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+    ∀ E : ℝ, (∀ᶠ n in atTop, (K d).bulk sz κ E n) → UNClaimAllC sz ((K d).M sz) E
+
+/-- `UNG1RowkD`: `UNG1Rowk` with the filter. -/
+def UNG1RowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d)) (ML Loc Que : Prop) : Prop :=
+  ML → Loc → Que →
+    ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+      ∀ τU : ℝ, 0 < τU → τU ≤ ouTauMax 𝔠 𝔡 →
+        UNOULLk (K d) sz τU ∧ UNOUEq747k (K d) (P d) sz 𝔡 τU
+
+
+
+end RBM.Univ
+
+end

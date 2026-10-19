@@ -1,0 +1,316 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.BA.MainIndOutBA
+import RBM3D.Induction.MainIndRegimes
+
+/-!
+# The regime glue of `lem:main_ind_BA` in family form with TL2
+
+`BAMainIndFamTL d STAny` (`BA/MainIndOutBA`) from the four regime steps
+`BAMainIndFamTL d R`, `R ∈ {STReg5III, STReg5I, STReg5II, STReg5IV}`, at the BA tuple
+`(fun sz => seqP (sz.withLam 0), BAFlow, baFMz, BAflowT0)`.  The family analogue of the band
+glue `ST_mainInd_of_regimes` (`Induction/MainIndRegimes`); the pattern layer
+(`STPattern`, `STRegChain_of_class`), the subsequence layer (`Induction/SizesComp`) and
+`nth_cover` carry no carrier and are used verbatim.
+
+* `baMainIndFamTL_seq`: two consecutive intervals `[s, m]`, `[m, t]` (`STRegSeq`).
+* `baMainIndFamTL_chain`: every chain of regimes (`STRegChain`).
+* `baMainIndFamTL_of_regimes`: the glue along the `Nat.nth` classes of `STPattern`; one constant by
+  `Finset.inf'`.
+* private `MainIndGlue_extendMember`, `MainIndGlue_down`, `MainIndGlue_up`: a member of the family
+  along a class, extended by the main flow; the six hypotheses go down and the seven conclusions
+  come back (`stochDomAt_iff_comp_cover`).
+-/
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+set_option linter.style.setOption false
+set_option linter.flexible false
+
+open MeasureTheory Filter
+
+noncomputable section
+
+namespace RBM.BA
+open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
+
+/-! ## 1. Two intervals, chains of regimes -/
+
+/-- Two consecutive intervals `[s, m]`, `[m, t]` (the analogue of the band composition of two regimes in `Induction/MainIndRegimes`, with TL2):
+the seven conclusions of the first interval at `m`, for every member of `Fam(m)`, give the six hypotheses of the second
+(`STLocalMaxgL_of_STLocalEntrygL`); `(con_st_ind)` passes to both pieces (`st_conStInd_sub`) and to the smaller exponent
+(`st5_conStInd_mono`); the constant is `min c₁ c₂`; `t < 1` by `BAflow_T0_bounds`. -/
+theorem baMainIndFamTL_seq (d : ℕ) (R₁ R₂ : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (h₁ : BAMainIndFamTL d R₁) (h₂ : BAMainIndFamTL d R₂) : BAMainIndFamTL d (STRegSeq R₁ R₂) := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨a₁, ha₁, ha₁', H₁⟩ := h₁ hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨a₂, ha₂, -, H₂⟩ := h₂ hd κ ε 𝔡 hκ hε h𝔡
+  have hapos : 0 < min a₁ a₂ := lt_min ha₁ ha₂
+  refine ⟨min a₁ a₂, hapos, (min_le_left _ _).trans ha₁', fun 𝔠 sz z hflow hlam c₁ hc₁ hc₁' hwin s t hs0 hsT hst htT hR hyp hcon => ?_⟩
+  obtain ⟨m, hsm, hmt, hR₁, hR₂⟩ := hR
+  have ht1 : ∀ n, t n < 1 := fun n => (htT n).trans_lt (BAflow_T0_bounds hκ hflow n).2.2.2
+  have hm1 : ∀ n, m n < 1 := fun n => (hmt n).trans (ht1 n)
+  have hmT : ∀ n, m n ≤ BAflowT0 sz z n := fun n => (hmt n).le.trans (htT n)
+  have hcon₁ : sz.STConStInd (min a₁ a₂) s m :=
+    st_conStInd_sub sz hapos hcon (fun n => le_rfl) hsm (fun n => (hmt n).le) ht1
+  have hcon₂ : sz.STConStInd (min a₁ a₂) m t :=
+    st_conStInd_sub sz hapos hcon (fun n => (hsm n).le) hmt (fun n => le_rfl) ht1
+  have stage1 := H₁ 𝔠 sz z hflow hlam c₁ hc₁ hc₁' hwin s m hs0 hsT hsm hmT hR₁ hyp
+    (st5_conStInd_mono sz hcon₁ hm1 hapos (min_le_left _ _))
+  exact H₂ 𝔠 sz z hflow hlam c₁ hc₁ hc₁' hwin m t (fun n => (hs0 n).trans (hsm n).le) hmT hmt htT hR₂
+    (fun z' hz' => by
+      obtain ⟨b1, -, b3, b4, b5, b6, b7⟩ := stage1 z' hz'
+      exact ⟨b1, b3, b6, STLocalMaxgL_of_STLocalEntrygL _ _ _ b5, b4, b7⟩)
+    (st5_conStInd_mono sz hcon₂ ht1 hapos (min_le_right _ _))
+
+/-- Every chain of regimes `STRegChain i m`, `i + m ≤ 3`, from the four regime steps: induction on `m` by
+`baMainIndFamTL_seq`; `STRegK k` is one of the four for `k ≤ 3`. -/
+theorem baMainIndFamTL_chain (d : ℕ) (h₃ : BAMainIndFamTL d STReg5III) (h₁ : BAMainIndFamTL d STReg5I)
+    (h₂ : BAMainIndFamTL d STReg5II) (h₄ : BAMainIndFamTL d STReg5IV) :
+    ∀ m i : ℕ, i + m ≤ 3 → BAMainIndFamTL d (STRegChain i m) := by
+  have hk : ∀ k, k ≤ 3 → BAMainIndFamTL d (STRegK k) := by
+    intro k hk
+    interval_cases k
+    exacts [h₃, h₁, h₂, h₄]
+  intro m
+  induction m with
+  | zero => intro i hi; exact hk i (by omega)
+  | succ m ih =>
+    intro i hi
+    exact baMainIndFamTL_seq d (STRegK i) (STRegChain (i + 1) m) (hk i (by omega)) (ih (i + 1) (by omega))
+
+/-! ## 2. A member of the family along a class, extended by the main flow -/
+
+/-- A member of the family along a subsequence, extended by the main flow:
+`Function.extend` is used for the extension: on `range φ` the condition is that of `z''` at `j`
+(`Function.Injective.extend_apply`), off it that of the main flow (`Function.extend_apply'`, `BAFamZ_main`). -/
+private theorem MainIndGlue_extendMember {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (c₁ : ℝ) (u : ℕ → ℝ) (φ : ℕ → ℕ)
+    (hφ : StrictMono φ) (z'' : ℕ → ℂ) (h : BAFamZ (sz.comp φ) (fun j => z (φ j)) c₁ (fun j => u (φ j)) z'') :
+    BAFamZ sz z c₁ u (Function.extend φ z'' z) := by
+  intro n
+  by_cases hn : n ∈ Set.range φ
+  · obtain ⟨j, rfl⟩ := hn
+    have e : Function.extend φ z'' z (φ j) = z'' j := hφ.injective.extend_apply z'' z j
+    have e2 : BAflowEs sz (Function.extend φ z'' z) (φ j) = BAflowEs (sz.comp φ) z'' j := by
+      unfold BAflowEs; rw [e]; rfl
+    have e3 : BAflowT0 sz (Function.extend φ z'' z) (φ j) = BAflowT0 (sz.comp φ) z'' j := by
+      unfold BAflowT0; rw [e]; rfl
+    rw [e2, e3]
+    exact h j
+  · have e : Function.extend φ z'' z n = z n := Function.extend_apply' _ _ _ (fun ⟨a, ha⟩ => hn ⟨a, ha⟩)
+    rw [BAflowEs_congr sz e, BAflowT0_congr sz e]
+    exact BAFamZ_main sz z c₁ u n
+
+/-! ## 3. The transports along a finite cover (`stochDomAt_iff_comp_cover`, `Induction/SizesComp`) -/
+
+/-- `≺` under `seqP (sz.withLam 0)` iff `≺` under every `seqP ((sz.comp (φ k)).withLam 0)` along a finite cover
+(`stochDomAt_iff_comp_cover` at `μ = seqP (sz.withLam 0)`, `ν k = seqP ((sz.comp (φ k)).withLam 0)`, `hlaw` by
+`seqP_withLam_reindex_preimage`, `Induction/SizesComp`). -/
+private theorem MainIndGlue_precIff {d : ℕ} (sz : Sizes d) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ) (hφ : ∀ k, StrictMono (φ k))
+    (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) {U : ℕ → Type} (ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ)
+    (ξ' ζ' : ∀ k j, U (φ k j) → (sz.comp (φ k)).SeqΩ → ℝ)
+    (hξ : ∀ k j u ω, ξ' k j u (reindex sz (φ k) ω) = ξ (φ k j) u ω)
+    (hζ : ∀ k j u ω, ζ' k j u (reindex sz (φ k) ω) = ζ (φ k j) u ω) :
+    PrecL sz (seqP (sz.withLam 0)) ξ ζ ↔
+      ∀ k, PrecL (sz.comp (φ k)) (seqP ((sz.comp (φ k)).withLam 0)) (U := fun j => U (φ k j)) (ξ' k) (ζ' k) :=
+  Sizes.stochDomAt_iff_comp_cover sz (seqP (sz.withLam 0)) φ (fun k => seqP ((sz.comp (φ k)).withLam 0)) hφ hcov
+    (fun k s => seqP_withLam_reindex_preimage sz (φ k) 0 (hφ k).injective s) ξ ζ ξ' ζ' hξ hζ
+
+/-- The `STExp2gL` left side integrates over the whole law and transfers by `integral_reindex` (`Induction/SizesComp`; as `baConclShift`,
+`BA/MainIndOutBA`). -/
+private theorem MainIndGlue_exp2_eq {d : ℕ} (sz : Sizes d) (φ : ℕ → ℕ) (hφ : StrictMono φ) (z : ℕ → ℂ) (τ : ℕ → ℝ) (j : ℕ)
+    (u : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L (φ j)))) :
+    ‖(∫ ω, (baFMz (sz.comp φ) fun j => z (φ j)).L j (τ (φ j)) u.1 u.2 ω ∂(seqP ((sz.comp φ).withLam 0))) -
+        (baFMz (sz.comp φ) fun j => z (φ j)).K j (τ (φ j)) u.1 u.2‖ =
+      ‖(∫ ω, (baFMz sz z).L (φ j) (τ (φ j)) u.1 u.2 ω ∂(seqP (sz.withLam 0))) - (baFMz sz z).K (φ j) (τ (φ j)) u.1 u.2‖ :=
+  congrArg (fun x : ℂ => ‖x - (baFMz (sz.comp φ) fun j => z (φ j)).K j (τ (φ j)) u.1 u.2‖)
+    (Sizes.integral_reindex (sz.withLam 0) φ hφ.injective
+      (fun ω₁ => (baFMz (sz.comp φ) fun j => z (φ j)).L j (τ (φ j)) u.1 u.2 ω₁)).symm
+
+/-! Each predicate along the cover: one `stochDomAt_iff_comp_cover` (through `MainIndGlue_precIff`) per predicate; the families
+`ξ`, `ζ` are the predicate's own, and every per-`n` object of `baFMz` commutes with `reindex` by `rfl`. -/
+
+private theorem MainIndGlue_LK_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STLKgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STLKgL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) := by
+  have P := fun (m : ℕ) => MainIndGlue_precIff sz φ hφ hcov (U := fun n => (Fin m → Bool) × (Fin m → Zd d (sz.L n)))
+    (fun n p ω => ‖(baFMz sz z).L n (τ n) p.1 p.2 ω - (baFMz sz z).K n (τ n) p.1 p.2‖) (fun n _ _ => sz.Bctl n (τ n) ^ m)
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).L j (τ (φ k j)) p.1 p.2 ω -
+      (baFMz (sz.comp (φ k)) fun j => z (φ k j)).K j (τ (φ k j)) p.1 p.2‖) (fun k j _ _ => (sz.comp (φ k)).Bctl j (τ (φ k j)) ^ m)
+    (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+  exact ⟨fun h k m hm => (P m).1 (h m hm) k, fun h m hm => (P m).2 fun k => h k m hm⟩
+
+private theorem MainIndGlue_Lmax_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STLmaxgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STLmaxgL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) := by
+  have P := fun (m : ℕ) => MainIndGlue_precIff sz φ hφ hcov (U := fun n => (Fin m → Bool) × (Fin m → Zd d (sz.L n)))
+    (fun n p ω => ‖(baFMz sz z).L n (τ n) p.1 p.2 ω‖) (fun n _ _ => sz.Bctl n (τ n) ^ (m - 1))
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).L j (τ (φ k j)) p.1 p.2 ω‖)
+    (fun k j _ _ => (sz.comp (φ k)).Bctl j (τ (φ k j)) ^ (m - 1)) (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+  exact ⟨fun h k m hm => (P m).1 (h m hm) k, fun h m hm => (P m).2 fun k => h k m hm⟩
+
+private theorem MainIndGlue_Decay_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STDecaygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STDecaygL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) := by
+  have P := fun (D : ℝ) => MainIndGlue_precIff sz φ hφ hcov (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+    (fun n p ω => ‖(baFMz sz z).L n (τ n) p.1 p.2 ω - (baFMz sz z).K n (τ n) p.1 p.2‖)
+    (fun n p _ => (sz.Bctl n (τ n)) ^ (1 / 5 : ℝ) * STWB sz n (τ n) (zdistInf d (sz.L n) (p.2 0 - p.2 1)) *
+        Real.exp (-(((zdistInf d (sz.L n) (p.2 0 - p.2 1) : ℕ) : ℝ) / ellT (sz.L n) (sz.lam n) (τ n)) ^ (1 / 2 : ℝ)) +
+      ((sz.W n : ℕ) : ℝ) ^ (-D))
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).L j (τ (φ k j)) p.1 p.2 ω -
+      (baFMz (sz.comp (φ k)) fun j => z (φ k j)).K j (τ (φ k j)) p.1 p.2‖)
+    (fun k j p _ => ((sz.comp (φ k)).Bctl j (τ (φ k j))) ^ (1 / 5 : ℝ) *
+        STWB (sz.comp (φ k)) j (τ (φ k j)) (zdistInf d ((sz.comp (φ k)).L j) (p.2 0 - p.2 1)) *
+        Real.exp (-(((zdistInf d ((sz.comp (φ k)).L j) (p.2 0 - p.2 1) : ℕ) : ℝ) /
+          ellT ((sz.comp (φ k)).L j) ((sz.comp (φ k)).lam j) (τ (φ k j))) ^ (1 / 2 : ℝ)) +
+      (((sz.comp (φ k)).W j : ℕ) : ℝ) ^ (-D))
+    (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+  exact ⟨fun h k D hD => (P D).1 (h D hD) k, fun h D hD => (P D).2 fun k => h k D hD⟩
+
+private theorem MainIndGlue_DecayStrong_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STDecayStronggL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STDecayStronggL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) := by
+  have P := fun (D : ℝ) => MainIndGlue_precIff sz φ hφ hcov
+    (U := fun n => {_p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) // sz.lam n ^ 2 ≤ 1 - τ n})
+    (fun n p ω => ‖(baFMz sz z).L n (τ n) p.1.1 p.1.2 ω - (baFMz sz z).K n (τ n) p.1.1 p.1.2‖)
+    (fun n p _ => (sz.Bctl n (τ n)) ^ 2 * Real.exp (-((zdistInf d (sz.L n) (p.1.2 0 - p.1.2 1) : ℕ) : ℝ) ^ (1 / 2 : ℝ)) +
+      ((sz.W n : ℕ) : ℝ) ^ (-D))
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).L j (τ (φ k j)) p.1.1 p.1.2 ω -
+      (baFMz (sz.comp (φ k)) fun j => z (φ k j)).K j (τ (φ k j)) p.1.1 p.1.2‖)
+    (fun k j p _ => ((sz.comp (φ k)).Bctl j (τ (φ k j))) ^ 2 *
+      Real.exp (-((zdistInf d ((sz.comp (φ k)).L j) (p.1.2 0 - p.1.2 1) : ℕ) : ℝ) ^ (1 / 2 : ℝ)) +
+      (((sz.comp (φ k)).W j : ℕ) : ℝ) ^ (-D))
+    (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+  exact ⟨fun h k D hD => (P D).1 (h D hD) k, fun h D hD => (P D).2 fun k => h k D hD⟩
+
+private theorem MainIndGlue_LocalMax_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STLocalMaxgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STLocalMaxgL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) :=
+  MainIndGlue_precIff sz φ hφ hcov (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => ‖(baFMz sz z).GM n (τ n) ω p.1 p.2‖) (fun n _ _ => sz.Bctl n (τ n) ^ (1 / 2 : ℝ))
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).GM j (τ (φ k j)) ω p.1 p.2‖)
+    (fun k j _ _ => (sz.comp (φ k)).Bctl j (τ (φ k j)) ^ (1 / 2 : ℝ)) (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+
+private theorem MainIndGlue_LocalEntry_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STLocalEntrygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STLocalEntrygL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) :=
+  MainIndGlue_precIff sz φ hφ hcov (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+    (fun n p ω => ‖(baFMz sz z).GM n (τ n) ω p.1 p.2‖ ^ 2)
+    (fun n p _ => STWB sz n (τ n) (zdistInf d (sz.L n) (STblk sz n p.1 - STblk sz n p.2)))
+    (fun k j p ω => ‖(baFMz (sz.comp (φ k)) fun j => z (φ k j)).GM j (τ (φ k j)) ω p.1 p.2‖ ^ 2)
+    (fun k j p _ => STWB (sz.comp (φ k)) j (τ (φ k j)) (zdistInf d ((sz.comp (φ k)).L j) (STblk (sz.comp (φ k)) j p.1 - STblk (sz.comp (φ k)) j p.2)))
+    (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+
+private theorem MainIndGlue_Exp2_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    STExp2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, STExp2gL (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) :=
+  MainIndGlue_precIff sz φ hφ hcov (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+    (fun n p _ => ‖(∫ ω, (baFMz sz z).L n (τ n) p.1 p.2 ω ∂(Sizes.seqP (sz.withLam 0))) - (baFMz sz z).K n (τ n) p.1 p.2‖)
+    (fun n _ _ => sz.Bctl n (τ n) ^ 2 * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n (τ n)))
+    (fun k j p _ => ‖(∫ ω, (baFMz (sz.comp (φ k)) fun j => z (φ k j)).L j (τ (φ k j)) p.1 p.2 ω ∂(Sizes.seqP ((sz.comp (φ k)).withLam 0))) -
+      (baFMz (sz.comp (φ k)) fun j => z (φ k j)).K j (τ (φ k j)) p.1 p.2‖)
+    (fun k j _ _ => (sz.comp (φ k)).Bctl j (τ (φ k j)) ^ 2 *
+      (((sz.comp (φ k)).lam j ^ 2 * (((sz.comp (φ k)).W j : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + (sz.comp (φ k)).Bctl j (τ (φ k j))))
+    (fun k j u ω => MainIndGlue_exp2_eq sz (φ k) (hφ k) z τ j u) (fun _ _ _ _ => rfl)
+
+private theorem MainIndGlue_TL2_iff {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    BATwistLoopLaw (baFMz sz z) (Sizes.seqP (sz.withLam 0)) τ ↔
+      ∀ k, BATwistLoopLaw (baFMz (sz.comp (φ k)) fun j => z (φ k j)) (Sizes.seqP ((sz.comp (φ k)).withLam 0)) (fun j => τ (φ k j)) :=
+  MainIndGlue_precIff sz φ hφ hcov (U := fun n => (Fin 2 → Bool) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n))
+    (fun n p ω => ‖twL2' (baFMz sz z) n (τ n) ω p.1 p.2.1 p.2.2.1 p.2.2.2 - twK (baFMz sz z) n (τ n) p.1 p.2.1 p.2.2.1 p.2.2.2‖)
+    (fun n _ _ => sz.Bctl n (τ n) ^ (3 / 2 : ℝ))
+    (fun k j p ω => ‖twL2' (baFMz (sz.comp (φ k)) fun j => z (φ k j)) j (τ (φ k j)) ω p.1 p.2.1 p.2.2.1 p.2.2.2 -
+      twK (baFMz (sz.comp (φ k)) fun j => z (φ k j)) j (τ (φ k j)) p.1 p.2.1 p.2.2.1 p.2.2.2‖)
+    (fun k j _ _ => (sz.comp (φ k)).Bctl j (τ (φ k j)) ^ (3 / 2 : ℝ)) (fun _ _ _ _ => rfl) (fun _ _ _ _ => rfl)
+
+/-- The six hypotheses go down (`STLKgL`, `STDecaygL`, `STDecayStronggL`, `STLocalMaxgL`, `STExp2gL`, TL2): along every class of a
+finite cover. -/
+private theorem MainIndGlue_down {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    (let C := baFMz sz z; let μ := Sizes.seqP (sz.withLam 0)
+      STLKgL C μ τ ∧ STDecaygL C μ τ ∧ STDecayStronggL C μ τ ∧ STLocalMaxgL C μ τ ∧ STExp2gL C μ τ ∧ BATwistLoopLaw C μ τ) →
+    ∀ k, let C := baFMz (sz.comp (φ k)) (fun j => z (φ k j)); let μ := Sizes.seqP ((sz.comp (φ k)).withLam 0)
+      let τ' : ℕ → ℝ := fun j => τ (φ k j)
+      STLKgL C μ τ' ∧ STDecaygL C μ τ' ∧ STDecayStronggL C μ τ' ∧ STLocalMaxgL C μ τ' ∧ STExp2gL C μ τ' ∧ BATwistLoopLaw C μ τ' :=
+  fun ⟨h1, h2, h3, h4, h5, h6⟩ k =>
+    ⟨(MainIndGlue_LK_iff sz z τ φ hφ hcov).1 h1 k, (MainIndGlue_Decay_iff sz z τ φ hφ hcov).1 h2 k,
+      (MainIndGlue_DecayStrong_iff sz z τ φ hφ hcov).1 h3 k, (MainIndGlue_LocalMax_iff sz z τ φ hφ hcov).1 h4 k,
+      (MainIndGlue_Exp2_iff sz z τ φ hφ hcov).1 h5 k, (MainIndGlue_TL2_iff sz z τ φ hφ hcov).1 h6 k⟩
+
+/-- The seven conclusions come back (`STLKgL`, `STLmaxgL`, `STDecaygL`, `STExp2gL`, `STLocalEntrygL`, `STDecayStronggL`, TL2):
+the seven along every class give the seven along `sz` (the cover form of `baConclShift`, `BA/MainIndOutBA`). -/
+private theorem MainIndGlue_up {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (τ : ℕ → ℝ) {ι : Type} [Finite ι] (φ : ι → ℕ → ℕ)
+    (hφ : ∀ k, StrictMono (φ k)) (hcov : ∀ᶠ n in atTop, ∃ k, n ∈ Set.range (φ k)) :
+    (∀ k, let C := baFMz (sz.comp (φ k)) (fun j => z (φ k j)); let μ := Sizes.seqP ((sz.comp (φ k)).withLam 0)
+      let τ' : ℕ → ℝ := fun j => τ (φ k j)
+      STLKgL C μ τ' ∧ STLmaxgL C μ τ' ∧ STDecaygL C μ τ' ∧ STExp2gL C μ τ' ∧ STLocalEntrygL C μ τ' ∧ STDecayStronggL C μ τ' ∧
+        BATwistLoopLaw C μ τ') →
+    let C := baFMz sz z; let μ := Sizes.seqP (sz.withLam 0)
+    STLKgL C μ τ ∧ STLmaxgL C μ τ ∧ STDecaygL C μ τ ∧ STExp2gL C μ τ ∧ STLocalEntrygL C μ τ ∧ STDecayStronggL C μ τ ∧
+      BATwistLoopLaw C μ τ :=
+  fun h =>
+    ⟨(MainIndGlue_LK_iff sz z τ φ hφ hcov).2 fun k => (h k).1, (MainIndGlue_Lmax_iff sz z τ φ hφ hcov).2 fun k => (h k).2.1,
+      (MainIndGlue_Decay_iff sz z τ φ hφ hcov).2 fun k => (h k).2.2.1, (MainIndGlue_Exp2_iff sz z τ φ hφ hcov).2 fun k => (h k).2.2.2.1,
+      (MainIndGlue_LocalEntry_iff sz z τ φ hφ hcov).2 fun k => (h k).2.2.2.2.1,
+      (MainIndGlue_DecayStrong_iff sz z τ φ hφ hcov).2 fun k => (h k).2.2.2.2.2.1,
+      (MainIndGlue_TL2_iff sz z τ φ hφ hcov).2 fun k => (h k).2.2.2.2.2.2⟩
+
+/-! ## 4. The glue along the classes of the regime pattern -/
+
+/-- `baMainIndFamTL_of_regimes`: `lem:main_ind_BA` in family form from the four regime steps (analogue of `ST_mainInd_of_regimes`, `Induction/MainIndRegimes`),
+all `d ≥ 3`.  The constant is the `Finset.inf'` over the 16 pairs `P : Fin 4 × Fin 4` of the
+constant of `baMainIndFamTL_chain` at `(P.1, P.2 - P.1)` (`P.1 > P.2` is the chain of length `0`); it is fixed by `(κ, ε, 𝔡)`.
+The regime pattern `(i, j)` of `[s_n, t_n]` (`STPattern`) is constant along the `Nat.nth` classes (`nth_cover`); on a class the
+regime is the chain of regimes `i, …, j` (`STRegChain_of_class`); the six hypotheses go down along the class on the member
+extended by the main flow (`MainIndGlue_extendMember`, `MainIndGlue_down`), the seven conclusions come back (`MainIndGlue_up`). -/
+theorem baMainIndFamTL_of_regimes (d : ℕ) (h₃ : BAMainIndFamTL d STReg5III) (h₁ : BAMainIndFamTL d STReg5I)
+    (h₂ : BAMainIndFamTL d STReg5II) (h₄ : BAMainIndFamTL d STReg5IV) : BAMainIndFamTL d STAny := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  have hch := baMainIndFamTL_chain d h₃ h₁ h₂ h₄
+  choose c hc hc' H using fun P : Fin 4 × Fin 4 => hch ((P.2 : ℕ) - P.1) P.1
+    (by have := P.1.isLt; have := P.2.isLt; omega) hd κ ε 𝔡 hκ hε h𝔡
+  have hinf : ∀ P, (Finset.univ.inf' ⟨((0 : Fin 4), (0 : Fin 4)), Finset.mem_univ _⟩ c) ≤ c P := fun P =>
+    Finset.inf'_le c (Finset.mem_univ P)
+  refine ⟨Finset.univ.inf' ⟨((0 : Fin 4), (0 : Fin 4)), Finset.mem_univ _⟩ c,
+    (Finset.lt_inf'_iff _).2 fun P _ => hc P, (hinf (0, 0)).trans (hc' _), ?_⟩
+  intro 𝔠 sz z hflow hlam c₁ hc₁ hc₁' hwin s t hs0 hsT hst htT _ hyp hcon z' hz'
+  have hpos : 0 < Finset.univ.inf' ⟨((0 : Fin 4), (0 : Fin 4)), Finset.mem_univ _⟩ c :=
+    (Finset.lt_inf'_iff _).2 fun P _ => hc P
+  have ht1 : ∀ n, t n < 1 := fun n => (htT n).trans_lt (BAflow_T0_bounds hκ hflow n).2.2.2
+  -- the finite cover by the classes of constant pattern
+  let ι : Type := {P : Fin 4 × Fin 4 // {m : ℕ | STPattern sz s t m = P}.Infinite}
+  let φ : ι → ℕ → ℕ := fun P => Nat.nth (fun m => STPattern sz s t m = P.1)
+  have hφ : ∀ P, StrictMono (φ P) := fun P => Nat.nth_strictMono P.2
+  have hcov : ∀ᶠ n in atTop, ∃ P, n ∈ Set.range (φ P) := nth_cover (STPattern sz s t)
+  refine MainIndGlue_up sz z' t φ hφ hcov fun P => ?_
+  have hmem : ∀ j, STPattern sz s t (φ P j) = P.1 := fun j => Nat.nth_mem_of_infinite P.2 j
+  obtain ⟨hij, hreg⟩ := STRegChain_of_class hd sz s t hst ht1 (φ P) P.1 hmem
+  have htend : Tendsto (φ P) atTop atTop := (hφ P).tendsto_atTop
+  refine H P.1 𝔠 (sz.comp (φ P)) (fun j => z (φ P j)) ⟨comp_admissible sz (φ P) 𝔠 𝔡 htend hflow.1, fun j => hflow.2 (φ P j)⟩
+    (fun j => hlam (φ P j)) c₁ hc₁ hc₁' (fun j => hwin (φ P j)) (fun j => s (φ P j)) (fun j => t (φ P j))
+    (fun j => hs0 _) (fun j => hsT _) (fun j => hst _) (fun j => htT _) hreg ?_
+    (st5_conStInd_mono (sz.comp (φ P)) (STConStInd_comp sz (φ P) _ s t htend hcon) (fun j => ht1 _) hpos (hinf P.1))
+    (fun j => z' (φ P j)) (fun j => hz' (φ P j))
+  intro z'' hz''
+  have hext := hyp _ (MainIndGlue_extendMember sz z c₁ s (φ P) (hφ P) z'' hz'')
+  have e : (fun j => Function.extend (φ P) z'' z (φ P j)) = z'' :=
+    funext fun j => (hφ P).injective.extend_apply z'' z j
+  have := MainIndGlue_down sz _ s φ hφ hcov hext P
+  simp only [e] at this
+  exact this
+
+end RBM.BA
+
+end

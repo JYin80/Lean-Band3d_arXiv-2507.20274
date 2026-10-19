@@ -1,0 +1,1409 @@
+\section{Introduction}
+
+
+The tight-binding model introduced by Anderson \cite{Anderson} describes electron transport in disordered semiconductors. It is formulated as a discrete random Schr{\"o}dinger operator on $\mathbb{Z}^{d}$ of the form
+\begin{align}\label{Anderson_orig}
+H = - \Delta + \lambda V,
+\end{align}
+where $\Delta$ denotes the graph Laplacian on $\mathbb{Z}^{d}$, $V$ is a random potential with i.i.d.~entries, and $\lambda>0$ is a coupling parameter representing the strength of disorder. In his seminal work \cite{Anderson}, Anderson predicted a transition from delocalized to localized behavior as the disorder strength $\lambda$ increases.
+
+Localization in the one-dimensional (1D) Anderson model, valid for all $\lambda>0$, is well established; see, for example, \cite{GMP, KunzSou, Carmona1982_Duke, Damanik2002}. In dimensions $d \geq 2$, Anderson localization was first rigorously proved by Fr{\"o}hlich and Spencer \cite{FroSpen_1983} using multi-scale analysis. An alternative approach was later developed by Aizenman and Molchanov \cite{Aizenman1993} based on the fractional moment method. Since then, a substantial body of work has deepened our understanding of Anderson localization; see, for example, \cite{FroSpen_1985, Carmona1987, SimonWolff, Aizenman1994, ASFH2001, Bourgain2005, Germinet2013, DingSmart2020, LiZhang2019}. 
+In contrast, the existence of delocalized states in the finite-dimensional Anderson model remains unproven---both for arbitrary disorder strengths and in all finite dimensions. In infinite dimensions, however, Aizenman and Warzel \cite{aizenman2013resonant, Bethe_PRL} rigorously established the presence of a delocalized phase for the Anderson model on the Bethe lattice, an infinite regular tree. More recently, the mobility edge phenomenon has also been proved in this setting \cite{Bethe-Anderson}. The tree geometry differs fundamentally from Euclidean lattices, as tree graphs are loop-free.
+
+To bridge the understanding between random Schr{\"o}dinger operators and random matrix theory, the random band matrix model was introduced \cite{PhysRevLett.64.1851, PhysRevLett.64.5, PhysRevLett.66.986}. A $d$-dimensional random band matrix $H = (H_{xy})$ is an $N\times N$ Hermitian random matrix defined on the discrete torus \smash{$(\mathbb{Z}/\sqrt[d]{N}\mathbb{Z})^{d}$} (assuming \smash{$\sqrt[d]{N}\in \mathbb{N}$} for simplicity). Subject to Hermitian symmetry, the entries $H_{xy}$ are independent real or complex Gaussian variables with mean zero. The variance profile $S_{xy} = \E|H_{xy}|^{2}$ decays to zero when the distance between $x$ and $y$ exceeds a bandwidth parameter $W$, and satisfies the normalization $\sum_y S_{xy} \equiv 1$. 
+It was conjectured in \cite{PhysRevLett.64.1851, PhysRevLett.64.5, PhysRevLett.66.986,PhysRevLett.67.2405} that this model exhibits a localization--delocalization transition, accompanied by a change in spectral statistics from Poisson to GOE/GUE (Gaussian Orthogonal/Unitary Ensemble) statistics, at a critical bandwidth $W_c(N)$. For eigenvalues in the bulk of the spectrum, i.e., $|E| \le 2 - \kappa$ with some fixed $\kappa > 0$, localization and Poisson statistics are expected when $W \ll W_c$, while delocalization and GOE/GUE statistics are expected when $W \gg W_c$, where
+\begin{equation}\label{eqn:transition exponents}
+W_c =
+\begin{cases}
+\sqrt N, & d=1, \\
+\sqrt{ \log N}, & d=2, \\
+\OO(1), & d\ge 3.
+\end{cases}
+\end{equation}
+See \cite{PB_review, Spencer2, Spencer3, Spencer1} for further discussion of these conjectures.
+
+The density of states for random band matrices in dimensions $d \ge 1$ was established in \cite{DisPinSpe2002}.
+Delocalization of 1D band matrices under the assumption $W \geq N^{a}$, for various exponents $a > 1/2$, was proved in a series of works \cite{EK_band1, ErdKno2011, erdHos2013local, BaoErd2015, HeMa2018, bourgade2017universality, bourgade2019random, bourgade2020random, yang2021random, DY}. The full conjecture was recently resolved in \cite{YY_25}, which established both delocalization and universality of bulk eigenvalue statistics under the optimal condition $W \gg \sqrt N$. These results were later extended to non-Gaussian random band matrices in \cite{erdHos2025zigzag}. 
+On the other hand, localization has been proved under the condition $W \ll N^{a}$ for various exponents $a < 1/2$ in \cite{Sch2009, PelSchShaSod,Cipolloni2024, Chen2022}, and under the sharp condition $W \ll \sqrt N$ in \cite{Localization1_2}. Therefore, the localization-delocalization transition at the critical bandwidth $W = \sqrt N$ is now rigorously established for 1D random band matrices.
+In two dimensions, delocalization and bulk universality under the condition $W \ge N^{\varepsilon}$ (for arbitrarily small constant $\varepsilon > 0$) was proved in \cite{DYYY25}.
+
+
+In this paper, we study band matrices $H$ defined on the $d$-dimensional torus $\mathbb{Z}_{WL}^d=\mathbb{Z}^d / ((WL) \cdot \mathbb{Z}^d)$ with $N=(WL)^d$ and $d \geq 3$. For simplicity, we assume that the torus $\mathbb{Z}_{WL}^d$ is partitioned into $d$-dimensional cubes of side length $W$, indexed by the smaller torus ${\mathbb Z}_{L}^d$. For $x, y\in {\mathbb Z}_{WL}^d$ belonging to blocks labeled by $a, b \in {\mathbb Z}_L^d$, the variance profile is given by
+\begin{equation}\label{eq:variance-profile}
+S_{xy} = c_{a-b} W^{-d}  \mathbf{1}(\|a-b\|_1\le 1),
+\end{equation}
+where $(c_{a-b}\mathbf{1}(\|a-b\|_1\le 1):a, b \in {\mathbb Z}_L^d)$ is a symmetric doubly stochastic matrix. Our main results establish delocalization of bulk eigenvectors and universality of bulk eigenvalue statistics for the band matrix $H$ in dimensions $d \ge 3$, under the assumption $W \ge N^{\varepsilon}$ for any fixed $\varepsilon>0$. In higher dimensions $d \ge 7$, weaker forms of delocalization and bulk universality were previously obtained in~\cite{yang2021delocalization, yang2022delocalization, Xu:2024aa}.
+
+Beyond standard band matrices, the block Anderson model provides an even closer analogue to the original Anderson model~\eqref{Anderson_orig}. This model, inspired by Wegner's orbital model~\cite{Wegner1, Wegner2, Wegner3}, describes quantum particles with multiple internal degrees of freedom (e.g., orbitals or spin) moving in a disordered medium. Concretely, we consider the matrix $H = \Psi + \lambda V$, where $V=\diag(V_1,\ldots, V_{L^d})$ and the blocks $V_i$ are i.i.d.~$W^d\times W^d$ Gaussian random matrices. The matrix $\Psi$ encodes the hopping between neighboring blocks, and in the block Anderson model, we take $\Psi$ to be the block Laplacian with the diagonal removed.
+
+It was shown in~\cite{PelSchShaSod} that, in all dimensions $d \ge 1$, the block Anderson model exhibits localization with localization length of order $\OO(W)$ whenever $\lambda \gg W^{d/2}$. In this paper, we prove that all results obtained for random band matrices extend to the block Anderson model, provided $c \le \lambda \le W^{d/2-c}$ for a small constant $c > 0$. Combined with the localization results of~\cite{PelSchShaSod}, this establishes the localization--delocalization transition for the block Anderson model in all dimensions $d \ge 3$. In dimensions $d\in\{1,2\}$, delocalization and bulk universality were previously proved in~\cite{RBSO1D}, while partial delocalization results for dimensions $d \ge 7$ were obtained in~\cite{yang2024Del}. 
+However, for the physically most relevant case $d=3$, no rigorous results on delocalization were available for either random band matrices or the block Anderson model prior to this work. One reason why $d=3$ is the final dimension in which these conjectures are resolved lies in certain critical difficulties that are intrinsic to three dimensions, as we now explain.
+
+ 
+%The resolvent (or Green's function) of random walks on the $\mathbb{Z}_{WL}^d$, which governs the behavior of the resolvents of random band and block Anderson models, decays like $1/|x|$ in $d=3$. In dimensions $d\in\{1,2\}$, this resolvent is essentially constant (up to a logarithmic factor in $d=2$) within a cutoff distance. Starting from $d=3$, however, it exhibits polynomial decay like $|x-y|^{-d+2}$. Therefore, we need to track the precise \emph{pointwise behavior} of the resolvent of random matrices, i.e., pointwise bounds on $(H-z)^{-1}_{xy}$. 
+%To explain the fundamental difficulty of our problem in dimension $d=3$, 
+Denote by $G(z)=(H-z)^{-1}$ the resolvent (Green's function) of the random band and block Anderson models, for $z\in \C$. 
+It is believed that the size of the resolvent entries $|G_{0x}(z)|^2$ is approximated by the resolvent of a certain random walk on \smash{$\mathbb{Z}_{WL}^d$}, see e.g., \cite{erdos2013delocalization,yang2021delocalization}. 
+In dimensions $d\in\{1,2\}$, the random-walk resolvent remains roughly constant (in magnitude, up to a logarithmic correction when $d=2$) below a certain cutoff scale. Hence, an $L^\infty$-bound on $G(z)$, together with control of this cutoff scale, suffices to estimate $G(z)$. 
+Starting from $d=3$, however, $|G_{0x}|^2  \asymp |x|^{-d+2}$. This forces us to track the  \emph{pointwise estimate} of $G_{0x}$. 
+At the other extreme, in high dimensions, the lattice $\mathbb Z^d$ increasingly resembles a Bethe lattice. Although this analogy is difficult to exploit rigorously, we note that $(|x|^{-d+2})^\alpha$ is integrable whenever $\alpha > d/(d-2) \to 1$ as $d\to \infty$. In other words, $|x|^{-d+2}$ becomes ``almost integrable'' for large $d$. This observation was crucially used in the proofs for $d\ge 7$ in \cite{yang2021delocalization, yang2022delocalization, Xu:2024aa}.  
+In dimension $d=3$, we need to combine the \emph{tree-approximation} method for $d\in\{1,2\}$ \cite{YY_25, DYYY25} with the \emph{diagrammatic expansion} approach for $d\ge 7$ \cite{yang2021delocalization, yang2022delocalization, Xu:2024aa}. 
+
+
+% We first note that  
+%  the $\Theta$-propagator \eqref{prop:ThfadC}, which governs the  off-diagonal resolvent entries of band matrices, are bounded by 
+% \begin{align}\label{just}
+% \E|(G_t)_{xy}|^2 \approx \cL^{(2)}_{t,(+,-),(a,b)} \approx W^{-d}\Theta^{(+,-)}_{t,ab}\lesssim \frac{e^{-c_d|a-b|/\ell_t } }{W^d} \cdot \begin{cases}
+%  B_{t,|a-b|} ,\quad &d\ge 3
+% \\
+%    (\ell_t^d\eta_t)^{-1},\quad &d=1,2  
+% \end{cases}, \ \ \text{for}\ \ x\in [a], \  y\in [b]. 
+% \end{align}
+% Here we neglected the logarithmic corrections in $d=2$. As explained in the introduction, we need to estimate $|(G_t)_{xy}|^2$ pointwisely. 
+
+\medskip
+
+To illustrate the above points, we briefly explain the main ideas developed in this paper.
+For simplicity, we focus on the random band matrix model with variance profile \eqref{eq:variance-profile}; the analysis for the block Anderson model is analogous, up to some additional technical details. 
+We begin by recalling the matrix Brownian motion used in \cite{DY, YY_25, DYYY25}:
+\[
+\dd (H_{t})_{xy} = \sqrt{S_{xy}} \, \dd (\boldsymbol{B}_{t})_{xy}, \quad \text{with}\quad H_0 = 0,
+\]
+where \( (\boldsymbol{B}_{t})_{xy} \) are standard independent complex Brownian motions for \( x, y \in  \Z_{WL}^d\), subject to the Hermitian symmetry condition \( (\boldsymbol{B}_{t})_{xy} = \bar{(\boldsymbol{B}_{t})_{yx}} \).  Following \cite{10.1214/19-ECP278, Sooster2019, DY}, we consider the Green's function of \( H_t \) with a carefully chosen time-dependent spectral parameter \( z_t \) (see \eqref{eq:zt} below), defined by
+\[
+G_t := (H_t - z_t)^{-1},
+\]
+whose dynamics are naturally renormalized at leading order. 
+We then define the $n$-\( G \)-loop observable $\mathcal{L}^{(n)}$ as an $n$-tensor:
+\be\label{eq:nGloops}
+{\cal L}^{(n)}_{a_1,\ldots, a_n} \equiv {\cal L}^{(n)}_{a_1,\ldots, a_n} (t):= \mathrm{Tr} \prod_{i=1}^n \p{G_t \cdot E_{a_i}}, \quad \text{for}\quad a_i\in \Z_L^d, \ \  1\le i\le n,
+\ee
+where each $E_a$ is a block-averaging matrix, defined by $(E_a)_{xy} = W^{-d}\delta_{xy}$ when $x, y$ belong to the $a$-th block, and $(E_a)_{xy}=0$ otherwise. In the proof, the $G$-loops considered in this paper involve combinations of $G_t$ and its Hermitian conjugate $G^\ast_t$; however, we omit this detail in the following heuristic discussion for simplicity.
+
+
+The \( G \)-loops ${\cal L}^{(n)}(t)$ defined above satisfy a system of evolution equations known as the \emph{loop hierarchy}; see equation \eqref{eq:mainStoflow} below for its precise formulation. The dynamics of \( n \)-loops depend on \((n+1)\)-loops and a martingale term, whose quadratic variation involves \( (2n+2) \)-loops. Schematically, the loop hierarchy takes the form
+\be\label{eq:introloop_hier}
+\dd {\cal L}^{(n)} = ( {\cal L}  \ast {\cal L})^{(n)}\dd t + {\cal E}^{\Gc,(n)}\dd t + \dd {\cal E}^{M,(n)}, 
+\ee
+where each term on the right-hand side has the following interpretation.
+\begin{itemize}
+	\item The \emph{light-weight} term \( {\cal E}^{\Gc,(n)} \) depends on \( (n+1) \)-loops, typically of the form
+	\be\label{eq:introLWtermS}
+	W^d \sum_{u,v\in \Zn} S^{(\sB)}_{uv} \cdot \tr[\Gc_t E_u]\cdot {\cal L}^{(n+1)}_{a_1, \ldots, a_n, v}, \quad \text{with}\quad \Gc_t:= G_t-mI_N.
+	\ee
+	Here, $\tr[\Gc_t E_u]$ is referred to as a \emph{light-weight}, \smash{$S^{(\sB)}_{uv} = c_{u-v} \mathbf{1}(\|u-v\|_1\le 1)$} denotes the block variance profile corresponding to \eqref{eq:variance-profile}, and $m \equiv m_{\rm sc}$ is the Stieltjes transform of the semicircle law (see \eqref{eq:defmzsc}).
+	
+	\item The \emph{martingale} term \( \dd {\cal E}^{M,(n)} \) has a quadratic variation depending on  \( (2n+2) \)-loops.
+	
+	\item The \emph{convolution} term \( ({\cal L} \ast {\cal L})^{(n)} \) consists of sums of the form \( \mathcal{L}^{(p)} \diamond \mathcal{L}^{(q)} \) with \( p+q = n+2\) and \(p,q \ge 2 \), where
+	\be\label{eq:diamond}
+	({\cal L}^{(p)} \diamond {\cal L}^{(q)})_{a_1, \ldots, a_n} := W^d \sum_{u,v} S^{(\sB)}_{uv} \cdot {\cal L}^{(p)}_{a_1, \ldots, a_{p-1}, u} \cdot {\cal L}^{(q)}_{a_p, \ldots, a_n, v}.
+	\ee
+\end{itemize}
+Although the formulation above is heuristic, it captures the essential structure of the loop hierarchy. 
+
+
+The loop equation \eqref{eq:introloop_hier} can be generalized to random band matrices without block structure. This issue has already been addressed in earlier works; see \cite{erdHos2025zigzag} for $d=1$ and \cite{Block_reduction} for dimensions $d\in\{1,2\}$. In fact, our method can be automatically extended to the case where the variance matrix takes the following form:
+\begin{align*} 
+ S_{xy} = \sum_{u,v \in \ZL} \chi(x - u) \wt S_{uv} \chi(v - y),
+\end{align*} 	
+where $\wt S$ is a symmetric doubly stochastic matrix and \smash{$\chi : \ZL \to [0,\infty)$} is a mollifier at scale $W^{1 - \e}$. In this case, let $F_u$ denote the diagonal mollifier matrices with entries $(F_{u})_{xy}= \delta_{xy} \chi(x - u)$  for $u, x, y \in \ZL.$ Then, for \smash{$(x_1, \ldots, x_n) \in (\ZL)^n$}, we define the $n$-$G$-loops \smash{$\cL^{(n)}_{x_1,\ldots, x_n}(t)$} in analogy with \eqref{eq:nGloops}, replacing the matrices $E_{a_i}$ with the mollifier matrices $F_{x_i}$. The dynamics of these loops satisfy equations of the same form as \eqref{eq:introloop_hier}, with \smash{$S^{(\sB)}$} in \eqref{eq:introLWtermS} and \eqref{eq:diamond} replaced by \smash{$\wt S$}. Consequently, all  our arguments extend to this setting with only minor notational modifications.
+To streamline the presentation, we continue to work with the simpler block structure in \eqref{eq:variance-profile}, which allows us to focus on the core technical challenges in dimensions $d\ge 3$. 
+
+
+
+
+A key observation from \cite{YY_25, DYYY25} is that both the light-weight and martingale terms are small errors. Consequently, \( \mathcal{L}^{(n)} \) can be approximated by \( \mathcal{K}^{(n)} \), the solution of the deterministic \emph {convolution tree  equation}: 
+\be\label{eq:Knequation}
+\dd \mathcal{K}^{(n)} = (\mathcal{K} \ast \mathcal{K})^{(n)}\dd t.
+\ee
+For any fixed \( n \), the right-hand side of equation \eqref{eq:Knequation} depends only on \( \mathcal{K}^{(k)} \) with \( k \leq n \), forming a \emph{closed system} of equations for \( (\mathcal{K}^{(2)}, \ldots, \mathcal{K}^{(n)}) \) that can be solved inductively and admits explicit solutions, as discovered in \cite{YY_25}. Since these solutions have an explicit tree representation, we refer to \( \mathcal{K}^{(n)} \) as the \emph {tree approximation} to \( \mathcal{L}^{(n)} \). 
+In particular, for \( n = 2 \), equation \eqref{eq:Knequation} has the solution \( \mathcal{K}^{(2)}(t) = W^{-d} \Theta_t\), where $\Theta_t$ denotes the propagator defined in \Cref{def_Theta}. 
+This propagator can carry different charges. For simplicity, in the discussion below, we use the notation $\Theta_t$ exclusively for the most relevant $(+,-)$-charged propagator, denoted \smash{$\Theta_t^{(+,-)}$}. It can be viewed as the resolvent of a Laplacian on the torus $\Zn$,  describing the classical diffusion of a random walk. 
+%This propagator can have different charges. For simplicity, in the following discussion, we will always use $\Theta_t$ to denote the more crucial $(+,-)$-charged propagator \smash{$\Theta_t^{(+,-)}$}, which can be regarded as the resolvent of a Laplacian on the torus $\ZL$, describing classical diffusion of a random walk.
+This propagator serves as the basis for establishing quantum diffusion, delocalization, and the universality of eigenvalue statistics---provided the approximation \( \mathcal{L}^{(2)} \approx \mathcal{K}^{(2)} \) can be justified in a sufficiently strong sense.
+
+To rigorously justify the tree approximation, three main ingredients are required:
+\begin{enumerate}
+	\item[(1)] A strategy to manage the dependence of \( {\cal E}^{\Gc,(n)} \) and \( \dd {\cal E}^{M,(n)} \) on higher-order loops \( {\cal L}^{(k)} \) with \( k > n \).
+	\item[(2)]  A stability theory for the perturbed equation \( \dd {\cal L}= ({\cal L} \ast {\cal L})\dd t + \text{errors} \).
+	\item[(3)] Explicit quantitative bounds showing that  \( {\cal E}^{\Gc,(n)} \) and \( \dd {\cal E}^{M,(n)} \) are indeed small.
+\end{enumerate} 
+In the absence of additional structure in the hierarchy, issue (1) reflects a classical obstacle in many-body dynamics, reminiscent of the well-known BBGKY hierarchy. 
+In our setting, however, a key observation is that higher-order loops appear only in the error terms. This feature enables the development of a general inductive and self-improving framework, first introduced in \cite{YY_25}, based on a bootstrap argument that applies across all dimensions. It should be noted that the smallness of the martingale and light-weight terms is a highly nontrivial fact. 
+Without the correct perspective, these terms may seem much larger than the leading contribution.
+Indeed, in the early development of the theory of random band matrices, researchers often encountered the seemingly impenetrable issue that the error terms in the so-called \emph{$T$-equation} diverge. While we do not elaborate on the historical developments here, we will demonstrate below that the light-weight term is, in fact, a genuinely small error.
+
+
+For both issues (2) and (3), we need a suitable norm to control the error terms and develop a stability theory for the loop hierarchy.  
+In dimensions \( d \in \{1,2\} \), the natural choice is the \( L^\infty \)-norm, justified by the fact that \( \Theta_t \) is approximately constant up to a cutoff.  
+Surprisingly, the loop hierarchy remains stable in dimensions \( d \geq 3 \) under this norm. In dimensions $d\ge 3$, the propagator satisfies
+\[
+\Theta_{t,ab} \lesssim (|a-b|+1)^{-d+2} e^{- c|a-b|/\ell_t }
+\]
+for some constant \( c>0 \), where \( \ell_t  = \min(|1-t|^{-1/2},L)\). The tree approximation \( \mathcal{K}^{(n)}_{a_1, \ldots, a_n} \) is a complicated function of the propagator entries. Hence, the \( L^\infty \)-norm is a very crude norm for these functions, and one would not a priori expect stability in this norm.   
+For clarity, in the following heuristic discussion, we assume \( \im z_t \ge L^{-2} \), so that \( \ell_t^{-2} = |1-t| \asymp \im z_t \). The key new ingredient enabling \( L^\infty \)-stability of the loop hierarchy in dimensions \( d \ge 3 \) is a class of \emph{$\contract$ inequalities} (\Cref{ygdhmsgq}), which extend the classical Ward's identity:
+\be\label{eq:Ward_intro1}
+\sum_y |G_{xy}(z)|^2=\sum_y |G_{yx}(z)|^2 =  \im G_{xx}/ \im z ,
+\ee
+and apply to partial sums involving the absolute values of the $n$-\(G\)-loops. 
+
+
+%$ = W^{-d} \Theta_{t,ab}$ in the sense 
+%However, in order to establish quantum diffusion and quantum unique ergodicity, and for the {\cor stability of the tree approximation}, we need a \emph{pointwise estimate} valid for all \( a, b \), i.e.,
+
+However, the \( L^\infty \)-stability of the tree approximation remains incomplete without a sufficiently precise \emph{pointwise estimate} \smash{${\cal L}^{(2)}_{ab} \approx \mathcal{K}^{(2)}_{ab}$} for the 2-$G$-loops, that is,  
+\be\label{eq:n=2approx}
+\left|\left({\cal L}-\cK\right)^{(2)}_{ab} \right| \ll W^{-d} \Theta_{t,ab}, \quad  \forall a,b\in \Zn.
+\ee
+Such a strong pointwise control is essential because of the leading term $\cal L^{(2)}\diamond \cal L^{(n)}$ in the loop hierarchy \eqref{eq:introloop_hier}. Subtracting the corresponding term $\cal K^{(2)}\diamond \cal K^{(n)}$ from the convolution tree equation \eqref{eq:Knequation} produces three terms $\cal K^{(2)}\diamond (\cal L-\cal K)^{(n)}$, $(\cal L-\cal K)^{(2)}\diamond \cal K^{(n)}$, and $(\cal L-\cal K)^{(2)}\diamond (\cal L-\cal K)^{(n)}$. While it is intuitively clear that the last two terms are negligible compared to the first, a rigorous justification requires establishing the stability estimate \eqref{eq:n=2approx}. 
+This requires a significantly more delicate analysis of the equation \eqref{eq:introloop_hier} for $n=2$.  
+One main difficulty is that this equation involves \( \mathcal{L}^{(n)} \) with \( n \geq 3 \), for which only \( L^\infty \)-bounds are available. Therefore, we need to develop a method to estimate the error terms in the 2-loop equation using only the \( L^\infty \)-bounds on the higher-order loops. 
+We will discuss the details of the $L^\infty$-stability and $\contract$ inequalities in \Cref{Sec:Steps34}, and the proof of the pointwise stability estimate \eqref{eq:n=2approx} in \Cref{subsec:step2_pf}.
+
+
+
+Issue (3) involves bounding the martingale term \( \dd {\cal E}^{M,(n)} \) and the light-weight term \( {\cal E}^{\Gc,(n)} \). In dimensions \( d \ge 3 \), estimating these terms presents a serious challenge. We will discuss the difficulties related to bounding the martingale term in \Cref{subsec:pf_lem: EMn2_N}. For now, we focus on estimating the light-weight term for 
+ \( n=2 \): 
+\[
+{\cal E}^{\Gc,(2)}_{ab} = W^d \sum_{u, v} S^{(\sB)}_{uv} \cdot \tr[\Gc_t E_{u}] \cdot \mathcal{L}^{(3)}_{a,b,v}, \quad\text{with}\quad 
+{\cal L}^{(3)}_{a,b,v} = W^{-3d} \sum_{x \in [a], y \in [b], z \in [v]} (G_t)_{xy} (G_t)_{yz} (G_t)_{zx},
+\]
+where \( x \in [a] \) means that the lattice point \( x \) belongs to the block labeled by \( a \).  
+We expect an averaged local law to hold in the form \smash{\( |\tr[\Gc_t E_{u}]| \leq W^{-c} \)} for some constant \( c > 0 \).  
+Next, assuming the \emph{sharp entrywise local law} for $G_t$: 
+\be\label{eq:aprioriG2} 
+|(G_t)_{xy}- m \delta_{xy}| \lesssim W^{-d/2}
+\big({\Theta_{t,ab}}\big)^{1/2}, \quad \forall x\in [a], \ y \in[b],
+\ee 
+we obtain the estimate  
+\begin{align} 
+	|{\cal E}^{\Gc,(2)}_{ab}|  %& \lesssim W^{-c + d} \sum_{|z-x|\vee|z-y| \lesssim W\ell_t} |(G_t)_{xy} (G_t)_{xz} (G_t)_{zy}| \\
+    &\lesssim W^{-c-d/2} \sum_{|v-a|\vee |v-b| \lesssim\ell_t} \p{\Theta_{t,ab} \Theta_{t,bv} \Theta_{t,va}}^{1/2} \nonumber  \\
+	& \lesssim W^{-c-d/2} \big(\Theta_{t,ab}\big)^{1/2} \ell_t^2 = W^{-c-d/2} \big(\Theta_{t,ab}\big)^{1/2}\cdot (1 - t)^{-1}. 
+    \label{eq:introGc}
+\end{align}
+Upon integrating in time, the singularity \( (1 - t)^{-1} \) produces only a harmless logarithmic factor. However, the resulting bound contains only \smash{\( (\Theta_{t,ab})^{1/2} \)} rather than the optimal \smash{\( \Theta_{t,ab} \)}. This gap cannot be compensated by the \( W^{-c} \) factor from the averaged local law, as \( c \) is at best \( c=d \).  
+Without the extra factor \smash{\( (\Theta_{t,ab})^{1/2} \)}, the light-weight term would dominate the leading term and violate the approximation in \eqref{eq:n=2approx}. In the actual proof, the situation is even more delicate, since the estimate \eqref{eq:aprioriG2} is not available a priori.
+
+To overcome this difficulty, we employ the \emph{diagrammatic methods} developed in \cite{yang2021delocalization, yang2022delocalization, yang2021random}.  
+While this method is technically involved and was previously applied only in high dimensions \( d \geq 7 \), our objective here is more modest: we aim to generate an additional ``\emph{long edge}''---that is, a resolvent entry \( G_{x'y'} \) with \( |x'-y'| \gtrsim W|a-b| \)---in order to recover the missing factor \smash{\( (\Theta_{t,ab})^{1/2} \)}.  
+For this purpose, the diagrammatic expansions can be extended to all dimensions \( d \geq 3 \). 
+
+Specifically, we apply Gaussian integration by parts to express the expectation of high moments \smash{\( \E |{\cal E}_{ab}^{\Gc,(2)}|^{2p}\)} as a sum of graphs, where each graph either contains \emph{\( 2p \) additional long edges} or contributes to a sufficiently small error.   
+Roughly speaking, each application of Gaussian integration by parts produces a \( W^{-d/2} \) factor, unless it generates a long edge.  
+To ensure that these \( W^{-d/2} \) factors compensate for the missing \smash{\( (\Theta_{t,ab})^{1/2} \)} when \( |a-b| \asymp L \), we must expand the graphs to a sufficiently high order $k$, chosen so that \( W^{-kd/2} \le (\Theta_{t,ab})^{p} \). 
+As a result, the contributing graphs are extremely complicated. To bound them, we need to sum over their internal vertices in such a way that the final contribution retains at least the \( 2p \) additional long edges. 
+We will use Ward's identity \eqref{eq:Ward_intro1} as a key tool to control the summation over internal vertices, provided the order of the summations follows a carefully designed ``nested order''. This nested ordering is a crucial component in our estimates of the graphs arising from the complicated diagrammatic expansions. See \Cref{sec:graphs_ideas} for a detailed discussion. 
+
+In addition to the above considerations, two key ingredients continue to play a central role in our analysis: the \emph{sum-zero property} \cite{yang2021delocalization, yang2022delocalization,YY_25}, and the CLT mechanism for the fluctuation cancellation of resolvents, which was previously employed in the \( d = 2 \) analysis \cite{DYYY25}. Our final objective is to incorporate all these components---diagrammatic tools, the sum-zero property, fluctuation cancellation, and the stability of the tree approximation---into the flow-based framework.  
+
+In summary, our proof relies on a flow-based analysis of the tree approximation to the $G$-loop hierarchy, combining \emph{sharp max-norm estimates} for higher-order $(\cL-\cK)^{(n)}$-loops with $n\ge 3$ and a \emph{precise pointwise estimate} for the $(\cL-\cK)^{(2)}$-loops.
+It is perhaps surprising that this seemingly ``simple'' strategy succeeds without tracking the precise pointwise decay of higher-order $G$-loops. This is made possible by several key technical inputs, including \emph{$\contract$ inequalities} and \emph{diagrammatic techniques}.
+The main advantage of our approach is that it closes the analysis using only a minimal set of technical ingredients, thereby avoiding an unnecessarily complicated treatment in dimensions $d\ge 3$.
+%The main advantage of our approach is that it closes the analysis using only a minimal set of technical inputs, thereby avoiding unnecessary complications in dimensions $d\ge3$. 
+A complete implementation of this strategy will be presented in the subsequent sections after we state the main results in \Cref{sec_model-results}.
+%Several technical arguments, which are similar to those in earlier works \cite{yang2021delocalization, YY_25, DYYY25, RBSO1D, yang2024Del}, together with the proofs of some standard deterministic estimates, are deferred to the appendix without affecting the logical flow of the proof. 
+
+
+
+
+
+
+
+\medskip
+{\noindent \bf Notations.}
+To facilitate the presentation, we introduce some necessary notations that will be used throughout this paper. We will use the set of natural numbers $\N=\{1,2,3,\ldots\}$ and the upper half complex plane $\C_+:=\{z\in \C:\im z>0\}$.  
+In this paper, we are interested in the asymptotic regime with $N\to \infty$. When we refer to a constant, it will not depend on $N$ or $W$. Unless otherwise noted, we will use $C$, $D$ etc.~to denote large positive constants, whose values may change from line to line. Similarly, we will use $\e$, $\delta$, $\tau$, $c$, $\fc$, $\fd$ etc.~to denote small positive constants. 
+For any two (possibly complex) sequences $\xi_N$ and $\zeta_N$ depending on $N$, $\xi_N = \OO(\zeta_N)$, $\zeta_N=\Omega(\xi_N)$, or $\xi_N \lesssim \zeta_N$ means that $|\xi_N| \le C|\zeta_N|$ for some constant $C>0$, whereas $\xi_N=\oo(\zeta_N)$ or $|\xi_N|\ll |\zeta_N|$ means that $|\xi_N| /|\zeta_N| \to 0$ as $N\to \infty$. We say that $\xi_N \asymp \zeta_N$ if $\xi_N = \OO(\zeta_N)$ and $\zeta_N = \OO(\xi_N)$. For any $\al,\beta\in\R$, we denote $\qqq{\al, \beta}:= [\al,\beta]\cap {\mathbb Z}$, $\qqq{\al}:=\qqq{1,\al}$, $\al\vee \beta:=\max\{\al, \beta\}$, and $\al\wedge \beta:=\min\{\al, \beta\}$. 
+Given a vector $\mathbf v$, $|\mathbf v|\equiv \|\mathbf v\|_2$ denotes the Euclidean norm and $\|\mathbf v\|_p$ denotes the $L^p$-norm. 
+Given a matrix $\cal A = (\cal A_{ij})$, $\|\cal A\|$, $\|\cal A\|_{p\to p}$, and $\|\cal A\|_{\infty}\equiv \|\cal A\|_{\max}:=\max_{i,j}|\cal A_{ij}|$ denote the operator (i.e., $L^2\to L^2$) norm,  $L^p\to L^p$ norm (where we allow $p=\infty$), and maximum (i.e., $L^\infty$) norm, respectively. We will use $\cal A_{ij}$ and $ \cal A(i,j)$ interchangeably in this paper. %Moreover, we introduce the following simplified notation for trace: $ \left\langle \cal A\right\rangle=\tr (\cal A).$ 
+We will use $I_n$ to denote an $n\times n$ identity matrix.
+
+Given an event $\Xi$, let $\mathbf 1_\Xi$ or $\mathbf 1(\Xi)$ denote its indicator function. We will say an event $\Xi$ holds with high probability (w.h.p.) if for any constant $D>0$, $\mathbb P(\Xi)\ge 1- N^{-D}$ for large enough $N$. More generally, we say an event $\Omega$ holds $w.h.p.$ in $\Xi$ if for any constant $D>0$, $\P( \Xi\setminus \Omega)\le N^{-D}$ for large enough $N$. 
+For clarity of presentation, we will use the following notion of stochastic domination introduced in \cite{Average_fluc}. %This framework will be used throughout the analysis to control the behavior of random matrices and their spectral properties.
+%\begin{definition}[Stochastic domination]\label{stoch_domination}
+%	{\rm{(i)}} 
+Let \[\xi=\left(\xi^{(N)}(u):N\in\mathbb N, u\in U^{(N)}\right),\hskip 10pt \zeta=\left(\zeta^{(N)}(u):N\in\mathbb N, u\in U^{(N)}\right),\]
+	be two families of non-negative random variables, where $U^{(N)}$ is a possibly $N$-dependent parameter set. We say $\xi$ is stochastically dominated by $\zeta$, uniformly in $u$, if for any fixed (small) $\tau>0$ and (large) $D>0$, 
+	\be\label{stoch_domination}\mathbb P\bigg(\bigcup_{u\in U^{(N)}}\left\{\xi^{(N)}(u)>N^\tau\zeta^{(N)}(u)\right\}\bigg)\le N^{-D}\ee
+	for large enough $N\ge N_0(\tau, D)$, and we will use the notation $\xi\prec\zeta$. 
+		If for some complex family $\xi$ we have $|\xi|\prec\zeta$, then we will also write $\xi \prec \zeta$ or $\xi=\OO_\prec(\zeta)$. 
+	% \vspace{5pt}
+	% \noindent {\rm{(ii)}} 
+    As a convention, for two \emph{deterministic} non-negative quantities $\xi$ and $\zeta$, we will write $\xi\prec\zeta$ if and only if $\xi\le N^\tau \zeta$ for any constant $\tau>0$. 
+
+ % \vspace{5pt}
+	% \noindent {\rm{(iii)}} Let $A$ be a family of random matrices and $\zeta$ be a family of non-negative random variables. Then, we use $A=\OO_\prec(\zeta)$ to mean that $\|A\|\prec \xi$, where $\|\cdot\|$ denotes the operator norm. 
+	
+	%\vspace{5pt}
+	%\noindent {\rm{(iii)}} 
+    
+	%\end{itemize}
+%\end{definition}
+
+\medskip
+\noindent{\bf Acknowledgement.}   
+We would like to thank Kevin Yang for fruitful discussions.
+
+
+\section{The model and main results}\label{sec_model-results}
+
+
+We focus in this paper on the classical block random band matrix model (i.e., the \emph{Wegner orbital model}) and the \emph{block Anderson model} with identity interactions. As noted in the introduction, these are the models studied in \cite{PelSchShaSod}, where localization of bulk eigenvectors was established under the condition $\lambda \gg W^{d/2}$. In contrast, the present work establishes a complementary result describing the delocalized regime of the Wegner orbital and block Anderson models when $\lambda \ll W^{d/2}$. 
+Our approach can be readily extended to a much broader class of random band matrices and block Anderson models with general (non-identity) interactions---by combining the techniques developed here with those from \cite{RBSO1D} and the block reduction method of \cite{Block_reduction}. However, the models considered in this paper allow us to avoid inessential technical complications and to focus on the core challenges that arise in dimensions $d \ge 3$. Extensions to more general settings will be addressed in future work.
+For clarity of presentation, we rescale our models by 
+\be\label{def:ilambda}\ilambda=\lambda^{-1},\ee
+and consider matrices of the form $H=V+\ilambda\Psi$. 
+This rescaling has the advantage that, in the regime $\ilambda\ll 1$ (i.e., $\lambda\gg 1$), the density of states of $H$ may be viewed as a small perturbation of the semicircle law. 
+
+%\subsection{The model setting}\label{subsec_setting}
+
+Our models are defined on a $d$-dimensional discrete torus \(\ZL\subset\mathbb{Z}^d\) with $d\ge 3$, consisting of $N$ lattice points and side length $WL$:
+\[\ZL:=\qqq{ -(WL)/2+1 , (WL)/2}^d\quad \text{with}\quad N=(W\cdot L)^d.\] 
+We partition $\ZL$ into $L^d$ disjoint blocks, indexed by \(\Zn:=\qqq{ -L/2+1 , L/2}^d,\)
+which we refer to as the \emph{block lattice}.  Each index $a=(a(1),\ldots, a(d))\in \Zn$ corresponds to a block 
+\be\label{eq:blockIa}
+[a] := \prod_{i=1}^d\left\llbracket (a(i)-1)W + 1, \; a(i)W \right\rrbracket, 
+\ee
+where $a(i)$ denotes the $i$-th coordinate of $a$ for $i\in\qqq{d}$.\footnote{In the above definitions, we implicitly assume that $L$ is even; the case of odd $L$ can be treated similarly by defining the block lattice as $ \Zn:=\qqq{ -(L-1)/2 , (L-1)/2}^d$.}
+%where $a=(a(1),\ldots, a(d))$ belongs to the \emph{lattices of blocks} $\Zn$, indexed by \[ \Zn:=\qll{ -L/2+1 , L/2}^d\] with $a(i)$ denoting its $i$-th coordinate for $i\in\qqq{d}$. 
+We view both $\ZL$ and $\Zn$ as discrete $d$-dimensional tori. We will denote the vertices of $\ZL$ by $x,y,\ldots,$ and denote those of $\Zn$ by $a,b,\ldots$ Given $x,y\in \ZL$ and $a,b\in \Zn$, we denote the periodic representatives of $x-y$ and $a-b$ by
+$\rep{x-y}_{WL}$ and $\rep{a-b}_L$, respectively:  
+\be\label{representativeL}\rep{x-y}_{WL}:= \left((x-y)+(WL)\Z^d\right)\cap \ZL,\quad \rep{a-b}_L:= \left((a-b)+L\Z^d\right)\cap \Z_L^d.\ee
+For definiteness, we use the $L^\infty$-metric to define (periodic) distances on $\ZL$ and $\Zn$: 
+\[ |x-y|\equiv \|\rep{x-y}_{WL}\|_{\infty},\quad \forall x,y\in \ZL,\quad \text{and}\quad |a-b|\equiv \|\rep{a-b}_L\|_{\infty},\quad \forall a,b\in \Zn.\]
+%\[\dist(x,y):=\|\rep{x-y}_{WL}\|_1,\quad \forall x,y\in \ZL,\quad \text{and}\quad \dist(a,b):=\|\rep{a-b}_L\|_1,\quad \forall a,b\in \Zn,\] 
+%which correspond to the (periodic) distances on $\ZL$ and $\Zn$, respectively. The normalization by $1/d$ ensures that \smash{$\max_{a,b\in \Zn}|a-b|\le L/2$}. 
+We write $x\sim y$ if $x$ and $y$ are neighbors in $\ZL$, and similarly $a\sim b$ if $a$ and $b$ are neighbors in $\Zn$. 
+% Finally, given any $\ZL\times \ZL$ matrix $A$, we denote \textcolor{blue}{remove it, this notation is only used once in the whole paper}its $(a,b)$-th block by 
+% \be\label{eq:submatrixnotation}A|_{[a][b]}:=(A_{xy}:x\in [a], y\in [b]), 
+% \ee
+% which is a $W^d\times W^d$ submatrix of $A$, corresponding to the interaction between blocks $a$ and $b$.  
+%denote the $(a,b)$-th block of $A$---the block $(A_{xy}:x\in \cal I_a, y\in \cal I_b)$---which is a $W^d\times W^d$ matrix. 
+% \begin{align}\label{Japanesebracket} |x-y|\equiv \|x-y\|_L,\quad &\langle x-y \rangle \equiv \|x-y\|_L + W,\quad \text{for} \ \ x,y \in \ZL, \\
+% \label{Japanesebracket2} |[x]-[y]|\equiv \|[x]-[y]\|_n,\quad &\langle [x]-[y] \rangle \equiv \|[x]-[y]\|_n + 1, \quad \text{for} \ \  x,y \in \Zn.
+%\end{align}
+%We use $x\sim y$ to mean that $x$ and $y$ are neighbors on $\ZL$, i.e., $|x-y|=1$. Similarly, $a\sim b$ means that $a$ and $b$ are neighbors on $\Zn$. 
+
+
+
+\subsection{Main results for the random band matrix model}\label{subsec:main}
+%\paragraph{Wegner orbital ($\WO$) model.} 
+Our \emph{random band matrix} (or referred to as the \emph{Wegner orbital model} following \cite{PelSchShaSod}) is defined by a complex Hermitian random block Hamiltonian \( H=(H_{xy}:x,y\in \ZL) \), where the entries $H_{xy}$ are independent (up to the Hermitian symmetry $H_{xy}=\overline{ H}_{yx}$) Gaussian random variables. More precisely, given a symmetric doubly stochastic variance matrix $S=(S_{xy}:x,y\in \ZL)$, the diagonal entries of $H$ are real Gaussian random variables, and the off-diagonal entries are complex Gaussian random variables, distributed as follows: %\textcolor{blue}{use ${\bf 1}_{x=y}$, ${\bf 1}_{x\ne y}$ to write it into 1 line }
+%the diagonal and off-diagonal entries of $H$ are {\bf real} and {\bf complex} Gaussian random variables, respectively, distributed as:
+\be\label{bandcw0}
+H_{xy}\sim \mathcal{N}_{\R}(0, S_{xy}) \cdot \mathbf 1_{x=y} + \mathcal{N}_{\C}(0, S_{xy}) \cdot \mathbf 1_{x\ne y}.
+% \begin{cases} 
+% ,\quad &\text{for} \ \  x = y \\
+% ,\quad &\text{for} \ \  x\ne y
+% \end{cases}. 
+\ee
+For $x\in [a]$ and $y\in [b]$, the variance matrix $S\equiv S(\ilambda)$ is given by 
+\be\label{eq:variancematrix}
+S_{xy}\equiv\var (H_{xy}) := W^{-d}S^{(\sB)}_{ab}(\ilambda),\quad \text{with}\quad 
+S^{(\sB)}_{ab}(\ilambda):=\frac{1}{1+2d\ilambda^2} \mathbf 1_{a=b} + \frac{\ilambda^2}{1+2d\ilambda^2} \mathbf 1_{a\sim b},
+\ee
+where $\ilambda>0$ (recall \eqref{def:ilambda}) is a coupling parameter that quantifies the interaction strength between neighboring blocks, and \( S^{(\sB)}(\ilambda) \) denotes an \( L ^d\times L^d \) matrix. 
+Informally, the matrix $H$ consists of i.i.d.~GUE blocks on the diagonal and i.i.d.~Ginibre blocks (up to Hermitian symmetry and scaling) on the off-diagonal. 
+Note that when $\ilambda=1$, the present model reduces to the standard block random band matrices studied in \cite{YY_25, DYYY25}.
+
+
+%The parameter $\ilambda^2$ plays the role of a coupling parameter, quantifying the interaction strength between neighboring blocks. This perspective aligns with that of the Wegner orbital model (see e.g., \cite{PelSchShaSod}). By combining the techniques developed in this work with the tools from \cite{RBSO1D}, our results can be extended to the sharp delocalization threshold $\ilambda^2\gg W^{-d}$ for the Wegner orbital model. 
+%Simply speaking, in our model $H$, the diagonal blocks are i.i.d.~GUE matrices, while the off-diagonal blocks are i.i.d.~Ginibre matrices up to Hermitian symmetry and some rescaling parameters. Here, $\ilambda^2$ is a key \emph{coupling parameter}, as it describes the coupling strength between neighboring blocks. This is the viewpoint taken by the Wegner orbital model \cite{PelSchShaSod}. By combining the techniques developed here with the tools developed in \cite{RBSO1D}, we can push our result to the sharp threshold $\ilambda^2\gg W^{-d}$ for the Wegner orbital model. 
+% such that
+% \[
+% H_{xy} \sim \mathcal{CN}(0, S_{ij}), \quad  x,y \in (\mathbb{Z}_{WL})^d,
+% \quad W, L\in \mathbb N\] 
+% Clearly, \( S = S^T \), and it satisfies
+% \[
+% \sum_x S_{xy} = 1.
+% \]
+% We will follow the convention that indices \( a, b, c, \dots \) are elements of \( (\mathbb{Z}_L)^d \), while \( x, y, z, \dots \) represent indices in \( (\mathbb{Z}_{WL})^d \). 
+ 
+
+Let \( \lambda_1 \leq \lambda_2 \leq \dots \leq \lambda_N \) denote the eigenvalues of \( H \). The corresponding normalized eigenvectors of $H$ are denoted by \( \left( \boldsymbol{\psi}_k \right)_{k=1}^N \). 
+% such that 
+% \[
+% H \boldsymbol{\psi}_k = \lambda_k \boldsymbol{\psi}_k,\quad  k\in \qqq{N}. 
+% \]
+It is well-known that the empirical spectral measure $N^{-1}\sum_{k=1}^N \delta_{\lambda_k}$ converges almost surely to the Wigner semicircle law \cite{Wigner} with density 
+\(
+\rho_{\mathrm{sc}}(x) = \sqrt{(4 - x^2)_+}/{2\pi}.
+\)
+Define the Green's function (or resolvent) of the Hamiltonian $H$ as
+\be\label{def_Green}
+G(z):=(H-z)^{-1} ,  \quad z\in \C_+.
+\ee
+It is also known that as $N\to \infty$, $G(z)$ converges to the scalar matrix $m(z)I_N$ entrywise, where $m(z)$ denotes the Stieltjes transform of \( \rho_{\mathrm{sc}} \), defined by
+\be\label{eq:defmzsc}
+m(z)\equiv m_{\mathrm{sc}}(z):=\frac{-z+\sqrt{z^2-4}}{2}= \int_{\mathbb{R}} \frac{\rho_{\mathrm{sc}}(x)}{x - z} \dd x.
+\ee
+Moreover, we define the matrix\footnote{We introduce this notation to maintain consistency with the block Anderson model, where $M(z)$ is no longer a scalar matrix proportional to $m(z)$; see \eqref{self_m} and \eqref{def_G0}.}
+\be\label{eq:defMzsc} 
+M(z)\equiv M_N(z):=m(z) I_N. 
+\ee
+
+
+ 
+
+
+
+
+
+We now state the main results for the random band matrix model. %The model setup and corresponding main results for the block Anderson model will be presented separately in \Cref{sec:main_BA}. 
+Our first main result establishes the delocalization of the bulk eigenvectors of $H$ in dimensions $d\ge 3$.  
+
+\begin{theorem}[Delocalization]\label{MR:decol}
+Fix any dimension $d\ge 3$, and consider the random band matrix model defined above. Assume there exist constants $\fc,\fd>0$ such that 
+\begin{equation}\label{Main_DEL_COND}
+    W \ge N^{ \mathfrak c} ,
+\end{equation}
+and that $\ilambda$ satisfies the condition 
+\be\label{eq:WO} W^{-d/2+\fd}\le \ilambda \le \fd^{-1}.\ee
+% and for the block Anderson model, assume 
+% \be\label{eq:BA} W^{-d/2+\fd}\le \ilambda \le W^{-\fd}.\ee
+Then, for any small constants $\kappa,\tau>0$ and large constant $D>0$, the following delocalization estimate holds, provided $N$ is sufficiently large:
+\be\label{eq:psikLinfty}
+\mathbb{P}\left( \max_{k:|\lambda_k|\le 2-\kappa}\left\|\boldsymbol{\psi}_k\right\|_{\infty}^2 \le N^{-1+\tau}  \right) \ge 1-N^{-D}.
+\ee
+\end{theorem}
+
+Since the eigenvectors $\boldsymbol{\psi}_k$ are $L^2$-normalized, the $L^\infty$-bound in \eqref{eq:psikLinfty} implies that bulk eigenvectors have localization length at least $\Omega((WL)^{1-\e})$, for any small constant $\e>0$. The upper bound in condition \eqref{eq:WO} is not essential; we include it only for clarity of presentation, as our main interest is the small $\ilambda$ regime.\footnote{All results below remain valid for $\ilambda \gg 1$, provided $\ilambda$ in the relevant equations is replaced by $\ilambda \wedge 1$.} 
+The key aspect of condition \eqref{eq:WO} is the lower bound $\ilambda\ge W^{-d/2+\fd}$. Indeed, by the fractional moment method \cite{Aizenman1993}, it was shown in \cite{PelSchShaSod} that when $\ilambda\ll W^{-d/2}$, the eigenvectors of both the random band matrix model and the block Anderson model (defined in \Cref{sec:main_BA} below) are localized with localization length of order $\OO(W)$. Combined with this result, \Cref{MR:decol} demonstrates a localization--delocalization transition for the random band matrix model in the bulk spectrum as $\ilambda$ crosses the critical threshold $W^{-d/2}$.
+
+%The crucial aspect of condition \eqref{eq:WO} is the lower bound $\ilambda\ge W^{-d/2+\fd}$. In fact, utilizing the fractional moment method \cite{Aizenman1993}, it was shown in \cite{PelSchShaSod} that in the regime \(\ilambda\ll W^{-d/2}\), the eigenvectors of both the random band matrix model and the block Anderson model (defined in \Cref{sec:main_BA} below) are localized with localization length of order $\OO(W)$. Combined with this result, \Cref{MR:decol} gives a localization-delocalization transition of the random band matrix model inside the bulk of the spectrum as $\ilambda$ crosses the critical threshold $W^{-d/2}$.   
+
+
+
+\Cref{MR:decol} follows immediately from the following sharp local law for the Green's function of $H$, defined as in \eqref{def_Green}. For simplicity of notation, given constants $\kappa,\e>0$, define the spectral domain 
+\be\label{eq:spectral_domain}
+\mathbf D_{\kappa,\e}:=\{z=\hat{E}+\ii\eta \in \C_+: |\hat{E}|\le 2-\kappa, N^{-1+\e}\le \eta\le 1\},
+\ee
+and the simplified notation 
+\be\label{eq:calBetaK}\cal B_{\eta,K}:= \frac{(\ilambda^{2}+\eta)^{-1}}{W^2(K+W)^{d-2}} + \frac{1}{N\eta},\quad \forall K\ge 0.\ee
+
+\begin{theorem}[Local semicircle law]\label{MR:locSC} 
+In the setting of \Cref{MR:decol}, for any (small) constants $\kappa,\e, \tau>0$ and (large) constant $D>0$, the following events hold with probability $\ge 1-N^{-D}$ for large enough $N$: 
+\begin{align}\label{G_bound}
+&\bigcap_{z=\hat{E}+\ii\eta\in \mathbf D_{\kappa,\e}}\bigcap_{x,y\in \ZL} \left\{ |G_{xy}(z) - M_{xy}(z)|^2  \le W^\tau  \mathcal B_{\eta,|x-y|}\right\}\, , 
+\\
+\label{G_bound_ave}
+&\bigcap_{z=\hat{E}+\ii\eta\in \mathbf D_{\kappa,\e}}\bigg\{\max_{a\in\Zn} \Big|W^{-d}\sum_{x\in [a]}G_{xx}(z) - m(z) \Big| \le W^\tau  \mathcal B_{\eta,0}\bigg\}\, , 
+\end{align}
+where $G$ is defined in \eqref{def_Green}, $m(z)$ and $M(z)$ are defined in \eqref{eq:defmzsc} and \eqref{eq:defMzsc}, and $[a]$ is defined in \eqref{eq:blockIa}. % for the Wegner orbital model, and $m(z)$ and $M(z)$ are defined in \eqref{self_m} and \eqref{def_G0} for the block Anderson model. 
+\end{theorem}
+
+\begin{proof}[\bf Proof of \Cref{MR:decol}]
+Theorem \ref{MR:decol} follows directly from the entrywise local law \eqref{G_bound} via the bound 
+\be\label{eq:ukx}|\boldsymbol{\psi}_k(x)|^2 \le \eta\im G_{xx}(\lambda_k + \ii \eta),\quad \forall \eta>0\, .\ee 
+Applying the local law \eqref{G_bound} to $G_{xx}(\lambda_k+\ii\eta)$ with $\eta = N^{-1+\tau}$, we deduce that $\im G_{xx}(\lambda_k+\ii\eta)=\OO(1)$ with high probability. Combined with \eqref{eq:ukx}, this completes the proof.
+\end{proof}
+
+Under the assumptions of \Cref{MR:decol}, we can further establish a stronger \emph{quantum unique ergodicity} (QUE) estimate for the bulk eigenvectors of $H$, albeit at the cost of a slightly weaker probability bound. 
+Roughly speaking, the QUE estimates \eqref{Meq:QUE} and \eqref{Meq:QUE2} below indicate that every bulk eigenvector of $H$ is asymptotically uniformly distributed (in the sense of $L^2$-mass) across all scales larger than $W$. In particular, this implies that the localization length of every bulk eigenvector is of order $\Omega(WL)$ with probability $1-\oo(1)$.
+
+\begin{theorem}[Quantum unique ergodicity]\label{MR:QUE} 
+In the setting of \Cref{MR:decol}, given $E\in [-2+\kappa,2-\kappa]$ and a constant $\e_0\in (0,\fd/2)$, define the interval  
+\be\label{eq:defIE} {\cal I}_E\equiv {\cal I}_E(\e_0):=\left\{x: |x-E|\le W^{-\e_0}\big({\ilambda W^{d/2}}/N\big)\right\}. %\quad \text{where}\quad  \cor \eta_{0}:={W\ilambda}/{N}.
+\ee
+For each $d\ge 3$ and constant $0<c<\e_0\wedge(\fd/5)$, the following estimate holds for any small constant $\tau>0$:
+\begin{equation}\label{Meq:QUE}
+\sup_{E: |E|\le 2-\kappa}  
+\max_{ a\in \Zn} \P\bigg(\max_{i,j:\lambda_i, \lambda_j \in {\cal I}_E} 
+ \bigg| \sum_{x\in[a]}\overline \bpsi_i(x)\bpsi_j(x)-\frac{W^{d}}{N}\delta_{ij}  \bigg| \ge \frac{W^{d-c}}{N} \bigg) \le  W^{-(2\e_0)\wedge(2\fd/5)+2c+\tau} \, 
+\end{equation}
+provided $N$ is large enough. More generally, for any subset $A\subset \Zn$, we have
+\begin{equation}\label{Meq:QUE2}
+\sup_{E: |E|\le 2-\kappa} \mathbb{P}\bigg(\max_{k: \lambda_k\in {\cal I}_E} 
+\bigg|\sum_{a\in A}\sum_{x\in [a]}\left|\bpsi_k(x)\right |^2 -\frac{W^d}{N}|A|\bigg| \ge  \frac{W^{d-c}}{N}|A| \bigg) \le  W^{-(2\e_0)\wedge(2\fd/5)+2c+\tau} .
+\end{equation}  
+
+% \begin{align}\label{tau} 
+% 0< \tau <  \frac {  \mathfrak c } 2, 
+% \end{align} 
+% where $ \mathfrak c$ was defined in \eqref{Main_DEL_COND}.
+% Then generalized quantum unique holds in high probability, i.e.,  for any small constant $\kappa>0$  and large $D>0$,   there exists  a large  $N_0$ such that for all $N \geqslant N_0$, 
+% \begin{equation}\label{Meq:QUE}
+% \max_{E: \,|E|<2-\kappa}\; 
+% \max_{ a\,\in\, \mathbb Z_L}\;\mathbb{P}\left(\max_{i, j \in {\cal J}_E} 
+%  \left|N (\psi_i^*\left(E_a-N^{-1}\right) \psi_j)\right|^2 \ge N^{-\tau /6} \right) \le  N^{-\tau  /6}.
+% \end{equation}
+% Here 
+% $$
+% \mathcal{J}_E:=\left\{k:\left|\ilambda_k-E\right| \leq N^{-1-\tau} W^{2/3}\right\} .
+% $$
+% Furthermore, for  any  subset $A\subset \mathbb Z_L$,
+% \begin{equation}\label{Meq:QUE2}
+% \max_{E: \,|E|<2-\kappa}\; 
+% \max_{ A\,\subset\, \mathbb Z_L}\;\mathbb{P}\left(\max_{k\in {\cal J}_E} 
+% \left|\,\sum_{x\in {\cal I}_a}\sum_{a\,\in\, A}\left|\boldsymbol{\psi}_k(x)\right |^2 -\frac{|A|\cdot W}{N}\right| \geqslant \frac{|A|\cdot W}{N^{1+\tau /6}}  \right) \le N^{-\tau /6}
+% \end{equation}
+\end{theorem}
+
+As an important consequence of the above QUE estimates, and by employing the Green's function comparison argument developed in \cite{Xu:2024aa}, we can derive the following \emph{universality of the local bulk eigenvalue statistics} for our random band matrices. 
+Let $p_{H}(\lambda_1,\ldots, \lambda_{N})$ denote the joint symmetrized probability density of the (unordered) eigenvalues of $H$. For any $1\le n \le N$, define the $n$-point correlation function as
+$$
+p_{H}^{(n)}\left(\lambda_1, \cdots, \lambda_n\right)
+:=\int_{\R^{N-n}} p_{H}\left(\lambda_1, \cdots, \lambda_{N}\right) \mathrm{d} \lambda_{n+1} \cdots \mathrm{d} \lambda_{N}.
+$$
+Moreover, let $p_{\rm{GUE}}^{(n)}$ denote the corresponding $n$-point correlation function for an $N\times N$ GUE matrix.
+
+\begin{theorem}[Bulk universality]\label{Thm: B_Univ}
+In the setting of \Cref{MR:decol}, let $O \in C_c^{\infty}\left(\mathbb{R}^n\right)$ be an arbitrary smooth, compactly supported function. Then, for any $|E|\le 2-\kappa$ and fixed $n\in \N$, we have
+\begin{equation}\label{eq:universality}
+ \lim_{N\to \infty}	\int_{\mathbb{R}^n} \mathrm{~d} \boldsymbol{\alpha}\; O(\boldsymbol{\alpha}) \left[p_{H}^{(n)}-p_{\rm{GUE}}^{(n)}\right]\left(E+\frac{\alpha_1}{N  }, \ldots, E+\frac{\alpha_n}{N}\right)   =0, 
+ \end{equation} 
+where $\bal$ denotes $\boldsymbol{\alpha}=\left(\alpha_1, \ldots, \alpha_n\right)$. 
+%Suppose that  the assumptions of Theorem \ref{MR:decol} holds. For any fixed $k\in \mathbb N$, the $k$ point correlation function of $H$ converges to that of GUE in the following sense.  
+ \end{theorem}
+
+
+This bulk universality result shows that, for our random band matrices, the local eigenvalue gap statistics near any fixed bulk energy level $E$ asymptotically coincide with those of Wigner matrices. However, we note that the distribution of an individual bulk eigenvalue $\lambda_k$ of $H$ may differ significantly from that of Wigner matrices, as $\lambda_k$ can exhibit fluctuations that are much larger than $N^{-1}$. 
+
+%As suggested by Theorem 1 of \cite{Sch2015}, the fluctuations of bulk eigenvalues in band matrices are of order at least $(WN)^{-1/2}$, whereas the fluctuations for the eigenvalues of Wigner matrices are of order $ N^{-1}$ \cite{erdHos2012rigidity}.
+
+ 
+
+
+
+Similar to the one- and two-dimensional cases \cite{YY_25,DYYY25,erdHos2025zigzag,RBSO1D}, our random band matrix model in dimensions $d\ge 3$ also satisfies the \emph{quantum diffusion conjecture}, which serves as a key input for establishing the QUE estimates in \Cref{MR:QUE}.
+To state it, we define the following $\Theta$-matrices:
+\be \label{def:Theta}
+\Theta^{(+,-)}(z)=\Theta^{(-,+)}(z):= \frac{1}{1-|m(z)|^2 S^{(\sB)}} ,\quad \Theta^{(+,+)}(z)=(\Theta^{(-,-)}(z))^*:= \frac{1}{1-m(z)^2 S^{(\sB)}} , 
+\ee
+where we recall the matrix $S^{(\sB)}$ defined in \eqref{eq:variancematrix} and $m(z)$ defined in \eqref{eq:defmzsc}. 
+
+
+% {To define the quantum diffusion, we need to define some notations. It is believed that $G(z)$ exhibits \emph{quantum diffusion}, in the sense that $\E|G_{xy}(z)|^2$ is well-approximated by the entries of the deterministic matrix $|m|^2(1 - |m|^2 S)^{-1}$. Using \eqref{eq;sproduct}, we can write that 
+% \[
+% \frac{1}{1 - |m|^2 S} = I + \frac{|m|^2S^{(\sB)}(\ilambda)}{1 - |m|^2 S^{(\sB)}(\ilambda)} \otimes S_W.
+% \]
+% In Lemma \ref{lem_propTH}, we will show that the matrix $(1 - |m|^2 S^{(\sB)}(\ilambda))^{-1}$ exhibits exponential decay at the block level on the length scale 
+% \be\label{def_ellz}
+%  \ell(z) := \min \left( \ilambda\eta^{-1/2}+1, L \right), \quad \text{with}\quad \eta = \mathrm{Im}(z),
+% \ee
+% which is referred to as the \emph{diffusion length} for $G(z)$.}
+
+\begin{theorem}[Quantum diffusion]\label{MR:QuDiff}
+    In the setting of \Cref{MR:decol}, for any (small) constants $\kappa,\e, \tau>0$ and (large) constant $D>0$, the following events hold with probability $\ge 1-N^{-D}$ for all $a,b\in \Zn$ and for large enough $N$: 
+    \begin{align}
+    &\bigcap_{z=\hat{E}+\ii\eta\in \mathbf D_{\kappa,\e}}
+    	\bigg\{\bigg|\frac{1}{W^{2d}}
+    	\sum_{x\in[a],y\in[b]}|G_{xy}(z)|^2 - \frac{|m|^2\Theta_{ab}^{(+,-)}(z)}{W^d}\bigg| \le W^\tau \br{\p{(\mathcal B_{\eta,0})^{\frac 1 5} \mathcal B_{\eta,W|a-b|}}\wedge (\mathcal B_{\eta,0})^{2}}\bigg\}\, , %\frac{1}{W^{d}}\p{\frac{|m|^2}{1-|m|^2S^{(\sB)}}}_{ab}
+    	\label{eq:diffu1}\\
+    	&\bigcap_{z=\hat{E}+\ii\eta\in \mathbf D_{\kappa,\e}}
+    	\bigg\{\bigg|\frac{1}{W^{2d}}
+    \sum_{x\in[a],y\in[b]}\p{G_{xy}G_{yx}}(z) - \frac{m^2\Theta^{(+,+)}_{ab}(z)}{W^d} \bigg| \le W^\tau \br{\p{(\mathcal B_{\eta,0})^{\frac 1 5} \mathcal B_{\eta,W|a-b|}}\wedge (\mathcal B_{\eta,0})^{2}}\bigg\}\, %\frac{1}{W^{d}}\p{\frac{m^2}{1-m^2S^{(\sB)}}}_{ab}
+    	\label{eq:diffu2}.
+    \end{align}
+%where $G$ and $m$ are defined in \eqref{def_Green} and \eqref{eq:defmzsc}, respectively. 
+% \end{theorem} 
+% \begin{theorem}[Quantum diffusion with expectation for small $\eta$]\label{MR:QDiff_EE}
+Moreover, for each $z=\hat{E}+\ii\eta\in \mathbf D_{\kappa,\e}$, the expectations $\E|G_{xy}(z)|^2$ and $\E\p{G_{xy}(z)G_{yx}(z)}$ satisfy the following bounds for any small constant $\tau>0$ and large enough $N$: 
+\begin{align}\label{Meq:QdS1}
+ \max_{a,b }  \bigg|\frac{1}{W^{2d}}
+    	\sum_{x\in[a],y\in[b]}\E|G_{xy}(z)|^2 - \frac{|m|^2\Theta_{ab}^{(+,-)}(z)}{W^d} \bigg| \le W^\tau (\cal B_{\eta,0})^{2} \left(\p{\ilambda^2W^{d}}^{-1/ 5}+\cal B_{\eta,0}\right),   \\
+ \label{Meq:QdS2}
+ \max_{a,b }  \bigg|\frac{1}{W^{2d}}
+    	\sum_{x\in[a],y\in[b]}\E(G_{xy}G_{yx})(z) - \frac{m^2\Theta_{ab}^{(+,+)}(z)}{W^d}\bigg|\le W^\tau (\cal B_{\eta,0})^{2} \left(\p{\ilambda^2W^{d}}^{-1/ 5}+\cal B_{\eta,0}\right) .
+\end{align}
+\end{theorem}
+
+Note that when $\eta \le \ilambda^{2}/L^{d}$, we have 
+\be\label{eq:BetaK}
+\cal B_{\eta,K}\asymp (N\eta)^{-1} \ge (\ilambda^2W^d)^{-1}, \quad \forall K\ge 0 .
+\ee
+In this case, the expected estimates in \eqref{Meq:QdS1} and \eqref{Meq:QdS2} provide improvements over those in \eqref{eq:diffu1} and \eqref{eq:diffu2}, which in turn lead to the QUE estimates in \Cref{MR:QUE}. 
+ 
+
+\begin{proof}[\bf Proof of Theorem \ref{MR:QUE}]  
+With the quantum diffusion estimates \eqref{Meq:QdS1} and \eqref{Meq:QdS2}, the proof of \Cref{MR:QUE} is similar to those for \cite[Theorem 2.5]{YY_25}, \cite[Theorem 2.4]{DYYY25}, and \cite[Theorem 2.2]{RBSO1D}. We now briefly outline the proof without giving all details. 
+
+Take $z=E+\ii\eta$ with $|E|\le 2-\kappa$ and $\eta=W^{-\e_0}({\ilambda W^{d/2}}/N)\ge W^{\fd-\e_0}/N$. With the spectral decomposition of $G(z)$ and the definition of $ {\cal I}_E$, we find that 
+\begin{align}\label{ssfa2}
+\E \sum_{i,j: \lambda_i,\lambda_j\in {\cal I}_E} \left|\bpsi_i^*\left(E_{a}-N^{-1}\right) \bpsi_j\right|^2 &\lesssim \eta^2 \E \tr \left[\operatorname{Im} G(z)\left(E_{a}-N^{-1}\right) \operatorname{Im} G(z)\left(E_{a}-N^{-1}\right)\right] \nonumber \\
+&=\frac{\eta^2}{L^{2d}}\sum_{b,b'\in \Zn}
+\E  
+ \tr \left[\operatorname{Im} G(z)\left(E_{a}-E_{b}\right) \operatorname{Im} G(z)\left(E_{a}-E_{b'}\right)\right],
+\end{align}
+where we recall that $E_a$ is the block-averaging matrix restricted to the $a$-th block: $(E_a)_{xy} = W^{-d}\mathbf 1(x=y\in [a])$. Expanding $\im G$ as $\im G=(G-G^*)/(2\ii)$ and applying the QUE estimates \eqref{Meq:QdS1} and \eqref{Meq:QdS2}, we can bound the right-hand side of \eqref{ssfa2} by   
+\begin{align}\label{ssfa2_deter}
+    W^\tau \eta^2 \p{\frac{1}{N\eta}}^2\left[\frac{1}{N\eta} + \frac{1}{(\ilambda^2W^d)^{1/5}}\right]+  \frac{C\eta^2}{W^d} \max_{\sig,\sig'\in \{+,-\}}\max_{a,b,b'}\left|\Theta^{(\sig,\sig')}_{ab}-\Theta^{(\sig,\sig')}_{ab'}\right|
+\end{align}
+for any small constant $\tau>0$ and a large constant $C>0$, where the first term comes from the application of \eqref{Meq:QdS1}--\eqref{eq:BetaK}. 
+Then, with the estimate \eqref{prop:ThfadC0} below for the $\Theta$-matrices (note that $\Theta^{(\sig,\sig')}_{ab}-\Theta^{(\sig,\sig')}_{ab'}=\zTheta^{(\sig,\sig')}_{ab}-\zTheta^{(\sig,\sig')}_{ab'}$ by \eqref{def_Thxi0}), we get 
+$$
+\max_{\sig,\sig'\in \{+,-\}}\max_{a,b,b'}\left|\Theta^{(\sig,\sig')}_{ab}-\Theta^{(\sig,\sig')}_{ab'}\right|\prec \ilambda^{-2} .
+$$
+Plugging it into \eqref{ssfa2_deter} and further into \eqref{ssfa2} yields that 
+\begin{align*}
+\E \sum_{i,j: \lambda_i,\lambda_j\in {\cal I}_E} \left|\bpsi_i^*\left(E_{a}-N^{-1}\right) \bpsi_j\right|^2 &\lesssim {W^\tau}N^{-2}\cdot \p{W^{-\fd+\e_0}+W^{-2\fd/5}+W^{-2\e_0}}. 
+\end{align*}
+Finally, applying Markov's inequality concludes \eqref{Meq:QUE}. The proof of \eqref{Meq:QUE2} follows a similar argument, where we simply replace $E_{a}$ in \eqref{ssfa2} with $|A|^{-1}\sum_{a\in A} E_{a}$, after which all subsequent arguments remain valid.  
+% \textcolor{blue}{Short version. The proof is basically the same as the one for $d=2$\cite{DYYY25}, which comes from the $d=1$ in \cite{YY_25}. With the same argument and \eqref{Meq:QdS1} and \eqref{Meq:QdS2}, we have 
+%  \begin{align}
+%  \;& \eta^2 \E  \tr \left(\operatorname{Im} G(z)\left(E_a-N^{-1}\right) \operatorname{Im} G(z)\left(E_a-N^{-1}\right)\right)
+% \nonumber \\
+% \le \;& N^{-2}(W^{-d/5}+\frac{1}{N\eta})\cdot W^{\delta} + \eta^2 W^{-d}\max_{a,b,a',b'}\;\max_{ \xi=|m|^2 \text{ or } \xi=m^2}
+% \left| \left(\frac{1}{1-\xi\cdot S^{(B)}}\right)_{ab}-\left(\frac{1}{1-\xi\cdot S^{(B)}}\right)_{a'b'}\right|
+% \nonumber 
+%  \end{align}
+% for any $\delta>0$ small.
+%  Furthermore, with $\Theta$ property, we have 
+% $$
+% \max _{a, b, a^{\prime}, b^{\prime}} \max _{\xi=|m|^2 \text { or } \xi=m^2}\left|\left(\frac{1}{1-\xi \cdot S^{(B)}}\right)_{a b}-\left(\frac{1}{1-\xi \cdot S^{(B)}}\right)_{a^{\prime} b^{\prime}}\right| \prec 1  .
+% $$
+% Combine them, we obtain the key estimate 
+% $$
+% \eta^2 \E  \tr \left(\operatorname{Im} G(z)\left(E_a-N^{-1}\right) \operatorname{Im} G(z)\left(E_a-N^{-1}\right)\right)\le N^{-2-\tau/3}
+% $$
+% which completes the proof as in \cite{DYYY25} for $d=2$} 
+\end{proof}
+  
+%Finally, we prove the bulk universality stated in Theorem \ref{Thm: B_Univ}.
+ 
+\begin{proof}[\bf Proof of Theorem \ref{Thm: B_Univ}]
+%Using the delocalization estimate from \Cref{MR:decol}, the local laws from \Cref{MR:locSC}, 
+Using \Cref{MR:decol}, \Cref{MR:locSC}, and the QUE estimate \eqref{Meq:QUE} as inputs, the proof of Theorem \ref{Thm: B_Univ} follows from the Green's function comparison method developed in \cite{Xu:2024aa}. 
+The argument is essentially identical to that used for one-dimensional \cite[Theorem~2.6]{YY_25} and two-dimensional \cite[Theorem~2.6]{DYYY25} random band matrices. For instance, adapting the proof of \cite[Theorem~2.6]{DYYY25}, we only need to adjust certain parameters in the proofs of equations (2.22) and (2.23) therein.
+In that setting, given $y\in \ZL$, the ``bad'' event $\mathcal{B}\equiv \mathcal{B}(y)$ was defined by the existence of an index $\alpha$ such that $\lvert \lambda_\alpha - E\rvert \le N^{-1+\mathfrak{c}/6}$ and $\lvert M_{y,\alpha}\rvert \ge N^{-\mathfrak{c}/18}$ ($\fc$ is the constant in the assumption $W \ge N^{\mathfrak{c}}$ and $M_{y,\al}$ is defined below equation (2.24) of \cite{DYYY25}).\footnote{In dimension $d\ge 3$, $M_{y,\al}$ is defined with the weights of the variance matrix $S$: $M_{y,\al}:=N\sum_{x\in\ZL}S_{xy}|\bpsi_\al(x)|^2-1=\sum_{b\in\Zn}S^{(\sB)}_{a_yb}\big(NW^{-d}\sum_{x\in[b]}|\bpsi_\al(x)|^2-1\big)$, where $a_y\in\Zn$ denotes the block containing $y$, i.e., $y\in[a_y]$. This is an average over at most $2d+1$ blocks (for the block Anderson model, where $S$ is given by \eqref{bandcwV}, only the block $[a_y]$ appears). Hence, if $|M_{y,\al}|\ge W^{-\fd/6}$, then the event in \eqref{Meq:QUE} with $i=j=\al$ and $c=\fd/6$ occurs for at least one of these blocks, and $\P(\mathcal B(y))$ is bounded by $2d+1$ times the right-hand side of \eqref{Meq:QUE}.} In our setting, we modify the definition of $\cal B$ to
+\(
+\mathcal{B}(y)
+:= \bigl\{ \exists \alpha: \lvert \lambda_\alpha - E\rvert \le N^{-1} W^{\mathfrak{d}/3}, \lvert M_{y,\alpha}\rvert \ge W^{-\mathfrak{d}/6} \bigr\}.
+\)
+Applying \eqref{Meq:QUE} with $\e_0=\mathfrak{d}/3$ and $c=\mathfrak{d}/6$, we can deduce that
+\(
+\mathbb{P}(\mathcal{B}) \le W^{-\mathfrak{d}/15+\tau}.
+\)
+With these modified parameters and the new definition of $\cal B$, the remainder of the proof of \eqref{eq:universality} proceeds exactly as in the proof of \cite[Theorem~2.6]{DYYY25}. %since only the signs of the exponents matter, not their precise values. 
+Hence, we omit further details.
+\end{proof}
+
+% \textcolor{blue}{Following the proof for the two-dimensional random band matrices in \cite[Theorem~2.6]{DYYY25}, we only need to adjust certain parameters in the proofs of (2.22) and (2.23) at there. There, the ``bad'' event $\mathcal{B}$ is defined by the existence of an index $\alpha$ such that $\lvert \lambda_\alpha - E\rvert \le N^{-1+\mathfrak{c}/6}$ and $\lvert M_{y,\alpha}\rvert \ge N^{-\mathfrak{c}/18}$. Recall that in that setting $W \ge N^{\mathfrak{c}}$.
+% For $d \ge 3$, we modify the definition (for fixed $y$) to
+% \[
+% \mathcal{B}
+% := \bigl\{ \exists \alpha:\ \lvert \lambda_\alpha - E\rvert \le N^{-1} W^{\mathfrak{d}/3},\quad \lvert M_{y,\alpha}\rvert \ge W^{-\mathfrak{d}/6} \bigr\}.
+% \]
+% Applying Theorem~\ref{MR:QUE} with $\epsilon_0=\mathfrak{d}/3$ and $c=\mathfrak{d}/6$, we obtain
+% \[
+% \mathbb{P}(\mathcal{B}) \le W^{-\mathfrak{d}/15+\tau}.
+% \]
+% With these parameter revisions, universality then follows as in the $d \ge 2$ case, since the argument requires only that the exponents have the correct signs, not their precise values.}
+% Therefore, we omit the details of the proof.
+% \textcolor{blue}{Short version. The proof would be exact the same as  $d=2$ (which origins from $d=1$ \cite{YY_25}). The key parameters are still 
+% $\tau=\mathfrak{c} / 3$ and $t \in\left[0, N^{-1+\tau_U}\right]$ and $\eta=N^{-1+2 \tau_U}$ for small enough $\tau_U$. Note for this region of $\eta$, the right hand side of \eqref{Meq:QdS1} and \eqref{Meq:QdS2} become to $(N\eta)^{-3}$, which match the form of estimates used in the proof for $d=2$ paper.}    
+
+
+\subsection{Main results for the block Anderson model}
+\label{sec:main_BA}
+
+%\paragraph{Block Anderson ($\BA$) model.} 
+
+We next define the block Anderson model. We begin by introducing the \emph{random block potential} $V$, an $N\times N$ complex Hermitian random block matrix whose diagonal blocks are i.i.d.~GUE matrices. In other words, $V$ can be regarded as a random band matrix whose entries are distributed according to \eqref{bandcw0}, with variance matrix $S=(S_{xy})$ given by: 
+\be\label{bandcwV}
+S_{xy}\equiv \var (V_{xy}):=W^{-d}S^{(\sB)}_{ab}(0)= W^{-d} {\bf 1}\left( a =b \right), \quad \text{for} \ \  x\in [a], \ y\in [b],
+\ee
+where \( S^{(\sB)}(0)=I_{L^d} \) denotes the matrix defined in \eqref{eq:variancematrix} with $\ilambda=0$. 
+Next, we define the \emph{block Anderson model} as a random block Schr{\"o}dinger operator of the form
+\be\label{eq:H_blocka}
+H \equiv H(\ilambda)=V+\ilambda \Psi ,\ee 
+where $\ilambda>0$ (recall \eqref{def:ilambda}) is a coupling parameter, and $\Psi$ represents the interaction Hamiltonian that introduces hopping between neighboring blocks. 
+For definiteness, we focus on the classical block Anderson model in which each block is the identity matrix: % (recall the notation in \eqref{eq:submatrixnotation}):  
+\be\label{eq:Psi3D}
+\Psi= \Psi^{(\sB)}\otimes
+    I_{W^d},\quad \text{where}\quad  \Psi^{(\sB)}_{ab}=\mathbf 1(a\sim b).\ee 
+For the block Anderson model, we again denote its eigenvalues by \( \lambda_1 \leq \lambda_2 \leq \dots \leq \lambda_N \), and the corresponding normalized eigenvectors by \( \left( \boldsymbol{\psi}_k \right)_{k=1}^N \). 
+The Green's function $G(z)$ is defined analogously to \eqref{def_Green}. 
+\begin{remark}
+For simplicity, we have slightly abused notation by using the same symbols (such as $H$, $S$, $\lambda_i$, $\boldsymbol{\psi}_i$, and $G(z)$ defined above, as well as $m(z)$ and $M(z)$ defined below) for both the random band matrix model and the block Anderson model. When a distinction is needed, we will add a superscript $\BA$ to denote quantities associated with the block Anderson model.
+%$\WO$ for the Wegner orbital model or $\BA$ for the block Anderson model setting. 
+\end{remark}    
+
+It is well-known that as $N\to \infty$, the empirical spectral measure $N^{-1}\sum_{k=1}^N \delta_{\lambda_k}$ is well approximated by a deterministic probability measure $\mu_{N}$, known as the free convolution of the semicircle law and the empirical measure of $\ilambda\Psi$. This measure has a continuous probability density $\rho_N(x)$ on $\R$ \cite{Biane}, whose support is contained in $[-2-2d\ilambda,\, 2+2d\ilambda]$. (For finite $L$, this support need not be symmetric about $0$, e.g., when $L$ is odd, and it may have gaps.)
+The Stieltjes transform $m(z)\equiv m(z,\ilambda)$ of the measure $\mu_{N}$ is defined as the unique solution to the following self-consistent equation
+\be\label{self_m}
+\frac{1}{N}\tr \frac{1}{\ilambda \Psi -z- m(z)} = m(z)
+\ee
+such that $\im m(z)>0$ for $z\in \C_+$. 
+In addition, we define the $N\times N$ matrix $M(z)\equiv M_N(z,\ilambda)$ and the $L^d\times L^d$ matrix \smash{$M^{(\sB)}(z)\equiv M^{(\sB)}_L(z,g)$} as
+\be\label{def_G0}
+M(z):= \frac{1}{\ilambda \Psi -z- m(z)} = M^{(\sB)}(z)\otimes I_{W^d},\quad M^{(\sB)}(z):=\frac{1}{\ilambda \Psi^{(\sB)} -z- m(z)}.
+ \ee
+Note $M$ and $M^{(\sB)}$ are both (complex) symmetric matrices. In the random matrix theory literature (see e.g., \cite{LeeSchSteYau2015,knowles2017anisotropic,He2018,AEK_PTRF,EKS_Forum} for various settings of deformed Wigner-type matrices), the Green's function $G(z)$ is known to converge to $M(z)$ in the sense of local laws. %provided $\im z\gg W^{-d}$. 
+(However, existing convergence estimates in the literature are generally non-optimal in the non-mean-field setting $W^d\ll N$.) 
+% By the block translation symmetry of $\Psi$ in the block Anderson model, the matrix $M(z)$ satisfies that 
+% \be\label{eq:averm}
+% W^{-d}\sum_{x\in[a]}M_{xx}=m, \quad \forall [a]\in \Zn.\ee 
+%It is known that $m(z)$ is the Stieltjes transform of a probability measure $\mu_{N}$, referred to as the \emph{free convolution of the semicircle law and the empirical measure of $\ilambda\Psi$}. 
+
+
+
+
+\begin{theorem}[Main results for the block Anderson model]\label{MR:decol_BA}
+Fix any dimension $d\ge 3$, and assume there exist constants $\fc,\fd>0$ such that \eqref{Main_DEL_COND} and \eqref{eq:WO} hold. 
+% together with the condition
+% \be\label{eq:BA} W^{-d/2+\fd}\le \ilambda \ll 1. %\le W^{-\fd}.
+% \ee
+Then, for the block Anderson model defined above, the following results remain valid if, throughout their statements, we replace the energy condition $|E|\le 2-\kappa$ (for $E=\lambda_k$ in \eqref{eq:psikLinfty}, for $E=\hat E$ in \eqref{eq:spectral_domain}, and for the energy $E$ in \Cref{MR:QUE} and \Cref{Thm: B_Univ}) with the bulk condition
+\be\label{eq:bulkBA}
+E\in \mathbf B_\kappa:=\left\{E\in\R:\ \rho_N(E)\ge \kappa\right\},
+\ee
+where, by the Stieltjes inversion formula, $\rho_N(E)=\pi^{-1}\im m(E+\ii 0_+,\ilambda)$:
+\begin{itemize}
+    \item The delocalization estimate \eqref{eq:psikLinfty} holds.
+
+    \item The local laws \eqref{G_bound} and \eqref{G_bound_ave} hold for large enough $N$, where $G$ is defined in \eqref{def_Green}, and $m(z)$ and $M(z)$ are defined in \eqref{self_m} and \eqref{def_G0}, respectively. 
+
+    \item The QUE estimates \eqref{Meq:QUE} and \eqref{Meq:QUE2} hold, and the bulk universality holds in the following form, normalized by the local densities: for any fixed $n\in\N$, $O\in C_c^\infty(\R^n)$, $E\in \mathbf B_\kappa$ and $E'\in(-2,2)$,
+\[
+ \lim_{N\to \infty}	\int_{\mathbb{R}^n} \mathrm{~d} \boldsymbol{\alpha}\; O(\boldsymbol{\alpha}) \left[\frac{p_{H}^{(n)}\big(E+\frac{\alpha_1}{N\rho_N(E)}, \ldots, E+\frac{\alpha_n}{N\rho_N(E)}\big)}{\rho_N(E)^{n}}-\frac{p_{\rm{GUE}}^{(n)}\big(E'+\frac{\alpha_1}{N\rho_{\mathrm{sc}}(E')}, \ldots, E'+\frac{\alpha_n}{N\rho_{\mathrm{sc}}(E')}\big)}{\rho_{\mathrm{sc}}(E')^{n}}\right]   =0 .
+\]
+(For the random band matrix model, $\rho_N=\rho_{\mathrm{sc}}$, and the choice $E'=E$ gives back \eqref{eq:universality} after the change of variables $\boldsymbol\alpha\mapsto\rho_{\mathrm{sc}}(E)\boldsymbol\alpha$. For the block Anderson model $\rho_N(E)\neq\rho_{\mathrm{sc}}(E)$ in general, so the comparison with the GUE has to be made at the local density.)
+    
+    \item Recall the variance matrix \(S\) from \eqref{bandcwV} and the matrix \(M\) from \eqref{def_G0}. Define the \(\Theta\)-matrices as  
+\be \label{def:Theta_BA}
+\qquad  \quad \Theta^{(+,-)}(z) := \big(1 - M^{(+,-)}(z) S^{(\sB)}\big)^{-1} , \ \ 
+   \Theta^{(+,+)}(z) = (\Theta^{(-,-)}(z))^* := \big(1 - M^{(+,+)}(z) S^{(\sB)}\big)^{-1} , 
+\ee
+where \( S^{(\sB)}=I_{L^d} \), and the matrices $M^{(+,-)}=M^{(-,+)}$ and $M^{(+,+)}=(M^{(-,-)})^*$ are defined by\footnote{Note the definition \eqref{def:Theta_BA} is consistent with \eqref{def:Theta}, where \(M^{(+,-)} = |m|^2 I\) and \(M^{(+,+)} = m^2 I\).}   
+\[ M^{(+,-)}_{ab}=\frac{1}{W^d}\sum_{x\in[a],y\in[b]}|M_{xy}|^2=|M^{(\sB)}_{ab}|^2,\quad M^{(+,+)}_{ab}=\frac{1}{W^d}\sum_{x\in[a],y\in[b]}M_{xy}M_{yx}=(M^{(\sB)}_{ab})^2. \] 
+% \(M^0\) and \(M^+\) are given by  
+% \({M}^0_{xy} := |M_{xy}|^2\) and \(M^+_{xy} := M_{xy} M_{yx}\) for \smash{$x,y \in \ZL$}. 
+Then, the quantum diffusion estimates \eqref{eq:diffu1}--\eqref{Meq:QdS2} hold if we replace $|m|^2\Theta_{ab}^{(+,-)}$ and $m^2\Theta_{ab}^{(+,+)}$ with $ (\Theta^{(+,-)}M^{(+,-)})_{ab}$ and $(\Theta^{(+,+)}M^{(+,+)})_{ab}$, respectively.
+\end{itemize}
+
+\end{theorem}
+
+%In \eqref{eq:BA}, we have assumed $\ilambda\ll 1$ following our earlier discussion. In \eqref{eq:BA}, 
+The lower bound $\ilambda\gg W^{-d/2}$ in \eqref{eq:WO} is sharp, as explained below \Cref{MR:decol}: when $\ilambda\ll W^{-d/2}$, the block Anderson model is localized, as proven in \cite{PelSchShaSod}. To establish \Cref{MR:decol_BA}, it is sufficient to prove the local laws \eqref{G_bound} and \eqref{G_bound_ave}, together with the quantum diffusion estimates \eqref{eq:diffu1}--\eqref{Meq:QdS2}, while the delocalization, QUE, and bulk universality can be derived as corollaries, as shown in \Cref{subsec:main}.
+
+
+
+%\section{Main tools and proof of main results}
+
+
+
+
+\subsection{Stochastic flow and loop hierarchy}\label{sec:tools}
+
+The remainder of this paper is devoted to proving the local laws in \Cref{MR:locSC} and the quantum diffusion estimates in \Cref{MR:QuDiff} for both models. Before proceeding with the proofs, we first introduce some key tools and convenient notations for the remainder of this section, which will be utilized throughout the subsequent arguments. 
+First, we introduce the flow framework, which is the same as that employed for 1D and 2D random band matrices \cite{YY_25,DYYY25} except for a dimension-dependent scaling $W^{-d}$. Consider the following matrix Brownian motion: 
+\begin{align}\label{MBM}
+	\dd (H_{t})_{xy}=\sqrt{S_{xy}}\dd (\boldsymbol{B}_{t})_{xy}, \ \ \forall x,y\in \ZL,\quad \text{where}\quad  H_{0}=\begin{cases}
+	    0, \ &\text{for band matrix}\\
+        \ilambda\Psi, \ &\text{for block Anderson}
+	\end{cases}.
+\end{align}
+Here, $(\boldsymbol{B}_{t})_{xy}$ are independent complex Brownian motions up to the Hermitian symmetry \smash{$(\boldsymbol{B}_{t})_{xy}=\overline {(\boldsymbol{B}_{t})_{yx}}$}, i.e., \smash{$t^{-1/2}\boldsymbol{B}_t$} is an $N\times N$ GUE whose entries have zero mean and unit variance; $S=(S_{xy})$ is the variance matrix defined in \eqref{eq:variancematrix} or \eqref{bandcwV}. %Along this flow, we consider a time-dependent spectral parameter $z_{t}$ as defined below.
+Following \cite{10.1214/19-ECP278, Sooster2019, DY}, we consider the Green's function of \( H_t \) with a carefully chosen time-dependent spectral parameter \( z_t \), whose dynamics are naturally renormalized at leading order.
+
+%We start with the matrix Brownian motion
+%\begin{align*}
+%dH_{t,xy}=\sqrt{S_{xy}}dB_{t,xy}, \quad H_{0}=0, 
+%\end{align*}
+%where $B_{t,xy}$ are independent standard complex Brownian motions for all $x,y\in \Z_{WL}^{d}$ up to the constraint  $B_{yx} = \bar  B_{xy}$. 
+ 
+
+%\begin{definition}\label{def_flow}
+%For any $E \in \mathbb R$,  define $
+%m^{(E)}:=\lim_{\epsilon\to 0+}m_{sc}(E+i \epsilon)$, and consider the following objects:
+%\begin{align*}
+%  z^{(E)}_t&=E+(1-t) m^{(E)}  ,\quad 0\le t\le 1 \\
+%  G_{t}^{(E)}&:=(H_{t}-z^{(E)}_{t})^{-1}.
+%\end{align*}
+%Note that the imaginary part of $z_{t}^{(E)}$ is given by the following formula:
+%\begin{align}\label{eta}
+%\eta_t := \im  z^{(E)}_t =  (1-t)  \im m^{(E)}.
+%\end{align}
+%\end{definition}
+
+\begin{definition}[Flow framework]\label{def_flow}
+For any $E \in \mathbb R$ and $\ilambda>0$, we denote $m(E,\ilambda)\equiv m(E+\ii 0_+,\ilambda)$, as defined in \eqref{eq:defmzsc} and \eqref{self_m} for the random band matrix and block Anderson model, respectively. Based on this, we define the \emph{spectral parameter flow} $z_t$ by 
+\be\label{eq:zt}
+z_t(E,\ilambda) = E + (1-t) m(E,\ilambda),\quad \text{for}\ \ t\in [0, 1]. 
+\ee
+We refer to $E$ and $\ilambda$ as {\bf flow parameters}, which remain fixed throughout the flow. Let $z_t=E_t + \ii \eta_t$ with 
+	\begin{align}\label{eta}
+		E_t\equiv E_t(E,\ilambda)=E+(1-t)\re m(E,\ilambda),\quad \eta_t\equiv \eta_t(E,\ilambda) = (1-t)  \im m(E,\ilambda).
+	\end{align}
+Furthermore, we define the matrix $M(E,\ilambda)$, as in \eqref{eq:defMzsc} and \eqref{def_G0} for the random band matrix and block Anderson model, respectively, with $z$ and $m(z)$ replaced by $E$ and $m(E,\ilambda)$.  
+Then, we denote the Green's function of $H_{t}$ as $G_t(z,\ilambda):=(H_t(\ilambda)-z)^{-1}$, and define the resolvent flow as 
+	\begin{align}\label{self_Gt}
+		G_{t;E,\ilambda}\equiv G_t(z_t(E,\ilambda),\ilambda):=(H_{t}(\ilambda)-z_t{(E,\ilambda)})^{-1}.
+	\end{align}
+% for given flow parameters $E$ and $\ilambda$. 
+ % By It{\^o}'s formula, $G_{t;E,\ilambda}$ satisfies the following SDE:
+	% \begin{align}\label{eq:SDE_Gt}
+	% 	\dd G_{t;E,\ilambda}=-G_{t;E,\ilambda}(\dd H_{t})G_{t;E,\ilambda}+G_{t;E,\ilambda}\{\mathcal{S}[G_{t;E,\ilambda}]-m(E,\ilambda)\}G_{t;E,\ilambda}
+	% 	\dd t.
+	% \end{align}
+\end{definition}
+
+\begin{remark}
+% \textcolor{blue}{Write a simple version  With $H_t$ as in \eqref{MBM} and $z_t$ as in \eqref{eq:zt}, define $M_t$ to be the solution of the matrix Dyson equation associated with $G_t=(H_t-z_t)^{-1}$:
+% \[
+% M_t := \bigl(g\,\Psi - z_t - t\,\mathcal S[M_t]\bigr)^{-1}.
+% \]
+% It is standard that $M_t$ provides the deterministic (self-consistent) limit of $G_t$. Moreover, since $\mathcal S[M(E,g)]=m(E,g)$, we have $M_t \equiv M(E,g)$ for all $t\in[0,1]$. Hence, along the flow $H_t$ with spectral parameter $z_t$, the deterministic limit of $G_t$ remains invariant.
+% (the $\cal S$ is in defined in the next Def. but I suggest to move to the definition of $M$ and point out it the solution to Matrix Dyson equation}
+
+To explain the choice of the flow $z_t$ in \eqref{eq:zt}, let $M_t(z,\ilambda)\in \cal M_N(\C)$ (where $\cal M_N(\C)$ denotes the set of $N\times N$ complex matrices) be the unique solution to the matrix Dyson equation 
+\be\label{def_G0t}
+M_t(z,\ilambda):= \p{H_0 -z- t \cal S[M_t(z,\ilambda)]}^{-1},
+ \ee
+such that $\im M_t$ is positive definite whenever \(z\in \C_+\). Here, the linear operator $\mathcal{S}$ is defined by
+	\begin{align}\label{eq:opS}
+		\mathcal{S}[X]_{xy}:=\delta_{xy}\sum_{w=1}^{N}S_{xw}X_{ww},\quad \text{for}\quad X\in \cal M_{N}(\C),
+	\end{align}
+where $S_{xy}$ is given by \eqref{eq:variancematrix} and \eqref{bandcwV} for the respective models. 
+It is known that $M_t$ describes the deterministic limit of the Green's function $(H_t-z)^{-1}$. 
+Moreover, since $\cal S[M(E,\ilambda)]=m(E,\ilambda)I_N$, one can check that \(M_t(z_t(E,\ilambda),\ilambda)\equiv M(E,\ilambda)\).  %solves \eqref{def_G0t}. 
+In other words, the deterministic limit of $G_t$ remains invariant under the evolution.  
+
+%In the proof, we will use a slightly different $\ilambda_0$ from $\ilambda$; see \Cref{zztE} below.    
+% In other words, $m_t(z)$ is the Stieltjes transform of the semicircle law (with an extra scaling $\sqrt{t}$):
+% \[m_t(z)=\int\frac{\rho_t(x)\dd x}{x-z}=\frac{-z+\sqrt{z^2-4t}}{2t},\quad \text{with}\quad \rho_t(x)=\frac{\sqrt{4t-x^2}}{2\pi t}\mathbf 1_{x\in [-2\sqrt{t},2\sqrt{t}]} \, .\]
+% Then, the flow \eqref{eq:zt} is defined in a way such that
+% \be\label{eq:mt_stay} m_t(z_t(E))\equiv m(E),\quad \forall t\in [0,1].\ee 
+\end{remark}
+
+% Next, we define the resolvent flow for the Green's function with $H_t$ given by \eqref{MBM} and $z_t$ given by \eqref{eq:zt}.
+
+% \begin{definition}[Resolvent flow]\label{Def:stoch_flow}
+% 	\textcolor{blue}{This whole definition was not serious used at all, we can remove it}Consider the matrix dynamics $H_t\equiv H_t(\ilambda)$ evolving according to \eqref{MBM}. Then, we denote Green's function of $H_{t}$ as $G_t(z,\ilambda):=(H_t(\ilambda)-z)^{-1}$, and define the resolvent flow as 
+% 	\begin{align}\label{self_Gt}
+% 		G_{t;E,\ilambda}\equiv G_t(z_t(E,\ilambda),\ilambda):=(H_{t}(\ilambda)-z_t{(E,\ilambda)})^{-1}
+% 	\end{align}
+%  for given flow parameters $E$ and $\ilambda$. By It{\^o}'s formula, $G_{t;E,\ilambda}$ satisfies the following SDE:
+% 	\begin{align}\label{eq:SDE_Gt}
+% 		\dd G_{t;E,\ilambda}=-G_{t;E,\ilambda}(\dd H_{t})G_{t;E,\ilambda}+G_{t;E,\ilambda}\{\mathcal{S}[G_{t;E,\ilambda}]-m(E,\ilambda)\}G_{t;E,\ilambda}
+% 		\dd t.
+% 	\end{align}
+% Here, $\mathcal{S}:M_{N}(\C)\to M_{N}(\C)$ is a linear operator defined as
+% 	\begin{align}\label{eq:opS}
+% 		\mathcal{S}[X]_{xy}:=\delta_{xy}\sum_{y=1}^{N}S_{xy}X_{yy},\quad \text{for}\quad X\in M_{N}(\C).
+% 	\end{align}
+% where $S_{xy}$ is given by \eqref{eq:variancematrix} and \eqref{bandcwV} for the two models.
+% \end{definition}
+
+
+Given any target spectral parameter $z$, we are interested in the original resolvent $G(z)=(H-z)^{-1}$. For random band matrices, this can be achieved through the stochastic flow by carefully choosing the spectral parameter $E$. The corresponding flow for the block Anderson model will be presented later in \Cref{sec:ext-to-BA}. 
+
+
+\begin{lemma}[Lemma 2.8 of \cite{YY_25}]\label{zztE}
+Fix any $z\in \mathbb C_+$ with $\im z\in (0, 1]$ and $|\re z|\le 2-\kappa$. We choose 
+	\be\label{eq:t0E0}t_0\equiv t_0(z)=|m(z)|^2=\frac{\im m(z)}{\im m(z)+ \im z},\quad E\equiv E(z)=-2\frac{\re m(z)}{|m(z)|}\, .\ee
+	Then, for the random band matrix model, we have  
+	\begin{equation}\label{eq:zztE}
+		\sqrt{t_0}m(E)=m(z), \quad     z_{t_0}(E) =\sqrt{t_0} z  , \quad G(z) \stackrel{d}{=} \sqrt{t_0} G_{t_0;E} ,
+	\end{equation} 
+    where ``$\stackrel{d}{=}$'' means equality in distribution.
+	% and the following equality in distribution (denoted by ``$\stackrel{d}{=}$''):
+	% \begin{equation}\label{GtEGz}
+	% 	G(z) \stackrel{d}{=} \sqrt{t_0} G_{t_0,E} .
+	% \end{equation}
+\end{lemma}
+
+
+
+%and $|E_t|\le (2-\kappa)\sqrt{t}+\oo(1)$ for $|1-t|=\oo(1)$. 
+%In other words, during the flow from $t=0$ to $t_0$, the imaginary part $\eta_t$ decreases from $\eta_0\asymp 1$ to $\eta_{t_0}\asymp 1-t_0 \asymp \im z $, while the spectral parameter $z_t$ stays within the bulk of the limiting spectrum of $H_t$, provided $t\ge 1 - \e$ for a small enough constant $\e>0$ depending on $\kappa$. 
+
+ 
+In the main proofs for random band matrices, we will fix a target spectral parameter $z=\hat{E}+\ii \eta\in \mathbf D_{\kappa,\e}$ for an arbitrarily small constant $\e>0$ (recall \eqref{eq:spectral_domain}). Accordingly, we choose the parameters $t_0$ and $E$ as specified in \eqref{eq:t0E0}. The second identity in \eqref{eta} implies that $1-t\asymp \eta_t$ uniformly in $t\in [0,t_0]$, i.e., during the flow from $t=0$ to $t_0$, the imaginary part $\eta_t$ decreases from $\eta_0\asymp 1$ to $\eta_{t_0}\asymp 1-t_0 \asymp \eta \ge N^{-1+\e}$.  
+For clarity, unless we want to emphasize their dependence on $E$ (or $g$), we will often omit this variable from various notations, such as $z_t(E,\ilambda)$, $E_t(E,\ilambda)$, $\eta_t(E,\ilambda)$, $m(E,\ilambda)$, $M(E,\ilambda)$, and most importantly, $G_{t;E,\ilambda}\equiv G_t$. Our focus will be on the dynamics of $G_{t}$ and the corresponding $G$-loops defined below. 
+
+
+\begin{definition}[$G$-loop]\label{Def:G_loop}
+For $\sigma\in \{+,-\}$, we denote 
+ \begin{equation}\nonumber
+  G_{t}(\sigma):=\begin{cases}
+       (H_t-z_t)^{-1}, \ \ \text{if} \ \  \sigma=+,\\
+        (H_t-\bar z_t)^{-1}, \ \ \text{if} \ \ \sigma=-.
+   \end{cases}
+ \end{equation}
+In other words, we let $G_{t}(+)\equiv G_{t}$ and $G_{t}(-)\equiv G_{t}^*$. %Recall that $E_{a}$ ($a\in \Zn$) denotes the rescaled block identity matrix: \((E_{a})_{xy}= W^{-d}\delta_{xy}\cdot \mathbf 1_{x\in [a]} \).
+% Denote by $\id_{a}$ and $E_{a}$ ($a\in \Zn$) the block identity and rescaled block identity matrices, respectively:
+% \be\label{def:Ia} (\id_{a})_{xy}= \delta_{xy}\cdot \mathbf 1_{x\in [a]} , \quad E_{a}=W^{-d}\id_{a}.\ee
+For any $n\in \N$, fix indices $\bsig=(\sigma_1, \ldots, \sigma_n)\in \{+,-\}^n$ and $\ba=(a_1, \ldots, a_n)\in (\Zn)^n$. We define the corresponding {\bf $n$-$G$-loop} by 
+\begin{equation}\label{Eq:defGLoop}
+    {\cal L}^{(n)}_{t, \bsig, \ba}= \tr \p{\prod_{i=1}^n \left(G_{t}(\sigma_i) E_{a_i}\right) }, \quad \text{where} \quad (E_{a_i})_{xy} = W^{-d}\mathbf 1(x=y\in [a_i]).
+\end{equation}
+%where we recall that $\avg{\cdot}$ denotes the trace operator. 
+Sometimes, we will also refer to $G$-loops as $\cL$-loops. Furthermore, we denote 
+\begin{equation}\label{def_mtzk}
+m (\sigma ):= \begin{cases}
+    m(E,\ilambda),  &\text{if} \ \ \sigma  =+ \\
+    \bar m(E,\ilambda),  &\text{if} \ \ \sigma = -
+\end{cases}, \quad M (\sigma ):= \begin{cases}
+     M(E,\ilambda) ,  &\text{if} \ \ \sigma  =+ \\
+     M(E,\ilambda)^*,  &\text{if} \ \ \sigma = -
+ \end{cases}.
+\end{equation}
+Finally, we define the \emph{centered resolvent} $\Gc$ as
+\begin{equation}\label{Eq:defwtG}
+ \Gc_t(\sigma) := G_t(\sigma) - M(\sigma),\quad \forall t\in[0,1], \ \sig\in \{+,-\} .
+\end{equation}
+(Note that $\Gc_t(\sigma)$ was denoted by $\widetilde{G}_t(\sigma)$ in the preceding papers \cite{YY_25, DYYY25}; here we adopt a different notation for clarity.) 
+For any $a\in \Zn$, we refer to $\tr[\Gc_t(\sig) E_a]$ as a \emph{light-weight}.
+\end{definition}
+
+
+
+
+
+%For the rest of the paper, we will fix $E$ such that $|E| \le 2-\kappa$ and consider only  $G_t^{(E)}$.  We now define the aforementioned $G$-loops. 
+% \begin{definition}\label{Def:G_loop}
+%  For any fixed $E\in\R$, consider the following resolvent as a function of $+,-$ signs:
+%  \begin{equation}\nonumber
+%   G^{(E)}_{t }(\sigma):=  G^{(E)}_{t,\alpha} =
+%    \begin{cases}
+%        (H_t-z_t)^{-1}, \quad \sigma=+\\
+%         (H_t-\bar z_t)^{-1}, \quad \sigma=-
+%    \end{cases}.
+%  \end{equation}
+% By definition, $G^{(E)}_{t,+} =\left(G^{(E)}_{t,-}\right)^\dagger$. 
+% For simplicity,  we sometimes write 
+% $G_t=G^{(E)}_{t,+}$. Define the block-identity matrix $E_a$ as follows.
+% \[
+% \left(E_{a}\right)_{xy} = \delta_{xy} \cdot W^{-d} \cdot \mathbf{1}\left(x\in \mathcal{I}_a\right), \quad x,y\in \Z_{WL}^d,\quad a\in \Z_L^d.
+% \]
+
+% \medskip
+
+% Now, fix indices
+% $$
+% \bsig=(\sigma_1, \sigma_2, \cdots \sigma_n),\quad 
+% \boldsymbol{a}=(a_1, a_2, \cdots a_n)
+% ,\quad \sigma_i \in \{+,-\}, \quad
+% a_i\in \mathbb Z_L^{d}, \quad 1\le i\le n.
+% $$
+% We define the corresponding ``$n$-$G$ loop'' to be the following complex number: 
+% \begin{equation}\label{Eq:defGLoop}
+%     {\cal L}_{t, \bsig, \mathbf{a}}=\left\langle \prod_{i=1}^n G_t(\sigma_i) E_{a_i}\right\rangle,\quad 
+% \text{where} \quad \left\langle A\right\rangle=\tr A.
+% \end{equation}
+% We also define 
+% \begin{equation}\label{def_mtzk}
+% m (\sigma ):=m^{(E)}(\sigma ) = \begin{cases}
+%      m^{(E)}, & \sigma  =+ \\
+%      \overline{m^{(E)}} , & \sigma = -
+% \end{cases},
+% \end{equation}
+% %and $\widetilde{G}_t $ as follows, 
+% and
+% \begin{equation}\label{Eq:defwtG}
+%  \Gc_t(\sigma_k) := G_t(\sigma_k) - m (\sigma_k) .
+% \end{equation}
+% \end{definition}
+
+%Note that the function $\Gc_t(\sigma)$ is the same function that was denoted $\widetilde{G}_t(\sigma)$ in the preceding $d=1,2$ papers \cite{YY_25, DYYY25}.
+
+%With these notations, we can rewrite the quantity 
+%$\tr G E_a G^\dagger  E_b$ in Theorem \ref{MR:QDiff} as follows:
+%$$
+%\tr G E_a G^\dagger  E_b=t \cdot \tr (G_{t,+})\cdot E_a\cdot (G_{t,-})\cdot  E_b=t\cdot {\cal L}_{t, (+,-),(a,b)}.
+%$$
+
+To describe the loop hierarchy for the $G$-loops, we introduce the following operations from \cite{YY_25}. (For a graphical illustration of these operations, see also the diagrams in \cite[Definition 2.10]{YY_25}.)
+
+
+\begin{definition}\label{Def:oper_loop}
+For any fixed $n\in \N$, take an $n$-loop of the form \eqref{Eq:defGLoop}.
+% \begin{equation}\label{taahCal}
+%    {\cal L}^{(n)}_{t, \bsig, \mathbf{a}} = \left\langle \prod_{i=1}^n \p{G_t(\sigma_i) E_{a_i}} \right\rangle, \quad \forall \sigma_i \in \{+, -\}, \ a_i\in \Zn, \ 1 \le i \le n .
+% \end{equation}
+
+\medskip
+ 
+ \noindent 
+ \emph{1.} For $k \in \qqq{n}$ and $a\in \Zn$, we define a ``cut-and-glue'' operator ${\cut}^{(a)}_{k}$ as follows: ${\cut}^{(a)}_{k} \circ {\cal L}^{(n)}_{t, \bsig, \mathbf{a}}$ is defined to be the loop obtained by replacing $G_t(\sigma_k)$ with $G_{t}(\sigma_k) E_a G_{t}(\sigma_k)$. In other words, it cuts the $k$-th edge $G_t(\sigma_k)$ and glues the two new ends with $E_{a}$ to get a new loop that is one unit longer. This operator can also be considered as an operator on $(\bsig,\ba)$, that is, 
+\begin{align*}{\cut}^{(a)}_{k} (\bsig, \ba) =  \big( & (\sigma_1,\ldots, \sigma_{k-1}, \sigma_k,\sigma_k ,\sigma_{k+1},\ldots, \sigma_n ),\  ( a_1 ,\ldots,  a_{k-1} ,  a , a_k , a_{k+1} ,\ldots,  a_n  )\big).\end{align*}
+Hence, we will sometimes write ${\cut}^{(a)}_{k} \circ {\cal L}^{(n)}_{t, \bsig, \ba}\equiv {\cal L}^{(n+1)}_{t, \;  {\cut}^{(a)}_{k} (\bsig, \ba)}.$ 
+
+% \be\label{eq:cut1}
+%     {\cut}^{[a]}_{k} \circ {\cal L}^{(n)}_{t, \bsig, \ba}:= \left \langle \prod_{i<k}  \left(G_{t}(\sigma_i) E_{[a_i]}\right)\left( G_{t}(\sigma_k) E_{[a]} G_{t}(\sigma_k)E_{[a_k]}\right)\prod_{i>k}  \left(G_{t}(\sigma_i) E_{[a_i]}\right)\right\rangle.
+% \ee
+%For $1 \le k \le n$, we define a ``cut-and-glue'' operator ${\cal G}^{(a)}_{k}$ as follows. Its action on a loop ${\cal L}_{t,\bsig,\mathbf{a}}$ is denoted by ${\cal G}^{(a)}_{k} \circ {\cal L}_{t, \bsig, \mathbf{a}}$, and it is defined to be the loop obtained by replacing $G_t(\sigma_k)$ by $G_{t}(\sigma_k) E_a G_{t}(\sigma_k)$.
+ 
+
+ \noindent 
+ \emph{2.}  For $k < l \in \qqq{n}$, we define two other types of ``cut-and-glue'' operators---${\cutL}^{(a)}_{k,l}$ from the left (``L'') of $k$, and \smash{${\cutR}^{(a)}_{k,l}$} from the right (``R'') of $k$---as follows. 
+ In other words, these operators cut the $k$-th and $l$-th edges $G_t(\sigma_k)$ and $G_t(\sigma_l)$, and create two chains: the left chain to the vertex $a_k$ is of length $(n+k-l+1)$ and contains the vertex $a_n$, while the right chain to the vertex $a_k$ is of length $(l-k+1)$ and does not contain the vertex $a_n$.  
+Then, \smash{${\cutL}^{(a)}_{k,l}$ (resp.~${\cutR}^{(a)}_{k,l}$)} gives an $(n+k-l+1)$-loop (resp.~$(l-k+1)$-loop) obtained by gluing the left chain (resp.~right chain) at the new vertex $a$.
+Again, we can also consider the two operators to be defined on the indices $(\bsig,\ba)$: 
+\begin{align*}
+    &{\cutL}^{(a)}_{k,l} (\bsig, \ba) = \left((\sigma_1,\ldots, \sigma_k,\sigma_l ,\ldots, \sigma_n ),(a_1,\ldots, a_{k-1}, a,a_l,\ldots, a_n )\right),\\
+    &{\cutR}^{(a)}_{k,l} (\bsig, \ba) = \left((\sigma_k,\ldots, \sigma_l),(a_k,\ldots, a_{l-1}, a)\right).
+\end{align*}
+Hence, we will sometimes write 
+    ${\cutL}^{(a)}_{k,l} \circ {\cal L}^{(n)}_{t, \bsig, \ba}\equiv 
+     {\cal L}^{(n+k-l+1)}_{t,   {\cutL}^{(a)}_{k,l} (\bsig, \ba)}$ and $ {\cutR}^{(a)}_{k,l} \circ {\cal L}^{(n)}_{t, \bsig, \ba}\equiv 
+     {\cal L}^{(l-k+1)}_{t,  {\cutR}^{(a)}_{k,l} (\bsig, \ba)}.$
+\end{definition}
+
+    
+
+
+
+ 
+%The following result gives the evolution of $G$-loops along the flow, which  It is derived via the It\^o formula. Throughout this paper, we let $\mathbf{a}=(a_{1},\ldots,a_{n})$ be a vector of indices in $\Z_{L}^{d}$, and we let $a\in\Z_{L}^{d}$ be a single index that is separate from $\mathbf{a}$. Finally, for convenience, we will use the notation $\partial_{(x,y)}:=\partial_{H_t(x,y)}$.
+
+For $x,y\in \ZL$, we abbreviate $\partial_{xy}:=\partial_{(H_t)_{xy}}$. By It\^o's formula, we can derive the following SDE satisfied by the $G$-loops, called \emph{loop hierarchy}; see Lemma 2.11 of \cite{YY_25}.  
+
+ 
+\begin{lemma}[Loop hierarchy] \label{lem:SE_basic}
+An $n$-$G$-loop satisfies the following SDE, called the \emph{loop hierarchy}:
+\begin{align}\label{eq:mainStoflow}
+\dd\mathcal{L}^{(n)}_{t, \bsig, \ba} = \dd\mathcal{E}^{M,(n)}_{t, \bsig, \mathbf{a}} + \mathcal{E}^{\Gc,(n)}_{t, \bsig, \ba}\dd t +
+   W^{d} \sum_{1 \le k < l \le n} \sum_{a, b} \left( {\cutL}^{(a)}_{k, l} \circ \mathcal{L}^{(n)}_{t, \bsig, \ba} \right) S^{(\sB)}_{ab} \left( {\cutR}^{(b)}_{k, l} \circ \mathcal{L}^{(n)}_{t, \bsig, \ba} \right) \dd t, 
+\end{align}
+where $S^{(\sB)}$ denotes $S^{(\sB)}(\ilambda)$ in \eqref{eq:variancematrix} (for the random band matrix model) or $S^{(\sB)}(0)=I_{L^d}$ (for the block Anderson model). Moreover, the martingale term \smash{$\dd\mathcal{E}^{M,(n)}_{t, \bsig, \ba}$} and the light-weight term %(as defined below \eqref{eq:lweightnota}) term 
+\smash{$\mathcal{E}^{\Gc,(n)}_{t, \bsig, \ba}$} are defined by 
+ \begin{align} \label{def_Edif}
+\dd\mathcal{E}^{M,(n)}_{t, \bsig, \ba} :  = & \sum_{x,y\in \ZL} 
+  \left( \partial_{xy}  {\cal L}^{(n)}_{t, \bsig, \ba}  \right)
+ \cdot \sqrt{S _{xy}}
+  \left(\dd \boldsymbol{B}_t\right)_{xy}, \\\label{def_EwtG}
+\mathcal{E}^{\Gc,(n)}_{t, \bsig, \ba}:= &  {W}^d \sum_{k=1}^n \sum_{a, b\in \Zn} \; 
+ \tr\p{ \Gc_t(\sigma_k) E_{a} }
+   S^{(\sB)}_{ab} 
+  \left( {\cut}^{(b)}_{k} \circ {\cal L}^{(n)}_{t, \bsig, \ba} \right) . 
+\end{align}
+We emphasize that the superscript $(n)$ indicates the length of the $G$-loop on the left-hand side of the equation. For clarity and conciseness, we may omit this superscript when its value is clear from the context. %and we will sometimes omit it from our notations when the value of $n$ is clear from the context. 
+%  Above, we used the notation 
+%   \begin{align} \label{def_Edif}
+% \mathcal{E}^{(M)}_{t, \bsig, \mathbf{a}} :  = & \sum_{\alpha=(x,y)} 
+%   \left( \partial_{  \alpha} \; {\cal L}_{t, \bsig, \mathbf{a}}  \right)
+%  \cdot \left(S _\alpha\right)^{1/2} \cdot
+%   \mathrm{d} \left({B}_t\right)_{\alpha} \\\label{def_EwtG}
+%   \mathcal{E}^{(\Gc)}_{t, \bsig, \mathbf{a}}: = &   W^{d}\cdot \sum_{1 \le k \le n} \sum_{a, b} \; 
+%  \left \langle \Gc_t(\sigma_k) E_a \right\rangle
+%   \cdot S^{(B)}_{ab} \cdot
+%   \left( {\cal G}^{(b)}_{k} \circ {\cal L}_{t, \bsig, \mathbf{a}} \right) dt ,\quad \quad \Gc_t = G_t - m.
+% \end{align}
+  \end{lemma}
+  
+%The factor of $W^{d}$ in ${\cal E}^{(\Gc)}$ comes from the normalization that $E_{a}$ has a factor of $W^{-d}$. 
+
+Note that the right-hand side (RHS) of equation \eqref{eq:mainStoflow} involves $G$-loops of length larger than $n$, and hence represents a ``hierarchy'' rather than a ``self-consistent equation'' for the $G$-loops. This loop hierarchy is well-approximated by the $\cK$-loops, defined as follows. 
+
+
+\begin{definition}[Tree approximation]\label{Def_Ktza}
+We define the $\cK$-loop of length 1 as: 
+$${\cal K}^{(1)}_{t,\sigma,a}=m(\sigma),\quad \forall t\in [0,1),\; \;\sigma\in \{+,-\},\;\; a\in \Zn.$$ 
+For $n\ge 2$, we define the function \smash{${\cal K}^{(n)}_{t, \bsig, \ba}$} (of $t\in[0,1)$, $\bsig\in \{+,-\}^n$, and \smash{$\ba\in (\Zn)^n$}) to be the unique solution to the following system of equations, referred to as the \emph{\bf convolution tree equations}: 
+ \begin{align}\label{pro_dyncalK}
+       \partial_t{\cal K}^{(n)}_{t, \bsig, \ba} 
+       =  
+       W^d \sum_{1\le k < l \le n} \sum_{a, b} \left( \cutL^{(a)}_{k, l} \circ \mathcal{K}^{(n)}_{t, \bsig, \ba} \right) S^{(\sB)}_{ab} \left( \cutR^{(b)}_{k, l} \circ \mathcal{K}^{(n)}_{t, \bsig, \ba} \right) ,
+    \end{align}
+where the operators $\cutL$ and $\cutR$ act on ${\cal K}^{(n)}_{t, \bsig, \ba}$ through the actions on indices: 
+  \be\label{calGonIND}
+     {\cutL}^{(a)}_{k,l}  \circ {\cal K}^{(n)}_{t, \bsig, \ba} := {\cal K}^{(n+k-l+1)}_{t,  {\cutL}^{(a)}_{k,l}  (\bsig, \ba)} , \ \  {\cutR}^{(b)}_{k,l}  \circ {\cal K}^{(n)}_{t, \bsig, \ba} := {\cal K}^{(l-k+1)}_{t,  {\cutR}^{(b)}_{k,l}  (\bsig, \ba)}.  
+       \ee
+We impose the following initial condition at $t=0$: 
+\be\label{eq:initial_K}
+{\cal K}^{(k)}_{0, \bsig, \ba} =  {\cal M}^{(k)}_{\bsig, \ba} ,\quad \forall k\in \N, \ \bsig\in \{+,-\}^k,\ \ba\in (\Zn)^k,\ee
+where ${\cal M}^{(k)}_{\bsig, \ba}$ is a $k$-$M$-loop defined as
+\be\label{eq:KMloop} {\cal M}^{(k)}_{\bsig, \ba}:=\tr\p{ \prod_{i=1}^k \left(M(\sigma_i) E_{a_i}\right) } .\ee
+(Note that this $M$-loop can be simplified as \smash{${\cal M}^{(k)}_{\bsig, \ba}= W^{-(k-1)d}\prod_{i=1}^k m(\sig_i) \mathbf 1(a_1=\cdots=a_k)$} for the random band matrix model.) 
+% \be\label{eq:initial_K}
+% {\cal K}^{(k)}_{0, \bsig, \ba} = W^{-(k-1)d}\prod_{i=1}^k m(\sig_i)\cdot \mathbf 1(a_1=\cdots=a_k) ,\quad \forall k\in \N, \ \bsig\in \{+,-\}^k,\ \ba\in (\Zn)^k.\ee
+% where ${\cal M}^{(k)}_{\bsig, \ba}$ is defined as
+% \be\label{eq:KMloop} {\cal M}^{(k)}_{\bsig, \ba}:=\left \langle \prod_{i=1}^k \left(M(\sigma_i) E_{[a_i]}\right)\right\rangle = W^{-(k-1)d}\prod_{i=1}^k m(\sig_i) \mathbf 1([a_1]=\cdots=[a_k]).\ee
+%In \eqref{pro_dyncalK}, \textcolor{blue}{this sentense should be right below \eqref{pro_dyncalK}}
+We call \smash{${\cal K}^{(n)}_{t, \bsig, \ba}$} an $n$-$\cK$-loop. Moreover, we refer to \smash{${\cal K}^{(n)}_{t, \bsig, \ba}$} as providing a \emph{\bf tree approximation} of the $G$-loop \smash{$\mathcal{L}^{(n)}_{t, \bsig, \ba}$}, since it admits an explicit tree representation, as shown in \cite{YY_25,RBSO1D} (see also \Cref{Sec:CalK} for the detailed construction).
+%cite \cite{DYYY25_d3} here
+\end{definition}    
+
+
+
+%\begin{lemma}[Ward's identity]\label{lem-Ward}
+Given any Hermitian matrix $\cal A$, define its resolvent as $R(z):=(\cal A-z)^{-1}$ for $z= E+ \ii \eta\in \C_+$. Then, with the algebraic identity $R-R^*=2\ii \eta RR^*=2\ii \eta R^*R$, we get the well-known Ward's identity:
+    \be\label{eq_Ward0}
+    \begin{split}
+\sum_x \overline {R_{xy'}}  R_{xy} = \frac{1}{2\ii \eta}\p{R_{y'y}-\overline{R_{yy'}}},\quad
+\sum_x \overline {R_{y'x}}  R_{yx} = \frac{1}{2\ii \eta}\p{R_{yy'}-\overline{R_{y'y}}}.
+\end{split}
+\ee
+As a special case, if $y=y'$, we have
+\be\label{eq_Ward}
+\sum_x |R_{xy}( z)|^2 =\sum_x |R_{yx}( z)|^2 = {\im R_{yy}(z) }/{ \eta}.
+\ee
+% \end{lemma}
+% \begin{proof}
+% These identities follow directly from the algebraic identity $R-R^*=2\ii \eta RR^*=2\ii \eta R^*R$.
+% \end{proof}
+Applying \eqref{eq_Ward0} to $G_t$, we can show that the $G$-loops satisfy the following identity \eqref{WI_calL}, which we also refer to as a ``Ward's identity''. In \cite{YY_25,RBSO1D}, it is shown that a similar Ward's identity \eqref{WI_calK} holds for the $\cal K$-loops. 
+
+\begin{lemma}[Ward's identity for $\cL$-loops and $\cK$-loops]\label{lem_WI_K} 
+Given $\bsig\in\{+,-\}^n$ with $n\ge 2$ and $\sigma_1=-\sig_{n}$, we have the following identities, which are called Ward's identities at the vertex $a_n$: 
+\begin{align}\label{WI_calL}
+&\sum_{a_n}{\cal L}^{(n)}_{t, \bsig, \ba}=
+\frac{1}{2\ii W^d\eta_t}\left( {\cal L}^{(n-1)}_{t,  \wh\bsig^{(+,n)}, \wh\ba^{(n)}}- {\cal L}^{(n-1)}_{t,  \wh\bsig^{(-,n)} , \wh\ba^{(n)}}\right),  \\
+\label{WI_calK}
+& \sum_{a_n}{\cal K}^{(n)}_{t, \bsig, \ba}=
+\frac{1}{2\ii W^d\eta_t}\left( {\cal K}^{(n-1)}_{t,  \wh\bsig^{(+,n)}, \wh\ba^{(n)}}- {\cal K}^{(n-1)}_{t,  \wh\bsig^{(-,n)}, \wh\ba^{(n)}}\right) , 
+\end{align}
+where $\eta_t$ is defined in \eqref{eta}, $\wh\bsig^{(\pm,n)}$ is obtained by removing $\sigma_n$ from $\bsig$ and replacing $\sigma_1$ with $\pm$, i.e., \smash{$\wh\bsig^{(\pm,n)}:=(\pm, \sigma_2, \cdots \sigma_{n-1})$}, and \smash{$\wh\ba^{(n)}$} is obtained by removing $a_n$ from $\ba$, i.e., \smash{$\wh\ba^{(n)}:=(a_1, a_2,\cdots, a_{n-1})$}. 
+\end{lemma}
+\begin{proof}
+For the random band matrix, this corresponds to Lemma 3.6 in \cite{YY_25}, while for the block Anderson model, it corresponds to Lemma 3.17 in \cite{RBSO1D}. 
+\end{proof}
+
+
+%cite \cite{DYYY25_d3} here
+In \Cref{Sec:CalK}, we will present a tree representation formula for the $\cK$-loops, originally discovered in \cite{YY_25} for the random band matrix model and in \cite{RBSO1D} for the block Anderson model. Using this tree representation, we can establish the following upper bound \eqref{eq:bcal_k} for $\cK$-loops. The proof, being similar to those in \cite{YY_25,RBSO1D}, is deferred to \Cref{Sec:CalK}.
+
+
+\begin{lemma}[Upper bounds on $\cK$-loops]\label{ML:Kbound}
+Fix any dimension $d\ge 3$.	Then, for every $n\in \N$ and $t\in [0,1)$, the $\cK$-loops satisfy the upper bound 
+	\begin{equation}\label{eq:bcal_k}
+		\max_{\bsig\in\{+,-\}^n}\max_{\ba\in(\Zn)^n} \big| {\cal K}^{(n)}_{t, \bsig, \ba} \big| \prec \left(W^{-d}B_{t,0}\right)^{n-1},      
+	\end{equation}
+where $B_{t,0}=(\ilambda^2+|1-t|)^{-1}+(L^d|1-t|)^{-1}$ is defined precisely in \Cref{defi:ofB} below. 
+\end{lemma}
+
+
+\subsection{Propagators} %\texorpdfstring{$\Theta_\xi^{(\sB)}$}{Theta} and an estimate on \texorpdfstring{${\cal K}$}{ K}}
+
+The quantum diffusion behavior of the resolvents is governed by the $\Theta$-propagators, defined as follows.
+ 
+  
+\begin{definition}\label{def_Theta}
+Given $\sigma_1,\sigma_2\in \{+,-\}$, define an $L^d\times L^d$ matrix $M^{(\sigma_1,\sigma_2)}$ as a rescaled 2-$M$-loop:
+\be\label{eq:Msig} M^{(\sigma_1,\sigma_2)}_{ab}:= W^d\tr\p{ M(\sigma_1) E_{a}M(\sigma_2) E_{b}},\quad \forall a,b\in \Zn.\ee
+For the random band matrix model, we have $M^{(\sigma_1,\sigma_2)}=m(\sigma_1)m(\sigma_2)I_{L^d}$; for the block Anderson model, we have \smash{$M^{(\sigma_1,\sigma_2)}_{ab}=M^{(\sB)}_{ba}(\sigma_1)M^{(\sB)}_{ab}(\sigma_2)$}, where $M^{(\sB)}$ is defined in \eqref{def_G0}, with $M^{(\sB)}(+)\equiv M^{(\sB)}$ and $M^{(\sB)}(-)\equiv (M^{(\sB)})^*$. 
+For $t\in[0,1)$ and $\sigma_1,\sigma_2\in \{+,-\}$, the $\Theta$-propagator \smash{$\Theta_t^{(\sigma_1,\sigma_2)}$} is an $L^d\times L^d$ matrix defined as:
+\begin{equation}\label{def_Thxi}
+    \Theta_{t}^{(\sigma_1,\sigma_2)} := \p{1 - t M^{(\sigma_1,\sigma_2)}S^{(\sB)}}^{-1}, 
+\end{equation}
+where $S^{(\sB)}$ is given by $S^{(\sB)}(\ilambda)$ in \eqref{eq:variancematrix} or $S^{(\sB)}(0)=I_{L^d}$, depending on whether we consider the random band matrix model or the block Anderson model.  
+%\eqref{eq;smatrixB} or \eqref{eq;sproductBA}. 
+%it can be simplified by using $S^{(\sB)}(0)=I_{L^d}$; . 
+% allowing us to simplify \eqref{def_Thxi} as:
+% \be\label{eq:Theta_WO}\Theta_{t}^{(\sigma_1,\sigma_2)}= \p{1-t m(\sigma_1)m(\sigma_2)S^{(\sB)}}^{-1}.\ee 
+% Given $\xi \in \mathbb{C}$ with $|\xi| < 1$, we define the {\bf propagator} $\Theta^{(\sB)}_{\xi}$ to be a $L^{d}\times L^{d}$ matrix with entries {\cor here}
+% \begin{equation}\label{def_Thxi}
+%     \Theta^{(\sB)}_\xi := \p{1 - \xi \cdot S^{(\sB)}}^{-1} .
+% \end{equation}
+% Here, the superscript $(\sB)$ indicates a block-level matrix, whose indices are parameterized by $\Zn$. 
+We denote the entries of \smash{$\Theta_{t}^{(\sigma_1,\sigma_2)}$} as \smash{$\Theta_{t}^{(\sig_1,\sig_2)}(a,b)$ or $\Theta_{t,ab}^{(\sig_1,\sig_2)}$}. We further define the zero-mode-removed propagator \smash{$\zTheta^{(\sig_1,\sig_2)}_{t}$} by 
+\begin{equation}\label{def_Thxi0}
+\zTheta^{(\sig_1,\sig_2)}_{t}(a,b):=\Theta^{(\sig_1,\sig_2)}_{t}(a,b) -{L^{-2d}}\sum_{a',b'}\Theta^{(\sig_1,\sig_2)}_{t}(a',b').
+\end{equation}
+\end{definition}
+
+
+%For convenience, we often omit the superscript $(B)$. We remind the readers that $\Theta$  was often  used to denote the \(N \times N\) matrix  \((1 - \xi S)^{-1}\) in the literature.   In this paper,  $\Theta_\xi= \Theta_\xi^{(B)}$.  We note that
+% \begin{equation}\label{deri_Thxi}
+%     \partial_\xi \Theta^{(B)}_\xi = \Theta^{(B)}_\xi \cdot S^{(B)} \cdot \Theta^{(B)}_\xi.
+% \end{equation}
+
+
+Note that for the random band matrix model, the $\Theta$-propagators $\Theta^{(\sig,\sig')}_{t_0}$ for $\sig,\sig'\in\{+,-\}$ reduce to the $\Theta$-matrices defined in \eqref{def:Theta} under the relation \eqref{eq:zztE}. 
+Similarly, for the block Anderson model, there is a corresponding reduction to the definition in \eqref{def:Theta_BA} at $t=t_0$ under the relation \eqref{eq:zztE_BA} below.
+  
+
+To capture the decay profile of the $\Theta$-propagators, we introduce the following control parameter $B_{t,K}$ in \eqref{eq_B_param}. It is an order parameter that will appear in many estimates throughout the proof. 
+
+\begin{definition}[Definition of $B$]\label{defi:ofB}
+For any $t\in [0,1)$, define 
+\begin{equation}\label{eq_B_param}
+B_{t, K}:=\frac{(\ilambda^{2}+|1-t|)^{-1}}{(K+1)^{d-2}}+\frac{1}{L^d|1-t|},\quad \forall K\ge 0.
+\end{equation}
+Since $\eta_t\asymp 1-t$ by \eqref{eta}, the parameter $\cal B_{\eta_t,K}$ defined in \eqref{eq:calBetaK} satisfies 
+\be\label{eq:BtBt}
+\cal B_{\eta_t,K} \asymp W^{-d}B_{t,(K/W)}.
+\ee
+\end{definition}
+
+We now summarize some fundamental properties of the $\Theta$-propagators that will be used extensively in the main proof. These properties have essentially been established in previous works \cite{DYYY25, yang2024Del, RBSO1D}. For the reader's convenience, we briefly outline the proof of \Cref{lem_propTH} in \Cref{sec:pf_propTH}.
+%cite \cite{DYYY25_d3} here
+ 
+\begin{lemma}\label{lem_propTH}
+For any $t\in [0,1)$, define 
+\be\label{eq:ellt}
+ \ell_t:= \min\p{ \max\big(\ilambda |1-t|^{-\frac 1 2},1\big)\; ,\; L} \, .
+\ee
+% Suppose that  $\xi\in \mathbb C$ satisfies and $|\xi|< 1$.  Define
+% $$
+%  \hat{\ell}(\xi) := \min\left((|1-\xi|)^{-1/2},\; L\right),\quad \xi\in \mathbb C 
+% $$
+%(Since $\eta_t\asymp 1-t$ by \eqref{eta} and \eqref{eq:zztE2}, the parameter $\ell(\eta_t)$ defined in \eqref{def_ellz} is of the same order as $\ell_t$.)
+For any $\sig_1,\sig_2\in\{+,-\}$, $\Theta^{(\sig_1,\sig_2)}_t$ defined in \Cref{def_Theta} satisfies the following properties:
+\begin{enumerate}
+\item {\bf Symmetry}: $\Theta^{(\sig_2,\sig_1)}_t=(\Theta^{(\sig_1,\sig_2)}_t)^\top= \Theta^{(\sig_1,\sig_2)}_t$.
+    
+\item {\bf Translation invariance}: For any $a,b,r\in \Zn$, we have $\Theta^{(\sig_1,\sig_2)}_t(a+r,b+r)= \Theta^{(\sig_1,\sig_2)}_t(a,b).$
+% \be\label{symmetry}
+% \Theta^{(\sB)}_{\xi}([x]+[a],[y]+[a])= \Theta^{(\sB)}_{\xi}([x],[y]).
+% \ee
+
+ \item {\bf Commutativity}: We have $\big[S^{(\sB)}, \Theta^{(\sig_1,\sig_2)}_t\big]=\big[\Theta^{(\sig_1,\sig_2)}_t,\Theta^{(\sig_1,\sig_2)}_{t'}\big]=0$ for all $t\ne t'$.
+
+ \item {\bf $(\infty\to\infty)$-norm}: For any $a,b\in \Zn$, we have $|\Theta_{t,ab}^{(\sig_1,\sig_2)}|\le \Theta_{t,ab}^{(+,-)}$. Moreover, 
+ \be\label{eq:THETAinftinf} \|\Theta_{t}^{(\sig_1,\sig_2)}\|_{\infty\to\infty} = \max_a \sum_{b}\big|\Theta_{t,ab}^{(\sig_1,\sig_2)} \big|\le \max_a \sum_{b}\Theta_{t,ab}^{(+,-)}=\frac{1}{1-t}.\ee
+
+\item {\bf Polynomial and exponential decay}: For all $\sig_1,\sig_2\in \{+,-\}$, there exist constants $c_d,C_d>0$ (depending on $d$) such that the following bound holds: 
+\begin{equation}\label{prop:ThfadC}   
+\big|\Theta^{(\sig_1,\sig_2)}_{t}(0,a)\big|\le C_d B_{t, |a|}\cdot {e^{-c_d |a|/ {\ell}_t}},\quad \forall a\in \Zn .  
+\end{equation}
+Furthermore, when $\sig_1=\sig_2$, we have a much stronger exponential decay: there exist constants $c_\kappa,C_\kappa>0$ (depending on $d$ and $\kappa$) such that 
+\begin{equation}\label{prop:ThfadC_short}  \big|\Theta^{(\sig_1,\sig_2)}_{t}(0,a)\big|\le C_\kappa \left(1_{a=0} + \ilambda^2 e^{-c_{\kappa}|a|}\right),\quad \forall a\in \Zn.
+\end{equation}
+In the setting of the block Anderson model, these constants, including $c_d$ and $C_d$ in \eqref{prop:ThfadC}, may also depend on $\kappa$ and on $\fd$ in \eqref{eq:WO}.
+
+\item {\bf First-order difference}: Fix any constant $c_0\in(0,1)$. The following estimate holds for all $a, r\in \Zn$ satisfying $|r|\le c_0 |a|$ (the implicit constants in $\prec$ may depend on $c_0$):  
+\begin{equation}\label{prop:BD1}     
+    \left| \Theta^{(\sig_1,\sig_2)}_{t}(0, a+r)-\Theta^{(\sig_1,\sig_2)}_{t}(0, a)\right|\prec \frac{1}{\ilambda^2+|1-t|}\frac{|r|}{(|a|+1)^{d-1}}.
+     \end{equation}
+
+
+\item {\bf Second-order difference}: Fix any constant $c_0\in(0,1)$. The following estimate holds for all $a,r\in \Zn$ satisfying $|r|\le c_0|a|$ (the implicit constants in $\prec$ may depend on $c_0$): 
+\begin{equation}\label{prop:BD2}
+\left|\Theta^{(\sig_1,\sig_2)}_{t} (0,a+r) + \Theta^{(\sig_1,\sig_2)}_{t} (0,a-r)-  2\Theta^{(\sig_1,\sig_2)}_{t} (0,a) \right|
+\prec \frac{1}{\ilambda^2+|1-t|}\frac{|r|^2}{(|a|+1)^{d}} .
+ \end{equation}
+
+\item {\bf Propagator without zero mode.} The following estimate holds for all $a \in \Zn$: 
+\be\label{prop:ThfadC0} 
+\big|\zTheta^{(\sig_1,\sig_2)}_{t} (0,a)\big|\prec \frac{1}{\ilambda^2+|1-t|}\frac{1}{(|a|+1)^{d-2}}. 
+\ee
+\end{enumerate}
+
+\end{lemma}
+
+
+\begin{example} 
+As shown in \cite{YY_25,RBSO1D}, the $2$-$\cK$ and $3$-$\cK$ loops are given by %(recall \eqref{eq:KMloop} and \eqref{eq:Msig}) 
+\begin{align}\label{Kn2sol}\cK^{(2)}_{t,\bsig,\ba}&= \sum_{b}\Theta_{t}^{(\sig_1,\sig_2)}(a_1,b)\cal M^{(2)}_{\bsig,(b,a_2)}=W^{-d} \left(\Theta_t^{(\sigma_1,\sigma_2)}  M^{(\sig_1,\sig_2)}\right)_{a_1a_2},\\
+\label{Kn3sol} \mathcal{K}^{(3)}_{t, \bsig, \ba} &= \sum_{b_1,b_2,b_3}\Theta_{t}^{(\sig_1,\sig_2)}(a_1,b_1)\Theta_{t}^{(\sig_2,\sig_3)}(a_2,b_2)\Theta_{t}^{(\sig_3,\sig_1)}(a_3,b_3) \cal M^{(3)}_{\bsig,\mathbf b},
+\end{align}
+where $\bsig=(\sig_1,\ldots,\sig_n)$ and $\ba=(a_1,\ldots,a_n)$ for $n\in \{2,3\}$, and the $M$-loops are defined in \eqref{eq:KMloop}. 
+
+% \begin{align}    \label{Kn2sol}\cK^{(2)}_{t,\bsig, \ba}&=W^{-d}m_1m_2 \Theta^{(\sB)}_{tm_1m_2} (a_1,a_2)  ,  \\
+%     \label{Kn3sol} \mathcal{K}^{(3)}_{t, \bsig, \ba} %&= \sum_{[b_1],[b_2],[b_3]}\Theta_{t}^{(\sig_1,\sig_2)}([a_1],[b_1])\Theta_{t}^{(\sig_2,\sig_3)}([a_2],[b_2])\Theta_{t}^{(\sig_3,\sig_1)}([a_3],[b_3]) \cM^{(3)}_{\bsig,\mathbf b}\\
+%     &= W^{-2d}m_1m_2m_3\sum_{b}\Theta_{tm_1m_2}^{(\sB)}(a_1,b) \Theta_{tm_2m_3}^{(\sB)}(a_2,b)\Theta_{tm_3m_1}^{(\sB)}(a_3,b) ,
+% \end{align}
+% where $\bsig=(\sig_1,\ldots,\sig_n)$ and $\ba=(a_1,\ldots,a_n)$ for $n\in \{2,3\}$, and we abbreviate $m_i\equiv m(\sig_i)$ for $i\in\{1,2,3\}$.  
+\end{example}
+
+ 
+\subsection{Proof of the main results}
+ 
+The main results, \Cref{MR:locSC,MR:QuDiff}, for random band matrices follow directly from the following key lemmas on the $G$-loop estimates, while the proof of \Cref{MR:decol_BA} for the block Anderson model will be given separately in \Cref{sec:ext-to-BA}. Recall the notions of stochastic domination, $B_{t, K}$, and $\ell_t$ defined in \eqref{stoch_domination}, \eqref{eq_B_param}, and \eqref{eq:ellt}, respectively. 
+
+
+\begin{lemma}[$G$-loop estimates]\label{ML:GLoop}
+In the setting of \Cref{MR:locSC}, fix any $z=\hat{E}+\ii \eta\in \mathbf D_{\kappa,\e}$ and consider the flow framework in \Cref{zztE}. For each fixed $n\in \N$, the following estimate holds uniformly in $t\in [0,t_0]$: 
+\begin{align}\label{Eq:L-KGt}
+ \max_{\bsig, \mathbf{a}}\left|{\cal L}^{(n)}_{t, \bsig, \mathbf{a}}-{\cal K}^{(n)}_{t, \bsig, \mathbf{a}}\right|&\prec  (W^{-d}B_{t,0})^{ n}, \\
+ \label{Eq:L-KGt2}
+\max_{\bsig, \mathbf{a}}\left|{\cal L}^{(n)}_{t, \bsig, \mathbf{a}} \right|&\prec (W^{-d}B_{t,0})^{ n-1}.
+\end{align}
+%where we recall the stochastic domination and the parameter $B_{t, K}$ defined in Definition \ref{stoch_domination} and \eqref{eq_B_param}. 
+\end{lemma}
+
+\begin{lemma}[$2$-loop estimates]\label{ML:GLoop_expec}
+In the setting of \Cref{ML:GLoop}, for $\bsig\in\{+,-\}^2$ and $ \ba=(a_1, a_2)\in (\Zn)^2$, the following pointwise estimate holds uniformly in $t\in [0,t_0]$ for any large constant $D>0$: 
+\begin{equation}\label{Eq:Gdecay}
+ \left| {\cal L}^{(2)}_{t, \bsig, \mathbf{a}}-{\cal K}^{(2)}_{t, \bsig, \mathbf{a}}\right|\prec 
+ \p{W^{-d}B_{t, 0}}^{1/5}\cdot \p{W^{-d}B_{t,  |a_1-a_2| }}e^{-\left({| a_1-a_2| }/{\ell_t}\right)^{1/2}} + W^{-D}. 
+\end{equation}
+Moreover, the expectation of a $2$-$G$-loop satisfies the following $L^\infty$-estimate uniformly in $t\in [0,t_0]$: 
+\begin{equation}\label{Eq:Gtlp_exp}
+ \max_{\bsig, \ba}\left|\E{\cal L}^{(2)}_{t, \bsig, \ba}-{\cal K}^{(2)}_{t, \bsig, \ba}\right|\prec \p{W^{-d}B_{t,0}}^2 \p{(\ilambda^2W^d)^{-1/5}+W^{-d}B_{t,0}}
+ . 
+\end{equation}
+In the above estimates, the exponent $1/5$ can be replaced by any other positive constant less than $1/4$.
+\end{lemma}
+
+\begin{lemma}[Local law for $G_t$]\label{ML:GtLocal}
+In the setting of \Cref{ML:GLoop}, the following entrywise local law holds uniformly in $t\in [0,t_0]$: 
+%With the notations and assumptions of the previous lemma, we have 
+\begin{equation}\label{Gt_bound}
+ |(G_{t}-M)_{xy}|^2\prec W^{-d}B_{t,(|x-y|/W)} .
+   \end{equation} 
+\end{lemma}
+ 
+With these lemmas, we readily conclude the proofs of our main results, \Cref{MR:locSC,MR:QuDiff}.
+\begin{proof}[\bf Proof of \Cref{MR:locSC,MR:QuDiff}]
+For a fixed $z=\hat{E}+\ii \eta\in \mathbf D_{\kappa,\e}$, we can choose the flow framework as in \Cref{zztE}. 
+Then, with \eqref{eq:zztE}, \eqref{eq:BtBt}, and \eqref{Kn2sol}, we observe that \Cref{ML:GtLocal}, \Cref{ML:GLoop} (with $n=1$), and \Cref{ML:GLoop_expec} respectively give the entrywise local law \eqref{G_bound}, the averaged local law \eqref{G_bound_ave}, and the quantum diffusion estimates in \Cref{MR:QuDiff} at each \emph{fixed $z$}. To extend these estimates uniformly to all $z$, we can use a standard $N^{-C}$-net and perturbation argument, whose details we omit. 
+\end{proof}
+
+%  \begin{proof}[Proof of Theorem \ref{MR:locSC}]
+% This proof is  the same  as that  of Theorems 2.3 in \cite{YY_25}.  More precisely \eqref{Gt_bound} in lemma \ref{ML:GtLocal} implies \eqref{Gt_bound}. The tracial local law \eqref{G_bound_ave} follows the \eqref{Eq:L-KGt} in lemma \ref{ML:GLoop}. 
+% \end{proof}
+ 
+ 
+
+
+%\subsection{Strategy for the proof of the loop estimates}
+
+Before concluding this section, we now outline the proofs of \Cref{ML:GLoop,ML:GLoop_expec,ML:GtLocal}. At $t=0$, we have $G_{0}(\sigma)=M(\sigma)$ for $\sig\in\{+,-\}$. Together with \Cref{Def:G_loop,Def_Ktza}, it implies that for any fixed $n\in \N$:   
+$${\cL}^{(n)}_{0, \bsig,\ba}= {\cK}^{(n)}_{0, \bsig,\ba},\quad \forall \; \bsig\in \{+,-\}^n,\ \ \ba\in (\Zn)^n. 
+$$
+Now, for $t>0$, we will establish the following theorem, which provides an induction result that extends the $G$-loop estimate progressively along the stochastic flow.
+
+% By Definitions \ref{Def:G_loop} and \ref{Def_Ktza},   
+% $$
+% G_{0}(+)=m\cdot I_{N\times N}, \quad {\cal L}_{0, \bsig,\mathbf{a}}= {\cal K}_{0, \bsig,\mathbf{a}},\quad \forall \; \bsig,\mathbf{a}, 
+% $$
+% where $I_{N\times N}$ is the identity matrix. It is easy to check that  
+% \begin{align}\label{ini)bigasya}
+%     \hbox{    Lemmas \ref{ML:GLoop}, \ref{ML:GLoop_expec} and \ref{ML:GtLocal} hold at  $t=0$ with no error.}
+% \end{align}
+% For $t>0$, we will prove the following theorem.
+
+
+\begin{theorem}\label{lem:main_ind} 
+In the setting of \Cref{MR:locSC}, fix any $z=\hat{E}+\ii \eta\in \mathbf D_{\kappa,\e}$ and consider the flow framework in \Cref{zztE}. 
+%For the block Anderson model in \Cref{def: BM}, suppose the assumptions of \Cref{zztE} hold with $t_0\le 1 - W^{\fd}\eta_*$.
+Suppose the following estimates hold at a fixed $s\in [0,t_0]$: 
+\begin{itemize}
+\item[(a)] {\bf $G$-loop estimate}: For each fixed $n\ge 1$, we have
+\be\label{Eq:L-KGt+IND}
+ \max_{\bsig, \ba}\left|{\cal L}^{(n)}_{s, \bsig, \ba}-{\cal K}^{(n)}_{s, \bsig, \ba}\right|\prec (W^{-d}B_{s,0})^{n}.
+\ee
+\item[(b)] {\bf 2-loop estimate}: 
+For $\bsig\in\{+,-\}^2$, $ \ba=(a_1,a_2)\in (\Zn)^2,$ and any large constant $D>0$, we have 
+\be\label{Eq:Gdecay+IND}
+\left| {\cal L}^{(2)}_{s, \bsig, \ba}-{\cal K}^{(2)}_{s, \bsig, \ba}\right|\prec \p{W^{-d}B_{s, 0}}^{1/5}\cdot \p{W^{-d}B_{s, |a_1-a_2|}} e^{-\left({| a_1-a_2| }/{\ell_s}\right)^{1/2}} +W^{-D}.
+\ee
+Furthermore, if $1-s\ge \ilambda^2$ (where $\ell_s= 1$ by \eqref{eq:ellt}), we assume a stronger estimate:
+\be\label{Eq:Gdecay+IND_s<g}
+\left| {\cal L}^{(2)}_{s, \bsig, \ba}-{\cal K}^{(2)}_{s, \bsig, \ba}\right|\prec \p{W^{-d}B_{s, 0}}^2 e^{-| a_1-a_2|^{1/2}} +W^{-D}.
+\ee
+
+\item[(c)] {\bf Local law}: We have the (maximum) entrywise local law 
+\be \label{Gt_bound+IND}
+ \|G_{s}-M\|_{\max} \prec (W^{-d}B_{s,0})^{1/2}.
+\ee
+
+\item[(d)] {\bf Expected $2$-loop estimate}: For all $\bsig\in\{+,-\}^2$ and $ \ba=(a_1,a_2)\in (\Zn)^2,$ we have 
+ \be \label{Eq:Gtlp_exp+IND}
+ \max_{\bsig, \ba}\left|\E{\cal L}^{(2)}_{s, \bsig, \ba}-{\cal K}^{(2)}_{s, \bsig, \ba}\right|\prec \p{W^{-d}B_{s,0}}^2 \p{(\ilambda^2W^d)^{-1/5}+W^{-d}B_{s,0}}. 
+\ee
+\end{itemize} 
+%Assume for some fixed $E$: $|E|\le 2-\kappa$ and $s\in [0,1]$ that Lemmas \ref{ML:GLoop}, \ref{ML:GLoop_expec}  and \ref{ML:GtLocal} hold at time $s$, namely, %with $\eta_s:=\im z_s,\quad \ell_s:=\ell(z_s)$,   
+% for $1 \le n\in \mathbb N$ and large $D>0$, 
+% \begin{align}\label{Eq:L-KGt+IND}
+%  \max_{\bsig, \mathbf{a}}\left|{\cal L}_{s, \bsig, \mathbf{a}}-{\cal K}_{s, \bsig, \mathbf{a}}\right|&\prec (W^{-d} B_{s,0})^{n}  
+% \\\label{Eq:Gdecay+IND}
+%  \left| {\cal L}_{s, \bsig, \mathbf{a}}-{\cal K}_{s, \bsig, \mathbf{a}}\right|&\prec (W^{-d}B_{s, 0})^{1/5}\cdot (W^{-d}B_{s, |a_1-a_2|})\cdot \exp \left(-\left|\frac{| a_1-a_2| }{\ell_s}\right|^{1/2}\right) +W^{-D} , \quad \bsig=(+,-)
+% \\\label{Gt_bound+IND}
+%  \|G^{(E)}_{s ,+}-m^{(E)}\|_{\max} & \prec 
+%  (W^{-d} B_{s,0})^{1/2}.
+% \end{align}
+Then, there exists a constant $0<\fc_d \le 10^{-2}$ (depending on $d$, $\kappa$, $\e$, and $\fd$ in \eqref{eq:WO}) such that for any $s< t < 1$ satisfying 
+\begin{equation}\label{con_st_ind}
+  \p{W^{-d}B_{t,0}}^{\fc_d}\le \frac{1-t}{1-s} < 1, 
+\end{equation}
+the estimates \eqref{Eq:L-KGt}--\eqref{Gt_bound} hold.  
+In the proof, we do not track the exact value of $\fc_d$ (although it can be done by keeping track of the constants carefully in our proof).
+In addition, if $1-t\ge \ilambda^2$, we have
+\be\label{Eq:Gdecay+s<g}
+\left| {\cal L}^{(2)}_{t, \bsig, \ba}-{\cal K}^{(2)}_{t, \bsig, \ba}\right|\prec \p{W^{-d}B_{t, 0}}^2 e^{-| a_1-a_2|^{1/2}} +W^{-D},\quad \forall \bsig\in\{+,-\}^2,\  \ba \in (\Zn)^2.
+\ee
+\end{theorem}
+
+
+With \Cref{lem:main_ind} in hand, we can establish \Cref{ML:GLoop,ML:GLoop_expec,ML:GtLocal} via induction on $t$. 
+\begin{proof}[\bf Proof of \Cref{ML:GLoop,ML:GLoop_expec,ML:GtLocal}]
+We first perform induction from $t=0$ up to $t=1-\ilambda^2$ (when $\ilambda^2\le 1/2$) or $t=1/2$ (when $\ilambda^2>1/2$), establishing \eqref{Eq:L-KGt}--\eqref{Gt_bound} at $t_1:=(1-\ilambda^2)\vee (1/2)$. In the case $\ilambda^2\le 1/2$, we additionally maintain the stronger 2-loop estimate \eqref{Eq:Gdecay+s<g} throughout this step. Next, starting from $t_1$, we continue the induction using \Cref{lem:main_ind} up to $t=t_0$, thereby completing the proof of the estimates stated in \Cref{ML:GLoop,ML:GLoop_expec,ML:GtLocal}.    
+\end{proof}
+
+The proof of \Cref{lem:main_ind} is divided into six steps, which comprise the remainder of this paper. Throughout these steps, we assume the hypotheses of \Cref{lem:main_ind} hold. Moreover, each step builds upon the results obtained in the preceding ones.
+
+
+
+\medskip 
+\noindent
+\textbf{Step 1} (A priori $G$-loop bound):  
+The $n$-$G$-loops satisfy the a priori bound: 
+ \begin{equation}\label{lRB1}
+   {\cal L}^{(n)}_{u,\bsig, \mathbf{a}}\prec \p{\frac{1-s}{1-u}}^{n-1}  
+   (W^{-d}B_{s,0})^{n-1},\quad  \forall  u\in [s, t].
+\end{equation}
+%The right-hand side involves $B_s$, though in most applications we replace it with $B_u$ due to monotonicity.  
+Furthermore, a weak local law holds in the sense 
+\begin{equation}\label{Gtmwc}
+    \|G_u-M\|_{\max}\prec  (W^{-d}B_{u,0})^{1/4},\quad \forall  u\in [s, t] .
+\end{equation} 
+%Here the exponent  is $1/4$ instead of $1/2$  in \eqref{Gt_bound+IND}. 
+  
+%\textbf{Step 1.5}: \textcolor{blue}{Not needed any more}and  for any   $\bsig=(+,-)$,   $s\le u\le t$, and $D>0$,   
+% \begin{equation}\label{Eq:Gdecay_w2a}
+%\left| {\cal L}_{u, \bsig, \mathbf{a}}-{\cal K}_{u, \bsig, \mathbf{a}}\right| \prec    (W^{-d}B_{t, 0})^{1/4}\cdot  W^{-d}\left(B_{t,  |a_1-a_2|} +B_{t,  \ell_t}\right)  . \quad 
+%\end{equation}  
+
+ 
+ %\medskip
+ \noindent 
+\textbf{Step 2}  (A priori $2$-$G$-loop decay): 
+The following sharp local laws hold uniformly for all $u\in [s,t]$: 
+ \begin{align}\label{Gt_bound_flow}
+     |(G_u-M)_{xy}|^2&\prec W^{-d}B_{u,(|x-y|/W)},\quad \forall x,y\in \ZL, \\
+     \label{Gt_avgbound_flow} 
+    \max_{a\in \Zn}\left|\tr\p{(G_u-M)E_a}\right| &\prec   W^{-d}B_{u,0}.
+\end{align}
+In particular, the entrywise local law  \eqref{Gt_bound} and the $1$-loop estimate in \eqref{Eq:L-KGt} hold at time $t$. 
+In addition, there exists a constant $C_d>0$ (independent of $\fc_d$ in \eqref{con_st_ind}) such that, for any $\bsig\in\{+,-\}^2$, $\ba=(a_1,a_2)\in(\Zn)^2$, and $u\in[s,t]$, the following estimate holds for arbitrarily large constant $D>0$: 
+ \begin{equation}\label{Eq:Gdecay_w}
+\left| {\cal L}^{(2)}_{u, \bsig, \mathbf{a}}-{\cal K}^{(2)}_{u, \bsig, \mathbf{a}}\right| \prec \p{\frac{1-s}{1-u}}^{C_d}\p{W^{-d}B_{u, 0}}^{1/5}\cdot \p{W^{-d}B_{u,  |a_1-a_2| }} e^{-\left({| a_1-a_2| }/{\ell_u}\right)^{1/2}} +W^{-D} . 
+\end{equation}
+Hence, at this step, the estimate \eqref{Eq:Gdecay+IND} deteriorates at time $t$ by a factor of $(|1-s|/|1-t|)^{C_d}$. 
+We note that the exponent $1/5$---as an arbitrarily chosen positive constant less than $1/4$---in \eqref{Eq:Gdecay_w} is not optimal. Achieving the optimal decay rate for a 2-loop estimate would require this exponent to be 1, which is beyond the scope of the current paper (see also \Cref{rmk_bottleneck} below).
+
+
+
+\medskip
+\noindent 
+\textbf{Step 3}  (Sharp $n$-loop bound): 
+The following bound on $n$-$G$-loops holds for any fixed $n\in \N$: 
+\begin{equation}\label{Eq:LGxb}
+\max_{\bsig, \mathbf{a}}\left| {\cal L}^{(n)}_{u, \bsig, \mathbf{a}} \right|
+\prec 
+  (W^{-d}B_{u, 0})^{n-1} ,\quad \forall u\in[s,t] .
+\end{equation}
+In particular, this gives the estimate \eqref{Eq:L-KGt2} at time $t$. 
+
+ \medskip
+ \noindent 
+\textbf{Step 4} (Sharp  $(\cal L - \cal K)$-loop estimate): The following  estimate on $(\cL-\cK)$-loops holds for any fixed $n\in \N$: 
+\begin{equation}\label{Eq:L-KGt-flow}
+ \max_{\bsig, \mathbf{a}}\left|{\cal L}^{(n)}_{u, \bsig, \mathbf{a}}-{\cal K}^{(n)}_{u, \bsig, \mathbf{a}}\right|\prec (W^{-d}B_{u, 0})^{n},\quad \forall u\in[s,t] .
+\end{equation}
+In particular, this gives the estimate \eqref{Eq:L-KGt} at time $t$. 
+
+
+ \medskip
+ \noindent 
+\textbf{Step 5} (Pointwise estimate for $2$-loops): For any $\bsig\in\{+,-\}^2$, $ \ba=(a_1,a_2)\in(\Zn)^2,$ and $u\in[s,t]$, the following estimate holds for any large constant $D>0$:
+ \begin{equation}\label{Eq:Gdecay_flow}
+\left| {\cal L}^{(2)}_{u, \bsig, \ba}-{\cal K}^{(2)}_{u, \bsig, \ba}\right| \prec  \p{W^{-d}B_{u, 0}}^{1/5}\cdot \p{W^{-d}B_{u,  |a_1-a_2| }} e^{-\left({| a_1-a_2| }/{\ell_u}\right)^{1/2}} +W^{-D} . 
+\end{equation}
+Hence, the pointwise decay estimate \eqref{Eq:Gdecay} holds at time $t$. Furthermore, if $1-t\ge \ilambda^2$, then we have 
+\be\label{Eq:Gdecay+s<g_flow}
+\left| {\cal L}^{(2)}_{u, \bsig, \ba}-{\cal K}^{(2)}_{u, \bsig, \ba}\right|\prec \p{W^{-d}B_{u, 0}}^2 e^{-| a_1-a_2|^{1/2}} +W^{-D},\quad \forall u\in[s,t].
+\ee
+
+%\medskip
+\noindent 
+\textbf{Step 6} (Expected 2-$G$-loop estimate): 
+The following estimate holds: 
+\begin{equation}\label{Eq:Gtlp_exp_flow}
+ \max_{\bsig, \ba}\left|\E{\cal L}^{(2)}_{u, \bsig, \ba}-{\cal K}^{(2)}_{u, \bsig, \ba}\right|\prec \p{W^{-d}B_{u,0}}^2 \p{(\ilambda^2W^d)^{-1/5}+W^{-d}B_{u,0}},\quad  
+ \forall u \in [s, t] .
+\end{equation}
+Hence, the estimate \eqref{Eq:Gtlp_exp} holds at time $t$. 
+
+\medskip
+
+We remark that the estimates established in each step hold uniformly in $u\in[s,t]$ (recall \eqref{stoch_domination}) due to a standard $N^{-C}$-net and perturbation argument. For simplicity of presentation, we will not emphasize this uniformity at every step of the proof. %Moreover, in Steps 1--5, the induction hypothesis \eqref{Eq:Gtlp_exp+IND} will not be used, i.e., the estimates \eqref{Eq:L-KGt}--\eqref{Gt_bound} and \eqref{Eq:Gdecay+s<g} (in the case $1-t\ge \ilambda^2$) still hold without assuming \eqref{Eq:Gtlp_exp+IND}.
+

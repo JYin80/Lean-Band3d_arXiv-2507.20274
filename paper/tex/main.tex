@@ -1,0 +1,334 @@
+\documentclass[reqno]{amsart}
+
+%\documentclass[reqno]{article}
+\usepackage{graphicx}
+%\usepackage[backend=bibtex]{biblatex} \addbibresource{Jun.bib,band.bib}
+
+\usepackage[margin=1in]{geometry}
+%\documentclass{amsart}
+\usepackage{amssymb, amsthm, mathtools}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{xcolor}
+\usepackage{stmaryrd}
+\SetSymbolFont{stmry}{bold}{U}{stmry}{m}{n}
+\usepackage{comment}
+%\usepackage{showkeys}
+%\usepackage{showlabels}
+\allowdisplaybreaks
+\setcounter{tocdepth}{1}
+
+
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{decorations.pathreplacing,decorations.markings}
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes,petri, topaths, automata}
+\usepackage{tikz-feynman} % for Feynman diagrams
+\tikzfeynmanset{compat=1.1.0}
+%/tikzfeynman/warn luatex=false
+
+\tikzset{
+  % style to apply some styles to each segment of a path
+  on each segment/.style={
+    decorate,
+    decoration={
+      show path construction,
+      moveto code={},
+      lineto code={
+        \path [#1]
+        (\tikzinputsegmentfirst) -- (\tikzinputsegmentlast);
+      },
+      curveto code={
+        \path [#1] (\tikzinputsegmentfirst)
+        .. controls
+        (\tikzinputsegmentsupporta) and (\tikzinputsegmentsupportb)
+        ..
+        (\tikzinputsegmentlast);
+      },
+      closepath code={
+        \path [#1]
+        (\tikzinputsegmentfirst) -- (\tikzinputsegmentlast);
+      },
+    },
+  },
+  % style to add an arrow in the middle of a path
+  mid arrow/.style={postaction={decorate,decoration={
+        markings,
+        mark=at position .5 with {\arrow[#1]{Stealth[scale=1.2]}}
+      }}},
+}
+
+\DeclareMathOperator{\re}{{\mathrm{Re}}}
+\DeclareMathOperator{\im}{{\mathrm{Im}}}
+\renewcommand{\Dot}{\mathbf {Dot}}
+
+\hypersetup{
+     colorlinks=true
+}
+\pagestyle{plain}
+
+\def\P{\mathbb{P}}
+\def\E{\mathbb{E}}
+\def\IE{\mathbb{IE}}
+\def\Z{\mathbb{Z}}
+\def\R{\mathbb{R}}
+\def\N{\mathbb{N}}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\e}{{\varepsilon}}
+\newcommand{\cK}{\mathcal K}
+\newcommand{\cL}{\mathcal L}
+\newcommand{\sig}{\sigma}
+\newcommand{\bsig}{{\boldsymbol{\sigma}}}
+\newcommand{\ba}{{\mathbf{a}}}
+\newcommand{\bal}{{\boldsymbol{\alpha}}}
+\newcommand{\bbeta}{{\boldsymbol{\beta}}}
+\newcommand{\bfb}{{\mathbf{b}}}
+\newcommand{\cut}{\mathcal{G}}
+\newcommand{\cutL}{(\mathcal{G}_L)}
+\newcommand{\cutR}{(\mathcal{G}_R)}
+\newcommand{\lenk}{l_{\mathcal K}}
+\DeclareMathOperator{\TSP}{{\mathbf T}}
+% \oddsidemargin=0in
+% \evensidemargin=0in
+% \textwidth=6.5in
+% \setlength{\unitlength}{1cm}
+% \setlength{\parindent}{0.6cm}
+
+\newcommand{\BA}{\mathrm{BA}}
+\newcommand{\WO}{\mathrm{WO}}
+\newcommand{\dist}{\mathrm{dist}}
+\newcommand{\alt}{\mathrm{alt}}
+\newcommand{\id}{\mathrm{Id}}
+\newcommand{\fd}{{\mathfrak d}}
+\newcommand{\bv}{{\bf{v}}}
+\newcommand{\bw}{{\bf{w}}}
+\newcommand{\ord}{{\mathsf{ord}}}
+\newcommand{\size}{{\mathsf{size}}}
+\newcommand{\Mol}{\mathcal{M}}
+\newcommand{\new}{\mathrm{new}}
+\newcommand{\aux}{\mathrm{aux}}
+\newcommand{\ngh}{\mathrm{ng}}
+\newcommand{\C}{\mathbb C}
+\renewcommand{\bar}{\overline}
+\newcommand{\wt}{\widetilde}
+\newcommand{\wh}{\widehat}
+\newcommand{\al}{\alpha}
+\newcommand{\qqq}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\br}[1]{\left[{#1}\right]}
+\newcommand{\p}[1]{\left({#1}\right)}
+\newcommand{\abs}[1]{\left|{#1}\right|}
+\newcommand{\avg}[1]{\left\langle{#1}\right\rangle}
+\newcommand{\sB}{{\mathsf{B}}}
+\newcommand{\fP}{\mathfrak{P}}
+\newcommand{\bpi}{{\boldsymbol{\pi}}}
+%\newcommand{\Zn}{\widetilde{\mathbb Z}_L^d}
+\newcommand{\Zn}{{\mathbb Z}_L^d}
+\newcommand{\ZL}{{\mathbb Z}_{WL}^d}
+\newcommand{\Gc}{{\mathring G}}
+\newcommand{\bD}{{\mathbf{D}}}
+\newcommand{\cT}{\mathcal T}
+\newcommand{\cE}{\mathcal E}
+\newcommand{\wT}{\widetilde{\mathcal T}}
+\newcommand{\zTheta}{\mathring \Theta}
+\newcommand{\dashed}{\text{diffusive}}
+% \newcommand{\pself}{\text{pseudo-self-energy}}
+% \newcommand{\pselfs}{\text{pseudo-self-energies}}
+% \newcommand{\Pself}{\text{Pseudo-self-energy}}
+% \newcommand{\Pselfs}{\text{Pseudo-self-energies}}
+% \newcommand{\pTexp}{\text{pseudo-$T$-expansion}}
+% \newcommand{\PTexp}{\text{Pseudo-$T$-expansion}}
+% \newcommand{\pTeq}{\text{pseudo-$T$-equation}}
+% \newcommand{\PTeq}{\text{Pseudo-$T$-equation}}
+\newcommand{\dthn}{\boldsymbol{\chi}}
+
+% \def\mathcalC{\mathcal{C}}
+% \def\mathcalV{\mathcal{V}}
+% \def\mathcalW{\mathcal{W}}
+\newcommand{\fa}{{\mathfrak a}}
+\newcommand{\fc}{{\mathfrak c}}
+\newcommand{\sM}{{\mathsf M}}
+\newcommand{\Err}{{\mathcal Err}}
+
+\DeclareMathOperator{\OO}{O}
+\DeclareMathOperator{\oo}{o}
+
+% \newcommand{\Sdelta}{{\Sigma}_T}
+% \newcommand{\Sdeltak}{{\Sigma}_{T,k}}
+% \newcommand{\wtSdelta}{\Sigma}
+% \newcommand{\wtSdeltan}{\Sigma^{(n)}}
+% \newcommand{\wtSdeltak}{\Sigma^{(k)}}
+% \newcommand{\Sinfty}{\Sigma^{\infty}}
+% \newcommand{\wtSinfty}{\wt\Sigma^{\infty}}
+
+% \newcommand{\Sele}{{\mathcal E}}
+% \newcommand{\Smax}{{\mathcal E}^{\max}}
+% %\newcommand{\Selek}{{\mathcal E}^{(\omega)}}
+% \newcommand{\Selek}{{\mathcal E}}
+% \newcommand{\pSele}{{\mathcal P}}
+% \newcommand{\Selekl}{{\mathcal E}^{[\eta]}}
+% \newcommand{\Seleinf}{{\mathcal E}^{\infty}}
+%\newcommand{\wtSeleinf}{\widetilde{\mathcal E}^{(\kappa),\infty}}
+% \newcommand{\wtSeleinf}{ {\mathcal E}^{\infty}}
+% \newcommand{\Sint}{\mathfrak S}
+% \newcommand{\Sintk}{{\mathfrak S}^{(\omega)}}
+% \newcommand{\Cele}{{\mathscr E}}
+\newcommand{\bpsi}{\boldsymbol{\psi}}
+% \newcommand{\zeroself}{\boldsymbol{\phi}}
+%\newcommand{\nwd}{4}
+\newcommand{\qll}[1]{[\![{#1}]\!]}
+\newcommand{\rep}[1]{({#1})}
+\newcommand{\too}{\to \to}
+%\newcommand{\conc}{\mathfrak g}
+%\newcommand{\soe}{d_\eta}
+%\newcommand{\etas}{\lambda^{-3}W^{-7/2} L^{5-d}}
+% \newcommand{\etas}{\lambda^{-2}W^{-4} L^{5-d}}
+% \newcommand{\etasa}{\beta(\lambda) W^{-5} L^{5-d}}
+% \newcommand{\blam}{\beta(\lambda)}
+%\newcommand{\etars}{\lambda^{-5} W^{-5/2+2\mathfrak d_2}L^{-(d-5)}}
+
+\newcommand{\ilambda}{g}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\tr}{Tr}
+\DeclareMathOperator{\var}{Var}
+
+
+\newcommand{\cor}{\color{red}}
+\newcommand{\nc}{\normalcolor}
+
+\newcommand{\cal}{\mathcal}
+\newcommand{\sT}{{\mathsf T}}
+%\newcommand{\ba}{{\bf{a}}}
+\newcommand{\thn}{\vartheta}
+\newcommand{\contract}{\text{loop-contraction}}
+\newcommand{\Contract}{\text{Loop-contraction}}
+
+\theoremstyle{plain} %plain, definition, remark
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem*{corollary*}{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{proposition*}{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem*{claim*}{Claim}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{definition}[theorem]{Definition}  
+\newtheorem*{definition*}{Definition}         
+\theoremstyle{remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem*{example*}{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{remarks}[theorem]{Remarks}
+\newtheorem*{remark*}{Remark}
+\newtheorem*{remarks*}{Remarks}
+\newtheorem{strategy}[theorem]{Strategy}
+%\newtheorem*{notation}{Notation}
+ \numberwithin{equation}{section}
+
+\crefname{theorem}{theorem}{theorems}
+\crefname{lemma}{lemma}{lemmas}
+\crefname{definition}{definition}{definitions}
+\crefname{proposition}{proposition}{propositions}
+\crefname{corollary}{corollary}{corollaries}
+\crefname{claim}{claim}{claim}
+\crefname{example}{example}{Example}
+\crefname{remark}{remark}{remark}
+
+
+%letter labeled theorems
+\newtheorem{thmx}{Theorem}
+\renewcommand{\thethmx}{\Alph{thmx}}
+
+
+\makeatletter
+\let\old@setauthors\@setauthors
+\def\@setauthors{%
+  \begingroup
+    \let\MakeUppercase\relax
+    \old@setauthors
+  \endgroup
+}
+\makeatother
+
+
+\title{Delocalization of Non-Mean-Field Random Matrices \\ in Dimensions $d\ge 3$}
+
+\author{Sofiia Dubova$^\star$} 
+\author{Fan Yang$^\dagger$}
+\author{Horng-Tzer Yau$^\ddagger$}
+\author{Jun Yin$^\S$}
+
+\thanks{$^\star$Department of Mathematics, Northwestern University, \href{mailto:sdubova@northwestern.edu}{sdubova@northwestern.edu}}
+\thanks{$^\dagger$Yau Mathematical Sciences Center, Tsinghua University, \href{mailto:fyangmath@mail.tsinghua.edu.cn}{fyangmath@mail.tsinghua.edu.cn}}
+\thanks{$^\ddagger$Department of Mathematics, Harvard University, \href{mailto:htyau@math.harvard.edu}{htyau@math.harvard.edu}}
+\thanks{$^\S$Department of Mathematics, University of California, Los Angeles, \href{mailto:jyin@math.ucla.edu}{jyin@math.ucla.edu}}
+
+% \author{Sofiia Dubova\thanks{Department of Mathematics, Northwestern University, \href{mailto:sdubova@northwestern.edu}{sdubova@northwestern.edu}} \and
+% Fan Yang\thanks{Yau Mathematical Sciences Center, Tsinghua University, \href{mailto:fyangmath@mail.tsinghua.edu.cn}{fyangmath@mail.tsinghua.edu.cn}} \and
+%     Horng-Tzer Yau\thanks{Department of Mathematics, Harvard University, \href{mailto:htyau@math.harvard.edu}{htyau@math.harvard.edu}} \and
+%   Jun Yin\thanks{Department of Mathematics, University of California, Los Angeles, \href{mailto:jyin@math.ucla.edu}{jyin@math.ucla.edu}}
+% }
+%\date{}  % Or specify a custom date, e.g., \date{October 14, 2024}
+
+\begin{document}
+%\addtokomafont{author}{\raggedright}
+ 
+
+
+
+%\vspace{-10pt}
+\begin{abstract}
+
+\small 
+We study $N \times N$ random band matrices $H = (H_{xy})$ with independent mean-zero Gaussian entries, where $x,y$ lie on the discrete torus \smash{$(\mathbb{Z} / \sqrt[d]{N} \mathbb{Z})^d$} in dimensions $d \ge 3$. The variance profile satisfies $\mathbb{E}|H_{xy}|^2 = S_{xy}$, with $S_{xy} = 0$ whenever the distance between $x$ and $y$ exceeds a bandwidth parameter $W$. We prove that if $W \geq N^{\mathfrak{c}}$ for some constant $\mathfrak{c} > 0$, then in the large-$N$ limit, bulk eigenvectors are delocalized, quantum unique ergodicity (QUE) holds, and the local bulk eigenvalue statistics are universal. Our proof is based on the tree approximation of the loop hierarchy \cite{YY_25} and diagrammatic techniques developed in earlier works \cite{yang2021random, yang2021delocalization, yang2022delocalization, DY, DYYY25}.
+
+
+The random band matrix model above is the classical Wegner orbital model; alongside it we also study a second classical non-mean-field model, the block Anderson model. Specifically, we consider Hermitian matrices $H = V + \ilambda \Psi$ on the same discrete torus \smash{$(\mathbb{Z} / \sqrt[d]{N} \mathbb{Z})^d$},  
+where $V$ is a random block potential consisting of i.i.d.~complex Gaussian diagonal blocks of size $W^d \times W^d$, and $\Psi$ encodes the interactions between neighboring blocks---random in the Wegner orbital model and deterministic in the block Anderson model. 
+The parameter $\ilambda > 0$ represents the coupling strength between blocks. Assuming again that $W \geq N^{\mathfrak{c}}$, we establish delocalization of bulk eigenvectors, QUE, and bulk universality under the condition \smash{$W^{-d/2+\varepsilon}\le \ilambda \le \varepsilon^{-1}$} for any small constant $\varepsilon>0$. 
+Combined with the localization results of~\cite{PelSchShaSod} for \smash{$\ilambda \ll W^{-d/2}$}, this identifies a localization--delocalization transition at the scale $\ilambda=W^{-d/2}$ in dimensions $d \ge 3$.
+\end{abstract}
+
+\maketitle
+ 
+%\newpage
+{
+\hypersetup{linkcolor=black}
+\tableofcontents
+}
+%\newpage
+
+ 
+
+\input{1_2_Intro_model_result}
+
+\input{3_5_Loop_Hierarchy}
+
+\input{6_Step6_two_loop}
+
+\input{7_8_light_weight}
+
+\input{A_deterministic_estimates}
+
+\input{B_graphical_lemmas}
+
+\bibliographystyle{abbrv}
+\bibliography{Jun}
+
+
+
+
+\end{document}

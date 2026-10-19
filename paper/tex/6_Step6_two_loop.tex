@@ -1,0 +1,169 @@
+\section{Step 6: Expected 2-loop estimates}\label{Sec:Step6}
+
+Our proof of Step 6 relies on analyzing the expectation of the loop hierarchy in \eqref{int_K-LcalE_n=2}: 
+\begin{align} \label{Eexpint_K-L}
+\E(\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba}=
+    \left(\mathcal{U}^{(2)}_{s, t, \bsig} \circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{s, \bsig}\right)_{\ba}+ \int_{s}^t \left(\mathcal{U}^{(2)}_{u, t, \bsig} \circ \E\mathcal{E}^{(\mathcal{L} - \mathcal{K}) \times (\mathcal{L} - \mathcal{K})}_{u, \bsig} + \mathcal{U}^{(2)}_{u, t, \bsig} \circ \E\mathcal{E}^{\Gc}_{u, \bsig}\right)_{\ba} \dd u ,  %+ \int_{s}^t \left(\mathcal{U}^{(2)}_{u, t, \bsig} \circ \E\mathcal{E}^{\Gc}_{u, \bsig}\right)_{\ba} \dd u  , 
+\end{align}
+where we omit the superscript ``$(2)$'' from some of the notation for brevity. 
+In addition, we use the following expected averaged local law, which improves the (sharp) averaged local law \eqref{Gt_avgbound_flow} from Step 2 by an extra factor of $W^{-d}B_{u,0}$ arising from the expectation.
+ 
+
+\begin{lemma}\label{lem:improve_exp_aver}
+In the setting of \Cref{lem:main_ind}, suppose the estimates \eqref{Gt_avgbound_flow} and \eqref{Eq:L-KGt-flow} hold uniformly in $u\in[s,t]$. Then, we have 
+\begin{align}\label{res_ELK_n=1} 
+  \max_{a}  \left|\E\tr\p{ (G_u-M) E_{a}}\right|
+  \prec (W^{-d}B_{u,0})^{2},\quad \forall\, s\le u \le t.
+  \end{align} 
+\end{lemma}
+\begin{proof}
+    The proof of this lemma is the same as that of \cite[Lemma 5.15]{YY_25} by using \eqref{Gt_avgbound_flow} and \eqref{Eq:L-KGt-flow}. %Hence, we omit the details.
+\end{proof}
+
+% The first ingredient is the following improved estimate on loops of length $1$, which is Lemma 5.15 in \cite{YY_25}.
+
+% \begin{lemma}\label{lemma:step6-1}
+% Fix any $a\in\Z_{L}^{2}$, any $\tau,\kappa>0$, any $E\in[-2+\kappa,2-\kappa]$, and $0\leq u\leq 1-N^{-1+\tau}$. We have 
+% \begin{align}
+% |\E{\cal L}_{u,(+),(a)}-{\cal K}_{u,(+),(a)}|=|\E\langle(G_{u}-m)E_{a}\rangle|\prec (W^{-d}B_{0,t})^{2}.
+% \end{align}
+% \end{lemma}
+% \begin{proof}The proof is exactly the same as $d=1$ (and used for $d=2$. The key input is $$\langle(G_{u}-m)E_{b}\rangle\prec (W^{-d}B_{0,u})$$\end{proof}
+
+
+
+%\begin{proof}[Proof of Lemma \ref{ML:exp}]
+% Taking expectation of both side of  \eqref{int_K-LcalE} for the case $n=2$, we have  
+% \begin{align}\label{Eexpint_K-L}
+%  \E\;    (\mathcal{L} - \mathcal{K})_{t, \bsig, \textbf{a}} \;=
+%  \; \; &
+%     \left(\mathcal{U}_{s, t, \bsig} \circ  \E\, (\mathcal{L} - \mathcal{K})_{s, \bsig}\right)_{\textbf{a}} \; + \;  \int_{s}^t \left(\mathcal{U}_{u, t, \bsig}  \circ \E\,\mathcal{E}^{((\mathcal{L} - \mathcal{K}) \times (\mathcal{L} - \mathcal{K}))}_{u, \bsig}\right)_{\textbf{a}} du \\
+%     &+   \int_{s}^t \left(\mathcal{U}_{u, t, \bsig} \circ  \E\, \mathcal{E}^{(\widetilde{G})}_{u, \bsig}\right)_{\textbf{a}} du.
+% \end{align} 
+
+
+
+
+ 
+
+
+% By assumption, we have 
+% \begin{align}\label{jdasfuao01}
+%   \E\;  (\mathcal{L} - \mathcal{K})_{s, \bsig,\textbf{a}}\prec \begin{cases}
+%       W^{-2d-d/5},\quad & \eta_s\ge L^{-d}\\
+%       (N\eta_s)^{-2}\cdot\left(W^{-d/5}+(N\eta_s)^{-1}\right),\quad & \eta_s\le L^{-d}
+%   \end{cases}
+% \end{align}
+
+For the first term on the RHS of \eqref{Eexpint_K-L}, $\E(\mathcal{L} - \mathcal{K})^{(2)}_{s, \bsig,\ba}$ satisfies \eqref{Eq:Gtlp_exp+IND}. For the $\E\mathcal{E}^{(\mathcal{L} - \mathcal{K}) \times (\mathcal{L} - \mathcal{K})}$ term, combining the pointwise bound \eqref{Eq:Gdecay_flow} from Step 5 with the maximum bound \eqref{Eq:L-KGt-flow} from Step 4 yields, for $1-u \ge \ilambda^2/L^{d}$ and any $\ba=(a_1,a_2)\in (\Zn)^2$,
+\begin{align}
+\E{\cal E}^{(\cL-\cK)\times(\cL-\cK)}_{u,\bsig,\ba}&\prec 
+(W^{-d}B_{u,0})^{\frac{11}{5}} \sum_{b} B_{u,|a_1-b|}e^{-(|a_1-b|/\ell_u)^{1/2}}\lesssim (1-u)^{-1}(W^{-d}B_{u,0})^{\frac{11}{5}},\label{eq:Exp(L-K)1}
+\end{align}
+while for $1-u\le \ilambda^2/L^{d}$, the maximum bound \eqref{Eq:L-KGt-flow} gives 
+\begin{align}
+\E{\cal E}^{(\cL-\cK)\times(\cL-\cK)}_{u,\bsig,\ba}&\prec W^d\cdot L^d(N|1-u|)^{-4} =(1-u)^{-1} (N|1-u|)^{-3}.\label{eq:Exp(L-K)2}
+\end{align}
+Finally, consider the light-weight term in \eqref{Eexpint_K-L}. By the definition \eqref{def_EwtG}, we may write 
+\be\label{eq:LW-n=2}
+\mathcal{E}^{\Gc}_{u, \bsig, \ba}= W^d \sum_{k=1}^2 \sum_{\al, \beta\in \Zn}  
+ \tr\big ( \Gc_u(\sigma_k)  E_{\al} \big)
+   S^{(\sB)}_{\al\beta} 
+  \left( {\cut}^{(\beta)}_{k} \circ {\cal L}^{(2)}_{u, \bsig, \ba} \right) . \ee
+When $1-u\le \ilambda^2/L^{d}$, its expectation can be bounded as
+\begin{align}
+\E\mathcal{E}^{\Gc}_{u, \bsig, \ba}&= W^d \sum_{k=1}^2 \sum_{\al, \beta}  
+\br{\E \tr\big( \Gc_u(\sigma_k) E_{\al} \big) S^{(\sB)}_{\al\beta} \left( {\cut}^{(\beta)}_{k} \circ {\cal K}^{(2)}_{u, \bsig, \ba} \right) + \E \tr \big ( \Gc_u(\sigma_k)  E_{\al} \big) S^{(\sB)}_{\al\beta} \left( {\cut}^{(\beta)}_{k} \circ \p{\cal L-\cK}^{(2)}_{u, \bsig, \ba} \right)} \nonumber\\
+&\prec W^d\cdot L^d(N|1-u|)^{-4} =(1-u)^{-1} (N|1-u|)^{-3}, \label{eq:ExpLWn=2_smalleta}
+\end{align}
+where the second step uses \eqref{res_ELK_n=1} and \eqref{eq:bcal_k} (with $n=3$) to bound the first term, and \eqref{Gt_avgbound_flow} together with \eqref{Eq:L-KGt-flow} (with $n=3$) to bound the second. On the other hand, when $1-u\ge \ilambda^2/L^{d}$, we control \smash{$\E\mathcal{E}^{\Gc}_{u, \bsig, \ba}$} as in the following lemma, which may be viewed as an analogue of \Cref{lem:LWterm} in expectation. Its proof uses the same diagrammatic techniques as in the proof of \Cref{lem:LWterm}, albeit in a considerably simpler form, and is deferred to \Cref{subsec:pf-LWterm_EXP}.
+
+
+
+\begin{lemma}[Expected light-weight estimate]\label{lem:LWterm_EXP}
+In the setting of \Cref{lem:main_ind}, suppose $1-t\ge \ilambda^2/L^{d}$ and the estimates \eqref{Gt_bound_flow}--\eqref{Eq:Gdecay_flow} hold. Then, for any $\bsig\in\{+,-\}^2$ and $\ba\in(\Zn)^2$, we have  
+\begin{align}\label{eq:ExpLWn=2}
+\E\mathcal{E}^{\Gc,(2)}_{t, \bsig, \ba}\prec (1-t)^{-1} (W^{-d}B_{t,0})^{\frac{5}{2}}. 
+\end{align}
+\end{lemma}
+With the above estimates in place, we can now complete the proof of \eqref{Eq:Gtlp_exp_flow} using the tools developed in Step 3 (cf.~\Cref{Sec:Steps34}).
+Here, we can obtain an additional small factor $(\ilambda^2W^d)^{-1/5}+W^{-d}B_{u,0}$ compared to \eqref{Eq:L-KGt-flow}, because the leading error in the integrated loop hierarchy \eqref{int_K-LcalE_n=2} arises from the martingale term, which vanishes after taking the expectation. 
+
+
+\begin{proof}[\bf Step 6: Proof of \eqref{Eq:Gtlp_exp_flow}]
+In the case $1-s\ge 1-t\ge \ilambda^2$, we have $B_{u,0}\asymp |1-u|^{-1}$, while in the case $1-t\le 1-s\le \ilambda^2/L^d$, we have $B_{u,0}\asymp (L^d|1-u|)^{-1}$. In these regimes, substituting \eqref{Eq:Gtlp_exp+IND} and \eqref{eq:Exp(L-K)1}--\eqref{eq:ExpLWn=2} into \eqref{Eexpint_K-L}, applying the evolution kernel estimate \eqref{sum_res_Ndecay} with $n=2$, and integrating over $u$, we obtain  
+\be\label{eq:ExpL-Keasy} \E(\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba} \prec (W^{-d}B_{t,0})^{2}\p{(\ilambda^2W^d)^{-1/5}+W^{-d}B_{t,0}}
+.\ee
+It remains to deal with the regimes (i) $\ilambda^2/L^{2}\le 1- t\le 1-s \le \ilambda^2$, and (ii) $\ilambda^2/L^{d}\le 1-t\le 1-s\le \ilambda^2/L^{2}$. In these regimes, when $\sig_1=\sig_2$, substituting \eqref{Eq:Gtlp_exp+IND}, \eqref{eq:Exp(L-K)1}, and \eqref{eq:ExpLWn=2} into \eqref{Eexpint_K-L}, applying the evolution kernel estimate \eqref{sum_res_2_NAL} in regime (i) and the estimate \eqref{sum_res_Ndecay_nonzero} with $A=\emptyset$ (note that $I_{\mathrm{diff}}(\bsig)=\emptyset$) in regime (ii), and integrating over $u$, we obtain \eqref{eq:ExpL-Keasy}. (In regime (ii), \eqref{sum_res_2_NAL} is not available since \Cref{lem:sum_decay} requires $t\le 1-\ilambda^2/L^2$, and the factor $\int_s^t(1-u)^{-1}\dd u\le (d-2)\log L$ is absorbed by $\prec$.) 
+% \[ \E(\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba} \prec (W^{-d}B_{t,0})^{2}\p{(\ilambda^2W^d)^{-1/5}+W^{-d}B_{t,0}}.\]
+The remaining and more delicate case is when $\sig_1\ne \sig_2$. To handle this, we again employ the sum-zero operator from \Cref{Def:QtPt} in regime (i), and the zero-mode-removing operator from \Cref{def;zero_mode_remove} in regime (ii).
+
+\medskip
+
+\noindent
+\textbf{Regime (i)}: Using Ward's identities \eqref{WI_calL} and \eqref{WI_calK}, along with \eqref{res_ELK_n=1} and \eqref{eq:derv_Theta}, we obtain 
+\be\label{eq:EPL-K}
+\br{\cal P\circ \E (\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig}}_{a_1}\dthn_{t,\ba}^{(2)}= \frac{\im \E \tr\p{(G_t -M)E_{a_1}}}{W^d\eta_t}\dthn_{t,\ba}^{(2)} \prec (W^{-d}B_{t,0})^{3}.
+\ee
+To estimate $\cal Q_t\circ \E (\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba}$, we take the expectation of equation \eqref{int_K-L+Q} with $n=2$, yielding
+\begin{align}\label{int_K-L+QE}
+& {\cal Q}_t\circ  \E(\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba}   = 
+\left(\mathcal{U}^{(2)}_{s, t, \bsig} \circ  {\cal Q}_s\circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{s, \bsig}\right)_{\ba} + \int_{s}^t \left(\mathcal{U}^{(2)}_{u, t, \bsig} \circ  {\cal Q}_u\circ \E \mathcal{E}^{(\cL-\cK)\times(\cL-\cK),(2)}_{u, \bsig}\right)_{\ba} \dd u \nonumber\\
+& + \int_{s}^t \left(\mathcal{U}^{(2)}_{u, t, \bsig} \circ  {\cal Q}_u\circ \E\mathcal{E}^{\Gc,(2)}_{u, \bsig}\right)_{\ba} \dd u  + \int_{s}^t 
+\left(\mathcal{U}^{(2)}_{u, t, \bsig} 
+\circ \left( \left[{\cal Q}_u , \varTheta^{(2)}_{u,\bsig} \right]\circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{u, \bsig }\right) \right)_{\ba} \dd u \nonumber\\
+& - \int_{s}^t \left(\mathcal{U}^{(2)}_{u, t, \bsig} \circ \left\{\left[ {\cal P} \circ \E\left(\mathcal{L} - \mathcal{K}\right)^{(2)}_{u, \bsig}\right] \partial_u\dthn_{u}^{(2)} \right\}\right)_{\ba} \dd u.
+\end{align}
+We now estimate the RHS of \eqref{int_K-L+QE}. For the first three terms, we apply \Cref{lem_+Q}, together with the estimates \eqref{Eq:Gtlp_exp+IND}, \eqref{eq:Exp(L-K)1}, and \eqref{eq:ExpLWn=2}, and use the improved evolution kernel estimate \eqref{sum_res_2}, which exploits the sum-zero and fast-decay properties. Integrating over $u$, we can bound them by $(W^{-d}B_{t,0})^{2}[(\ilambda^2W^d)^{-1/5}+W^{-d}B_{t,0}]$.
+
+
+It remains to control the last two terms in \eqref{int_K-L+QE}. Arguing as in \eqref{eq:EPL-K}, and again using Ward's identity, \eqref{res_ELK_n=1}, and \eqref{eq:derv_Theta}, we find
+\be\label{eq:boundELKQ1}
+\left\|\left[ {\cal P} \circ \E\left(\mathcal{L} - \mathcal{K}\right)^{(2)}_{u, \bsig}\right] \partial_u\dthn_{u}^{(2)}\right\|_\infty \prec (1-u)^{-1} (W^{-d}B_{u,0})^{3}. 
+\ee 
+For the commutator term, using the same argument as in \eqref{A4} (with $n=2$), we obtain
+%using the definition \eqref{eq:sumzero_op} and the definition of $\varTheta^{(2)}_{u,\bsig}$ in \eqref{def:op_thn},  we obtain
+\begin{align}
+\big[{\cal Q}_u , \varTheta^{(2)}_{u,\bsig} \big]\circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{u, \bsig, \ba} %&= \varTheta^{(2)}_{u, \bsig} \circ \left[ \left({\cal P} \circ \E\left( \mathcal{L} - \mathcal{K} \right)^{(2)}_{u,\bsig}\right) \cdot \dthn^{(2)}_u \right]_{\ba} - \left[\left( {\cal P} \circ \varTheta^{(2)}_{u, \bsig} \circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{u,\bsig}\right)  \cdot \dthn^{(2)}_u \right]_{\ba} \nonumber\\ 
+&\prec (1-u)^{-1}\left\|\dthn^{(2)}_{u}\right\|_\infty \cdot   \left\| {\cal P} \circ \E\left(  \mathcal{L} - \mathcal{K} \right)^{(2)}_{u,\bsig} \right\|_{\infty}\prec (1-u)^{-1} (W^{-d}B_{u,0})^{3},\label{eq:boundcommutator}
+\end{align} 
+%where in the second step, we use the simple fact that $ \|\varTheta_{u,\bsig}^{(2)}\|_{\infty\to\infty} \le (1-u)^{-1}$, and 
+where the second step again follows from Ward's identity and the estimates \eqref{res_ELK_n=1} and \eqref{eq:derv_Theta}. 
+Applying \Cref{lem_+Q}, along with the bounds \eqref{eq:boundELKQ1} and \eqref{eq:boundcommutator}, and using the evolution kernel estimate \eqref{sum_res_2} (the fast-decay property \eqref{deccA0} of these two terms follows exactly as for ${\cal B}_5$ and ${\cal B}_4$ in the proof of \Cref{lem:STOeq_Qt}, with $\cL-\cK$ replaced by $\E(\cL-\cK)$), we conclude that the contribution of the last two terms in \eqref{int_K-L+QE} is bounded by $(W^{-d}B_{t,0})^3$. This completes the proof of \eqref{Eq:Gtlp_exp_flow} in regime (i).
+
+\medskip
+
+\noindent
+\textbf{Regime (ii)}: We use the operator $Q^{(\{1,2\})}=Q^{(1)}\circ Q^{(2)}$ in \Cref{def;zero_mode_remove} and Ward's identity to express 
+\begin{align}
+ (\cal L-\cK)_{t,\bsig,\ba}^{(2)}=  Q^{(\{1,2\})} \circ (\cal L-\cK)_{t,\bsig,\ba}^{(2)}  + \frac{\im \br{\tr\p{(G_t-M)(E_{a_1}+E_{a_2})} -N^{-1}\tr\p{G_t-M}}}{N\eta_t}
+\end{align}
+for $\sig_1\ne \sig_2$. Taking expectations and using \eqref{res_ELK_n=1}, the expectation of the second term is bounded by $(W^{-d}B_{t,0})^2\cdot (N\eta_t)^{-1}\le (W^{-d}B_{t,0})^3$. To estimate the first term, we take the expectation of equation \eqref{iisuwjyys} with $n=2$ and $A=\{1,2\}$, yielding
+\begin{align}\label{iisuwjyys_exp}
+Q^{(\{1,2\})}\circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{t, \bsig, \ba} 
+&=\left(Q^{(\{1,2\})}\circ\mathcal{U}^{(2)}_{s, t, \bsig}  \circ \E(\mathcal{L} - \mathcal{K})^{(2)}_{s, \bsig}\right)_{\ba} + \int_{s}^t \left(Q^{(\{1,2\})}\circ \mathcal{U}^{(2)}_{u, t, \bsig}  \circ \E \mathcal{E}^{(\cL-\cK)\times(\cL-\cK),(2)}_{u, \bsig}\right)_{\ba} \dd u \nonumber\\
+& + \int_{s}^t \left(Q^{(\{1,2\})}\circ \mathcal{U}^{(2)}_{u, t, \bsig} \circ \E\mathcal{E}^{\Gc,(2)}_{u, \bsig}\right)_{\ba} \dd u .
+\end{align}
+Applying \eqref{normQA2}, together with the estimates \eqref{Eq:Gtlp_exp+IND}, \eqref{eq:Exp(L-K)1}, and \eqref{eq:ExpLWn=2}, and using the evolution kernel estimate \eqref{sum_res_Ndecay_nonzero}, we integrate over $u$ to obtain the desired bound: $(W^{-d}B_{t,0})^{2}[(\ilambda^2W^d)^{-1/5}+W^{-d}B_{t,0}]$. This completes the proof of \eqref{Eq:Gtlp_exp_flow} in regime (ii).
+ % \begin{itemize}
+ %     \item Sum zero operator for $\eta\ge L^{-2}$
+ %     \item Zero mode operator for $L^{-d}\le \eta\le L^{-2}$
+ % \end{itemize}  
+\end{proof}
+
+%  On the other hand, for $\eta_u\le L^{-d}$, use the old argument as in $d=1$ proof: 
+
+% $\begin{aligned} \E \mathcal{E}_{u, \bsig, \mathbf{a}}^{(\widetilde{G})} & \prec N \cdot \max _a \max _{\mathbf{a}} \max _{\bsig \in\{+,-\}^3}\left|\E\left[\left\langle\left(G_u-m\right) E_a\right\rangle \cdot \mathcal{L}_{u, \mathbf{a}, \bsig}\right]\right| \\ & \prec N\cdot \max _a\left|\E\left\langle\left(G_u-m\right) E_a\right\rangle\right| \cdot \max _{\mathbf{a}} \max _{\bsig \in\{+,-\}^3}\left|\mathcal{K}_{u, \mathbf{a}, \bsig}\right| \\ & +N \cdot \max _a\left|(\mathcal{L}-\mathcal{K})_{u,(+),(a),}\right\rangle\left|\cdot \max _{\mathbf{a}} \max _{\bsig \in\{+,-\}^3}\right|(\mathcal{L}-\mathcal{K})_{u, \mathbf{a}, \bsig} \mid .
+% \\\nonumber
+% & \;\prec \; N (N\eta_u)^{-4}\prec \eta_u^{-1}\cdot(N\eta)^{-3}  \end{aligned}$
+
+ 
+
+
+
+
+
+
+
+
+ 

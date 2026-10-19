@@ -1,0 +1,113 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.Universality.GUEPhase.RandomLayerBG
+import RBM3D.Universality.UnivMain
+import RBM3D.Universality.PinsKD
+
+/-!
+# The dimension-filtered generic chain
+
+The generic chain from the layer inputs to the Claim [DYYY25, (2.20)], with the dimension filter `Dm` of
+`Universality/PinsKD` threaded through: every input is applied at its own dimension `d` with `Dm d`.
+
+* `un_claimAll_of_rowskD`: the Claim from `UNClaimRowkD`, `UNEMCTE2RowkD`, `UNJakUywRowkD`, `UNOURowkD`;
+* `unClaimRowkD`: `UNClaimRowkD` for every filter and kind (the filtered form of `unClaimRowk`);
+* `ouRowk_of_pinsD`: `UNOURowkD` from `UNG1RowkD`, `UNG2bRowk` and the profile statements at the filtered
+  dimensions;
+* `g1Rowk_of_inputsGD`: `UNG1RowkD` from the inputs at a margin (`RBG_Flow`, `RBG_Dom`, `RBG_Comp`, `RBG_Prod`,
+  `RBG_Que`); its two private size lemmas `RandomLayerBG_oull_seq`, `RandomLayerBG_eq747_seq` are read by
+  `open private`.
+
+The statements and proofs equal the unfiltered ones after the filter map.  No block Anderson and no band
+vocabulary appears in the statements.  The filtered form of `UNJakUywRow` imports `BA/EMCTE2BA` and
+lives in `BA/UNBUniv`.
+-/
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+
+open private RandomLayerBG_oull_seq RandomLayerBG_eq747_seq from RBM3D.Universality.GUEPhase.RandomLayerBG
+
+noncomputable section
+
+namespace RBM.Univ
+
+open MeasureTheory Filter Topology
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Loop RBM.Univ.GUEPhase
+
+/-! ## 1. The chain -/
+
+/-- `un_claimAll_of_rowskD`: the Claim [DYYY25, (2.20)] from the filtered statements, at every `d` with `Dm d`. -/
+theorem un_claimAll_of_rowskD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) {ML Loc Que : Prop}
+    (rC : UNClaimRowkD Dm K) (rE : UNEMCTE2RowkD Dm K) (rJ : UNJakUywRowkD Dm K Loc)
+    (rO : UNOURowkD Dm K ML Loc Que) (hML : ML) (hLoc : Loc) (hQ : Que) :
+    ∀ d : ℕ, Dm d → 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+      ∀ E : ℝ, (∀ᶠ n in atTop, (K d).bulk sz κ E n) → UNClaimAllC sz ((K d).M sz) E := by
+  have hOU := rO hML hLoc hQ
+  apply rC
+  intro d hD hd 𝔠 𝔡 sz hA κ hκ E hE nf
+  obtain ⟨Cn, τ₁, hτ₁, h1⟩ := rE d hD hd 𝔠 𝔡 sz hA κ hκ E hE nf
+  obtain ⟨C, τ₂, hτ₂, h2⟩ := rJ hLoc hOU d hD hd 𝔠 𝔡 sz hA κ hκ E hE nf
+  refine ⟨Cn, C, min τ₁ τ₂, lt_min hτ₁ hτ₂, fun τU h0 hle => ?_⟩
+  have hJU := h2 τU h0 (hle.trans (min_le_right _ _))
+  exact ⟨h1 τU h0 (hle.trans (min_le_left _ _)), hJU.1, hJU.2⟩
+
+/-- `unClaimRowkD`: `UNClaimRowkD` for every filter and kind (`unClaimRowk`). -/
+theorem unClaimRowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) : UNClaimRowkD Dm K := by
+  intro h d hD hd 𝔠 𝔡 sz hA κ hκ E hE
+  refine ⟨𝔠 * 𝔡 / 30, by have := hA.1; have := hA.2.1; positivity, fun nf => ?_⟩
+  obtain ⟨Cn, C, τ₀, hτ₀, hh⟩ := h d hD hd 𝔠 𝔡 sz hA κ hκ E hE nf
+  refine ⟨Cn + C + 1, τ₀, hτ₀, fun τU hτU hτU0 => ?_⟩
+  obtain ⟨hEM, hJ, hU⟩ := hh τU hτU hτU0
+  exact unClaim417C_of_rows (K d) sz hA.2.2.1 E nf τU _ Cn C hτU hEM hJ hU
+
+/-- `ouRowk_of_pinsD`: `UNOURowkD` from the filtered layer statement `UNG1RowkD`, the statement `UNG2bRowk` and the
+profile statements at the filtered dimensions. -/
+theorem ouRowk_of_pinsD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d))
+    {ML Loc Que : Prop} (hprof : ∀ d : ℕ, Dm d → 3 ≤ d → UNOUProfRowk (K d) (P d)) :
+    UNG1RowkD Dm K P ML Loc Que → UNG2bRowk K P → UNOURowkD Dm K ML Loc Que := by
+  intro r1 r2b hML hLoc hQ d hD hd 𝔠 𝔡 sz hA
+  refine ⟨ouTauMax 𝔠 𝔡, ouTauMax_pos hA.1 hA.2.1, fun τU hτ hle => ?_⟩
+  have h1 := r1 hML hLoc hQ d hD hd 𝔠 𝔡 sz hA τU hτ hle
+  exact ⟨r2b d hd (hprof d hD hd) 𝔠 𝔡 sz hA τU hτ h1.2, ouDiagk_of_ouLLk h1.1⟩
+
+/-- `g1Rowk_of_inputsGD`: `UNG1RowkD` from the seven layer inputs, each read at its own dimension `d` with `Dm d`
+(each input at its own dimension). -/
+theorem g1Rowk_of_inputsGD (Dm : ℕ → Prop) :
+    ∀ (K : ∀ d, UNKind d) (P : ∀ d, UNOUProfile (K d)) (ML Loc Que : Prop)
+      (Ed : ∀ d : ℕ, ℝ → Sizes d → ℕ → ℂ → Prop) (fE fT : ∀ d : ℕ, Sizes d → ℕ → ℂ → ℝ)
+      (Fl : ∀ d : ℕ, Sizes d → ℝ → ℝ → ℝ → ℝ → (ℕ → ℂ) → Prop)
+      (MO : ∀ d : ℕ, Sizes d → (ℕ → ℂ) → (ℕ → ℝ) → Prop)
+      (KF PB : ∀ d : ℕ, ∀ sz : Sizes d, (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) →
+        (∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) → Prop),
+      (∀ d, Dm d → 3 ≤ d → RBG_Flow (K d) (Ed d) (fT d)) →
+      (∀ d, Dm d → 3 ≤ d → RBG_Dom (K d) (Fl d)) →
+      (∀ d, Dm d → 3 ≤ d → RBG_Comp (K d) (P d)) →
+      (∀ d, Dm d → 3 ≤ d → RBG_Prod (Ed d) (fE d) (fT d) (MO d) (KF d) (PB d)) →
+      (∀ d, Dm d → 3 ≤ d → RandomLayerB_LL (K d) (fE d) (fT d) (PB d)) →
+      (∀ d, Dm d → 3 ≤ d → RBG_Que (K d) (P d) (Ed d) (fE d) (fT d) (MO d) (KF d) (PB d)) →
+      (ML → ∀ d, Dm d → 3 ≤ d → RandomLayerB_MLout (fT d) (Fl d) (MO d)) →
+      UNG1RowkD Dm K P ML Loc Que := by
+  intro K P ML Loc Que Ed fE fT Fl MO KF PB hT1 hT1' hC hT2 hT3 hT4 hT5 hML _ _ d hD hd 𝔠 𝔡 sz hA τU hτU hτUm
+  refine ⟨fun κ hκ E t ht δ hδ p => ?_, fun κ hκ E t ht τ hτ => ?_⟩
+  · refine RandomLayerBG_pad_subseq (fun n => (K d).bulk sz κ (E n) n)
+      (fun n => RandomLayerB_LLAt (K d) sz τU n (E n) (t n) δ p) fun φ hφ hS => ?_
+    exact (RandomLayerBG_oull_seq hd (hT1 d hD hd) (hT1' d hD hd) (hT2 d hD hd) (hT3 d hD hd) (hT5 hML d hD hd)
+      (comp_admissible sz φ 𝔠 𝔡 hφ.tendsto_atTop hA) hτU hτUm hκ
+      (fun j => (hC d hD hd sz φ hφ j).1 κ _ (hS j)) (fun j => ht (φ j)) δ hδ p).mono
+      fun j hj => (hC d hD hd sz φ hφ j).2.1 τU _ _ δ p hj
+  · refine RandomLayerBG_pad_subseq (fun n => (K d).bulk sz κ (E n) n)
+      (fun n => RandomLayerB_QueAt (K d) (P d) sz 𝔡 n (E n) (t n) τ) fun φ hφ hS => ?_
+    exact (RandomLayerBG_eq747_seq hd (hT1 d hD hd) (hT1' d hD hd) (hT2 d hD hd) (hT4 d hD hd) (hT5 hML d hD hd)
+      (comp_admissible sz φ 𝔠 𝔡 hφ.tendsto_atTop hA) hτU hτUm hκ
+      (fun j => (hC d hD hd sz φ hφ j).1 κ _ (hS j)) (fun j => ht (φ j)) τ hτ).mono
+      fun j hj => (hC d hD hd sz φ hφ j).2.2 𝔡 _ _ τ hj
+
+
+end RBM.Univ
+
+end
