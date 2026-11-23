@@ -3,9 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.CltFar
-import RBM3D.Evolution.CltMoments2G
-import RBM3D.Evolution.MeanFarG
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Evolution.CltFar
+public import RBM3D.Evolution.CltMoments2G
+public import RBM3D.Evolution.MeanFarG
+import all RBM3D.Evolution.CltFar
+import all RBM3D.Evolution.MeanFarG
+
+@[expose] public section
 
 /-!
 # `lem;CLT`, far part, over the carrier: the statement `STCltFargL`

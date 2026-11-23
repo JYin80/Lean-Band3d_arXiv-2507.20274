@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWMoment
-import RBM3D.Graph.LWMomentExp
-import RBM3D.Graph.LWTermExpN
-import RBM3D.Graph.AuxGraph2
-import RBM3D.Green.GbEXP
+
+module
+
+public import RBM3D.Graph.LWMoment
+public import RBM3D.Graph.LWMomentExp
+public import RBM3D.Graph.LWTermExpN
+public import RBM3D.Graph.AuxGraph2
+public import RBM3D.Green.GbEXP
+
+@[expose] public section
 
 /-!
 # `lem:LWterm` and `lem: EWGn2_N` from the moment bounds

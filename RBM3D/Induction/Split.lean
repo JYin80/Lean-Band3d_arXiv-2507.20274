@@ -3,11 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Gauss.FlowCalculus
-import Mathlib.Analysis.CStarAlgebra.Matrix
-import Mathlib.Analysis.InnerProductSpace.GramMatrix
-import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
+
+module
+
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Matrix.Spectrum
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Gauss.FlowCalculus
+public import Mathlib.Analysis.CStarAlgebra.Matrix
+public import Mathlib.Analysis.InnerProductSpace.GramMatrix
+public import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
+
+@[expose] public section
 
 /-!
 # Splitting loops into chains, `d ≥ 3`

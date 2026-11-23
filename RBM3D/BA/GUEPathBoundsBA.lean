@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEHypBBA
-import RBM3D.BA.GUEDuhamelBA2
-import RBM3D.Universality.GUEPhase.PathBounds
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEHypBBA
+public import RBM3D.BA.GUEDuhamelBA2
+public import RBM3D.Universality.GUEPhase.PathBounds
+import all RBM3D.Universality.GUEPhase.PathBounds
+
+@[expose] public section
 
 /-!
 # The output of the random layer of [YY_25, §7.2] on the BA grid
@@ -587,10 +594,10 @@ private theorem GUEPathBoundsBA_main (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (ha
           (perTimeCalc_highProbAt_inter hsz
             (perTimeCalc_highProbAt_of_stochDomAt h727 hτ₁0)
             (perTimeCalc_highProbAt_of_stochDomAt h728 hτ₁0))
-          (perTimeCalc_highProbAt_mono (perTimeCalc_highProbAt_of_stochDomAt hD4 hτ₁0)
-            (Eventually.of_forall fun _ _ hω k i j => hω (k, (i, j)))))
-        (perTimeCalc_highProbAt_mono (perTimeCalc_highProbAt_of_stochDomAt hinit hτ₁0)
-          (Eventually.of_forall fun _ _ hω i j => hω (i, j))))
+          (perTimeCalc_highProbAt_mono (Ξ' := fun _ => {x | _}) (perTimeCalc_highProbAt_of_stochDomAt hD4 hτ₁0)
+            (Eventually.of_forall fun _ => Set.subset_ofPred.2 fun ω hω k i j => hω (k, (i, j)))))
+        (perTimeCalc_highProbAt_mono (Ξ' := fun _ => {x | _}) (perTimeCalc_highProbAt_of_stochDomAt hinit hτ₁0)
+          (Eventually.of_forall fun _ => Set.subset_ofPred.2 fun ω hω i j => hω (i, j))))
       (gue_highProb_incr_le (sz.withLam 0) n0 hsz)
     refine perTimeCalc_highProbAt_mono hev ?_
     filter_upwards [hscale', hell1,

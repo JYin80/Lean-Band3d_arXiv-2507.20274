@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.HeatBounds1D
-import RBM3D.Defs.Lattice
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-import Mathlib.Analysis.SpecificLimits.Basic
-import Mathlib.Algebra.Order.Field.GeomSum
+
+module
+
+public import RBM3D.Propagator.HeatBounds1D
+public import RBM3D.Defs.Lattice
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Algebra.Order.Field.GeomSum
+
+@[expose] public section
 
 /-!
 # Bounds of the one-dimensional heat kernel on the torus `ℤ_L`

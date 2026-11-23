@@ -3,8 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.NQEndLinGen
-import RBM3D.Induction.NQEndFlowLift
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.NQEndLinGen
+public import RBM3D.Induction.NQEndFlowLift
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.NQEndLin
+import all RBM3D.Chain.GridGoodGen
+import all RBM3D.Induction.NQEndFlow
+import all RBM3D.Induction.NQEndLin
+
+@[expose] public section
 
 /-!
 # The non-alternating endpoint at the flow, per time, over the carrier family

@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2IterGen2
-import RBM3D.Chain.OptL2Gen
-import RBM3D.Induction.LocalAvg2
-import RBM3D.Evolution.FarEntry
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step2IterGen2
+public import RBM3D.Chain.OptL2Gen
+public import RBM3D.Induction.LocalAvg2
+public import RBM3D.Evolution.FarEntry
+import all RBM3D.Induction.LocalAvg2
+
+@[expose] public section
 
 /-!
 # Step 2 over the carrier: the `STGijDecgL` reader, the list identities, the local average bound

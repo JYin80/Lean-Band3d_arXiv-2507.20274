@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.EKPins
-import RBM3D.Induction.Step1Setup
-import RBM3D.Kernel.Evolution
-import RBM3D.Induction.DecayLoopA
-import RBM3D.Induction.MainIndChain
+
+module
+
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.EKPins
+public import RBM3D.Induction.Step1Setup
+public import RBM3D.Kernel.Evolution
+public import RBM3D.Induction.DecayLoopA
+public import RBM3D.Induction.MainIndChain
+
+@[expose] public section
 
 /-!
 # The twisted loops: definitions, the statements about them, and the model-free lemmas

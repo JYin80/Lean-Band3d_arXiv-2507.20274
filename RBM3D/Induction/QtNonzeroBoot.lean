@@ -3,20 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QtNonzeroFlowLift
-import RBM3D.Induction.NQEndFlow
-import RBM3D.Induction.NQEndFlowLift
-import RBM3D.Induction.NewPQ
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.NQGood1
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.KDecay
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.ExpWardII
-import RBM3D.Induction.ContinuityNet
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.Step2Events
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.QtNonzeroFlowLift
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.NQEndFlowLift
+public import RBM3D.Induction.NewPQ
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.NQGood1
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.KDecay
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.ExpWardII
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # The regime-generic self-absorption bootstrap and `stOeqQtNZ'_holds` (`d ≥ 3`)

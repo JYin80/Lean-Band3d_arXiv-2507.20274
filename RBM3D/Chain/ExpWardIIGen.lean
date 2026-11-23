@@ -3,11 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.ExpWardII
-import RBM3D.Chain.Step5CasesGen
-import RBM3D.Chain.B45Gen
-import RBM3D.Chain.CltGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.ExpWardII
+public import RBM3D.Chain.Step5CasesGen
+public import RBM3D.Chain.B45Gen
+public import RBM3D.Chain.CltGen
+import all RBM3D.Induction.ExpWardII
+
+@[expose] public section
 
 /-!
 # The Ward decomposition of regime (ii) over the carrier

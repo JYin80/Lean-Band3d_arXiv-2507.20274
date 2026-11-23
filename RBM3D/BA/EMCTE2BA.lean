@@ -3,10 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.EMCTE2
-import RBM3D.Universality.Uyw
-import RBM3D.BA.UNPins
-import RBM3D.BA.MReg
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Universality.EMCTE2
+public import RBM3D.Universality.Uyw
+public import RBM3D.BA.UNPins
+public import RBM3D.BA.MReg
+public import RBM3D.Universality.Jak
+import all RBM3D.Universality.EMCTE2
+import all RBM3D.Universality.Jak
+import all RBM3D.BA.UNPins
+import all RBM3D.Universality.Uyw
+
+@[expose] public section
 
 /-!
 # The block Anderson weighted [DYYY25, (2.21)] estimate and the bad-event bounds
@@ -53,8 +64,9 @@ open scoped Matrix.Norms.L2Operator
 open private EMCTE2_hsum EMCTE2_hsum_nonneg EMCTE2_integrable_hsum EMCTE2_integrable_L1t_term
   EMCTE2_integrable_L2t_term EMCTE2_sum_integral_swap from RBM3D.Universality.EMCTE2
 open private Jak_fixed_time Jak_queBound_eq from RBM3D.Universality.Jak
-open private UNPins_hg_3_10 from RBM3D.BA.UNPins
+-- (the names formerly opened from RBM3D.BA.UNPins are public)
 open private Uyw_fixed_time Uyw_queBound_eq from RBM3D.Universality.Uyw
+open RBM.Univ.BAInst (UNPins_hg_3_10)
 
 namespace RBM.Univ
 

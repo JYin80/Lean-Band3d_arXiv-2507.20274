@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Bootstrap
-import RBM3D.Defs.StochDomAt
-import RBM3D.Induction.PerTimeCalc
+
+module
+
+public import RBM3D.Universality.GUEPhase.Bootstrap
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Induction.PerTimeCalc
+
+@[expose] public section
 
 /-!
 # The abstract bootstraps of the GUE phase on the size scale (§7.2 of [YY_25]), `Z_L^d`

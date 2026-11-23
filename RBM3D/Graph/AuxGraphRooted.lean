@@ -3,9 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AuxGraph
-import RBM3D.Graph.LWMomExpFar
-import RBM3D.Graph.LWProv
+
+module
+
+public import RBM3D.Graph.AuxGraph
+public import RBM3D.Graph.LWMomExpFar
+public import RBM3D.Graph.LWProv
+
+@[expose] public section
+
 /-!
 # `GtoAG` for a weighted sum, rooted at chosen representatives
 

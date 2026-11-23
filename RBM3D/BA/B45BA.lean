@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.B45Gen
-import RBM3D.Chain.Step2Kern
-import RBM3D.BA.SEforLnBA
-import RBM3D.BA.KKernel
-import RBM3D.BA.KBase
-import RBM3D.BA.Ward
+
+module
+
+public import RBM3D.Chain.B45Gen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.KKernel
+public import RBM3D.BA.KBase
+public import RBM3D.BA.Ward
+
+@[expose] public section
 
 /-!
 # The Ward-type sums at the block Anderson carrier: `(eq:Ward_typeP)` and `(y27kasdfg)`

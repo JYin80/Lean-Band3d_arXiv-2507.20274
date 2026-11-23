@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QtNonzeroEnd
-import RBM3D.Induction.NQEndFlow
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.NQLin
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.Step2Events
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.QtNonzeroEnd
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.NQLin
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # The case-(ii) endpoint at the flow, per time (`d ≥ 3`): `stOeqNZPT''_holds`

@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2EventsGen
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.NewKLK
+
+module
+
+public import RBM3D.Chain.Step2EventsGen
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.NewKLK
+
+@[expose] public section
 
 /-!
 # The Step 2 iteration over the carrier, first part

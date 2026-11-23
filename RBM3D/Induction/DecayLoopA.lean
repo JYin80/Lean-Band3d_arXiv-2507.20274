@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.KDecay
-import RBM3D.Induction.Step2Defs
-import RBM3D.Induction.Split
-import RBM3D.Induction.Defs
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.KDecay
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Induction.Split
+public import RBM3D.Induction.Defs
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # The `L^∞` diameter of a label vector

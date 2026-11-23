@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KInduct
-import RBM3D.BA.KMolecule
-import RBM3D.BA.KPure
+
+module
+
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KMolecule
+public import RBM3D.BA.KPure
+
+@[expose] public section
 
 /-!
 # Ward's inequality for the block Anderson `𝒦`-loops, Lemma 4.2 `lem_wardineq_K`

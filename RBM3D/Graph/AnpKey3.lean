@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AnpKey2
-import Mathlib.Data.Fin.Tuple.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
-import Mathlib.Algebra.Order.BigOperators.Ring.Finset
-import Mathlib.Algebra.Order.Ring.Unbundled.Basic
-import Mathlib.Algebra.GroupWithZero.Basic
+
+module
+
+public import RBM3D.Graph.AnpKey2
+public import Mathlib.Data.Fin.Tuple.Basic
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+public import Mathlib.Algebra.Order.Ring.Unbundled.Basic
+public import Mathlib.Algebra.GroupWithZero.Basic
+
+@[expose] public section
 
 /-!
 # `lem:Anp_key_gh`, Case (I) of the induction step: Cauchy-Schwarz at the fixed vertex

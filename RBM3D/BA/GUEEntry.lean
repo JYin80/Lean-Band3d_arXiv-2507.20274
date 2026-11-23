@@ -3,13 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.EntryTailMain
-import RBM3D.BA.GreenCore
-import RBM3D.BA.GreenStab
-import RBM3D.BA.Ward
-import RBM3D.BA.UNPins
-import RBM3D.BA.CombesThomas
-import RBM3D.BA.MFixedPoint
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Universality.GUEPhase.EntryTailMain
+public import RBM3D.BA.GreenCore
+public import RBM3D.BA.GreenStab
+public import RBM3D.BA.Ward
+public import RBM3D.BA.UNPins
+public import RBM3D.BA.CombesThomas
+public import RBM3D.BA.MFixedPoint
+public import RBM3D.Universality.GUEPhase.EntryDet
+import all RBM3D.Universality.GUEPhase.EntryDet
+
+@[expose] public section
 
 /-!
 # The block Anderson entry layer of the GUE phase, deterministic part

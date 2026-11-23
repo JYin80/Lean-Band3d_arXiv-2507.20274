@@ -3,12 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QEndB1
-import RBM3D.Chain.QEndGridGen
-import RBM3D.Chain.NQEndFlowGen
-import RBM3D.Chain.NQLinGen
-import RBM3D.Chain.GridGoodGen
-import RBM3D.Chain.DecayGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QEndB1
+public import RBM3D.Chain.QEndGridGen
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.Chain.NQLinGen
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Induction.NQEndLin
+import all RBM3D.Induction.QEndB1
+import all RBM3D.Chain.NQEndFlowGen
+import all RBM3D.Chain.GridGoodGen
+import all RBM3D.Induction.NQEndLin
+
+@[expose] public section
 
 /-!
 # The alternating per-time round over the carrier family

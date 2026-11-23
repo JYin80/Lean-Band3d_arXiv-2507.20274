@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Calculus.Deriv.Inv
-import Mathlib.Analysis.Calculus.MeanValue
-import Mathlib.Analysis.Complex.RealDeriv
-import Mathlib.Data.Set.Finite.List
-import RBM3D.Defs.Lattice
-import RBM3D.Defs.Params
-import RBM3D.Defs.Domination
-import RBM3D.Loop.TreeRep
+
+module
+
+public import Mathlib.Analysis.Calculus.Deriv.Inv
+public import Mathlib.Analysis.Calculus.MeanValue
+public import Mathlib.Analysis.Complex.RealDeriv
+public import Mathlib.Data.Set.Finite.List
+public import RBM3D.Defs.Lattice
+public import RBM3D.Defs.Params
+public import RBM3D.Defs.Domination
+public import RBM3D.Loop.TreeRep
+
+@[expose] public section
 
 /-!
 # The abstract bootstraps of the GUE phase (§7.2 of [YY_25]) on `Z_L^d`

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.FlowPins
-import RBM3D.Universality.PinsC2
-import RBM3D.Endpoints
-import RBM3D.Defs.Neighbours
-import Mathlib.Analysis.Matrix.Spectrum
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+module
+
+public import RBM3D.BA.FlowPins
+public import RBM3D.Universality.PinsC2
+public import RBM3D.Endpoints
+public import RBM3D.Defs.Neighbours
+public import Mathlib.Analysis.Matrix.Spectrum
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+@[expose] public section
 
 /-!
 # The statements of the block Anderson kind for the universality argument
@@ -629,7 +634,7 @@ namespace RBM.Univ.BAInst
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA RBM.BA.UNPinsInst RBM.Gauss.SizesInst RBM.Univ
 
 /-- `0 < 3/10` (the coupling parameter `g` of the class `(L, g) = (4, 3/10)`). -/
-private theorem UNPins_hg_3_10 : (0 : ℝ) < 3 / 10 := by norm_num
+theorem UNPins_hg_3_10 : (0 : ℝ) < 3 / 10 := by norm_num
 
 /-- `3/10 ≤ 10` (so that the class sequence is admissible: `g₀ ≤ g ≤ 10`). -/
 private theorem UNPins_hg10 : (3 / 10 : ℝ) ≤ 10 := by norm_num

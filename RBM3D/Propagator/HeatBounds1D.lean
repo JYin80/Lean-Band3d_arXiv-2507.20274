@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.HeatKernel1D
-import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import Mathlib.Analysis.Complex.ExponentialBounds
+
+module
+
+public import RBM3D.Propagator.HeatKernel1D
+public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.Analysis.Complex.ExponentialBounds
+
+@[expose] public section
 
 /-!
 # Decay bounds for the one-dimensional heat kernel on `ℤ`

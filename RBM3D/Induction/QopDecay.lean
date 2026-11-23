@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QopNorm
-import RBM3D.Induction.B45
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Propagator.Prop5Hold
+
+module
+
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Induction.B45
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Propagator.Prop5Hold
+
+@[expose] public section
 
 /-!
 # Decay of `∂_tϑ` and propagation of `(deccA0)` through `Θ^{(n)}`

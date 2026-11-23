@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14b
-import RBM3D.Graph.BAGGExp
+
+module
+
+public import RBM3D.Graph.BAExp14b
+public import RBM3D.Graph.BAGGExp
+
+@[expose] public section
 
 /-!
 # The expansion identity `baExp14b_expand_holds` for the families of `lem:LWterm_EXP` at BA (part B)

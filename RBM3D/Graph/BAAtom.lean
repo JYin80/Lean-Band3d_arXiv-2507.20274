@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AuxGraph
-import RBM3D.Graph.BASizeClaim2
-import RBM3D.BA.GreenSchur
+
+module
+
+public import RBM3D.Graph.AuxGraph
+public import RBM3D.Graph.BASizeClaim2
+public import RBM3D.BA.GreenSchur
+
+@[expose] public section
 
 /-!
 # Atoms and the auxiliary graph at block Anderson (part 1)

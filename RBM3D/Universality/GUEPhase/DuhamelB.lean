@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.DuhamelA1
-import RBM3D.Universality.GUEPhase.DuhamelA2
-import RBM3D.Universality.GUEPhase.Markov
-import RBM3D.Path.Azuma
-import RBM3D.Path.Stop
-import RBM3D.Induction.LoopC2N
+
+module
+
+public import RBM3D.Universality.GUEPhase.DuhamelA1
+public import RBM3D.Universality.GUEPhase.DuhamelA2
+public import RBM3D.Universality.GUEPhase.Markov
+public import RBM3D.Path.Azuma
+public import RBM3D.Path.Stop
+public import RBM3D.Induction.LoopC2N
+
+@[expose] public section
 
 /-!
 # The loop Duhamel tail of the GUE phase, part II (`d ≥ 3`)

@@ -3,8 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14cB
-import RBM3D.Graph.BAExp14dB
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAExp14cB
+public import RBM3D.Graph.BAExp14dB
+public import RBM3D.Graph.BASizeClaim
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAExp14d
+import all RBM3D.Graph.BASizeClaim
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAExp14d
+import all RBM3D.Graph.BAExp14dB
+
+@[expose] public section
 
 /-!
 # The joined-graph bound, the leaf statement `BAG5LeafPrec` proved, and `BAExp14bS3`

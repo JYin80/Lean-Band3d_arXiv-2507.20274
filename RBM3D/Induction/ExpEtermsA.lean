@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.KDecay
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.Step5Kit
-import RBM3D.Loop.KLTree
-import RBM3D.Loop.Primitive
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Defs.Tail
-import RBM3D.Gauss.DominationAt
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.KDecay
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.Step5Kit
+public import RBM3D.Loop.KLTree
+public import RBM3D.Loop.Primitive
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Defs.Tail
+public import RBM3D.Gauss.DominationAt
+
+@[expose] public section
 
 /-!
 # (6.3) `eq:Exp(L-K)1`: the proof of the statement `STExpLKLKHi`

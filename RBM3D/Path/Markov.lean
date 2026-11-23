@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.Walk
-import RBM3D.Gauss.LinearForm
-import Mathlib.Probability.Moments.SubGaussian
+
+module
+
+public import RBM3D.Path.Walk
+public import RBM3D.Gauss.LinearForm
+public import Mathlib.Probability.Moments.SubGaussian
+
+@[expose] public section
 
 /-!
 # The discrete grid Markov property: freezing and conditional sub-Gaussian linear forms
@@ -316,7 +321,7 @@ private instance instStandardBorelSpaceMatrix (n : ℕ) :
 
 /-- `PathΩ sz` is standard Borel (a countable product of countable products of `ℝ`); the
 instance search does not find it by itself at a generic `sz`. -/
-private instance instStandardBorelSpacePathΩ : StandardBorelSpace (PathΩ sz) :=
+instance instStandardBorelSpacePathΩ : StandardBorelSpace (PathΩ sz) :=
   haveI : StandardBorelSpace (Sizes.SeqΩ sz) := inferInstance
   StandardBorelSpace.pi_countable (α := fun _ : ℕ => Sizes.SeqΩ sz)
 

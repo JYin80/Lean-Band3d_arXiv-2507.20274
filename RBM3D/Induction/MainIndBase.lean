@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.FlowPins
-import RBM3D.Induction.AzumaProxyN
-import RBM3D.Graph.LWExpTerm3
+
+module
+
+public import RBM3D.BA.FlowPins
+public import RBM3D.Induction.AzumaProxyN
+public import RBM3D.Graph.LWExpTerm3
+
+@[expose] public section
 
 /-!
 # The base case `t = 0` of the final assembly, over a carrier

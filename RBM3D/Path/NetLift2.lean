@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.NetLift1
+
+module
+
+public import RBM3D.Path.NetLift1
+
+@[expose] public section
 
 /-!
 # The net lift of Step 2, part 2: `STStep2LocalPT → STStep2Local`, `STStep2AvgPT → STStep2Avg`

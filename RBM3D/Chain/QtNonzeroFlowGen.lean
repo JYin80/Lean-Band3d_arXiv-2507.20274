@@ -3,15 +3,27 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.QtNonzeroEndGen
-import RBM3D.Chain.QtXiRoundLiftGen
-import RBM3D.Chain.GridGoodGen
-import RBM3D.Chain.NQLinGen
-import RBM3D.Chain.B45Gen
-import RBM3D.Chain.NQEndFlowGen
-import RBM3D.Induction.QtNonzeroFlow
-import RBM3D.Induction.QtNonzeroFlowLift
-import RBM3D.Induction.LemDecCalELip
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.QtNonzeroEndGen
+public import RBM3D.Chain.QtXiRoundLiftGen
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Chain.NQLinGen
+public import RBM3D.Chain.B45Gen
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.Induction.QtNonzeroFlow
+public import RBM3D.Induction.QtNonzeroFlowLift
+public import RBM3D.Induction.LemDecCalELip
+public import RBM3D.Induction.NQEndLin
+import all RBM3D.Induction.QtNonzeroFlow
+import all RBM3D.Chain.NQEndFlowGen
+import all RBM3D.Induction.NQEndLin
+import all RBM3D.Induction.QtNonzeroFlowLift
+import all RBM3D.Chain.QtXiRoundLiftGen
+
+@[expose] public section
 
 /-!
 # The case-(ii) endpoint over the carrier family, per time and uniformly in the time

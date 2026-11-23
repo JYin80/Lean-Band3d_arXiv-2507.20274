@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.ImmLower
-import RBM3D.BA.Boundary
-import RBM3D.BA.UNPins
-import Mathlib.Topology.MetricSpace.Sequences
-import Mathlib.Topology.MetricSpace.Bounded
+
+module
+
+public import RBM3D.BA.ImmLower
+public import RBM3D.BA.Boundary
+public import RBM3D.BA.UNPins
+public import Mathlib.Topology.MetricSpace.Sequences
+public import Mathlib.Topology.MetricSpace.Bounded
+
+@[expose] public section
 
 /-!
 # Regularity of the block Anderson Stieltjes transform on a bulk window

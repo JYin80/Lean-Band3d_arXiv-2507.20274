@@ -3,18 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.Step2Kern
-import RBM3D.Chain.NQGood1Gen
-import RBM3D.Induction.QProxy
-import RBM3D.BA.EKPins
-import RBM3D.BA.EKSum
-import RBM3D.BA.EKNonzero
-import RBM3D.BA.TwistKer
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.SEforLnBA
+
+module
+
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.Chain.NQGood1Gen
+public import RBM3D.Induction.QProxy
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.EKSum
+public import RBM3D.BA.EKNonzero
+public import RBM3D.BA.TwistKer
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.SEforLnBA
+
+@[expose] public section
 
 /-!
 # The block Anderson kernel layer of the evolution-kernel sum estimates

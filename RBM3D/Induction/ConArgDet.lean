@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Split
-import RBM3D.Loop.GLoop
-import RBM3D.Green.EntryCore
-import Mathlib.Algebra.Order.Chebyshev
+
+module
+
+public import RBM3D.Induction.Split
+public import RBM3D.Loop.GLoop
+public import RBM3D.Green.EntryCore
+public import Mathlib.Algebra.Order.Chebyshev
+
+@[expose] public section
 
 /-!
 # The Ward identity for resolvent loops and the deterministic part of `lem_ConArg` (`d ≥ 3`)

@@ -3,22 +3,27 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistPins
-import RBM3D.Chain.LWGen
-import RBM3D.Chain.Carrier
-import RBM3D.BA.FlowPins
-import RBM3D.Defs.Sizes
-import RBM3D.Gauss.FineModel
-import RBM3D.Graph.BAExpand
-import RBM3D.Graph.BAExp14a
-import RBM3D.Graph.BAExp14aB
-import RBM3D.Graph.LWStein
-import RBM3D.Green.IBPPoly
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.GreenLDE
-import RBM3D.BA.Ward
-import RBM3D.BA.MFixedPoint
-import RBM3D.BA.CombesThomas
+
+module
+
+public import RBM3D.BA.TwistPins
+public import RBM3D.Chain.LWGen
+public import RBM3D.Chain.Carrier
+public import RBM3D.BA.FlowPins
+public import RBM3D.Defs.Sizes
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Graph.BAExpand
+public import RBM3D.Graph.BAExp14a
+public import RBM3D.Graph.BAExp14aB
+public import RBM3D.Graph.LWStein
+public import RBM3D.Green.IBPPoly
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.GreenLDE
+public import RBM3D.BA.Ward
+public import RBM3D.BA.MFixedPoint
+public import RBM3D.BA.CombesThomas
+
+@[expose] public section
 
 /-!
 # The twisted averaged law at the block Anderson model, part A: the moment identity and the regularity facts

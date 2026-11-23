@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.Kernel
-import RBM3D.Propagator.Deriv
-import RBM3D.Loop.GLoop
+
+module
+
+public import RBM3D.Path.Kernel
+public import RBM3D.Propagator.Deriv
+public import RBM3D.Loop.GLoop
+
+@[expose] public section
 
 /-!
 # The generator of the evolution `𝒰`

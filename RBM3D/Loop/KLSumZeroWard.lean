@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLSumAll
-import RBM3D.Loop.KLCut
+
+module
+
+public import RBM3D.Loop.KLSumAll
+public import RBM3D.Loop.KLCut
+
+@[expose] public section
 
 /-!
 # The sum-zero identity `R_n(1) = 0` and the signed sum-zero bound, `d ≥ 3`

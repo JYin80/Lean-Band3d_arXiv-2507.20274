@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Data.Fintype.Powerset
-import Mathlib.Data.Fintype.Prod
-import Mathlib.Order.Fin.Basic
-import RBM3D.Propagator.Props4
+
+module
+
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Order.Fin.Basic
+public import RBM3D.Propagator.Props4
+
+@[expose] public section
 
 /-!
 # Canonical tree partitions `TSP(P_a)` and the edge propagators

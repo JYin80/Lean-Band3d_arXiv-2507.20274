@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.OU
-import RBM3D.Universality.OUHessian
-import RBM3D.Gauss.SteinMatrix
-import RBM3D.Gauss.DominationAt
-import Mathlib.Analysis.Calculus.ContDiff.Bounds
+
+module
+
+public import RBM3D.Universality.OU
+public import RBM3D.Universality.OUHessian
+public import RBM3D.Gauss.SteinMatrix
+public import RBM3D.Gauss.DominationAt
+public import Mathlib.Analysis.Calculus.ContDiff.Bounds
+
+@[expose] public section
 
 /-!
 # The OU generator identity

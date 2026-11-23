@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Defs.StochDomAt
-import RBM3D.Gauss.Domination
-import RBM3D.Gauss.SteinMatrix
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.Integral.Bochner.Set
-import Mathlib.Probability.ProductMeasure
+
+module
+
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Gauss.Domination
+public import RBM3D.Gauss.SteinMatrix
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.Probability.ProductMeasure
+
+@[expose] public section
 
 /-!
 # Moments and `≺` at the scale `N = (W L)^d`; countable-product Stein

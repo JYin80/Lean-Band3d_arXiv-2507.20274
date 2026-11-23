@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.IterationsA
-import RBM3D.Induction.NQEndFlow
-import RBM3D.Induction.KDecay
-import RBM3D.Green.Pins
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Induction.IterationsA
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.KDecay
+public import RBM3D.Green.Pins
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # The step of Lemma 4.11 (`lem:iterations`) over the bootstrap bound `STXiBoot'`

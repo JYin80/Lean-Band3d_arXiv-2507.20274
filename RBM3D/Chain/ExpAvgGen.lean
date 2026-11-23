@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.ExpAvg
-import RBM3D.Chain.CltGen
-import RBM3D.Evolution.XiPins
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.ExpAvg
+public import RBM3D.Chain.CltGen
+public import RBM3D.Evolution.XiPins
+import all RBM3D.Induction.ExpAvg
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

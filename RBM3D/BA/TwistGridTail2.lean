@@ -3,7 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistGridTail
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistGridTail
+public import RBM3D.Path.DifREP2
+import all RBM3D.BA.TwistGridTail
+import all RBM3D.Path.DifREP2
+
+@[expose] public section
 
 /-!
 # The tail at one size index and `baTwistGridTail_holds`

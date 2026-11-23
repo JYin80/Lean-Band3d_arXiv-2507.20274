@@ -3,7 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEDuhamelBA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEDuhamelBA
+public import RBM3D.Universality.GUEPhase.DuhamelC
+import all RBM3D.Universality.GUEPhase.DuhamelC
+import all RBM3D.BA.GUEDuhamelBA
+
+@[expose] public section
 
 /-!
 # The Duhamel tail of the loops on the block Anderson grid: the main theorem

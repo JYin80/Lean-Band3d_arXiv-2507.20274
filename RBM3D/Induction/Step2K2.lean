@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step2Defs
-import RBM3D.Loop.KLTree
-import RBM3D.Propagator.Pins
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Propagator.Props4
+
+module
+
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Loop.KLTree
+public import RBM3D.Propagator.Pins
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Propagator.Props4
+
+@[expose] public section
 
 /-!
 # `(eq:simpleboundK)` = `(eq:kn2sol_decay)`: the statement `STK2decay`

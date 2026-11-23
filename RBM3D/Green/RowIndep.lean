@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Matrix.MeasurableSpace
-import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
-import Mathlib.MeasureTheory.Constructions.BorelSpace.Complex
-import Mathlib.Topology.Instances.Matrix
-import RBM3D.Gauss.DominationAt
-import RBM3D.Gauss.FineModel
-import RBM3D.Gauss.LinearForm
-import RBM3D.Green.EntryCore
+
+module
+
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.MeasurableSpace
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Complex
+public import Mathlib.Topology.Instances.Matrix
+public import RBM3D.Gauss.DominationAt
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Gauss.LinearForm
+public import RBM3D.Green.EntryCore
+
+@[expose] public section
 
 /-!
 # Row independence of the Gaussian entries; the row LDE as a high-probability bound

@@ -3,18 +3,27 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step6BridgeBA
-import RBM3D.Chain.ExpEtermsAGen
-import RBM3D.Chain.ExpEtermsBGen
-import RBM3D.Chain.ExpIniIGen
-import RBM3D.Chain.ExpWardIGen
-import RBM3D.Chain.ExpIntIIGen
-import RBM3D.Chain.ExpDuhamelGen
-import RBM3D.BA.EKGenBA
-import RBM3D.BA.GridDriftBA
-import RBM3D.BA.Step5KerBA
-import RBM3D.BA.B45BA
-import RBM3D.BA.Step5CasesBA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step6BridgeBA
+public import RBM3D.Chain.ExpEtermsAGen
+public import RBM3D.Chain.ExpEtermsBGen
+public import RBM3D.Chain.ExpIniIGen
+public import RBM3D.Chain.ExpWardIGen
+public import RBM3D.Chain.ExpIntIIGen
+public import RBM3D.Chain.ExpDuhamelGen
+public import RBM3D.BA.EKGenBA
+public import RBM3D.BA.GridDriftBA
+public import RBM3D.BA.Step5KerBA
+public import RBM3D.BA.B45BA
+public import RBM3D.BA.Step5CasesBA
+public import RBM3D.BA.SEforLnBA
+import all RBM3D.BA.SEforLnBA
+import all RBM3D.BA.Step6BridgeBA
+
+@[expose] public section
 
 /-!
 # Step 6 of `lem:main_ind` at the block Anderson tuple: the statements and the regimes

@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEKPrim
-import RBM3D.BA.GUEOneLoop
-import RBM3D.Universality.GUEPhase.Proc
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEKPrim
+public import RBM3D.BA.GUEOneLoop
+public import RBM3D.Universality.GUEPhase.Proc
+import all RBM3D.Universality.GUEPhase.Proc
+
+@[expose] public section
 
 /-!
 # The process layer of the random layer of [YY_25, §7.2] on the GUE-phase grid at block Anderson

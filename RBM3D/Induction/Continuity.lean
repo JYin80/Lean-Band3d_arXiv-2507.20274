@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ContinuityNet
-import RBM3D.Induction.Defs
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.Induction.Defs
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # Continuity of the Green function in time, part 2: `gopbound` and the net lift `step1NetLift`

@@ -3,12 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step6PinsBA
-import RBM3D.Chain.ExpWardIIGen
-import RBM3D.Chain.ExpIntEasyGen
-import RBM3D.Chain.ExpIntIGen
-import RBM3D.Chain.ExpIntIQGen
-import RBM3D.BA.Step5CasesBA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step6PinsBA
+public import RBM3D.Chain.ExpWardIIGen
+public import RBM3D.Chain.ExpIntEasyGen
+public import RBM3D.Chain.ExpIntIGen
+public import RBM3D.Chain.ExpIntIQGen
+public import RBM3D.BA.Step5CasesBA
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.Step6BridgeBA
+import all RBM3D.BA.SEforLnBA
+import all RBM3D.BA.Step6BridgeBA
+import all RBM3D.BA.Step6PinsBA
+
+@[expose] public section
 
 /-!
 # Step 6 of `lem:main_ind` at the block Anderson tuple: the four regimes

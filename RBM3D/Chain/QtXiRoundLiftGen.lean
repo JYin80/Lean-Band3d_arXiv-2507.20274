@@ -3,9 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.QtBootGen
-import RBM3D.Chain.QEndB1Gen
-import RBM3D.Induction.QtXiRoundLift
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.QtBootGen
+public import RBM3D.Chain.QEndB1Gen
+public import RBM3D.Induction.QtXiRoundLift
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.Induction.NQEndLin
+import all RBM3D.Induction.QtXiRoundLift
+import all RBM3D.Chain.NQEndFlowGen
+import all RBM3D.Induction.NQEndLin
+
+@[expose] public section
 
 /-!
 # The case-(i) round over the carrier family, uniformly in the pair, and `stOeqQtgL'_of`

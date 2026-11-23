@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.HypA
-import RBM3D.Green.EntryDom
-import RBM3D.Induction.PerTimeCalc
+
+module
+
+public import RBM3D.Universality.GUEPhase.HypA
+public import RBM3D.Green.EntryDom
+public import RBM3D.Induction.PerTimeCalc
+
+@[expose] public section
 
 /-!
 # (7.45)G and (7.46)G for the stopped GUE-phase processes, part II (`d ≥ 3`)
@@ -636,7 +641,7 @@ private theorem HypB_path (E t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (δ : ℕ �
     refine ContinuousOn.mul (ContinuousOn.add ?_ (gueDproc_continuousOn _ _ _ _ _ _ _ _ _ _))
       (gueDproc_continuousOn _ _ _ _ _ _ _ _ _ _)
     refine ContinuousOn.pow (ContinuousOn.inv₀ (continuous_const.mul hηc).continuousOn
-      fun u hu => (mul_pos hS0 (hηpos u hu.2)).ne') _
+      fun u (hu : u ∈ Set.Icc (t1 n) (t0 n)) => (mul_pos hS0 (hηpos u hu.2)).ne') _
   -- the bilinear drift, `Cf = 3 m² c S`
   have hF : ∀ j < σ, ∀ x : (Fin m → Bool) × (Fin m → Zd d (sz.L n)),
       ‖primRhsGUE d (sz.L n) (sz.W n) (loopL d (sz.L n) (sz.W n)

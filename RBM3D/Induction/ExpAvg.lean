@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.ConArgDet
-import RBM3D.Gauss.LoopGenerator
-import RBM3D.Gauss.DominationAt
-import RBM3D.Evolution.XiPins
-import RBM3D.Propagator.Pins
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Gauss.LoopGenerator
+public import RBM3D.Gauss.DominationAt
+public import RBM3D.Evolution.XiPins
+public import RBM3D.Propagator.Pins
+
+@[expose] public section
 
 /-!
 # Lemma 6.1 (`lem:improve_exp_aver`): the proof of the statement `STImproveExpAver`

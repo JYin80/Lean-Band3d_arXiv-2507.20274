@@ -4,8 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 
-import RBM3D.BA.MFixedPoint
-import Mathlib.Topology.MetricSpace.Contracting
+module
+
+public import RBM3D.BA.MFixedPoint
+public import Mathlib.Topology.MetricSpace.Contracting
+
+@[expose] public section
 
 /-!
 # The deterministic coupling window of the block Anderson flow

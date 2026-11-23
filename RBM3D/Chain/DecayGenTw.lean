@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.DecayGen
-import RBM3D.BA.TwistPins
-import RBM3D.BA.Step2BA
-import RBM3D.BA.EMn2BA
+
+module
+
+public import RBM3D.Chain.DecayGen
+public import RBM3D.BA.TwistPins
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.EMn2BA
+
+@[expose] public section
 
 /-!
 # The Ward-pair hypothesis of `Chain/DecayGen` at the block Anderson carrier

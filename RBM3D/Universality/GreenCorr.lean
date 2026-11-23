@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.PoissonSmoothing
-import RBM3D.Universality.EigenMeasurable
-import RBM3D.Universality.PinsK
+
+module
+
+public import RBM3D.Universality.PoissonSmoothing
+public import RBM3D.Universality.EigenMeasurable
+public import RBM3D.Universality.PinsK
+
+@[expose] public section
 
 /-!
 # The Green-function-to-correlation comparison, for every model and dilated test functions

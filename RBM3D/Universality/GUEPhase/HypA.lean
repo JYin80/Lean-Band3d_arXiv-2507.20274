@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Proc
-import RBM3D.Universality.GUEPhase.EntryTailMain
-import RBM3D.Loop.KBound
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Universality.GUEPhase.Proc
+public import RBM3D.Universality.GUEPhase.EntryTailMain
+public import RBM3D.Loop.KBound
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # (7.45)G and (7.46)G for the stopped GUE-phase processes, part I: the deterministic inputs (`d ≥ 3`)

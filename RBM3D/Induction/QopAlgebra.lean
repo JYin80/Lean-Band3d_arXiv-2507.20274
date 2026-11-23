@@ -3,8 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step34Pins
-import RBM3D.Kernel.Evolution
+
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Kernel.Evolution
+
+@[expose] public section
 
 /-!
 # The mollifier `ϑ` and the algebra of `𝒫`, `ϑ_t`, `𝒬_t`
@@ -45,7 +51,7 @@ private theorem qa_sum_zmod_val {L : ℕ} [NeZero L] (F : ℕ → ℝ) :
     (fun _ _ => rfl)
 
 /-- `z(u) = Σ_{y ∈ ℤ_L} exp(-u |y|)`. -/
-private def qaZ1 (L : ℕ) [NeZero L] (u : ℝ) : ℝ :=
+def qaZ1 (L : ℕ) [NeZero L] (u : ℝ) : ℝ :=
   ∑ y : ZMod L, Real.exp (-u * (zdist L y : ℝ))
 
 /-- `z₂(u) = Σ_{y ∈ ℤ_L} |y| exp(-u |y|)` (minus the `u`-derivative of `z`). -/
@@ -133,10 +139,10 @@ private theorem qaZ2_le {L : ℕ} [NeZero L] {u : ℝ} (hu : 0 < u) :
 /-! ## 2. The smoothed scale `ℓ̃_t = 1 / u_t` -/
 
 /-- `y_t = 1 + g (1 - t)^{-1/2}`. -/
-private def qaY (g t : ℝ) : ℝ := 1 + g / Real.sqrt (1 - t)
+def qaY (g t : ℝ) : ℝ := 1 + g / Real.sqrt (1 - t)
 
 /-- `u_t = 1 / ℓ̃_t = y_t⁻¹ + L⁻¹`. -/
-private def qaU (L : ℕ) (g t : ℝ) : ℝ := (qaY g t)⁻¹ + (L : ℝ)⁻¹
+def qaU (L : ℕ) (g t : ℝ) : ℝ := (qaY g t)⁻¹ + (L : ℝ)⁻¹
 
 private theorem qaY_gt {g t : ℝ} (hg : 0 < g) (ht : t < 1) : 1 < qaY g t := by
   have h : 0 < Real.sqrt (1 - t) := Real.sqrt_pos.2 (by linarith)
@@ -329,14 +335,14 @@ private theorem qa_sum_filter_prod {d L m : ℕ} [NeZero L] {R : Type*} [CommSem
   rw [← h2, h1, h3]
 
 /-- `S(a) = Σ_{i ≥ 2} |a_i - a₁|`. -/
-private def qaS {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L) : ℝ :=
+def qaS {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L) : ℝ :=
   ∑ i ∈ Finset.univ.erase (0 : Fin (m + 1)), (zdistD d L (a i - a 0) : ℝ)
 
 private theorem qaS_nonneg {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L) : 0 ≤ qaS a :=
   Finset.sum_nonneg fun _ _ => Nat.cast_nonneg _
 
 /-- `Φ_a(u) = exp(-u S(a)) / z(u)^{d m}`. -/
-private def qaPhi (d L m : ℕ) [NeZero L] (a : Fin (m + 1) → Zd d L) (u : ℝ) : ℝ :=
+def qaPhi (d L m : ℕ) [NeZero L] (a : Fin (m + 1) → Zd d L) (u : ℝ) : ℝ :=
   Real.exp (-u * qaS a) / (qaZ1 L u) ^ (d * m)
 
 /-- **The mollifier** `ϑ_{t,a} = exp(-u_t Σ_{i ≥ 2} |a_i - a₁|) / z(u_t)^{d m}` of Example 4.8 `rmk:choosechi`

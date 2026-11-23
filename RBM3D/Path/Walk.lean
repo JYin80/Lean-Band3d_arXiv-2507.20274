@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.FineModel
-import RBM3D.Defs.StochDomAt
-import RBM3D.Loop.GLoopFlow
-import Mathlib.Analysis.Matrix.MeasurableSpace
-import Mathlib.Probability.Independence.Basic
-import Mathlib.Probability.Independence.InfinitePi
-import Mathlib.Probability.Independence.ZeroOne
-import Mathlib.Probability.Process.Filtration
+
+module
+
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Loop.GLoopFlow
+public import Mathlib.Analysis.Matrix.MeasurableSpace
+public import Mathlib.Probability.Independence.Basic
+public import Mathlib.Probability.Independence.InfinitePi
+public import Mathlib.Probability.Independence.ZeroOne
+public import Mathlib.Probability.Process.Filtration
+
+@[expose] public section
 
 /-!
 # The grid walk: carrier, filtration, independent increments, the transfer law, and the

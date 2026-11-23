@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.LemDecCalEdif2
-import RBM3D.Path.LemDecCalEwG
-import RBM3D.Green.GbEXP
-import RBM3D.Path.NetLift2
-import RBM3D.Path.KellStar
-import RBM3D.Induction.Step5Kit
-import RBM3D.Induction.LemDecCalELip
+
+module
+
+public import RBM3D.Path.LemDecCalEdif2
+public import RBM3D.Path.LemDecCalEwG
+public import RBM3D.Green.GbEXP
+public import RBM3D.Path.NetLift2
+public import RBM3D.Path.KellStar
+public import RBM3D.Induction.Step5Kit
+public import RBM3D.Induction.LemDecCalELip
+
+@[expose] public section
 
 /-!
 # Ingredients of `lem_dec_calE` in the `Prec` form

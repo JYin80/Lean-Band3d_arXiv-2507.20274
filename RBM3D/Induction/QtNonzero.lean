@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.NQLin
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Induction.AzumaProxyN
-import RBM3D.Induction.QVN
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.Step34Pins
-import RBM3D.Evolution.Nonzero
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Propagator.Prop5Short
+
+module
+
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.NQLin
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Induction.AzumaProxyN
+public import RBM3D.Induction.QVN
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Evolution.Nonzero
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Propagator.Prop5Short
+
+@[expose] public section
 
 /-!
 # The grid ingredients of the zero-mode-removed evolution `Q^{(A)}(𝓛 − 𝒦)^{(k)}` (`d ≥ 3`)

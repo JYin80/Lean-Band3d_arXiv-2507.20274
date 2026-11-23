@@ -3,19 +3,34 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.IniTermIIGen
-import RBM3D.Induction.EtermsMid2
-import RBM3D.Chain.NewKLKLGen
-import RBM3D.Chain.NQEndFlowGen
-import RBM3D.BA.Step2IterBA
-import RBM3D.BA.NewKLKBA
-import RBM3D.BA.KBase
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.Prop5Short
-import RBM3D.BA.TwistGrid
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.KInduct
-import RBM3D.BA.KTreeRep
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.IniTermIIGen
+public import RBM3D.Induction.EtermsMid2
+public import RBM3D.Chain.NewKLKLGen
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.BA.Step2IterBA
+public import RBM3D.BA.NewKLKBA
+public import RBM3D.BA.KBase
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.Prop5Short
+public import RBM3D.BA.TwistGrid
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KTreeRep
+public import RBM3D.Induction.NewKLK
+public import RBM3D.Induction.NewKLKL
+public import RBM3D.Chain.NewKLKGen
+import all RBM3D.Induction.NewKLK
+import all RBM3D.BA.NewKLKBA
+import all RBM3D.BA.Step2IterBA
+import all RBM3D.Induction.NewKLKL
+import all RBM3D.Chain.NewKLKGen
+import all RBM3D.Chain.NewKLKLGen
+
+@[expose] public section
 
 /-!
 # The BA producers of the kernel, `lem:newKLK` at `ℓ = L`, and the flow-modulus classes

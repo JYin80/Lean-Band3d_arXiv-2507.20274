@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.FineModel
-import RBM3D.Defs.Sizes
-import RBM3D.Defs.Params
-import RBM3D.Defs.Semicircle
-import RBM3D.Defs.StochDom
-import RBM3D.Loop.GLoop
-import RBM3D.Loop.KLTree
-import RBM3D.Defs.StochDomAt
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Gauss.DominationAt
+
+module
+
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Defs.Sizes
+public import RBM3D.Defs.Params
+public import RBM3D.Defs.Semicircle
+public import RBM3D.Defs.StochDom
+public import RBM3D.Loop.GLoop
+public import RBM3D.Loop.KLTree
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Gauss.DominationAt
+
+@[expose] public section
 
 /-!
 # The statements of Theorem 2.24 (`lem:main_ind`), Lemma 3.1 (`lem_GbEXP`) and Step 1

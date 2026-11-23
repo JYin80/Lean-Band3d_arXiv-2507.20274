@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Add
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Analysis.Matrix.Normed
-import Mathlib.Data.Matrix.Basis
-import Mathlib.Topology.Algebra.Module.FiniteDimension
+
+module
+
+public import Mathlib.Analysis.Calculus.FDeriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Data.Matrix.Basis
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
+
+@[expose] public section
 
 /-!
 # The derivative of a resolvent entry along a matrix unit

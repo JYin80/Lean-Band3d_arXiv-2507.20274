@@ -3,15 +3,26 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistGridRem2
-import RBM3D.BA.TwistGridTail2
-import RBM3D.BA.TwistGridWTail2
-import RBM3D.BA.TwistKer2
-import RBM3D.BA.TwistQV
-import RBM3D.BA.KBase
-import RBM3D.BA.Ward
-import RBM3D.BA.TwistGridTail
-import RBM3D.Induction.Step2Events
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistGridRem2
+public import RBM3D.BA.TwistGridTail2
+public import RBM3D.BA.TwistGridWTail2
+public import RBM3D.BA.TwistKer2
+public import RBM3D.BA.TwistQV
+public import RBM3D.BA.KBase
+public import RBM3D.BA.Ward
+public import RBM3D.BA.TwistGridTail
+public import RBM3D.Induction.Step2Events
+public import RBM3D.BA.TwistGrid
+import all RBM3D.BA.TwistGrid
+import all RBM3D.BA.TwistGridTail
+import all RBM3D.BA.TwistQV
+import all RBM3D.BA.TwistKer2
+
+@[expose] public section
 
 /-!
 # The per-time bound for the twisted 2-loop, the zero mode, the grid walk at one time
@@ -1360,7 +1371,7 @@ def TwistStep_Good2 (Nδ Np ρ : ℝ) (ω : PathΩ (sz.withLam 0)) : Prop :=
   (∀ (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)), ∀ k ≤ K n, ‖TwistStep_R sz (BAflowLam0 sz z) (BAflowEs sz z) s τ K n σ c₁ c₂ ω k‖ ≤ ρ)
 
 /-- `TwistStep_Good1 ∧ TwistStep_Good2`. -/
-private def TwistStep_Good (Ξ Nδ Np ρ ε' Dd : ℝ) (ω : PathΩ (sz.withLam 0)) : Prop :=
+def TwistStep_Good (Ξ Nδ Np ρ ε' Dd : ℝ) (ω : PathΩ (sz.withLam 0)) : Prop :=
   TwistStep_Good1 sz z s τ K n Ξ Nδ ε' Dd ω ∧ TwistStep_Good2 sz z s τ K n Nδ Np ρ ω
 
 /-- **The deterministic core at one size index**: from the good-event conditions at `n` (`TwistStep_Good`), the kernel-loss bound `hKL` and the arithmetic facts, for every `σ`, `c₁`, `c₂`:

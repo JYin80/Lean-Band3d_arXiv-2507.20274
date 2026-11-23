@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.DifREP2
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.GridDuhamelN
+
+module
+
+public import RBM3D.Path.DifREP2
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.GridDuhamelN
+
+@[expose] public section
 
 /-!
 # `STGridRepN`, part 3: the `Q^{(A)} ∘ 𝒰`-weighted martingale tail
@@ -592,7 +597,7 @@ variable {d : ℕ} (sz : Sizes d)
 /-- The constant of the proxy transfer (f2): `‖STeeUQM_{u,w₂} - STeeUQM_{u,w₁}‖ ≤ c₃(N, m) (w₂ - w₁)`,
 `c₃ = 2 (m θ₁ R^{m-1}) R^m M_ee` with `θ₁ = 4 (16 N)²`, `R = 32 N`, `M_ee = m N (16 N)^{2m+2}`
 (`c₃ ≤ c N^{4m+4}`). -/
-private def difRep3_c3 (N : ℝ) (m : ℕ) : ℝ :=
+def difRep3_c3 (N : ℝ) (m : ℕ) : ℝ :=
   2 * ((m : ℝ) * (4 * (16 * N) ^ 2) * (32 * N) ^ (m - 1)) * (32 * N) ^ m *
     ((m : ℝ) * N * (16 * N) ^ (2 * m + 2))
 
@@ -779,7 +784,7 @@ end GridArith
 section Coarse
 
 /-- The coarse time grid `v_p = s + p (t - s)/P`, `p ≤ P` (independent of the fine grid size `K`). -/
-private def difRep3_vc (s t : ℝ) (P p : ℕ) : ℝ := s + (p : ℝ) * ((t - s) / P)
+def difRep3_vc (s t : ℝ) (P p : ℕ) : ℝ := s + (p : ℝ) * ((t - s) / P)
 
 private theorem difRep3_vc_ge {s t : ℝ} (hst : s ≤ t) (P p : ℕ) : s ≤ difRep3_vc s t P p := by
   unfold difRep3_vc
@@ -1427,10 +1432,10 @@ section Pathwise
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `M_ee = m N (16 N)^{2m+2}`, the crude bound of `(𝓔⊗𝓔)` (`difRep2_norm_STeeM_le_N`). -/
-private def difRep3_Mee (N : ℝ) (m : ℕ) : ℝ := (m : ℝ) * N * (16 * N) ^ (2 * m + 2)
+def difRep3_Mee (N : ℝ) (m : ℕ) : ℝ := (m : ℝ) * N * (16 * N) ^ (2 * m + 2)
 
 /-- `V_Q = (32 N)^{2m} M_ee`, the crude bound of `STeeUQM` (`difRep3_norm_STeeUQM_le`). -/
-private def difRep3_VQ (N : ℝ) (m : ℕ) : ℝ :=
+def difRep3_VQ (N : ℝ) (m : ℕ) : ℝ :=
   ((32 * N) ^ m * (32 * N) ^ m) * difRep3_Mee N m
 
 /-- `(1 - u)⁻¹ ≤ 16 N` from `η_u ≥ 1/(16 N)` and `η_u ≤ 1 - u`. -/
@@ -1661,7 +1666,7 @@ private theorem difRep3_pathwise (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n : �
 
 /-- `P_Y = 2000 ((32 N)^m C₂)² N⁸`, `C₂ = m (m+1) N (16 N)^{m+2}`: the second-moment constant of the weighted `Y`
 increments (`AzumaProxyN_YfieldsW` at `S = (32 N)^m`). -/
-private def difRep3_PY (N : ℝ) (m : ℕ) : ℝ :=
+def difRep3_PY (N : ℝ) (m : ℕ) : ℝ :=
   2000 * ((32 * N) ^ m * (((m * (m + 1) : ℕ) : ℝ) * N * (16 * N) ^ (m + 2))) ^ 2 * N ^ 8
 
 /-- **The tail at one size index**: given the numerical budgets and the
@@ -1929,7 +1934,7 @@ private theorem difRep3_c3_eq (N : ℝ) (m : ℕ) (hm : 1 ≤ m) :
   ring
 
 /-- The constant of the shift budget: `((32 N)^m)² · m (2m+2) 16^{2m+3} N^{2m+4} = c_shift N^{4m+4}`. -/
-private def difRep3_cShift (m : ℕ) : ℝ :=
+def difRep3_cShift (m : ℕ) : ℝ :=
   ((32 : ℝ) ^ m) ^ 2 * ((m : ℝ) * (2 * m + 2) * 16 ^ (2 * m + 3))
 
 private theorem difRep3_cShift_nonneg (m : ℕ) : 0 ≤ difRep3_cShift m := by
@@ -2225,7 +2230,7 @@ private theorem difRep3_rpow_CK {N : ℝ} (hN : 0 < N) (m : ℕ) (D : ℝ) :
   norm_num
 
 /-- The constant `N₀(m)` beyond which the deterministic budgets hold (`ε'`-free). -/
-private def difRep3_Cbig (m : ℕ) : ℝ :=
+def difRep3_Cbig (m : ℕ) : ℝ :=
   1 + 2 * difRep3_cShift m + 4 * difRep3_c3 1 m +
     (64 * (m : ℝ) * 2 ^ m + 128 * (m : ℝ) * 2 ^ m * difRep3_VQ 1 m) + 1536 * difRep3_PY 1 m
 

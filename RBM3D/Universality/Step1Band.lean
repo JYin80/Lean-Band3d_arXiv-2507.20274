@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Step1Good
-import RBM3D.Universality.Step1Cond
-import RBM3D.Universality.PinsC2
+
+module
+
+public import RBM3D.Universality.Step1Good
+public import RBM3D.Universality.Step1Cond
+public import RBM3D.Universality.PinsC2
+
+@[expose] public section
 
 /-!
 # Step 1 of the comparison of `𝐇_{t*}` with the GUE at energy `0`
@@ -1245,6 +1250,7 @@ private theorem Step1Band_assemble (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} 
     refine (integral_mono_of_nonneg (Eventually.of_forall fun ω => abs_nonneg _)
       ((integrable_const _).add ((integrable_const _).indicator hTm))
       (Eventually.of_forall hpt)).trans ?_
+    simp only [Pi.add_apply]
     rw [integral_add (integrable_const _) ((integrable_const _).indicator hTm), integral_const,
       integral_indicator_const _ hTm, probReal_univ, one_smul, smul_eq_mul]
   have hTreal : μ.real T ≤ N ^ (-((k + 1 : ℕ) : ℝ)) := by

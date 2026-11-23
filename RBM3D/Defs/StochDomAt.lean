@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.FineModel
-import RBM3D.Defs.StochDom
+
+module
+
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Defs.StochDom
+
+@[expose] public section
 
 /-!
 # The one `≺` of the chain: stochastic domination at the scale `N = (W L)^d`

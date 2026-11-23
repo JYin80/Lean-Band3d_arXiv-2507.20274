@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWXiExp
-import RBM3D.Graph.BAAuxGraph2B
-import RBM3D.Chain.LWGen
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.FlowPins
-import RBM3D.BA.GreenLDE
+
+module
+
+public import RBM3D.Graph.LWXiExp
+public import RBM3D.Graph.BAAuxGraph2B
+public import RBM3D.Chain.LWGen
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.GreenLDE
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.setOption false

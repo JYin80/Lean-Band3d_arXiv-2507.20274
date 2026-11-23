@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step5Pins
-import RBM3D.Evolution.CltStep
-import RBM3D.Evolution.MeanFar
-import RBM3D.Defs.Shells
-import RBM3D.Defs.RadialSum
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Propagator.Prop6Hold
+
+module
+
+public import RBM3D.Induction.Step5Pins
+public import RBM3D.Evolution.CltStep
+public import RBM3D.Evolution.MeanFar
+public import RBM3D.Defs.Shells
+public import RBM3D.Defs.RadialSum
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Propagator.Prop6Hold
+
+@[expose] public section
 
 /-!
 # The deterministic counting half of the CLT moment bound

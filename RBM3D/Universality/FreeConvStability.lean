@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.FreeConv
-import RBM3D.Defs.Semicircle
-import Mathlib.Analysis.Complex.Liouville
-import Mathlib.Analysis.Real.Pi.Bounds
-import Mathlib.Topology.MetricSpace.Contracting
+
+module
+
+public import RBM3D.Universality.FreeConv
+public import RBM3D.Defs.Semicircle
+public import Mathlib.Analysis.Complex.Liouville
+public import Mathlib.Analysis.Real.Pi.Bounds
+public import Mathlib.Topology.MetricSpace.Contracting
+
+@[expose] public section
 
 /-!
 # Stability of the free convolution near the semicircle

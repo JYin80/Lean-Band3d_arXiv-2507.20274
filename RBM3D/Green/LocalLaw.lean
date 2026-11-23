@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.Pins
-import RBM3D.Green.CondDom
-import RBM3D.Green.EntryDom
-import RBM3D.Green.FlucVanish
-import RBM3D.Induction.PerTimeCalc
+
+module
+
+public import RBM3D.Green.Pins
+public import RBM3D.Green.CondDom
+public import RBM3D.Green.EntryDom
+public import RBM3D.Green.FlucVanish
+public import RBM3D.Induction.PerTimeCalc
+
+@[expose] public section
 
 /-!
 # The local law at a deterministic bound `Ψ`, and the assembly of `lem_GbEXP`

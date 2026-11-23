@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LocalRegular6d
-import RBM3D.Graph.LWExpTerm5
+
+module
+
+public import RBM3D.Graph.LocalRegular6d
+public import RBM3D.Graph.LWExpTerm5
+
+@[expose] public section
 
 /-!
 # The `m`-free form of Lemma 7.17 (`lem:localregular`)

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.Markov
-import RBM3D.Path.Stop
-import RBM3D.Gauss.Stein
-import Mathlib.Analysis.Calculus.MeanValue
-import Mathlib.MeasureTheory.Function.ConditionalExpectation.CondJensen
-import Mathlib.Analysis.Convex.Mul
-import Mathlib.Algebra.Order.Chebyshev
+
+module
+
+public import RBM3D.Path.Markov
+public import RBM3D.Path.Stop
+public import RBM3D.Gauss.Stein
+public import Mathlib.Analysis.Calculus.MeanValue
+public import Mathlib.MeasureTheory.Function.ConditionalExpectation.CondJensen
+public import Mathlib.Analysis.Convex.Mul
+public import Mathlib.Algebra.Order.Chebyshev
+
+@[expose] public section
 
 /-!
 # The gradient matrix of a loop observable and the moments of one increment

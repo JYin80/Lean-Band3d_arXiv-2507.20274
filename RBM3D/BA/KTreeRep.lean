@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KTreeDeriv
-import RBM3D.BA.KSolve
-import RBM3D.BA.KCactus
+
+module
+
+public import RBM3D.BA.KTreeDeriv
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.KCactus
+
+@[expose] public section
 
 /-!
 # The chord part, `IsKLoopS` for the spliced family, `BAKsolve`, `BATreeRep`

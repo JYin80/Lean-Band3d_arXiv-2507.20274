@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Hierarchy.ContractionBasic
-import RBM3D.Gauss.LoopCoordinate
+
+module
+
+public import RBM3D.Hierarchy.ContractionBasic
+public import RBM3D.Gauss.LoopCoordinate
+
+@[expose] public section
 
 /-!
 # The second-derivative contraction of loops

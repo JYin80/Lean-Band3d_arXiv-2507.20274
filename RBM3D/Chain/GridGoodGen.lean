@@ -3,12 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.GridDuhamelGen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.DecayGen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Chain.Step2EventsGen
-import RBM3D.Induction.GridGoodN
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.GridDuhamelGen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Chain.Step2EventsGen
+public import RBM3D.Induction.GridGoodN
+import all RBM3D.Induction.GridGoodN
+
+@[expose] public section
 
 /-!
 # The good set of the grid walk over the carrier

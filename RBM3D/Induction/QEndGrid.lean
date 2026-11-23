@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QEndA
-import RBM3D.Induction.QBudgetB
-import RBM3D.Induction.QGridB
-import RBM3D.Induction.NQBudget
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Induction.QEndA
+public import RBM3D.Induction.QBudgetB
+public import RBM3D.Induction.QGridB
+public import RBM3D.Induction.NQBudget
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # The alternating grid endpoint `altGridEndQN'`

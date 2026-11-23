@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLWard
-import RBM3D.BA.KBase
-import RBM3D.BA.Ward
-import RBM3D.BA.KKernel
+
+module
+
+public import RBM3D.Loop.KLWard
+public import RBM3D.BA.KBase
+public import RBM3D.BA.Ward
+public import RBM3D.BA.KKernel
+
+@[expose] public section
 
 /-!
 # Ward's identity `lem_WI_K` for the block Anderson `K`-loops

@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NewKLK
-import RBM3D.Chain.Step2Gen
-import RBM3D.BA.FlowPins
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.NewKLK
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.BA.FlowPins
+import all RBM3D.Induction.NewKLK
+
+@[expose] public section
 
 /-!
 # Convolution and Ward bounds for `lem:newKLK` over a carrier

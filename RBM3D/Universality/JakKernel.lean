@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.JakSpectral
-import Mathlib.Algebra.Order.Floor.Semiring
-import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+
+module
+
+public import RBM3D.Universality.JakSpectral
+public import Mathlib.Algebra.Order.Floor.Semiring
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+
+@[expose] public section
 
 /-!
 # The deterministic kernel layer of [DYYY25, (2.22)]

@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Matrix.Spectrum
-import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
-import RBM3D.Defs.Lattice
+
+module
+
+public import Mathlib.Analysis.Matrix.Spectrum
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import RBM3D.Defs.Lattice
+
+@[expose] public section
 
 /-!
 # Resolvent-entry core of `lem_GbEXP`: minors [YY_25, (4.7)–(4.9)], dimension-free estimates

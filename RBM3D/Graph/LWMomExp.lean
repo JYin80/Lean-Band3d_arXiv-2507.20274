@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AnpKey6
-import RBM3D.Evolution.Pins
-import Mathlib.Data.Fintype.Pi
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Algebra.BigOperators.Group.List.Basic
-import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+
+module
+
+public import RBM3D.Graph.AnpKey6
+public import RBM3D.Evolution.Pins
+public import Mathlib.Data.Fintype.Pi
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.BigOperators.Group.List.Basic
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+
+@[expose] public section
 
 /-!
 # The generic chain bound of the near part of `lem:LW_moment_exp`

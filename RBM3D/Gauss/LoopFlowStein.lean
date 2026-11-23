@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.LoopCoordinate
-import RBM3D.Gauss.Stein
-import RBM3D.Gauss.SteinMatrix
-import RBM3D.Gauss.DominationAt
-import Mathlib.Analysis.Calculus.ParametricIntegral
+
+module
+
+public import RBM3D.Gauss.LoopCoordinate
+public import RBM3D.Gauss.Stein
+public import RBM3D.Gauss.SteinMatrix
+public import RBM3D.Gauss.DominationAt
+public import Mathlib.Analysis.Calculus.ParametricIntegral
+
+@[expose] public section
 
 /-!
 # The loop-flow Stein chain
@@ -40,7 +45,7 @@ variable (d L W : ℕ) [NeZero L] [NeZero W] (g : ℝ)
 
 /-! ## 1. The matrix-flow term as a finite sum of coordinate derivatives -/
 
-private abbrev BlockMat (d L W : ℕ) :=
+abbrev BlockMat (d L W : ℕ) :=
   Matrix (Vtx d L W) (Vtx d L W) ℂ
 
 /-- Linear dependence of one signed resolvent derivative on its matrix direction. -/
@@ -216,12 +221,12 @@ expectation of a samplewise derivative, not a derivative of expectation. -/
 
 omit [NeZero W] in
 /-- `η⁻¹ W^{-d}`, the bound of one `G E` block. -/
-private noncomputable def driftA (η : ℝ) : ℝ :=
+noncomputable def driftA (η : ℝ) : ℝ :=
   η⁻¹ * ((W : ℝ) ^ d)⁻¹
 
 omit [NeZero W] in
 /-- `η⁻¹ ‖m^(E)‖ η⁻¹ W^{-d}`, the bound of one drift factor `G m^(E) G E`. -/
-private noncomputable def driftD (E η : ℝ) : ℝ :=
+noncomputable def driftD (E η : ℝ) : ℝ :=
   (η⁻¹ * ‖mE E‖ * η⁻¹) * ((W : ℝ) ^ d)⁻¹
 
 omit [NeZero W] in
@@ -549,7 +554,7 @@ inside `(0,1)`.  The derivative bound is a constant plus a finite weighted sum o
 Gaussian coordinates. -/
 
 /-- The closed neighborhood of a positive time before the singular endpoint. -/
-def flowWindow (u : ℝ) : Set ℝ := Set.Icc (u / 2) ((1 + u) / 2)
+noncomputable def flowWindow (u : ℝ) : Set ℝ := Set.Icc (u / 2) ((1 + u) / 2)
 
 /-- The time `u` is an interior point of `flowWindow u`: `u/2 < u < (1 + u)/2`. -/
 theorem flowWindow_strict (u : ℝ) (hu : 0 < u) (hu1 : u < 1) :
@@ -588,7 +593,7 @@ theorem coordinateFirstWordBound_le_one (c : CoordF d L W) {v η : ℝ}
         gcongr
       change _ ≤ _
       gcongr
-      exact hD
+      all_goals first | exact hD | exact pow_nonneg hA _
 
 /-- A fixed integrable majorant: one constant plus finitely many absolute coordinates; the trace
 constant is `(L W)^d`. -/

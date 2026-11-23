@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Defs.Domination
-import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+
+module
+
+public import RBM3D.Defs.Domination
+public import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
+
+@[expose] public section
 
 /-!
 # Two power estimates for `N^{-D}`

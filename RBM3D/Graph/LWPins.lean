@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Defs
-import RBM3D.Graph.ScalingOrder
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWPsi
-import RBM3D.Graph.LWStein
-import RBM3D.Defs.Tail
-import RBM3D.Evolution.Pins
-import Mathlib.Algebra.MvPolynomial.Basic
+
+module
+
+public import RBM3D.Induction.Defs
+public import RBM3D.Graph.ScalingOrder
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWPsi
+public import RBM3D.Graph.LWStein
+public import RBM3D.Defs.Tail
+public import RBM3D.Evolution.Pins
+public import Mathlib.Algebra.MvPolynomial.Basic
+
+@[expose] public section
 
 /-!
 # The light-weight layer: statements, premises and data

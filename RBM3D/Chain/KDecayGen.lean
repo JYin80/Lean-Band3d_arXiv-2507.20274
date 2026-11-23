@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Carrier
-import RBM3D.Induction.KDecay
+
+module
+
+public import RBM3D.Chain.Carrier
+public import RBM3D.Induction.KDecay
+
+@[expose] public section
 
 /-!
 # The time-uniform `𝒦` bounds over a flow carrier

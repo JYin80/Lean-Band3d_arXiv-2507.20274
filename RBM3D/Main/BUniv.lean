@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Endpoints
-import RBM3D.Universality.PinsDens
-import RBM3D.Universality.GUETranslation
-import RBM3D.Universality.UnivMain
-import RBM3D.Universality.EMCTE2
-import RBM3D.Universality.Uyw
-import RBM3D.Universality.ZeroModeProfile
-import RBM3D.Universality.QUEFlow
-import RBM3D.Universality.GreenCorr
-import RBM3D.Universality.GUELocalBootstrap
-import RBM3D.Universality.GUEPhase.RandomLayerB
+
+module
+
+public import RBM3D.Endpoints
+public import RBM3D.Universality.PinsDens
+public import RBM3D.Universality.GUETranslation
+public import RBM3D.Universality.UnivMain
+public import RBM3D.Universality.EMCTE2
+public import RBM3D.Universality.Uyw
+public import RBM3D.Universality.ZeroModeProfile
+public import RBM3D.Universality.QUEFlow
+public import RBM3D.Universality.GreenCorr
+public import RBM3D.Universality.GUELocalBootstrap
+public import RBM3D.Universality.GUEPhase.RandomLayerB
+
+@[expose] public section
 
 /-!
 # `BUniv` from the leaves of `un_bUniv_of_rows'`

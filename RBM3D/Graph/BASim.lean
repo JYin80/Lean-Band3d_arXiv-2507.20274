@@ -3,11 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAScost
-import RBM3D.Graph.BASymm1
-import RBM3D.Graph.BAGGOp
-import RBM3D.Graph.BAWeightOp
-import RBM3D.Graph.BAExpandW
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAScost
+public import RBM3D.Graph.BASymm1
+public import RBM3D.Graph.BAGGOp
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.BAVocab
+import all RBM3D.Graph.LWVocab
+import all RBM3D.Graph.BAVocab
+
+@[expose] public section
 
 /-!
 # A BA step matched with a band `LocStep` at the image (part 1)

@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QGridA
-import RBM3D.Chain.HierDriftGen
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.NQGood1Gen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QGridA
+public import RBM3D.Chain.HierDriftGen
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.NQGood1Gen
+import all RBM3D.Induction.QGridA
+
+@[expose] public section
 
 /-!
 # The `𝒬`-grid layer of (4.35) `int_K-L+Q` over the flow carrier

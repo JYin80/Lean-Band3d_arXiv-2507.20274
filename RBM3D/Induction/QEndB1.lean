@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QEndGrid
-import RBM3D.Induction.QEndA
-import RBM3D.Induction.NQEndFlow
-import RBM3D.Induction.QLevelsA
-import RBM3D.Induction.NQLin
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.NQBudget
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Induction.QEndGrid
+public import RBM3D.Induction.QEndA
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.QLevelsA
+public import RBM3D.Induction.NQLin
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.NQBudget
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # The per-time alternating flow endpoint, `stOeqQtRoundPT''_holds`

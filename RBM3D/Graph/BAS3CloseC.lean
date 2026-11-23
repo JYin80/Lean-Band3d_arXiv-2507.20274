@@ -3,10 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAS3CloseB
-import RBM3D.BA.TwistFold2B
-import RBM3D.Graph.BAExp14bB
-import RBM3D.BA.GreenStab
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAS3CloseB
+public import RBM3D.BA.TwistFold2B
+public import RBM3D.Graph.BAExp14bB
+public import RBM3D.BA.GreenStab
+public import RBM3D.Graph.BAS3Close
+public import RBM3D.BA.GreenSchur
+import all RBM3D.Graph.BAS3Close
+import all RBM3D.BA.GreenSchur
+import all RBM3D.Graph.BAS3CloseB
+
+@[expose] public section
 
 /-!
 # The fold leaf class and the 14 reductions (part C)
@@ -37,7 +48,7 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 
 
-open private BAS3Close_pk from RBM3D.Graph.BAS3Close
+-- (the names formerly opened from RBM3D.Graph.BAS3Close are public)
 open private GreenSchur_zim_pos from RBM3D.BA.GreenSchur
 open private BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm
   BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_iso_leaf BAS3Close_leaf_pk BAS3Close_ctxEx_pk BAS3Close_iso_cand
@@ -46,9 +57,9 @@ open private BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm
 open private BAS3Close_RootFacts BAS3Close_tests_M BAS3Close_tests_D BAS3Close_tests_1 BAS3Close_MCM BAS3Close_vs1
   BAS3Close_vs1_mem BAS3Close_vs1_len BAS3Close_leafM_sound BAS3Close_invC_of_facts BAS3Close_CatR0 BAS3Close_eI0_0
   BAS3Close_iso_pk_perm BAS3Close_keys_eq from RBM3D.Graph.BAS3CloseB
-open private BAS3Close_cf0_0 BAS3Close_cf0_1 BAS3Close_cf0_2 BAS3Close_cf0_3 BAS3Close_cf0_4 BAS3Close_cf0_5 BAS3Close_cf0_6
-  BAS3Close_cf1_0 BAS3Close_cf1_1 BAS3Close_cf1_2 BAS3Close_cf1_3 BAS3Close_cf1_4 BAS3Close_cf1_5 BAS3Close_cf1_6
-  from RBM3D.Graph.BAS3CloseB
+-- (the names formerly opened from RBM3D.Graph.BAS3CloseB are public)
+open RBM.Graph (BAS3Close_pk)
+open RBM.Graph (BAS3Close_cf0_0 BAS3Close_cf0_1 BAS3Close_cf0_2 BAS3Close_cf0_3 BAS3Close_cf0_4 BAS3Close_cf0_5 BAS3Close_cf0_6 BAS3Close_cf1_0 BAS3Close_cf1_1 BAS3Close_cf1_2 BAS3Close_cf1_3 BAS3Close_cf1_4 BAS3Close_cf1_5 BAS3Close_cf1_6)
 
 open MeasureTheory Filter
 

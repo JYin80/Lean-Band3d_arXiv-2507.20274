@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
-import Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar
-import Mathlib.NumberTheory.LegendreSymbol.AddCharacter
-import Mathlib.MeasureTheory.Integral.DominatedConvergence
-import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
-import Mathlib.Topology.Algebra.InfiniteSum.Real
-import Mathlib.Analysis.SpecificLimits.Normed
+
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
+public import Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar
+public import Mathlib.NumberTheory.LegendreSymbol.AddCharacter
+public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import Mathlib.Topology.Algebra.InfiniteSum.Real
+public import Mathlib.Analysis.SpecificLimits.Normed
+
+@[expose] public section
 
 /-!
 # The one-dimensional heat kernel on `ℤ` and on `ℤ_L`

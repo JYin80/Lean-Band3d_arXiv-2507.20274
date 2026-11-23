@@ -3,16 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.DecayGen
-import RBM3D.BA.FlowPins
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.CombesThomas
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.Step5IIIKer
-import RBM3D.BA.EMn2BA
-import RBM3D.Induction.KDecay
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.DecayGen
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.CombesThomas
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.Step5IIIKer
+public import RBM3D.BA.EMn2BA
+public import RBM3D.Induction.KDecay
+import all RBM3D.Induction.KDecay
+
+@[expose] public section
 
 /-!
 # The far decay of the block Anderson `𝒦` (`BAKcalDecay`)

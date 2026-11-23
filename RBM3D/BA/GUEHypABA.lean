@@ -3,10 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEProcBA
-import RBM3D.BA.KBound
-import RBM3D.Universality.GUEPhase.ProcK
-import RBM3D.Universality.GUEPhase.HypA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEProcBA
+public import RBM3D.BA.KBound
+public import RBM3D.Universality.GUEPhase.ProcK
+public import RBM3D.Universality.GUEPhase.HypA
+import all RBM3D.Universality.GUEPhase.ProcK
+import all RBM3D.Universality.GUEPhase.HypA
+
+@[expose] public section
 
 /-!
 # The deterministic `K̃` and the grid bound on the GUE-phase grid at block Anderson

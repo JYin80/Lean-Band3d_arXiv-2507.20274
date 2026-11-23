@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NQBudget
-import RBM3D.Induction.NQGood2
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.SEforLn2
-import RBM3D.Induction.AzumaProxyN
+
+module
+
+public import RBM3D.Induction.NQBudget
+public import RBM3D.Induction.NQGood2
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.SEforLn2
+public import RBM3D.Induction.AzumaProxyN
+
+@[expose] public section
 
 /-!
 # The linear good set `GoodLinN`, its exit time, the linear drift level, the sub-Gaussian input and the linear budget (`d ≥ 3`)

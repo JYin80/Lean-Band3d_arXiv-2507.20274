@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWPins
-import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+
+module
+
+public import RBM3D.Graph.LWPins
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+
+@[expose] public section
 
 /-!
 # `lem:Anp_key_gh`: the deterministic form and the `≺`-lift
@@ -89,7 +94,7 @@ theorem anpKey_zdistInf_tri (x y z : Zd d L) :
 end Lattice
 
 /-- The step of `WalkOK`. -/
-private def anpKey_stepFn {p q : ℕ} (Γ : NGraph p q) (acc : Option (NV p q))
+def anpKey_stepFn {p q : ℕ} (Γ : NGraph p q) (acc : Option (NV p q))
     (st : Fin Γ.es.length × NV p q) : Option (NV p q) :=
   acc.bind fun c =>
     if ((Γ.es.get st.1).u = c ∧ (Γ.es.get st.1).v = st.2) ∨

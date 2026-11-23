@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KMolecule
-import RBM3D.BA.KCactusCut
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.KSolve
-import RBM3D.Loop.KLIndStepB
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.KKernel
+
+module
+
+public import RBM3D.BA.KMolecule
+public import RBM3D.BA.KCactusCut
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.KSolve
+public import RBM3D.Loop.KLIndStepB
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.KKernel
+
+@[expose] public section
 
 /-!
 # The base levels and the cut of `K^{(π)}` for the molecule induction

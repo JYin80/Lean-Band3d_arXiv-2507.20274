@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Eq729B
+
+module
+
+public import RBM3D.Universality.GUEPhase.Eq729B
+
+@[expose] public section
 
 /-!
 # `RandomLayerA`: Lemma 2.10 (`zztE`) at `z = e + iη` and the size-level conditions, `d ≥ 3`

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.FlowPins
-import RBM3D.BA.CouplingWindow
-import RBM3D.Induction.ConArg
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.Split
+
+module
+
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.CouplingWindow
+public import RBM3D.Induction.ConArg
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.Split
+
+@[expose] public section
 
 /-!
 # `lem_ConArg_BA` (Lemma 8.5) in the event form `BAConArg''`

@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.PfStep5Grid
-import RBM3D.Induction.TailtoTailSq
-import RBM3D.Path.DifREP3
+
+module
+
+public import RBM3D.Induction.PfStep5Grid
+public import RBM3D.Induction.TailtoTailSq
+public import RBM3D.Path.DifREP3
+
+@[expose] public section
 
 /-!
 # `lem:pf_step5`, part 2b: the stopped loop on the grid, the lift, `STPfStep5`

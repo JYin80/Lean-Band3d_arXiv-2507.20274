@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QLevelsB
-import RBM3D.Induction.QProxy
-import RBM3D.Induction.NQLin
-import RBM3D.Chain.NQBudgetGen
-import RBM3D.Chain.NQLinGen
+
+module
+
+public import RBM3D.Induction.QLevelsB
+public import RBM3D.Induction.QProxy
+public import RBM3D.Induction.NQLin
+public import RBM3D.Chain.NQBudgetGen
+public import RBM3D.Chain.NQLinGen
+
+@[expose] public section
 
 /-!
 # The budget of the alternating endpoint at `d ≥ 3`

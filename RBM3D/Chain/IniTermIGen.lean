@@ -3,9 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.CltFarUGen
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.B45Gen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.CltFarUGen
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.B45Gen
+public import RBM3D.Chain.IniTermIIGen
+public import RBM3D.Chain.Step5KerGen
+import all RBM3D.Chain.IniTermIIGen
+import all RBM3D.Chain.CltFarUGen
+import all RBM3D.Chain.Step5KerGen
+
+@[expose] public section
 
 set_option linter.style.longLine false
 set_option linter.unusedVariables false

@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUELocalBootstrap
-import RBM3D.Universality.Pins
-import RBM3D.Universality.Step1RegularityGUE
-import RBM3D.Universality.GUEPhase.AuxCarrier
-import RBM3D.Universality.EigenInterlacing
-import RBM3D.Green.EntryCore
-import RBM3D.Green.LDE
-import RBM3D.Green.IBPPoly
-import RBM3D.Analysis.Resolvent
-import RBM3D.Defs.Sizes
+
+module
+
+public import RBM3D.Universality.GUELocalBootstrap
+public import RBM3D.Universality.Pins
+public import RBM3D.Universality.Step1RegularityGUE
+public import RBM3D.Universality.GUEPhase.AuxCarrier
+public import RBM3D.Universality.EigenInterlacing
+public import RBM3D.Green.EntryCore
+public import RBM3D.Green.LDE
+public import RBM3D.Green.IBPPoly
+public import RBM3D.Analysis.Resolvent
+public import RBM3D.Defs.Sizes
+
+@[expose] public section
 
 /-!
 # The GUE local law from the Schur tail

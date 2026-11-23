@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KHeatTail
-import RBM3D.BA.FlowPins
-import RBM3D.Propagator.Prop5Hold
+
+module
+
+public import RBM3D.BA.KHeatTail
+public import RBM3D.BA.FlowPins
+public import RBM3D.Propagator.Prop5Hold
+
+@[expose] public section
 
 /-!
 # Properties 5 and 8 of Lemma 2.19 (`lem_propTH`) for `Θ_BA`, mixed charges `σ₁ ≠ σ₂`

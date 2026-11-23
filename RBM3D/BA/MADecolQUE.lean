@@ -3,11 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.MALocal
-import RBM3D.BA.MAQDiff
-import RBM3D.BA.GUEKPrim
-import RBM3D.Main.QUEFromQDiff
-import RBM3D.Universality.QUEFlow
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.MALocal
+public import RBM3D.BA.MAQDiff
+public import RBM3D.BA.GUEKPrim
+public import RBM3D.Main.QUEFromQDiff
+public import RBM3D.Universality.QUEFlow
+public import RBM3D.Main.QUECore
+import all RBM3D.Universality.QUEFlow
+import all RBM3D.Main.QUECore
+
+@[expose] public section
 
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false

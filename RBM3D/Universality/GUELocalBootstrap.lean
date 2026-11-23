@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Step1RegularityGUE
-import RBM3D.Green.LDE
-import RBM3D.Green.EntryCore
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.Split
-import RBM3D.Gauss.FlowCalculus
+
+module
+
+public import RBM3D.Universality.Step1RegularityGUE
+public import RBM3D.Green.LDE
+public import RBM3D.Green.EntryCore
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.Split
+public import RBM3D.Gauss.FlowCalculus
+
+@[expose] public section
 
 /-!
 # The GUE local law from the Schur tail

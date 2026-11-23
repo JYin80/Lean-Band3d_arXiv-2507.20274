@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.RandomLayerBG
-import RBM3D.Universality.UnivMain
-import RBM3D.Universality.PinsKD
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Universality.GUEPhase.RandomLayerBG
+public import RBM3D.Universality.UnivMain
+public import RBM3D.Universality.PinsKD
+import all RBM3D.Universality.GUEPhase.RandomLayerBG
+
+@[expose] public section
 
 /-!
 # The dimension-filtered generic chain

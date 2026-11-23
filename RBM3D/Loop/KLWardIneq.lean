@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Batteries.Tactic.OpenPrivate
-import RBM3D.Loop.KLInduct
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Loop.KLInduct
+
+@[expose] public section
 
 /-!
 # Ward's inequality for `𝒦`-loops, `lem_wardineq_K`, `(wardineq_K)`

@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AnpKey
-import Mathlib.Data.Fin.Tuple.Basic
-import Mathlib.Algebra.Order.BigOperators.Ring.Finset
-import Mathlib.Algebra.BigOperators.Fin
+
+module
+
+public import RBM3D.Graph.AnpKey
+public import Mathlib.Data.Fin.Tuple.Basic
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+public import Mathlib.Algebra.BigOperators.Fin
+
+@[expose] public section
 
 /-!
 # `lem:Anp_key_gh`: walks and edge products for the induction step

@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Endpoints
+
+module
+
+public import RBM3D.Endpoints
+
+@[expose] public section
 
 /-!
 # The `zztE` transfer and (2.63) `eq:BtBt`

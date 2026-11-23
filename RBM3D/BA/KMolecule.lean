@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KCactusCut
-import RBM3D.BA.KTreeRep
-import RBM3D.Loop.KLSumZeroWard
-import RBM3D.Loop.KLIndStepB
+
+module
+
+public import RBM3D.BA.KCactusCut
+public import RBM3D.BA.KTreeRep
+public import RBM3D.Loop.KLSumZeroWard
+public import RBM3D.Loop.KLIndStepB
+
+@[expose] public section
 
 /-!
 # The BA molecule layer `K^{(π)}`, `Σ^{(π)}`, (A.39) `eq_K-Kpi`, the factorisation

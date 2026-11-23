@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.SizesComp
-import RBM3D.Induction.Step2Defs
-import RBM3D.Induction.PfStep5
-import RBM3D.Induction.ExpIntEasy
-import RBM3D.Induction.IterationsA
-import RBM3D.Induction.LocalAvg1
-import Mathlib.Data.Nat.Nth
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.SizesComp
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Induction.PfStep5
+public import RBM3D.Induction.ExpIntEasy
+public import RBM3D.Induction.IterationsA
+public import RBM3D.Induction.LocalAvg1
+public import Mathlib.Data.Nat.Nth
+
+@[expose] public section
 
 /-!
 # The main-induction regime assembly

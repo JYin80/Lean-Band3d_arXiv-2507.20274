@@ -3,9 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.DuhamelI2
-import RBM3D.Induction.WardII
-import RBM3D.Induction.IniTermII
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.DuhamelI2
+public import RBM3D.Induction.WardII
+public import RBM3D.Induction.IniTermII
+public import RBM3D.Induction.DuhamelI
+public import RBM3D.Induction.EMn2Exp2
+public import RBM3D.Induction.EtermsMid2
+public import RBM3D.Induction.LemDecCalELip
+import all RBM3D.Induction.DuhamelI
+import all RBM3D.Induction.DuhamelI2
+import all RBM3D.Induction.EMn2Exp2
+import all RBM3D.Induction.EtermsMid2
+import all RBM3D.Induction.LemDecCalELip
+
+@[expose] public section
 
 /-!
 # The integrated hierarchy with `Q^{(1)}`, case (ii), over a carrier

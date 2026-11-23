@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAAuxGraph2
-import RBM3D.Graph.AuxGraph2
-import RBM3D.Graph.BAAtom2
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.GreenOff
-import RBM3D.BA.GreenLocal
-import RBM3D.BA.Step1Boot
-import RBM3D.BA.Prop5Short
+
+module
+
+public import RBM3D.Graph.BAAuxGraph2
+public import RBM3D.Graph.AuxGraph2
+public import RBM3D.Graph.BAAtom2
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.GreenOff
+public import RBM3D.BA.GreenLocal
+public import RBM3D.BA.Step1Boot
+public import RBM3D.BA.Prop5Short
+
+@[expose] public section
 
 /-!
 # The claim (7.34) and (B.22) `eq:Gbyxi2_BA` at block Anderson (part 2)

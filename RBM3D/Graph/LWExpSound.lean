@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWExpSim
-import RBM3D.Graph.LWExpCertBS0
-import RBM3D.Graph.LWExpCertBS1
+
+module
+
+public import RBM3D.Graph.LWExpSim
+public import RBM3D.Graph.LWExpCertBS0
+public import RBM3D.Graph.LWExpCertBS1
+
+@[expose] public section
 
 /-!
 # Soundness of the certificate and `lwG5Expand'_holds`

@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWExpTerm
-import RBM3D.Graph.LWGGExp
-import RBM3D.Graph.LWSizeClaim
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.Step5Kit
-import RBM3D.Green.IBPPoly
+
+module
+
+public import RBM3D.Graph.LWExpTerm
+public import RBM3D.Graph.LWGGExp
+public import RBM3D.Graph.LWSizeClaim
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.Step5Kit
+public import RBM3D.Green.IBPPoly
+
+@[expose] public section
 
 /-!
 # `lem:LWterm_EXP`: the expansion side

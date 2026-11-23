@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.QopNorm
-import RBM3D.Evolution.Prec
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.Step2Events
-import RBM3D.Gauss.DominationAt
-import RBM3D.Path.Walk
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Evolution.Prec
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Gauss.DominationAt
+public import RBM3D.Path.Walk
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # The initial term of regime (i) (Step 6 of `lem:main_ind`)

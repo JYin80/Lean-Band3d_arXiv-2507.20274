@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ExpIniI
-import RBM3D.Induction.ExpAvg
-import RBM3D.Induction.ExpDuhamel
-import RBM3D.Induction.B45
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.LemDecCalEPrec
-import RBM3D.Induction.ConArgDet
-import RBM3D.Loop.KLWard
-import RBM3D.Loop.KLTree
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Path.Walk
+
+module
+
+public import RBM3D.Induction.ExpIniI
+public import RBM3D.Induction.ExpAvg
+public import RBM3D.Induction.ExpDuhamel
+public import RBM3D.Induction.B45
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.LemDecCalEPrec
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Loop.KLWard
+public import RBM3D.Loop.KLTree
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Path.Walk
+
+@[expose] public section
 
 /-!
 # The Ward terms of regime (i) (Step 6 of `lem:main_ind`)

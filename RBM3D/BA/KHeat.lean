@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KSymbol
-import RBM3D.Propagator.HeatProduct
-import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+
+module
+
+public import RBM3D.BA.KSymbol
+public import RBM3D.Propagator.HeatProduct
+public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+
+@[expose] public section
 
 /-!
 # The Poisson semigroup and the heat kernel of `K = |M^{(B)}|²`

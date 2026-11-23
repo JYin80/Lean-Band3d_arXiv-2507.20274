@@ -3,8 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAG5Leaf
-import RBM3D.Graph.BALvl1B
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAG5Leaf
+public import RBM3D.Graph.BALvl1B
+public import RBM3D.Graph.BAExpandId
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.BAExpandId
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAWeightOp
+
+@[expose] public section
 
 /-!
 # The roots of the `BAExp14bS3` families, their expansion identity, and its closure (part A)
@@ -1672,7 +1684,7 @@ section Conc
 variable {I : Type} [Fintype I] [DecidableEq I]
 
 /-- The trivial pack of a concrete graph (external vertices `Fin 2`, `ext = id`). -/
-private def BAS3Close_pk (Γ : BAGraph (Fin 2) I) : BAPGraph (Fin 2) :=
+def BAS3Close_pk (Γ : BAGraph (Fin 2) I) : BAPGraph (Fin 2) :=
   { E' := Fin 2, I' := I, ext := id, ext_surj := Function.surjective_id, g := Γ }
 
 /-- The empty base: `pcomp base (packMerge Γ) = packMerge Γ`. -/

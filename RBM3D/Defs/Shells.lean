@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Data.Fintype.Pi
-import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.Tactic.Ring
-import RBM3D.Defs.Lattice
+
+module
+
+public import Mathlib.Data.Fintype.Pi
+public import Mathlib.Algebra.BigOperators.Fin
+public import Mathlib.Tactic.Ring
+public import RBM3D.Defs.Lattice
+
+@[expose] public section
 
 /-!
 # Counting lattice points on spheres of `Z_L^d`

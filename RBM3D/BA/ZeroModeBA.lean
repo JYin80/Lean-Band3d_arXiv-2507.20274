@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.IterationsGen2
-import RBM3D.Chain.QGridGen
-import RBM3D.Chain.Step2Kern
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.BA.SEforLnBA
-import RBM3D.BA.B45BA
-import RBM3D.BA.GridRepTailBA
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.Step1Fam
+
+module
+
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.IterationsGen2
+public import RBM3D.Chain.QGridGen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.B45BA
+public import RBM3D.BA.GridRepTailBA
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.Step1Fam
+
+@[expose] public section
 
 /-!
 # The BA side of `lem:iterations`

@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.InnerProductSpace.Symmetric
-import Mathlib.Analysis.Matrix.Hermitian
+
+module
+
+public import Mathlib.Analysis.InnerProductSpace.Symmetric
+public import Mathlib.Analysis.Matrix.Hermitian
+
+@[expose] public section
 
 /-!
 # The deterministic envelope: `‖(H - z)⁻¹‖ ≤ (Im z)⁻¹`

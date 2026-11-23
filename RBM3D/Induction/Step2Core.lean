@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step2Defs
-import RBM3D.Induction.ScaleFacts
+
+module
+
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Induction.ScaleFacts
+
+@[expose] public section
 
 /-!
 # The real-number core of Step 2 of `lem:main_ind`

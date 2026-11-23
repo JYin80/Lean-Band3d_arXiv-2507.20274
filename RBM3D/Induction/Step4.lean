@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QtXiRoundLift
-import RBM3D.Induction.QtNonzeroBoot
-import RBM3D.Induction.IterationsA
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.MainIndRegimes
+
+module
+
+public import RBM3D.Induction.QtXiRoundLift
+public import RBM3D.Induction.QtNonzeroBoot
+public import RBM3D.Induction.IterationsA
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.MainIndRegimes
+
+@[expose] public section
 
 /-!
 # Step 4 of `lem:main_ind` at `d ≥ 3`, and the main-induction assembly from the step statements

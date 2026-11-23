@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Main.QUECore
-import RBM3D.Green.LDE
+
+module
+
+public import RBM3D.Main.QUECore
+public import RBM3D.Green.LDE
+
+@[expose] public section
 
 /-!
 # `QUE` from `QDiff`: the scale `η_Q`, the exponent chain for every `d ≥ 3`, `MAQUE`, `QUE_of_QDiff`

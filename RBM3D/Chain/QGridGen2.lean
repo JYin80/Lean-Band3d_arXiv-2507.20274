@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.QGridGen
-import RBM3D.Induction.QGridB
-import RBM3D.Chain.GridEnvelopeGen
+
+module
+
+public import RBM3D.Chain.QGridGen
+public import RBM3D.Induction.QGridB
+public import RBM3D.Chain.GridEnvelopeGen
+
+@[expose] public section
 
 /-!
 # The summed envelope of the `𝒬`-grid remainders over a flow carrier

@@ -3,15 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.TwistFold2
-import RBM3D.BA.TwistKer2
-import RBM3D.BA.TwistKer
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.EKPins
-import RBM3D.BA.KBase
-import RBM3D.BA.Step1Setup
-import RBM3D.Induction.ContinuityNet
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.TwistFold2
+public import RBM3D.BA.TwistKer2
+public import RBM3D.BA.TwistKer
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.KBase
+public import RBM3D.BA.Step1Setup
+public import RBM3D.Induction.ContinuityNet
+import all RBM3D.BA.TwistKer
+import all RBM3D.BA.TwistKer2
+import all RBM3D.BA.KBase
+
+@[expose] public section
 
 /-!
 # The net and the bootstrap in `Ξ` for the twisted 2-loop estimate

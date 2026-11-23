@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWWeightExp
-import RBM3D.Graph.LWEdgeExp
-import RBM3D.Graph.LWGGExp
-import RBM3D.Gauss.FineModel
-import RBM3D.Green.IBPPoly
+
+module
+
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWWeightExp
+public import RBM3D.Graph.LWEdgeExp
+public import RBM3D.Graph.LWGGExp
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Green.IBPPoly
+
+@[expose] public section
 
 /-!
 # Conjugation, transposition and `(Owx)` at an external vertex

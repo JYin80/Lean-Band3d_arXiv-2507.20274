@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWExpTerm2
-import RBM3D.Graph.AuxGraph
-import RBM3D.Graph.AuxGraph2
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Green.IBPPoly
+
+module
+
+public import RBM3D.Graph.LWExpTerm2
+public import RBM3D.Graph.AuxGraph
+public import RBM3D.Graph.AuxGraph2
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Green.IBPPoly
+
+@[expose] public section
 
 /-!
 # The graph bound for the 5-loop term `I₄₂`

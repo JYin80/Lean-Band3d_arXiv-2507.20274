@@ -3,12 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.KDecayGen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.DecayGen
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.Step5CasesGen
-import RBM3D.Induction.B45
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.KDecayGen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.Step5CasesGen
+public import RBM3D.Induction.B45
+import all RBM3D.Induction.B45
+import all RBM3D.Chain.ZeroModeGen
+
+@[expose] public section
 
 /-!
 # (4.30) `eq:Ward_typeP` and (4.59) `y27kasdfg` over the flow carrier

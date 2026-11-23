@@ -3,9 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAEngine
-import RBM3D.Graph.BAAtom
-import RBM3D.Graph.LWProv
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAEngine
+public import RBM3D.Graph.BAAtom
+public import RBM3D.Graph.LWProv
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAWeightOp
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

@@ -3,8 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEOneLoop
-import RBM3D.Universality.GUEPhase.Eq729A
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEOneLoop
+public import RBM3D.Universality.GUEPhase.Eq729A
+public import RBM3D.Universality.GUEPhase.Drift
+public import RBM3D.Universality.GUEPhase.Generator
+public import RBM3D.Path.OneStep
+import all RBM3D.Universality.GUEPhase.Drift
+import all RBM3D.Universality.GUEPhase.Eq729A
+import all RBM3D.Universality.GUEPhase.Generator
+import all RBM3D.Path.OneStep
+
+@[expose] public section
 
 /-!
 # The GUE drift and the eq729 recursion on the block Anderson grid

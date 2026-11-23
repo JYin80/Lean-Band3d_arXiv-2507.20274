@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.LemDecCalE
+
+module
+
+public import RBM3D.Path.LemDecCalE
+
+@[expose] public section
 
 /-!
 # `lem_dec_calE`, second part: the `ℰ^{G̃,(2)}` bound `res_deccalE_wG`

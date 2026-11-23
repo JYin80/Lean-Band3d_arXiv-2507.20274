@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step2Core
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.Step2Core
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # The scale family of `(eq:def_ell1)`

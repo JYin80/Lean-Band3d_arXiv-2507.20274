@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step2Defs
-import RBM3D.Induction.ConArgDet
+
+module
+
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Induction.ConArgDet
+
+@[expose] public section
 
 /-!
 # The pointwise contraction inequality `STContractPt`
@@ -31,9 +36,9 @@ with `P_a` the diagonal projection onto the block `a`.  With `G₁ = G(σ₁)`, 
 * each `c` has at most `3^d` neighbours `c'` (`zdist L u ≤ 1 ⇔ u.val ∈ {0, 1, L - 1}`).
 
 Constants are exact: `3^d / (W^d η)`, no loss; `3 ≤ d`, `3 ≤ L` are not used.
-* §1 the Hilbert-Schmidt norm `hs` and `|tr(Ψ A Ψ^*)| ≤ √(hs A) hs Ψ`;
+* §1 the Hilbert-Schmidt norm `ContractPt_hs` and `|tr(Ψ A Ψ^*)| ≤ √(ContractPt_hs A) ContractPt_hs Ψ`;
 * §2 the adjoint `G(σ)^* = G(-σ)` and Ward's identity;
-* §3 block projections `Pm`;
+* §3 block projections `ContractPt_Pm`;
 * §4 the matrix identities: the six-loop, the alternating four-loop, the sum over `c`;
 * §5 the neighbour count and the statement `stContractPt_holds` of `STContractPt`
   (`Induction/Defs.lean`).
@@ -54,15 +59,15 @@ section Generic
 variable {ι : Type*} [Fintype ι]
 
 /-- `‖A‖_{HS}² = Σ_{ij} |A_{ij}|²`. -/
-private def hs (A : Matrix ι ι ℂ) : ℝ := ∑ i, ∑ j, ‖A i j‖ ^ 2
+private def ContractPt_hs (A : Matrix ι ι ℂ) : ℝ := ∑ i, ∑ j, ‖A i j‖ ^ 2
 
-private lemma hs_nonneg (A : Matrix ι ι ℂ) : 0 ≤ hs A := by
-  unfold hs; positivity
+private lemma ContractPt_hs_nonneg (A : Matrix ι ι ℂ) : 0 ≤ ContractPt_hs A := by
+  unfold ContractPt_hs; positivity
 
 /-- `tr(A A^*) = ‖A‖_HS²`. -/
-private lemma trace_mul_conjTranspose_eq (A : Matrix ι ι ℂ) :
-    (A * Aᴴ).trace = (hs A : ℂ) := by
-  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.conjTranspose_apply, hs]
+private lemma ContractPt_trace_mul_conjTranspose_eq (A : Matrix ι ι ℂ) :
+    (A * Aᴴ).trace = (ContractPt_hs A : ℂ) := by
+  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.conjTranspose_apply, ContractPt_hs]
   push_cast
   refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
   rw [Complex.star_def, Complex.mul_conj']
@@ -70,7 +75,7 @@ private lemma trace_mul_conjTranspose_eq (A : Matrix ι ι ℂ) :
 /-- Cauchy-Schwarz over the pair of indices:
 `Σ_{ij} |A_{ij}| v_i v_j ≤ ‖A‖_HS Σ_i v_i²`. -/
 private lemma sum_pair_le (A : Matrix ι ι ℂ) (v : ι → ℝ) :
-    ∑ i, ∑ j, ‖A i j‖ * (v i * v j) ≤ √(hs A) * ∑ i, v i ^ 2 := by
+    ∑ i, ∑ j, ‖A i j‖ * (v i * v j) ≤ √(ContractPt_hs A) * ∑ i, v i ^ 2 := by
   have h := Real.sum_mul_le_sqrt_mul_sqrt (Finset.univ : Finset (ι × ι))
     (fun p => ‖A p.1 p.2‖) (fun p => v p.1 * v p.2)
   simp only [Fintype.sum_prod_type] at h
@@ -84,7 +89,7 @@ private lemma sum_pair_le (A : Matrix ι ι ℂ) (v : ι → ℝ) :
 /-- **The quadratic-form Cauchy-Schwarz bound** `|tr(Ψ A Ψ^*)| ≤ ‖A‖_HS ‖Ψ‖²_HS`
 ((3.63) `eq_6loop_quadform`, with `‖A‖_op ≤ ‖A‖_HS`). -/
 private lemma norm_trace_mul_mul_conjTranspose_le (Ψ A : Matrix ι ι ℂ) :
-    ‖(Ψ * A * Ψᴴ).trace‖ ≤ √(hs A) * hs Ψ := by
+    ‖(Ψ * A * Ψᴴ).trace‖ ≤ √(ContractPt_hs A) * ContractPt_hs Ψ := by
   have h1 : ‖(Ψ * A * Ψᴴ).trace‖ ≤
       ∑ x, ∑ i, ∑ j, ‖A i j‖ * (‖Ψ x i‖ * ‖Ψ x j‖) := by
     calc ‖(Ψ * A * Ψᴴ).trace‖
@@ -108,9 +113,9 @@ private lemma norm_trace_mul_mul_conjTranspose_le (Ψ A : Matrix ι ι ℂ) :
           ring
   refine h1.trans ?_
   calc ∑ x, ∑ i, ∑ j, ‖A i j‖ * (‖Ψ x i‖ * ‖Ψ x j‖)
-      ≤ ∑ x, √(hs A) * ∑ i, ‖Ψ x i‖ ^ 2 :=
+      ≤ ∑ x, √(ContractPt_hs A) * ∑ i, ‖Ψ x i‖ ^ 2 :=
         Finset.sum_le_sum fun x _ => sum_pair_le A (fun i => ‖Ψ x i‖)
-    _ = √(hs A) * hs Ψ := by rw [← Finset.mul_sum]; rfl
+    _ = √(ContractPt_hs A) * ContractPt_hs Ψ := by rw [← Finset.mul_sum]; rfl
 
 end Generic
 
@@ -121,7 +126,7 @@ section Resolvent
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- `G(σ)^* = G(-σ)` for Hermitian `H`. -/
-private lemma Gres_conjTranspose {H : Matrix ι ι ℂ} (hH : H.IsHermitian) (z : ℂ) (σ : Bool) :
+private lemma ContractPt_Gres_conjTranspose {H : Matrix ι ι ℂ} (hH : H.IsHermitian) (z : ℂ) (σ : Bool) :
     (Gres H z σ)ᴴ = Gres H z (!σ) := by
   have hH' : Hᴴ = H := hH
   cases σ with
@@ -200,42 +205,42 @@ section Proj
 variable (d L W : ℕ) [NeZero L]
 
 /-- The block projection `P_a = W^d E_a`: the diagonal matrix of the indicator of the block `a`. -/
-private def Pm (a : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
+private def ContractPt_Pm (a : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   Matrix.diagonal fun x => if x.1 = a then 1 else 0
 
 variable {d L W}
 
 omit [NeZero L] in
 /-- `E_a = (W^d)⁻¹ P_a`. -/
-private lemma Eblk_eq_smul_Pm (a : Zd d L) :
-    Eblk d L W a = ((W : ℂ) ^ d)⁻¹ • Pm d L W a := by
+private lemma ContractPt_Eblk_eq_smul_Pm (a : Zd d L) :
+    Eblk d L W a = ((W : ℂ) ^ d)⁻¹ • ContractPt_Pm d L W a := by
   ext x y
   by_cases hxy : x = y
   · subst hxy
-    by_cases hx : x.1 = a <;> simp [Eblk, Pm, hx]
-  · simp [Eblk, Pm, hxy]
+    by_cases hx : x.1 = a <;> simp [Eblk, ContractPt_Pm, hx]
+  · simp [Eblk, ContractPt_Pm, hxy]
 
 omit [NeZero L] in
 /-- `P_a` is Hermitian. -/
-private lemma Pm_conjTranspose (a : Zd d L) : (Pm d L W a)ᴴ = Pm d L W a := by
+private lemma ContractPt_Pm_conjTranspose (a : Zd d L) : (ContractPt_Pm d L W a)ᴴ = ContractPt_Pm d L W a := by
   refine (Matrix.isHermitian_diagonal_iff.mpr fun x => ?_).eq
   by_cases h : x.1 = a <;> simp [h, IsSelfAdjoint]
 
 /-- `P_a` is idempotent. -/
-private lemma Pm_mul_self (a : Zd d L) : Pm d L W a * Pm d L W a = Pm d L W a := by
-  simp only [Pm, Matrix.diagonal_mul_diagonal]
+private lemma Pm_mul_self (a : Zd d L) : ContractPt_Pm d L W a * ContractPt_Pm d L W a = ContractPt_Pm d L W a := by
+  simp only [ContractPt_Pm, Matrix.diagonal_mul_diagonal]
   congr 1
   ext x
   by_cases h : x.1 = a <;> simp [h]
 
-private lemma Pm_mul_Pm_mul (a : Zd d L) (X : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
-    Pm d L W a * (Pm d L W a * X) = Pm d L W a * X := by
+private lemma ContractPt_Pm_mul_Pm_mul (a : Zd d L) (X : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
+    ContractPt_Pm d L W a * (ContractPt_Pm d L W a * X) = ContractPt_Pm d L W a * X := by
   rw [← Matrix.mul_assoc, Pm_mul_self]
 
 /-- `Σ_a P_a = 1`. -/
-private lemma sum_Pm : ∑ a : Zd d L, Pm d L W a = 1 := by
+private lemma sum_Pm : ∑ a : Zd d L, ContractPt_Pm d L W a = 1 := by
   ext x y
-  simp only [Pm, Matrix.sum_apply, Matrix.diagonal_apply, Matrix.one_apply]
+  simp only [ContractPt_Pm, Matrix.sum_apply, Matrix.diagonal_apply, Matrix.one_apply]
   by_cases hxy : x = y
   · subst hxy
     simp
@@ -253,69 +258,69 @@ variable (G : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ)
 /-- `Ψ_c = P_c G(σ₁) P_a G(σ₂) P_b` (the matrix of the vectors `ψ^z`, `z ∈ [c]`, in the proof of
 Lemma 3.16). -/
 private def Psi (s0 s1 : Bool) (a b c : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
-  Pm d L W c * G s0 * Pm d L W a * G s1 * Pm d L W b
+  ContractPt_Pm d L W c * G s0 * ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b
 
 /-- `A_{c'} = P_b G(σ₁) P_{c'} G(-σ₁) P_b` (`A^{(c')}` in the proof of Lemma 3.16). -/
 private def Amat (s0 : Bool) (b c' : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
-  Pm d L W b * G s0 * Pm d L W c' * G (!s0) * Pm d L W b
+  ContractPt_Pm d L W b * G s0 * ContractPt_Pm d L W c' * G (!s0) * ContractPt_Pm d L W b
 
 /-- `(G₁ P_a G₂ P_b Ḡ₂ P_a Ḡ₁)`: the matrix whose trace is `Σ_c ‖Ψ_c‖²_HS`. -/
 private def Kmat (s0 s1 : Bool) (a b : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
-  G s0 * Pm d L W a * G s1 * Pm d L W b * G (!s1) * Pm d L W a * G (!s0)
+  G s0 * ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a * G (!s0)
 
 variable {G}
 
-private lemma trace_Pm_sandwich (c : Zd d L) (X : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
-    (Pm d L W c * X * Pm d L W c).trace = (X * Pm d L W c).trace := by
-  rw [Matrix.trace_mul_comm, Pm_mul_Pm_mul, Matrix.trace_mul_comm]
+private lemma ContractPt_trace_Pm_sandwich (c : Zd d L) (X : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
+    (ContractPt_Pm d L W c * X * ContractPt_Pm d L W c).trace = (X * ContractPt_Pm d L W c).trace := by
+  rw [Matrix.trace_mul_comm, ContractPt_Pm_mul_Pm_mul, Matrix.trace_mul_comm]
 
 private lemma Psi_conjTranspose (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool) (a b c : Zd d L) :
     (Psi G s0 s1 a b c : Matrix (Vtx d L W) (Vtx d L W) ℂ)ᴴ =
-      Pm d L W b * G (!s1) * Pm d L W a * G (!s0) * Pm d L W c := by
-  simp only [Psi, Matrix.conjTranspose_mul, Pm_conjTranspose, hG, Matrix.mul_assoc]
+      ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a * G (!s0) * ContractPt_Pm d L W c := by
+  simp only [Psi, Matrix.conjTranspose_mul, ContractPt_Pm_conjTranspose, hG, Matrix.mul_assoc]
 
 private lemma Amat_conjTranspose (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 : Bool) (b c' : Zd d L) :
     (Amat G s0 b c' : Matrix (Vtx d L W) (Vtx d L W) ℂ)ᴴ = Amat G s0 b c' := by
-  simp only [Amat, Matrix.conjTranspose_mul, Pm_conjTranspose, hG, Bool.not_not, Matrix.mul_assoc]
+  simp only [Amat, Matrix.conjTranspose_mul, ContractPt_Pm_conjTranspose, hG, Bool.not_not, Matrix.mul_assoc]
 
 /-- `Ψ_c A_{c'} Ψ_c^* = P_c (G₁ P_a G₂ P_b G₁ P_{c'} Ḡ₁ P_b Ḡ₂ P_a Ḡ₁) P_c`, from
 `P_b P_b = P_b`. -/
 private lemma Psi_mul_Amat_mul_conj (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool)
     (a b c c' : Zd d L) :
     Psi G s0 s1 a b c * Amat G s0 b c' * (Psi G s0 s1 a b c)ᴴ =
-      Pm d L W c * (G s0 * Pm d L W a * G s1 * Pm d L W b * G s0 * Pm d L W c' * G (!s0) *
-        Pm d L W b * G (!s1) * Pm d L W a * G (!s0)) * Pm d L W c := by
+      ContractPt_Pm d L W c * (G s0 * ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b * G s0 * ContractPt_Pm d L W c' * G (!s0) *
+        ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a * G (!s0)) * ContractPt_Pm d L W c := by
   rw [Psi_conjTranspose hG]
-  simp only [Psi, Amat, Matrix.mul_assoc, Pm_mul_Pm_mul]
+  simp only [Psi, Amat, Matrix.mul_assoc, ContractPt_Pm_mul_Pm_mul]
 
 /-- `A_{c'} A_{c'} = P_b (G₁ P_{c'} Ḡ₁ P_b G₁ P_{c'} Ḡ₁) P_b`. -/
 private lemma Amat_mul_Amat (s0 : Bool) (b c' : Zd d L) :
     Amat G s0 b c' * Amat G s0 b c' =
-      Pm d L W b * (G s0 * Pm d L W c' * G (!s0) * Pm d L W b * G s0 * Pm d L W c' *
-        G (!s0)) * Pm d L W b := by
-  simp only [Amat, Matrix.mul_assoc, Pm_mul_Pm_mul]
+      ContractPt_Pm d L W b * (G s0 * ContractPt_Pm d L W c' * G (!s0) * ContractPt_Pm d L W b * G s0 * ContractPt_Pm d L W c' *
+        G (!s0)) * ContractPt_Pm d L W b := by
+  simp only [Amat, Matrix.mul_assoc, ContractPt_Pm_mul_Pm_mul]
 
 /-- `Ψ_c Ψ_c^* = P_c K P_c`. -/
 private lemma Psi_mul_conj (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool) (a b c : Zd d L) :
-    Psi G s0 s1 a b c * (Psi G s0 s1 a b c)ᴴ = Pm d L W c * Kmat G s0 s1 a b * Pm d L W c := by
+    Psi G s0 s1 a b c * (Psi G s0 s1 a b c)ᴴ = ContractPt_Pm d L W c * Kmat G s0 s1 a b * ContractPt_Pm d L W c := by
   rw [Psi_conjTranspose hG]
-  simp only [Psi, Kmat, Matrix.mul_assoc, Pm_mul_Pm_mul]
+  simp only [Psi, Kmat, Matrix.mul_assoc, ContractPt_Pm_mul_Pm_mul]
 
 /-- `‖A_{c'}‖²_HS = tr(A_{c'}²)`: `A_{c'}` is Hermitian. -/
 private lemma hs_Amat (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 : Bool) (b c' : Zd d L) :
-    (hs (Amat G s0 b c' : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
+    (ContractPt_hs (Amat G s0 b c' : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
       (Amat G s0 b c' * Amat G s0 b c').trace := by
-  rw [← trace_mul_conjTranspose_eq, Amat_conjTranspose hG]
+  rw [← ContractPt_trace_mul_conjTranspose_eq, Amat_conjTranspose hG]
 
 /-- `‖Ψ_c‖²_HS = tr(K P_c)`. -/
 private lemma hs_Psi (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool) (a b c : Zd d L) :
-    (hs (Psi G s0 s1 a b c : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
-      (Kmat G s0 s1 a b * Pm d L W c).trace := by
-  rw [← trace_mul_conjTranspose_eq, Psi_mul_conj hG, trace_Pm_sandwich]
+    (ContractPt_hs (Psi G s0 s1 a b c : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
+      (Kmat G s0 s1 a b * ContractPt_Pm d L W c).trace := by
+  rw [← ContractPt_trace_mul_conjTranspose_eq, Psi_mul_conj hG, ContractPt_trace_Pm_sandwich]
 
 /-- `Σ_c ‖Ψ_c‖²_HS = tr K` (`Σ_c P_c = 1`). -/
 private lemma sum_hs_Psi (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool) (a b : Zd d L) :
-    ∑ c : Zd d L, (hs (Psi G s0 s1 a b c : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
+    ∑ c : Zd d L, (ContractPt_hs (Psi G s0 s1 a b c : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ) =
       (Kmat G s0 s1 a b : Matrix (Vtx d L W) (Vtx d L W) ℂ).trace := by
   simp only [hs_Psi hG]
   rw [← Matrix.trace_sum, ← Finset.mul_sum, sum_Pm, Matrix.mul_one]
@@ -326,10 +331,10 @@ private lemma sum_hs_Psi (hG : ∀ s, (G s)ᴴ = G (!s)) (s0 s1 : Bool) (a b : Z
 private lemma trace_Kmat {s0 : Bool} (s1 : Bool) (a b : Zd d L) {c : ℂ}
     (hW : G (!s0) * G s0 = c • (G true - G false)) :
     (Kmat G s0 s1 a b : Matrix (Vtx d L W) (Vtx d L W) ℂ).trace =
-      c * ((G true * (Pm d L W a * G s1 * Pm d L W b * G (!s1) * Pm d L W a)).trace -
-        (G false * (Pm d L W a * G s1 * Pm d L W b * G (!s1) * Pm d L W a)).trace) := by
+      c * ((G true * (ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a)).trace -
+        (G false * (ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a)).trace) := by
   have h : (Kmat G s0 s1 a b : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
-      (G s0 * (Pm d L W a * G s1 * Pm d L W b * G (!s1) * Pm d L W a)) * G (!s0) := by
+      (G s0 * (ContractPt_Pm d L W a * G s1 * ContractPt_Pm d L W b * G (!s1) * ContractPt_Pm d L W a)) * G (!s0) := by
     simp only [Kmat, Matrix.mul_assoc]
   rw [h, Matrix.trace_mul_comm, ← Matrix.mul_assoc, hW, Matrix.smul_mul, Matrix.trace_smul,
     Matrix.sub_mul, Matrix.trace_sub, smul_eq_mul]
@@ -350,9 +355,9 @@ private lemma loop6_eq
       (((W : ℂ) ^ d)⁻¹) ^ 6 *
         (Psi (Gres (blockMat d L W H) z) s0 s1 a b c * Amat (Gres (blockMat d L W H) z) s0 b c' *
           (Psi (Gres (blockMat d L W H) z) s0 s1 a b c)ᴴ).trace := by
-  rw [Psi_mul_Amat_mul_conj hG, trace_Pm_sandwich]
+  rw [Psi_mul_Amat_mul_conj hG, ContractPt_trace_Pm_sandwich]
   conv_lhs => simp [loopFine, loopM, List.ofFn_succ]
-  simp only [Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
+  simp only [ContractPt_Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
     smul_eq_mul, Matrix.mul_assoc]
   ring
 
@@ -362,9 +367,9 @@ private lemma loop4_eq (s0 : Bool) (b c' : Zd d L) :
       (((W : ℂ) ^ d)⁻¹) ^ 4 *
         (Amat (Gres (blockMat d L W H) z) s0 b c' *
           Amat (Gres (blockMat d L W H) z) s0 b c').trace := by
-  rw [Amat_mul_Amat, trace_Pm_sandwich]
+  rw [Amat_mul_Amat, ContractPt_trace_Pm_sandwich]
   conv_lhs => simp [loopFine, loopM, List.ofFn_succ]
-  simp only [Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
+  simp only [ContractPt_Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
     smul_eq_mul, Matrix.mul_assoc]
   ring
 
@@ -373,10 +378,10 @@ private lemma loop4_eq (s0 : Bool) (b c' : Zd d L) :
 private lemma loop3_eq (s s1 : Bool) (a b : Zd d L) :
     loopFine d L W H z ![s, s1, !s1] ![a, b, a] =
       (((W : ℂ) ^ d)⁻¹) ^ 3 *
-        (Gres (blockMat d L W H) z s * (Pm d L W a * Gres (blockMat d L W H) z s1 * Pm d L W b *
-          Gres (blockMat d L W H) z (!s1) * Pm d L W a)).trace := by
+        (Gres (blockMat d L W H) z s * (ContractPt_Pm d L W a * Gres (blockMat d L W H) z s1 * ContractPt_Pm d L W b *
+          Gres (blockMat d L W H) z (!s1) * ContractPt_Pm d L W a)).trace := by
   conv_lhs => simp [loopFine, loopM, List.ofFn_succ]
-  simp only [Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
+  simp only [ContractPt_Eblk_eq_smul_Pm, Matrix.mul_smul, Matrix.smul_mul, smul_smul, Matrix.trace_smul,
     smul_eq_mul, Matrix.mul_assoc]
   ring
 
@@ -460,27 +465,27 @@ theorem stContractPt_holds (d : ℕ) : STContractPt d := by
   have hHb : (blockMat d L W H).IsHermitian := hH.submatrix _
   have hη : z.im ≠ 0 := hz.ne'
   set G : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ := Gres (blockMat d L W H) z with hGdef
-  have hG : ∀ s, (G s)ᴴ = G (!s) := Gres_conjTranspose hHb z
+  have hG : ∀ s, (G s)ᴴ = G (!s) := ContractPt_Gres_conjTranspose hHb z
   set w : ℝ := ((W : ℕ) : ℝ) ^ d with hwdef
   have hWpos : (0 : ℝ) < ((W : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
   have hw : 0 < w := pow_pos hWpos d
   have hκ : ‖((W : ℂ) ^ d)⁻¹‖ = w⁻¹ := by
     rw [norm_inv, norm_pow, Complex.norm_natCast]
-  set q : Zd d L → ℝ := fun c => hs (Psi G (σ 0) (σ 1) a b c) with hqdef
-  have hq0 : ∀ c, 0 ≤ q c := fun c => hs_nonneg _
+  set q : Zd d L → ℝ := fun c => ContractPt_hs (Psi G (σ 0) (σ 1) a b c) with hqdef
+  have hq0 : ∀ c, 0 ≤ q c := fun c => ContractPt_hs_nonneg _
   -- the pointwise bound (3.65) `eq_sym_loop_bound_old`
   have hpt : ∀ c' ∈ 𝒜, ∀ c : Zd d L,
       ‖loopFine d L W H z ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a, b, c', b, a, c]‖ ≤
         w⁻¹ ^ 4 * M * q c := by
     intro c' hc' c
-    -- `√(hs A) ≤ w² M`
+    -- `√(ContractPt_hs A) ≤ w² M`
     have hL4 : loopFine d L W H z ![σ 0, !(σ 0), σ 0, !(σ 0)] ![c', b, c', b] =
-        (((W : ℂ) ^ d)⁻¹) ^ 4 * (hs (Amat G (σ 0) b c') : ℂ) := by
+        (((W : ℂ) ^ d)⁻¹) ^ 4 * (ContractPt_hs (Amat G (σ 0) b c') : ℂ) := by
       rw [loop4_eq, hs_Amat hG]
     have hn4 : ‖loopFine d L W H z ![σ 0, !(σ 0), σ 0, !(σ 0)] ![c', b, c', b]‖ =
-        w⁻¹ ^ 4 * hs (Amat G (σ 0) b c') := by
-      rw [hL4, norm_mul, norm_pow, hκ, Complex.norm_real, Real.norm_of_nonneg (hs_nonneg _)]
-    have hsqrt : √(hs (Amat G (σ 0) b c')) ≤ w ^ 2 * M := by
+        w⁻¹ ^ 4 * ContractPt_hs (Amat G (σ 0) b c') := by
+      rw [hL4, norm_mul, norm_pow, hκ, Complex.norm_real, Real.norm_of_nonneg (ContractPt_hs_nonneg _)]
+    have hsqrt : √(ContractPt_hs (Amat G (σ 0) b c')) ≤ w ^ 2 * M := by
       have h1 := hM c' hc'
       rw [← Real.sqrt_eq_rpow] at h1
       have h2 := (Real.sqrt_le_iff.mp h1).2
@@ -488,14 +493,14 @@ theorem stContractPt_holds (d : ℕ) : STContractPt d := by
       rw [Real.sqrt_le_left (by positivity)]
       have hwi : w⁻¹ ^ 4 * w ^ 4 = 1 := by
         rw [← mul_pow, inv_mul_cancel₀ hw.ne', one_pow]
-      calc hs (Amat G (σ 0) b c') = w ^ 4 * (w⁻¹ ^ 4 * hs (Amat G (σ 0) b c')) := by
+      calc ContractPt_hs (Amat G (σ 0) b c') = w ^ 4 * (w⁻¹ ^ 4 * ContractPt_hs (Amat G (σ 0) b c')) := by
             rw [← mul_assoc, mul_comm (w ^ 4), hwi, one_mul]
         _ ≤ w ^ 4 * M ^ 2 := by gcongr
         _ = (w ^ 2 * M) ^ 2 := by ring
     rw [loop6_eq H z hG, norm_mul, norm_pow, hκ]
     calc w⁻¹ ^ 6 * ‖(Psi G (σ 0) (σ 1) a b c * Amat G (σ 0) b c' *
             (Psi G (σ 0) (σ 1) a b c)ᴴ).trace‖
-        ≤ w⁻¹ ^ 6 * (√(hs (Amat G (σ 0) b c')) * hs (Psi G (σ 0) (σ 1) a b c)) := by
+        ≤ w⁻¹ ^ 6 * (√(ContractPt_hs (Amat G (σ 0) b c')) * ContractPt_hs (Psi G (σ 0) (σ 1) a b c)) := by
           gcongr
           exact norm_trace_mul_mul_conjTranspose_le _ _
       _ ≤ w⁻¹ ^ 6 * ((w ^ 2 * M) * q c) := by
@@ -507,7 +512,7 @@ theorem stContractPt_holds (d : ℕ) : STContractPt d := by
   set mx : ℝ := max ‖loopFine d L W H z ![true, σ 1, !(σ 1)] ![a, b, a]‖
     ‖loopFine d L W H z ![false, σ 1, !(σ 1)] ![a, b, a]‖ with hmx
   set Y : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
-    Pm d L W a * G (σ 1) * Pm d L W b * G (!(σ 1)) * Pm d L W a with hYdef
+    ContractPt_Pm d L W a * G (σ 1) * ContractPt_Pm d L W b * G (!(σ 1)) * ContractPt_Pm d L W a with hYdef
   have hY : ∀ s : Bool, ‖(G s * Y).trace‖ =
       w ^ 3 * ‖loopFine d L W H z ![s, σ 1, !(σ 1)] ![a, b, a]‖ := by
     intro s

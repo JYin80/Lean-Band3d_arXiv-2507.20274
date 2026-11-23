@@ -3,9 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.GridGoodGen
-import RBM3D.Chain.GridAssemblyGen
-import RBM3D.Induction.AzumaProxyN2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Chain.GridAssemblyGen
+public import RBM3D.Induction.AzumaProxyN2
+import all RBM3D.Induction.AzumaProxyN2
+import all RBM3D.Chain.GridAssemblyGen
+
+@[expose] public section
 
 /-!
 # The Azuma proxies and the `Y` moments over the carrier

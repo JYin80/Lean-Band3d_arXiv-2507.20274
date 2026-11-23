@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWSymm
-import RBM3D.Graph.BAAtomic
-import RBM3D.Graph.BAExpandW
-import RBM3D.BA.CouplingWindow
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.LWSymm
+public import RBM3D.Graph.BAAtomic
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.BA.CouplingWindow
+import all RBM3D.Graph.BAExpandW
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.setOption false

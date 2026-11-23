@@ -3,15 +3,26 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistGrid2
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.GreenSchur
-import RBM3D.Path.DifREP2
-import RBM3D.Path.StepDecompLoop
-import RBM3D.Path.QVIdentity
-import RBM3D.Induction.StepDecompN
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Induction.AzumaProxyN2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistGrid2
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.GreenSchur
+public import RBM3D.Path.DifREP2
+public import RBM3D.Path.StepDecompLoop
+public import RBM3D.Path.QVIdentity
+public import RBM3D.Induction.StepDecompN
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Induction.AzumaProxyN2
+import all RBM3D.Path.DifREP2
+import all RBM3D.Path.StepDecompLoop
+import all RBM3D.Path.QVIdentity
+import all RBM3D.Induction.StepDecompN
+import all RBM3D.Induction.GridAssemblyN
+
+@[expose] public section
 
 /-!
 # The martingale tail of `twMart` with the QV `twEEk`

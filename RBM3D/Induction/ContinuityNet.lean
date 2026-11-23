@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Gauss.Domination
-import RBM3D.Defs.StochDomAt
-import RBM3D.Green.EntryCore
-import Mathlib.Probability.Moments.SubGaussian
+
+module
+
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Gauss.Domination
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Green.EntryCore
+public import Mathlib.Probability.Moments.SubGaussian
+
+@[expose] public section
 
 /-!
 # Continuity of the Green function in time, part 1: the net lift and its deterministic inputs

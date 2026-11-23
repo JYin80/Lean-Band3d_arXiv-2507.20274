@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.EKPins
-import RBM3D.BA.Prop6Path
-import RBM3D.Kernel.Evolution
-import RBM3D.Defs.RadialSum
+
+module
+
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.Prop6Path
+public import RBM3D.Kernel.Evolution
+public import RBM3D.Defs.RadialSum
+
+@[expose] public section
 
 /-!
 # Ingredients of `lem:sum_decay_nonzero` at the block Anderson model

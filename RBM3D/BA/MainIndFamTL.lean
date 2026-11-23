@@ -3,20 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.MainIndOutBA
-import RBM3D.BA.Step34BA
-import RBM3D.BA.Step1Prime
-import RBM3D.BA.TwistLoop
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.DecayLoopBA
-import RBM3D.BA.Step5CasesBA
-import RBM3D.BA.Step5IIITargets
-import RBM3D.Chain.Step5CasesGen
-import RBM3D.Chain.Step6Gen
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Graph.BATermHoldsB
-import RBM3D.Induction.MainIndRegimes
-import RBM3D.Induction.MainIndChain
+
+module
+
+public import RBM3D.BA.MainIndOutBA
+public import RBM3D.BA.Step34BA
+public import RBM3D.BA.Step1Prime
+public import RBM3D.BA.TwistLoop
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.DecayLoopBA
+public import RBM3D.BA.Step5CasesBA
+public import RBM3D.BA.Step5IIITargets
+public import RBM3D.Chain.Step5CasesGen
+public import RBM3D.Chain.Step6Gen
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Graph.BATermHoldsB
+public import RBM3D.Induction.MainIndRegimes
+public import RBM3D.Induction.MainIndChain
+
+@[expose] public section
 
 /-!
 # The block Anderson main induction per regime, in family form with TL2

@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEEntryGridBA
-import RBM3D.BA.GUEProcBA
-import RBM3D.BA.RandomLayerBGBA
-import RBM3D.Universality.GUEPhase.LLTransfer
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEEntryGridBA
+public import RBM3D.BA.GUEProcBA
+public import RBM3D.BA.RandomLayerBGBA
+public import RBM3D.Universality.GUEPhase.LLTransfer
+import all RBM3D.Universality.GUEPhase.LLTransfer
+
+@[expose] public section
 
 /-!
 # The `UNOULLk` transfer of the random layer of [YY_25, §7.2] at block Anderson

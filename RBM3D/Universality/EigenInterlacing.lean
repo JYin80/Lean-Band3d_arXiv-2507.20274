@@ -3,13 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
-import Mathlib.LinearAlgebra.Dimension.Constructions
-import Mathlib.Order.Interval.Finset.Fin
-import Mathlib.Analysis.InnerProductSpace.Adjoint
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-import RBM3D.Green.EntryCore
+
+module
+
+public import Mathlib.Analysis.Calculus.Deriv.Linear
+public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+public import Mathlib.LinearAlgebra.Dimension.Constructions
+public import Mathlib.Order.Interval.Finset.Fin
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import RBM3D.Green.EntryCore
+
+@[expose] public section
 
 /-!
 # Cauchy interlacing and a Stieltjes corollary

@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.Props4
+
+module
+
+public import RBM3D.Propagator.Props4
+
+@[expose] public section
 
 /-!
 # The one-index kernel of `𝒰_{v,w}` and the Duhamel telescope

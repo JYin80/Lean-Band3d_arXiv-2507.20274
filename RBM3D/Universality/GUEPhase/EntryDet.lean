@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.AuxCarrier
-import RBM3D.Green.EntryDom
-import RBM3D.Green.LDE
-import RBM3D.Loop.KLSumZero
+
+module
+
+public import RBM3D.Universality.GUEPhase.AuxCarrier
+public import RBM3D.Green.EntryDom
+public import RBM3D.Green.LDE
+public import RBM3D.Loop.KLSumZero
+
+@[expose] public section
 
 /-!
 # The deterministic entry layer of the GUE phase at the mixture profile, `d ≥ 3`

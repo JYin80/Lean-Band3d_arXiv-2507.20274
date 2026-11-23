@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NQGood1
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.StepDecompN
-import RBM3D.Induction.GridDuhamelN
-import RBM3D.Induction.Step2Events
-import RBM3D.Green.CondDom
+
+module
+
+public import RBM3D.Induction.NQGood1
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.StepDecompN
+public import RBM3D.Induction.GridDuhamelN
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Green.CondDom
+
+@[expose] public section
 
 /-!
 # The non-alternating good-set inputs, second half (`d ≥ 3`)

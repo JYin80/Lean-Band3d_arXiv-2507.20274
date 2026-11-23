@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2Gen
-import RBM3D.Induction.ContractPt
-import RBM3D.Induction.Step2Defs
+
+module
+
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.Induction.ContractPt
+public import RBM3D.Induction.Step2Defs
+
+@[expose] public section
 
 /-!
 # The martingale estimate, first estimate (3.33) `eq:MG_conclusion`

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Matrix.MeasurableSpace
-import Mathlib.Topology.Instances.Matrix
-import RBM3D.Green.EntryDom
-import RBM3D.Green.FlucVanish
-import RBM3D.Green.RowIndep
+
+module
+
+public import Mathlib.Analysis.Matrix.MeasurableSpace
+public import Mathlib.Topology.Instances.Matrix
+public import RBM3D.Green.EntryDom
+public import RBM3D.Green.FlucVanish
+public import RBM3D.Green.RowIndep
+
+@[expose] public section
 
 /-!
 # Fluctuation averaging, averaging layer, and the large deviation inputs of `lem_GbEXP` for the

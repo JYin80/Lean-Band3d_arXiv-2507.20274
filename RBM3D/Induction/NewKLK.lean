@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step2K2
-import RBM3D.Evolution.PropTInf
-import RBM3D.Loop.KLWard
-import RBM3D.Induction.ConArgDet
+
+module
+
+public import RBM3D.Induction.Step2K2
+public import RBM3D.Evolution.PropTInf
+public import RBM3D.Loop.KLWard
+public import RBM3D.Induction.ConArgDet
+
+@[expose] public section
 
 /-!
 # `lem:newKLK`: the statement `STNewKLK` proved

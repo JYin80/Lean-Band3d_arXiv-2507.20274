@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step1Boot
-import RBM3D.BA.GreenLDE
-import RBM3D.BA.Prop5Short
-import RBM3D.BA.Step1
-import RBM3D.BA.Step1Fam
+
+module
+
+public import RBM3D.BA.Step1Boot
+public import RBM3D.BA.GreenLDE
+public import RBM3D.BA.Prop5Short
+public import RBM3D.BA.Step1
+public import RBM3D.BA.Step1Fam
+
+@[expose] public section
 
 /-!
 # The block Anderson entrywise layer with the deterministic part

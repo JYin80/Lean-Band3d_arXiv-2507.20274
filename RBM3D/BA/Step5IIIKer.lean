@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step5Gen
-import RBM3D.Chain.Step2Kern
-import RBM3D.BA.Step2BA
-import RBM3D.BA.EKPins
-import RBM3D.BA.KKernel
-import RBM3D.BA.Prop5Short
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.GreenStab
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.TwistStep2
+
+module
+
+public import RBM3D.Chain.Step5Gen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.KKernel
+public import RBM3D.BA.Prop5Short
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.GreenStab
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.TwistStep2
+
+@[expose] public section
 
 /-!
 # The kernel of Step 5, case (iii), at the block Anderson model, part 1

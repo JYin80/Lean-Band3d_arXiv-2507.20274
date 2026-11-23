@@ -3,16 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Main.BandTerminal
-import RBM3D.BA.EMCTE2BA
-import RBM3D.BA.MATrLocalBA
-import RBM3D.BA.MADecolQUE
-import RBM3D.BA.GUEKPrim
-import RBM3D.BA.GUEHyp
-import RBM3D.BA.MainIndTermBA
-import RBM3D.Universality.NormBand
-import RBM3D.Universality.PinsKD
-import RBM3D.Universality.GUEPhase.RandomLayerBGD
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Main.BandTerminal
+public import RBM3D.BA.EMCTE2BA
+public import RBM3D.BA.MATrLocalBA
+public import RBM3D.BA.MADecolQUE
+public import RBM3D.BA.GUEKPrim
+public import RBM3D.BA.GUEHyp
+public import RBM3D.BA.MainIndTermBA
+public import RBM3D.Universality.NormBand
+public import RBM3D.Universality.PinsKD
+public import RBM3D.Universality.GUEPhase.RandomLayerBGD
+public import RBM3D.BA.UNPins
+import all RBM3D.BA.UNPins
+import all RBM3D.Universality.NormBand
+
+@[expose] public section
 
 /-!
 # The block Anderson end of the universality chain: Theorem 2.7 at every `d ≥ 3`
@@ -46,8 +55,10 @@ set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
 set_option linter.unusedVariables false
 
-open private UNPins_normBound_mono UNPins_psiI_rowsum UNPins_hg_3_10 from RBM3D.BA.UNPins
+open private UNPins_normBound_mono UNPins_psiI_rowsum
+  from RBM3D.BA.UNPins
 open private NormBand_eig_le NormBand_Xentry_le NormBand_tail_eventually NormBand_subgaussian from RBM3D.Universality.NormBand
+open RBM.Univ.BAInst (UNPins_hg_3_10)
 
 noncomputable section
 

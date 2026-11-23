@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.ExpInv
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Propagator.Prop6Hold
-import Mathlib.NumberTheory.Harmonic.Bounds
+
+module
+
+public import RBM3D.Evolution.ExpInv
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Propagator.Prop6Hold
+public import Mathlib.NumberTheory.Harmonic.Bounds
+
+@[expose] public section
 
 /-!
 # The mean part `𝔼 f^{far}` of the CLT step of case (i)
@@ -140,7 +145,7 @@ private theorem meanFar_card_shell (hd : 1 ≤ d) (k : ℕ) :
     _ = d * (2 * (2 * k + 1) ^ (d - 1)) := by simp
 
 /-- The constant of the shell count: `#{x : |x|_∞ = k} ≤ cs (k+1)^{d-1}`, `cs = 2 d 2^{d-1}`. -/
-private def meanFar_cs (d : ℕ) : ℝ := 2 * d * 2 ^ (d - 1)
+def meanFar_cs (d : ℕ) : ℝ := 2 * d * 2 ^ (d - 1)
 
 private theorem meanFar_cs_pos (hd : 1 ≤ d) : 0 < meanFar_cs d := by
   unfold meanFar_cs

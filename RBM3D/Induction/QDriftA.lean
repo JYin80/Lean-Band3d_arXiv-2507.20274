@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QGridA
-import RBM3D.Induction.QProxy
-import RBM3D.Chain.NQGood2Gen
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Induction.NQGood2
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.QopNorm
-import RBM3D.Evolution.SumDecayZero
+
+module
+
+public import RBM3D.Induction.QGridA
+public import RBM3D.Induction.QProxy
+public import RBM3D.Chain.NQGood2Gen
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Induction.NQGood2
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Evolution.SumDecayZero
+
+@[expose] public section
 
 /-!
 # The drift and the initial term of the `𝒬`-process, `d ≥ 3`

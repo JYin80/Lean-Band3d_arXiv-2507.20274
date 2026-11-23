@@ -3,11 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.ExpHier
-import RBM3D.Chain.HierDriftGen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Chain.CltGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.ExpHier
+public import RBM3D.Chain.HierDriftGen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Chain.CltGen
+public import RBM3D.Path.OneStep
+import all RBM3D.Induction.ExpHier
+import all RBM3D.Path.OneStep
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false
@@ -46,8 +55,10 @@ open private expHier_integral_slice from RBM3D.Induction.ExpHier
 
 open private OneStep_Hs OneStep_Hs_eq OneStep_Hs_herm OneStep_continuous_Hs OneStep_stein_coord
   OneStep_integrable_normX OneStep_integrable_coord_mul OneStep_J1_Xmat OneStep_hasDerivAt_Gsig
-  OneStep_hasDerivAt_w0 OneStep_w1_add OneStep_w1_smul OneStep_hasDerivAt_trace OneStep_blockMat_add_smul
-  OneStep_continuous_gloop OneStep_continuous_J1 OneStep_continuous_J2 from RBM3D.Path.OneStep
+  OneStep_hasDerivAt_w0 OneStep_hasDerivAt_trace OneStep_blockMat_add_smul
+  OneStep_continuous_gloop OneStep_continuous_J1 OneStep_continuous_J2
+  from RBM3D.Path.OneStep
+open RBM.Path (OneStep_w1_add OneStep_w1_smul)
 
 noncomputable section
 

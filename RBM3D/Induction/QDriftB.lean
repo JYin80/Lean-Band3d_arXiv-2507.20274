@@ -3,14 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QDriftA
-import RBM3D.Induction.QopDecay
-import RBM3D.Induction.B45
-import RBM3D.Induction.NQGood1
-import RBM3D.Induction.Step2Core
-import RBM3D.Kernel.PropT
-import RBM3D.Chain.Step5KerGen
-import RBM3D.Chain.B45Gen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QDriftA
+public import RBM3D.Induction.QopDecay
+public import RBM3D.Induction.B45
+public import RBM3D.Induction.NQGood1
+public import RBM3D.Induction.Step2Core
+public import RBM3D.Kernel.PropT
+public import RBM3D.Chain.Step5KerGen
+public import RBM3D.Chain.B45Gen
+import all RBM3D.Induction.QopDecay
+import all RBM3D.Chain.Step5KerGen
+
+@[expose] public section
 
 /-!
 # The decay class of the alternating drift, `d ≥ 3`

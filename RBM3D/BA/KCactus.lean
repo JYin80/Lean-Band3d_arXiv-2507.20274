@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KBase
-import RBM3D.Loop.KLCut
-import RBM3D.Loop.KLTree
-import RBM3D.Loop.Partition
+
+module
+
+public import RBM3D.BA.KBase
+public import RBM3D.Loop.KLCut
+public import RBM3D.Loop.KLTree
+public import RBM3D.Loop.Partition
+
+@[expose] public section
 
 /-!
 # The cactus of a crossing-free diagonal set and its value `Γ_M(F)`
@@ -184,12 +189,12 @@ variable {α β : Type*} [Finite α]
 
 /-- `u` is the cyclic next element of `s` for the keys `key` inside the fibre of `node`: the element of the fibre of `s`
 with the next larger key, or, if `s` has the largest key, the element with the smallest key. -/
-private def BAKCactus_IsSucc (node : α → β) (key : α → ℕ) (s u : α) : Prop :=
+def BAKCactus_IsSucc (node : α → β) (key : α → ℕ) (s u : α) : Prop :=
   node u = node s ∧
     ((key s < key u ∧ ∀ x, node x = node s → key s < key x → key u ≤ key x) ∨
       ((∀ x, node x = node s → key x ≤ key s) ∧ ∀ x, node x = node s → key u ≤ key x))
 
-private theorem BAKCactus_isSucc_exists (node : α → β) (key : α → ℕ) (s : α) :
+theorem BAKCactus_isSucc_exists (node : α → β) (key : α → ℕ) (s : α) :
     ∃ u, BAKCactus_IsSucc node key s u := by
   classical
   have := Fintype.ofFinite α
@@ -208,7 +213,7 @@ private theorem BAKCactus_isSucc_exists (node : α → β) (key : α → ℕ) (s
 
 /-- The cyclic next element, a total function (a choice; it is determined when the keys are injective on each fibre,
 `BAKCactus_IsSucc_eq`). -/
-private def BAKCactus_succ (node : α → β) (key : α → ℕ) (s : α) : α :=
+def BAKCactus_succ (node : α → β) (key : α → ℕ) (s : α) : α :=
   Classical.choose (BAKCactus_isSucc_exists node key s)
 
 private theorem BAKCactus_succ_spec (node : α → β) (key : α → ℕ) (s : α) :

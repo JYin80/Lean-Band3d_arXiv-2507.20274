@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Eq729A
-import RBM3D.Universality.GUEPhase.OneLoop
-import RBM3D.Universality.GUEPhase.KPrim
-import RBM3D.Universality.GUEPhase.BootstrapAt
-import RBM3D.Universality.GUEPhase.HypA
-import RBM3D.Universality.ZeroModeProfile
-import RBM3D.Main.ZTransfer
-import RBM3D.Main.QUEFromQDiff
-import RBM3D.Loop.KLFinal
-import RBM3D.Loop.KLTree
+
+module
+
+public import RBM3D.Universality.GUEPhase.Eq729A
+public import RBM3D.Universality.GUEPhase.OneLoop
+public import RBM3D.Universality.GUEPhase.KPrim
+public import RBM3D.Universality.GUEPhase.BootstrapAt
+public import RBM3D.Universality.GUEPhase.HypA
+public import RBM3D.Universality.ZeroModeProfile
+public import RBM3D.Main.ZTransfer
+public import RBM3D.Main.QUEFromQDiff
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Loop.KLTree
+
+@[expose] public section
 
 /-!
 # (7.29) at `t₀` on the GUE-phase grid, second half, and the (7.47) step, `d ≥ 3`

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Basic.Complex.Basic
-import Mathlib.LinearAlgebra.Matrix.Circulant
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.Matrix.Normed
-import RBM3D.Defs.Neighbours
+
+module
+
+public import Mathlib.Basic.Complex.Basic
+public import Mathlib.LinearAlgebra.Matrix.Circulant
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.Normed
+public import RBM3D.Defs.Neighbours
+
+@[expose] public section
 
 /-!
 # The block variance matrix `S^(B)(g)`

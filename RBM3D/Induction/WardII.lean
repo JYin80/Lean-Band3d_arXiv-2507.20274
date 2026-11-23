@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step5Cases
-import RBM3D.Induction.ConArgDet
-import RBM3D.Loop.KLWard
+
+module
+
+public import RBM3D.Induction.Step5Cases
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Loop.KLWard
+
+@[expose] public section
 
 /-!
 # The Ward term `(zYU1)` of case (ii) of Step 5

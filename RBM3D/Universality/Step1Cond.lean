@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEInvariance
-import RBM3D.Universality.EigenMeasurable
-import RBM3D.Universality.OU
-import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
-import Mathlib.Analysis.Calculus.MeanValue
+
+module
+
+public import RBM3D.Universality.GUEInvariance
+public import RBM3D.Universality.EigenMeasurable
+public import RBM3D.Universality.OU
+public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+public import Mathlib.Analysis.Calculus.MeanValue
+
+@[expose] public section
 
 /-!
 # Conditioning on the initial matrix, stationarity of `𝐇_∞`, rescaling and counting

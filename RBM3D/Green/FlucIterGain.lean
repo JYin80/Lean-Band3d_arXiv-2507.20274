@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.FlucIter
+
+module
+
+public import RBM3D.Green.FlucIter
+
+@[expose] public section
 
 /-!
 # Iterating the vanishing lemma: counting, the graded iteration and the moment bound, `d ≥ 3`

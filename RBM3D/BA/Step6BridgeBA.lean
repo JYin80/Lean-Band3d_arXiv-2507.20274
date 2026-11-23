@@ -3,16 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ExpAvgGen
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Chain.Step2CloseGen
-import RBM3D.BA.TwistPins
-import RBM3D.BA.CltFlowBA
-import RBM3D.BA.GreenCond2
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.SEforLnBA
-import RBM3D.BA.DecayLoopBA
-import RBM3D.Graph.BALWOut
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.ExpAvgGen
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Chain.Step2CloseGen
+public import RBM3D.BA.TwistPins
+public import RBM3D.BA.CltFlowBA
+public import RBM3D.BA.GreenCond2
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.DecayLoopBA
+public import RBM3D.Graph.BALWOut
+import all RBM3D.BA.TwistPins
+import all RBM3D.BA.CltFlowBA
+
+@[expose] public section
 
 /-!
 # Step 6 of `lem:main_ind` at the block Anderson tuple: the bridges

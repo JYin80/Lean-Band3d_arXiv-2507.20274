@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.LoopC2N
-import RBM3D.Induction.GridDuhamelN
-import RBM3D.Induction.QVN
-import RBM3D.Path.LoopStep
-import RBM3D.Path.StepDecomp
+
+module
+
+public import RBM3D.Induction.LoopC2N
+public import RBM3D.Induction.GridDuhamelN
+public import RBM3D.Induction.QVN
+public import RBM3D.Path.LoopStep
+public import RBM3D.Path.StepDecomp
+
+@[expose] public section
 
 /-!
 # The general-`n` one-step decomposition `ξ = Z + Y` of the loop observables (`d ≥ 3`)

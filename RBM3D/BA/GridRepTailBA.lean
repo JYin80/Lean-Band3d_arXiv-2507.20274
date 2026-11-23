@@ -3,15 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.GridRepTailGen2
-import RBM3D.BA.GridMartBA
-import RBM3D.BA.TwistKer
-import RBM3D.BA.TwistGridWTail
-import RBM3D.BA.TwistGridWTail2
-import RBM3D.BA.TwistGridTail2
-import RBM3D.BA.TwistGridRem2
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.EMn2BA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.GridRepTailGen2
+public import RBM3D.BA.GridMartBA
+public import RBM3D.BA.TwistKer
+public import RBM3D.BA.TwistGridWTail
+public import RBM3D.BA.TwistGridWTail2
+public import RBM3D.BA.TwistGridTail2
+public import RBM3D.BA.TwistGridRem2
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.EMn2BA
+import all RBM3D.BA.GridMartBA
+import all RBM3D.BA.TwistKer
+import all RBM3D.BA.TwistGridWTail
+
+@[expose] public section
 
 /-!
 # The two-slot BA tail and the full loop-length-2 grid statement
@@ -36,9 +45,14 @@ set_option linter.unusedVariables false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-open private GridMartBA_Q1 GridMartBA_Q2 GridMartBA_Phi GridMartBA_Phi_add_le GridMartBA_chain GridMartBA_twDerM_eq
-  GridMartBA_Q1_conjTranspose GridMartBA_Q2_conjTranspose GridMartBA_Hpath_herm GridMartBA_twL2M_diag from RBM3D.BA.GridMartBA
-open private TwistKer_fE TwistKer_trace_sandwich TwistKer_loopFine_eq from RBM3D.BA.TwistKer
+open private GridMartBA_Phi_add_le GridMartBA_chain GridMartBA_twDerM_eq
+  GridMartBA_Q1_conjTranspose GridMartBA_Q2_conjTranspose GridMartBA_Hpath_herm
+  GridMartBA_twL2M_diag
+  from RBM3D.BA.GridMartBA
+open RBM.BA (GridMartBA_Q1 GridMartBA_Q2 GridMartBA_Phi)
+open private TwistKer_trace_sandwich TwistKer_loopFine_eq
+  from RBM3D.BA.TwistKer
+open RBM.BA (TwistKer_fE)
 open private TwistGridWTail_card_blk TwistGridWTail_norm_sum_sum_le TwistGridWTail_tri TwistGridWTail_wd_sq
   TwistGridWTail_norm_sum_wS_mul_le TwistGridWTail_linTrVar_le TwistGridWTail_chg_eq_Gres TwistGridWTail_linTr_neg_I_smul
   TwistGridWTail_sum4_swap from RBM3D.BA.TwistGridWTail

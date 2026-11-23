@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLTreeDeriv
-import RBM3D.Loop.Unique
-import RBM3D.Propagator.Prop6Hold
+
+module
+
+public import RBM3D.Loop.KLTreeDeriv
+public import RBM3D.Loop.Unique
+public import RBM3D.Propagator.Prop6Hold
+
+@[expose] public section
 
 /-!
 # Rotation and translation invariance of `𝒦`, `d ≥ 3`

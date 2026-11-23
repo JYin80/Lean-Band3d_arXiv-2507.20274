@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Apriori
-import RBM3D.Universality.GreenCorr
-import RBM3D.Universality.EigenMeasurable
-import RBM3D.Universality.PinsK
-import RBM3D.Universality.PinsC2
-import RBM3D.Universality.GUETranslation
-import RBM3D.Path.Walk
-import RBM3D.Universality.EMCTE2
-import RBM3D.Universality.Uyw
+
+module
+
+public import RBM3D.Universality.Apriori
+public import RBM3D.Universality.GreenCorr
+public import RBM3D.Universality.EigenMeasurable
+public import RBM3D.Universality.PinsK
+public import RBM3D.Universality.PinsC2
+public import RBM3D.Universality.GUETranslation
+public import RBM3D.Path.Walk
+public import RBM3D.Universality.EMCTE2
+public import RBM3D.Universality.Uyw
+
+@[expose] public section
 
 /-!
 # The arithmetic statements of the bulk-universality chain

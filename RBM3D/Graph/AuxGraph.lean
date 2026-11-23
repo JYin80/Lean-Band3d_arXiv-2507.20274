@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LocalRegular2
-import RBM3D.Graph.LWSizeClaim
+
+module
+
+public import RBM3D.Graph.LocalRegular2
+public import RBM3D.Graph.LWSizeClaim
+
+@[expose] public section
 
 /-!
 # `GtoAG`, the deterministic part

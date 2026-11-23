@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.ConArg
-import RBM3D.BA.Step1Trivial
-import RBM3D.BA.CouplingWindow
-import RBM3D.BA.FlowPins
-import RBM3D.Induction.Step1Setup
+
+module
+
+public import RBM3D.BA.ConArg
+public import RBM3D.BA.Step1Trivial
+public import RBM3D.BA.CouplingWindow
+public import RBM3D.BA.FlowPins
+public import RBM3D.Induction.Step1Setup
+
+@[expose] public section
 
 /-!
 # Event forms of `lem_GbEXP_BA`, `BABootstrap'` and the Step 1 bridging

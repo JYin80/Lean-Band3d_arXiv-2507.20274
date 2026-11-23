@@ -3,8 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14d
-import RBM3D.Graph.BAAuxGraph2B
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAExp14d
+public import RBM3D.Graph.BAAuxGraph2B
+import all RBM3D.Graph.BAExp14d
+
+@[expose] public section
 
 /-!
 # Smallness of `B`, entry law, pathwise bound, `n_M = 1` leaf bound (part B)

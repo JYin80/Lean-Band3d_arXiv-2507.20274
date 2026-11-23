@@ -3,7 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QBudgetA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QBudgetA
+public import RBM3D.Induction.B45
+import all RBM3D.Induction.B45
+
+@[expose] public section
 
 /-!
 # The linear drift level of the alternating chain, eventual absorptions

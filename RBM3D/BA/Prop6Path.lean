@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Prop5
-import RBM3D.BA.PropUnit
-import RBM3D.BA.Prop5Short
-import RBM3D.BA.FlowPins
+
+module
+
+public import RBM3D.BA.Prop5
+public import RBM3D.BA.PropUnit
+public import RBM3D.BA.Prop5Short
+public import RBM3D.BA.FlowPins
+
+@[expose] public section
 
 /-!
 # Properties 5-8 of Lemma 2.19 (`lem_propTH`) for `Θ_BA`, all charge pairs, and the bundle

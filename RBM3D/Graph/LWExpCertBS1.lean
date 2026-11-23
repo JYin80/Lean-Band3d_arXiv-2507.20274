@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWExpCertB
-import RBM3D.Graph.LWExpCertBS0
+
+module
+
+public import RBM3D.Graph.LWExpCertB
+public import RBM3D.Graph.LWExpCertBS0
+
+@[expose] public section
 
 /-!
 # The kernel certificate for `LWG5Graph false true` (chunks) and `cert_all'`

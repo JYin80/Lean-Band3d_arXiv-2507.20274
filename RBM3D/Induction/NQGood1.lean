@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.GridEnvelopeN
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Induction.AzumaProxyN
-import RBM3D.Induction.AzumaProxyN2
-import RBM3D.Induction.Step2Defs
-import RBM3D.Induction.DecayLoopB
-import RBM3D.Induction.LoopC2N
-import RBM3D.Induction.GridDriftN
-import RBM3D.Evolution.SumDecay
-import Mathlib.Analysis.SpecialFunctions.Log.Base
+
+module
+
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.GridEnvelopeN
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Induction.AzumaProxyN
+public import RBM3D.Induction.AzumaProxyN2
+public import RBM3D.Induction.Step2Defs
+public import RBM3D.Induction.DecayLoopB
+public import RBM3D.Induction.LoopC2N
+public import RBM3D.Induction.GridDriftN
+public import RBM3D.Evolution.SumDecay
+public import Mathlib.Analysis.SpecialFunctions.Log.Base
+
+@[expose] public section
 
 /-!
 # The non-alternating good-set inputs, first half (`d ≥ 3`)

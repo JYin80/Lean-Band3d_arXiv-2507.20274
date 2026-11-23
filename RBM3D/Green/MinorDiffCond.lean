@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.MinorDiff
-import RBM3D.Green.MinorGoodLe
-import RBM3D.Green.CondDom
+
+module
+
+public import RBM3D.Green.MinorDiff
+public import RBM3D.Green.MinorGoodLe
+public import RBM3D.Green.CondDom
+
+@[expose] public section
 
 /-!
 # Conditionalizing the minor-difference gain on the good event, `d ≥ 3`

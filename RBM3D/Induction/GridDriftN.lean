@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.LoopGenN
-import RBM3D.Induction.HierAlgebra
-import RBM3D.Induction.GridDuhamelN
-import RBM3D.Induction.Split
-import RBM3D.Path.LoopStep
-import RBM3D.Path.UBounds
-import RBM3D.Path.Stop
+
+module
+
+public import RBM3D.Induction.LoopGenN
+public import RBM3D.Induction.HierAlgebra
+public import RBM3D.Induction.GridDuhamelN
+public import RBM3D.Induction.Split
+public import RBM3D.Path.LoopStep
+public import RBM3D.Path.UBounds
+public import RBM3D.Path.Stop
+
+@[expose] public section
 
 /-!
 # One grid step of (3.8) `eq_L-Keee` for general `n` and all `σ` (`d ≥ 3`)

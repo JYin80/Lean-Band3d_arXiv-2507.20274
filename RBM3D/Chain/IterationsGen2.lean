@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.IterationsGen
-import RBM3D.Induction.IterationsB
-import RBM3D.Chain.NQEndFlowGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.IterationsGen
+public import RBM3D.Induction.IterationsB
+public import RBM3D.Chain.NQEndFlowGen
+import all RBM3D.Induction.IterationsB
+
+@[expose] public section
 
 /-!
 # `lem:iterations` over the flow carrier, second part

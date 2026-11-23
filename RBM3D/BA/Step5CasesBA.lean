@@ -3,15 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step5KerBA
-import RBM3D.BA.CltFlowBA
-import RBM3D.BA.SEforLnBA
-import RBM3D.BA.GridMartBA
-import RBM3D.BA.GridRepTailBA
-import RBM3D.Graph.BATermHoldsB
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.Chain.IniTermIGen2
-import RBM3D.Induction.DuhamelII
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step5KerBA
+public import RBM3D.BA.CltFlowBA
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.GridMartBA
+public import RBM3D.BA.GridRepTailBA
+public import RBM3D.Graph.BATermHoldsB
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.Chain.IniTermIGen2
+public import RBM3D.Induction.DuhamelII
+import all RBM3D.BA.SEforLnBA
+
+@[expose] public section
 
 /-!
 # The Ward bridge, the six ingredient statements and Step 5 in cases (i), (ii), (iv) at BA

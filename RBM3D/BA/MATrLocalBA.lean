@@ -3,10 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.MAPins
-import RBM3D.BA.MReg
-import RBM3D.Main.BUnivHolds
-import RBM3D.Universality.PinsC2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.MAPins
+public import RBM3D.BA.MReg
+public import RBM3D.Main.BUnivHolds
+public import RBM3D.Universality.PinsC2
+import all RBM3D.Main.BUnivHolds
+import all RBM3D.Universality.PinsC2
+
+@[expose] public section
 
 /-!
 # The tracial local laws of the block Anderson model from `UNLocAvgBAAt d`

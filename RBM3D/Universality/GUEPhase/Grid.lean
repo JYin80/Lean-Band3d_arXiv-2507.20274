@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.ZeroModeProfile
+
+module
+
+public import RBM3D.Universality.ZeroModeProfile
+
+@[expose] public section
 
 /-!
 # The GUE-phase grid carrier, path and one-time laws (7.25)/(7.26), `d ≥ 3`
@@ -226,7 +231,7 @@ section MixedGrid
 
 variable {sz}
 
-private def GUEPhaseGrid_mixedStepMeasure (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) :
+def GUEPhaseGrid_mixedStepMeasure (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) :
     ℕ → Measure (Sizes.SeqΩ sz)
   | 0 => Measure.infinitePi fun c => gaussianReal 0 (v0 c)
   | _ + 1 => Measure.infinitePi fun c => gaussianReal 0 (v1 c)

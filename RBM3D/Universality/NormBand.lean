@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Pins
-import RBM3D.Gauss.FineModel
-import Mathlib.Probability.Moments.SubGaussian
-import Mathlib.Probability.Distributions.Gaussian.Real
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+module
+
+public import RBM3D.Universality.Pins
+public import RBM3D.Gauss.FineModel
+public import Mathlib.Probability.Moments.SubGaussian
+public import Mathlib.Probability.Distributions.Gaussian.Real
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+@[expose] public section
 
 /-!
 # The band-model statement `UNNormBandRow`, `d ≥ 3`

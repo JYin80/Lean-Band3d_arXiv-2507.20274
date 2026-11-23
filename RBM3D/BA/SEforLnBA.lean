@@ -3,15 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.SEforLnGen2
-import RBM3D.Chain.DecayGenTw
-import RBM3D.Chain.Step2IterGen
-import RBM3D.BA.KDecayBA
-import RBM3D.BA.KBound
-import RBM3D.BA.KInduct
-import RBM3D.BA.KWard
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.Step2IterBA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.SEforLnGen2
+public import RBM3D.Chain.DecayGenTw
+public import RBM3D.Chain.Step2IterGen
+public import RBM3D.BA.KDecayBA
+public import RBM3D.BA.KBound
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KWard
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.Step2IterBA
+import all RBM3D.BA.KBound
+
+@[expose] public section
 
 /-!
 # `lem:SEforLn` at the block Anderson carrier

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.Basic
-import Mathlib.Analysis.Calculus.Deriv.Basic
-import Mathlib.Analysis.Calculus.Deriv.Slope
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Analysis.Complex.RealDeriv
-import Mathlib.Topology.Instances.Matrix
+
+module
+
+public import RBM3D.Propagator.Basic
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Complex.RealDeriv
+public import Mathlib.Topology.Instances.Matrix
+
+@[expose] public section
 
 /-!
 # The derivative of the propagator

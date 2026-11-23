@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14aB
-import RBM3D.BA.TwistPins
+
+module
+
+public import RBM3D.Graph.BAExp14aB
+public import RBM3D.BA.TwistPins
+
+@[expose] public section
 
 /-!
 # The twisted and graph families of `lem:LWterm_EXP` at BA (part A): statements, block algebra

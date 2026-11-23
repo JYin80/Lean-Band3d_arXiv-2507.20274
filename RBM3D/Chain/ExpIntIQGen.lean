@@ -3,13 +3,30 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ExpIntIGen
-import RBM3D.Chain.QopDecayGen
-import RBM3D.Induction.ExpIntIQ
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.B45Gen
-import RBM3D.Chain.KDecayGen
-import RBM3D.Chain.GridDuhamelGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.ExpIntIGen
+public import RBM3D.Chain.QopDecayGen
+public import RBM3D.Induction.ExpIntIQ
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.B45Gen
+public import RBM3D.Chain.KDecayGen
+public import RBM3D.Chain.GridDuhamelGen
+public import RBM3D.Induction.ExpIniI
+public import RBM3D.Chain.ExpIniIGen
+public import RBM3D.Chain.ExpIntIIGen
+public import RBM3D.Chain.Step5CasesGen
+public import RBM3D.Chain.Step5KerGen
+import all RBM3D.Induction.ExpIntIQ
+import all RBM3D.Induction.ExpIniI
+import all RBM3D.Chain.ExpIniIGen
+import all RBM3D.Chain.ExpIntIIGen
+import all RBM3D.Chain.Step5CasesGen
+import all RBM3D.Chain.Step5KerGen
+
+@[expose] public section
 
 /-!
 # The `𝒬` conjunct of the integrated estimate of regime (i) over the carrier

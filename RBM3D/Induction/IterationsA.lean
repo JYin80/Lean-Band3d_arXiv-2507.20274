@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.Split
+
+module
+
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.Split
+
+@[expose] public section
 
 /-!
 # The `Ψ`-calculus, the chain bound and the scale facts of Lemma 4.11 (`lem:iterations`)

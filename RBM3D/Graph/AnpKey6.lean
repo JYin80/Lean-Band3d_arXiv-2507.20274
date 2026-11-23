@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AnpKey5
-import Mathlib.Data.Fintype.Pi
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Algebra.BigOperators.Group.List.Basic
-import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
-import Mathlib.Algebra.Order.Ring.Unbundled.Basic
+
+module
+
+public import RBM3D.Graph.AnpKey5
+public import Mathlib.Data.Fintype.Pi
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.BigOperators.Group.List.Basic
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+public import Mathlib.Algebra.Order.Ring.Unbundled.Basic
+
+@[expose] public section
 
 /-!
 # `lem:Anp_key_gh`: the deterministic form for every nested graph, and `LWAnp`
@@ -575,8 +580,6 @@ theorem anpKey6_nSolid_card (Γ : NGraph p q) :
   unfold NGraph.nSolid
   rw [← List.countP_eq_length_filter, anpKey5_countP_eq_card]
   congr 1
-  ext k
-  simp
 
 theorem anpKey6_rest_length (Γ : NGraph p q) (hN : Γ.IsNested) (f : ∀ j : Fin p, Fin (Γ.path j).length) :
     (anpKey5_rest Γ (anpKey6_M Γ f)).length + Γ.nngh = Γ.nSolid := by

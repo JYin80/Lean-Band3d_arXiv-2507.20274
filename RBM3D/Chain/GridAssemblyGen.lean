@@ -3,11 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.GridDuhamelGen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Chain.GridRepTailGen2
-import RBM3D.Chain.DecayGen
-import RBM3D.Induction.GridAssemblyN
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.GridDuhamelGen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Chain.GridRepTailGen2
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Induction.GridAssemblyN
+import all RBM3D.Induction.GridAssemblyN
+
+@[expose] public section
 
 /-!
 # The assembly of the stopped grid walk over the carrier

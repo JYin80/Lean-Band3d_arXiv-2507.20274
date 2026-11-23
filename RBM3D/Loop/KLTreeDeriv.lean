@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Data.List.GetD
-import RBM3D.Loop.KLCut
+
+module
+
+public import Mathlib.Data.List.GetD
+public import RBM3D.Loop.KLCut
+
+@[expose] public section
 
 /-!
 # The tree sum `𝒦` solves `Def_Ktza`, `d ≥ 3`

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Calculus.Deriv.Add
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import Mathlib.Analysis.Analytic.Constructions
-import RBM3D.Universality.Pins
-import RBM3D.Green.FlucVanish
-import RBM3D.Induction.ConArgDet
+
+module
+
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.FDeriv.Mul
+public import Mathlib.Analysis.Analytic.Constructions
+public import RBM3D.Universality.Pins
+public import RBM3D.Green.FlucVanish
+public import RBM3D.Induction.ConArgDet
+
+@[expose] public section
 
 /-!
 # Pointwise Hessian structure for the centered-variance Green comparison

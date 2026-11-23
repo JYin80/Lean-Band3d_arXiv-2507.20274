@@ -3,12 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.ExpIntI
-import RBM3D.Chain.ExpIniIGen
-import RBM3D.Chain.ExpWardIGen
-import RBM3D.Chain.ExpIntIIGen
-import RBM3D.Chain.ExpAvgGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.ExpIntI
+public import RBM3D.Chain.ExpIniIGen
+public import RBM3D.Chain.ExpWardIGen
+public import RBM3D.Chain.ExpIntIIGen
+public import RBM3D.Chain.ExpAvgGen
+public import RBM3D.Chain.Step5CasesGen
+import all RBM3D.Induction.ExpIntI
+import all RBM3D.Chain.ExpIntIIGen
+import all RBM3D.Chain.Step5CasesGen
+
+@[expose] public section
 
 /-!
 # The integrated estimate of regime (i) and the consumer over the carrier

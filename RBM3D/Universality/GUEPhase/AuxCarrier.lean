@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.PinsK
-import RBM3D.Universality.OU
-import RBM3D.Green.IBP
-import RBM3D.Induction.ConArgDet
-import RBM3D.Gauss.Domination
+
+module
+
+public import RBM3D.Universality.PinsK
+public import RBM3D.Universality.OU
+public import RBM3D.Green.IBP
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Gauss.Domination
+
+@[expose] public section
 
 /-!
 # The auxiliary carrier and the row-chaos (LDE) layer of the GUE phase

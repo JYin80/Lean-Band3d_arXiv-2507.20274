@@ -3,9 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step5Gen
-import RBM3D.Chain.NewKLKGen
-import RBM3D.Induction.NewKLKL
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step5Gen
+public import RBM3D.Chain.NewKLKGen
+public import RBM3D.Induction.NewKLKL
+import all RBM3D.Induction.NewKLKL
+import all RBM3D.Chain.NewKLKGen
+
+@[expose] public section
 
 /-!
 # Bound 2 at `ℓ = L` for a generic kernel

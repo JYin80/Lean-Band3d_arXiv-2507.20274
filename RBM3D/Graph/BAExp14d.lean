@@ -3,10 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAAtom2
-import RBM3D.Graph.BAExp14aB
-import RBM3D.Graph.BAG5Leaf
-import RBM3D.Graph.LWExpTerm3
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAAtom2
+public import RBM3D.Graph.BAExp14aB
+public import RBM3D.Graph.BAG5Leaf
+public import RBM3D.Graph.LWExpTerm3
+public import RBM3D.Graph.BASizeClaim
+import all RBM3D.Graph.LWExpTerm3
+import all RBM3D.Graph.BASizeClaim
+
+@[expose] public section
 
 /-!
 # The `t`-scaling, `GtoAG` at the rescaled kernels without `hext`, and the `q ≤ 1` bound (part A)

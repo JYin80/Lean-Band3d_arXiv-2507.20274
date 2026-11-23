@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWPins
-import RBM3D.Induction.ExpAvg
-import RBM3D.Induction.ConArgDet
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Graph.LWPins
+public import RBM3D.Induction.ExpAvg
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # `lem:LWterm_EXP`: the reduction to the cut terms

@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ExpEtermsA
-import RBM3D.Induction.ExpAvg
-import RBM3D.Induction.ExpIniI
-import RBM3D.Induction.DecayLoopB
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.KDecay
-import RBM3D.Loop.KLFinal
-import RBM3D.Path.Walk
+
+module
+
+public import RBM3D.Induction.ExpEtermsA
+public import RBM3D.Induction.ExpAvg
+public import RBM3D.Induction.ExpIniI
+public import RBM3D.Induction.DecayLoopB
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.KDecay
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Path.Walk
+
+@[expose] public section
 
 /-!
 # The expected drift estimates: the statements `STExpDriftLo` and `STExpDriftDecay`

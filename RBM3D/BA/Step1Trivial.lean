@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.CouplingWindow
-import RBM3D.BA.FlowPins
-import RBM3D.Induction.Step1Setup
-import Mathlib.LinearAlgebra.Matrix.Hermitian
-import Mathlib.Analysis.Real.Sqrt
+
+module
+
+public import RBM3D.BA.CouplingWindow
+public import RBM3D.BA.FlowPins
+public import RBM3D.Induction.Step1Setup
+public import Mathlib.LinearAlgebra.Matrix.Hermitian
+public import Mathlib.Analysis.Real.Sqrt
+
+@[expose] public section
 
 /-!
 # `(lRB1)` is deterministic at `s₀ = 1 - c₁` for the members of `Fam(0)`

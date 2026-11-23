@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KPure
-import RBM3D.BA.KWard
-import RBM3D.BA.KInduct
-import RBM3D.BA.KMolecule
-import RBM3D.Loop.KLMolecule
+
+module
+
+public import RBM3D.BA.KPure
+public import RBM3D.BA.KWard
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KMolecule
+public import RBM3D.Loop.KLMolecule
+
+@[expose] public section
 
 /-!
 # Ward bound for sums of `𝒦` and the signed sum-zero of `BASig`

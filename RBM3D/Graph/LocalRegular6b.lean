@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LocalRegular6a
+
+module
+
+public import RBM3D.Graph.LocalRegular6a
+
+@[expose] public section
 
 /-!
 # `lem:localregular`, property (6), part 2: composition and the first primitives
@@ -679,7 +684,7 @@ def scostLL_merge (s : Setoid V) (u z : V) : Setoid V where
 private theorem scostLL_merge_rel (s : Setoid V) (u z a b : V) :
     scostLL_merge s u z a b ↔ s a b ∨ (s a u ∧ s z b) ∨ (s a z ∧ s u b) := Iff.rfl
 
-private theorem scostLL_le_merge (s : Setoid V) (u z : V) {a b : V} (h : s a b) : scostLL_merge s u z a b := Or.inl h
+theorem scostLL_le_merge (s : Setoid V) (u z : V) {a b : V} (h : s a b) : scostLL_merge s u z a b := Or.inl h
 
 /-- a vertex is related to `u` in the merge iff it is related to `u` or to `z` -/
 private theorem scostLL_merge_u (s : Setoid V) (u z w : V) : scostLL_merge s u z w u ↔ s w u ∨ s w z := by

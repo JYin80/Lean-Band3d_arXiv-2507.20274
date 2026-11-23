@@ -3,8 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAWeightOp
-import RBM3D.Graph.BAGGExp
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAGGExp
+public import RBM3D.Graph.BAExpandWOrd
+import all RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.BAExpandWOrd
+
+@[expose] public section
 
 /-!
 # The GG expansion (B.20) as a graph operation and the frame identity

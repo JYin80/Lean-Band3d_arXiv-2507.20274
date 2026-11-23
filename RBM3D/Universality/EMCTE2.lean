@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.OUGenerator
-import RBM3D.Universality.OUContraction
-import RBM3D.Universality.OUHessian
-import RBM3D.Universality.PinsK
-import RBM3D.Universality.InjSum
-import RBM3D.Path.Walk
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Induction.Split
+
+module
+
+public import RBM3D.Universality.OUGenerator
+public import RBM3D.Universality.OUContraction
+public import RBM3D.Universality.OUHessian
+public import RBM3D.Universality.PinsK
+public import RBM3D.Universality.InjSum
+public import RBM3D.Path.Walk
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Induction.Split
+
+@[expose] public section
 
 /-!
 # The weighted [DYYY25, (2.21)] from the OU generator identity

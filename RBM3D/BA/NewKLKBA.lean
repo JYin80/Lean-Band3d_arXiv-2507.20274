@@ -3,16 +3,26 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.NewKLKGen
-import RBM3D.Chain.Step2Kern
-import RBM3D.BA.Step1Fam
-import RBM3D.BA.Step2BA
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.KSolve
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.Ward
-import RBM3D.BA.EKPins
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.NewKLKGen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.BA.Step1Fam
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.Ward
+public import RBM3D.BA.EKPins
+public import RBM3D.Induction.NewKLK
+public import RBM3D.Induction.Step2K2
+import all RBM3D.Induction.NewKLK
+import all RBM3D.Induction.Step2K2
+
+@[expose] public section
 
 /-!
 # Lemma 3.9 (`lem:newKLK`) and the `𝒦^{(2)}` decay at the block Anderson carrier

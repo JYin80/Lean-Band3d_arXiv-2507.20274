@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Endpoints
-import RBM3D.Propagator.Prop6Hold
-import RBM3D.Propagator.Pins
-import RBM3D.Green.EntryCore
-import RBM3D.Induction.ContinuityNet
+
+module
+
+public import RBM3D.Endpoints
+public import RBM3D.Propagator.Prop6Hold
+public import RBM3D.Propagator.Pins
+public import RBM3D.Green.EntryCore
+public import RBM3D.Induction.ContinuityNet
+
+@[expose] public section
 
 /-!
 # The carrier side of `QUE` from `QDiff`: spectral bound, trace algebra, core, events

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step2IterBA
-import RBM3D.BA.GridMartBA
-import RBM3D.BA.Step1Prime
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.GreenOff
+
+module
+
+public import RBM3D.BA.Step2IterBA
+public import RBM3D.BA.GridMartBA
+public import RBM3D.BA.Step1Prime
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.GreenOff
+
+@[expose] public section
 
 /-!
 # The Step 2 iteration at the block Anderson carrier, second half

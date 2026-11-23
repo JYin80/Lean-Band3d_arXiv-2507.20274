@@ -3,11 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEHypABA
-import RBM3D.BA.GUEEntryGridBA
-import RBM3D.BA.GreenLocal
-import RBM3D.Universality.GUEPhase.HypB
-import RBM3D.Universality.GUEPhase.BoundsA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEHypABA
+public import RBM3D.BA.GUEEntryGridBA
+public import RBM3D.BA.GreenLocal
+public import RBM3D.Universality.GUEPhase.HypB
+public import RBM3D.Universality.GUEPhase.BoundsA
+public import RBM3D.Universality.GUEPhase.HypA
+import all RBM3D.Universality.GUEPhase.HypB
+import all RBM3D.Universality.GUEPhase.HypA
+import all RBM3D.BA.GUEEntryGridBA
+import all RBM3D.Universality.GUEPhase.BoundsA
+
+@[expose] public section
 
 /-!
 # The pathwise assembly and the unfreezing on the BA grid
@@ -532,7 +543,7 @@ private theorem HypBBA_path (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ
     refine ContinuousOn.mul (ContinuousOn.add ?_ (gueDprocBA_continuousOn sz g E t1 t0 m K δ Kt n _ ω))
       (gueDprocBA_continuousOn sz g E t1 t0 m K δ Kt n _ ω)
     refine ContinuousOn.pow (ContinuousOn.inv₀ (continuous_const.mul hηc).continuousOn
-      fun u hu => (mul_pos hS0 (hηpos u hu.2)).ne') _
+      fun u (hu : u ∈ Set.Icc (t1 n) (t0 n)) => (mul_pos hS0 (hηpos u hu.2)).ne') _
   -- the bilinear drift, `Cf = 3 m² c S`
   have hF : ∀ j < σ, ∀ x : (Fin l → Bool) × (Fin l → Zd d (sz.L n)),
       ‖primRhsGUE d (sz.L n) (sz.W n) (loopL d (sz.L n) (sz.W n)

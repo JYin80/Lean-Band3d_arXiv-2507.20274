@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.OU
-import RBM3D.Endpoints
-import RBM3D.Propagator.Prop6Hold
-import RBM3D.Green.IBP
-import RBM3D.Path.Walk
-import RBM3D.Induction.Split
+
+module
+
+public import RBM3D.Universality.OU
+public import RBM3D.Endpoints
+public import RBM3D.Propagator.Prop6Hold
+public import RBM3D.Green.IBP
+public import RBM3D.Path.Walk
+public import RBM3D.Induction.Split
+
+@[expose] public section
 
 /-!
 # The zero-mode profile `S̃ = (1 - ζ) S + ζ N⁻¹ J` and the interface of the GUE-phase layer

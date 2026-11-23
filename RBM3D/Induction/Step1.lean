@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step1Setup
-import RBM3D.Induction.Continuity
+
+module
+
+public import RBM3D.Induction.Step1Setup
+public import RBM3D.Induction.Continuity
+
+@[expose] public section
 
 /-!
 # Step 1 of `lem:main_ind`, second part: the weak-law step, the net, the bootstrap, `step1`

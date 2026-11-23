@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Defs.Sizes
-import Mathlib.Probability.ProductMeasure
-import Mathlib.Probability.Distributions.Gaussian.Real
-import Mathlib.Analysis.CStarAlgebra.Matrix
+
+module
+
+public import RBM3D.Defs.Sizes
+public import Mathlib.Probability.ProductMeasure
+public import Mathlib.Probability.Distributions.Gaussian.Real
+public import Mathlib.Analysis.CStarAlgebra.Matrix
+
+@[expose] public section
 
 /-!
 # The Gaussian band model on the fine lattice `Z_{WL}^d`, at one size and along a sequence

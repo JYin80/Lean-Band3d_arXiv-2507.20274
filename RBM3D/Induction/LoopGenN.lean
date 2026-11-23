@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.HierarchyN
-import RBM3D.Hierarchy.ContractionSecondLoop
-import RBM3D.Hierarchy.ContractionBasic
-import RBM3D.Gauss.LoopCoordinate
-import RBM3D.Gauss.LoopGenerator
+
+module
+
+public import RBM3D.Induction.HierarchyN
+public import RBM3D.Hierarchy.ContractionSecondLoop
+public import RBM3D.Hierarchy.ContractionBasic
+public import RBM3D.Gauss.LoopCoordinate
+public import RBM3D.Gauss.LoopGenerator
+
+@[expose] public section
 
 /-!
 # The general-`n` loop generator

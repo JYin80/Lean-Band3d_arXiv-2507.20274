@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Grid
-import RBM3D.Gauss.SteinMatrix
-import RBM3D.Green.Stability
-import RBM3D.Hierarchy.ContractionSecondLoop
-import RBM3D.Gauss.LoopFlowStein
-import RBM3D.Loop.KLSumZero
+
+module
+
+public import RBM3D.Universality.GUEPhase.Grid
+public import RBM3D.Gauss.SteinMatrix
+public import RBM3D.Green.Stability
+public import RBM3D.Hierarchy.ContractionSecondLoop
+public import RBM3D.Gauss.LoopFlowStein
+public import RBM3D.Loop.KLSumZero
+
+@[expose] public section
 
 /-!
 # Lemma 5.15 for the GUE-phase grid: the `1`-loop expectation bound, `d ≥ 3`

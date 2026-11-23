@@ -3,15 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.RandomLayerBGBA
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.KBase
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.KInduct
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.EKNonzero
-import RBM3D.Universality.GUEPhase.KPrim
-import RBM3D.Universality.OUInterfaceK
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.RandomLayerBGBA
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.KBase
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.EKNonzero
+public import RBM3D.Universality.GUEPhase.KPrim
+public import RBM3D.Universality.OUInterfaceK
+public import RBM3D.Universality.ZeroModeProfile
+import all RBM3D.Universality.ZeroModeProfile
+import all RBM3D.BA.EKNonzero
+import all RBM3D.Universality.GUEPhase.KPrim
+
+@[expose] public section
 
 /-!
 # The BA OU profile, row differences, the BA `thetaDiff`, the BA GUE-phase 2-loop

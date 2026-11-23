@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.RandomLayerBG
-import RBM3D.BA.UNPins
-import RBM3D.BA.MReg
-import RBM3D.BA.FlowPins
-import RBM3D.BA.MFixedPoint
-import RBM3D.Chain.Carrier
+
+module
+
+public import RBM3D.Universality.GUEPhase.RandomLayerBG
+public import RBM3D.BA.UNPins
+public import RBM3D.BA.MReg
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.MFixedPoint
+public import RBM3D.Chain.Carrier
+
+@[expose] public section
 
 /-!
 # The block Anderson instances of the random-layer inputs and the compatibility input

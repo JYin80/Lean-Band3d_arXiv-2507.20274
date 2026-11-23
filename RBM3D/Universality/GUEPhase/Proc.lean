@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Grid
-import RBM3D.Universality.GUEPhase.Bootstrap
-import RBM3D.Universality.GUEPhase.Generator
-import RBM3D.Universality.GUEPhase.KPrim
-import RBM3D.Universality.GUEPhase.EntryDet
-import RBM3D.Induction.Split
-import RBM3D.Induction.ConArgDet
-import RBM3D.Path.Stop
+
+module
+
+public import RBM3D.Universality.GUEPhase.Grid
+public import RBM3D.Universality.GUEPhase.Bootstrap
+public import RBM3D.Universality.GUEPhase.Generator
+public import RBM3D.Universality.GUEPhase.KPrim
+public import RBM3D.Universality.GUEPhase.EntryDet
+public import RBM3D.Induction.Split
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Path.Stop
+
+@[expose] public section
 
 /-!
 # The process layer of the §7.2 random layer on the GUE-phase grid, `d ≥ 3`

@@ -3,10 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAAtomic
-import RBM3D.Graph.LocalRegular6d
-import RBM3D.Graph.BAWeightOp
-import RBM3D.Graph.BAGGOp
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAAtomic
+public import RBM3D.Graph.LocalRegular6d
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAGGOp
+import all RBM3D.Graph.BAWeightOp
+
+@[expose] public section
 
 /-!
 # The cost vocabulary at atoms, BA Lemma B, `BAInit`, five shapes

@@ -3,10 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.IniTermIIGen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Evolution.CltFarG
-import RBM3D.Induction.IniTermI
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.IniTermIIGen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Evolution.CltFarG
+public import RBM3D.Induction.IniTermI
+public import RBM3D.Chain.Step5KerGen
+import all RBM3D.Chain.Step5KerGen
+
+@[expose] public section
 
 set_option linter.style.longLine false
 set_option linter.unusedVariables false

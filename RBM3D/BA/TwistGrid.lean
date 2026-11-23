@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistPins
-import RBM3D.BA.Step2BA
-import RBM3D.Chain.Step2Kern
-import RBM3D.BA.KInduct
-import RBM3D.BA.EMn2BA
-import RBM3D.Hierarchy.ContractionBasic
-import RBM3D.Path.OneStep
+
+module
+
+public import RBM3D.BA.TwistPins
+public import RBM3D.BA.Step2BA
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.EMn2BA
+public import RBM3D.Hierarchy.ContractionBasic
+public import RBM3D.Path.OneStep
+
+@[expose] public section
 
 /-!
 # The twisted loop hierarchy at the matrix level
@@ -208,7 +213,7 @@ section Conv
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- `P_{c₁c₂} = W^{-d} Σ_o |(c₁,o)⟩⟨(c₂,o)|` on the block-product index. -/
-private def TwistGrid_Pb (c₁ c₂ : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
+def TwistGrid_Pb (c₁ c₂ : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   Matrix.of fun p q => if p.1 = c₁ ∧ q.1 = c₂ ∧ p.2 = q.2 then ((W : ℂ) ^ d)⁻¹ else 0
 
 private theorem TwistGrid_trace_Pb (c₁ c₂ : Zd d L) (M : Matrix (Vtx d L W) (Vtx d L W) ℂ) :

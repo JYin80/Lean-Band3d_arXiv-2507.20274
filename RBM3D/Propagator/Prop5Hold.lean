@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.HeatProduct
-import RBM3D.Propagator.LaplaceGauss
-import RBM3D.Propagator.Pins
-import RBM3D.Propagator.Prop5Short
-import RBM3D.Propagator.Props4
+
+module
+
+public import RBM3D.Propagator.HeatProduct
+public import RBM3D.Propagator.LaplaceGauss
+public import RBM3D.Propagator.Pins
+public import RBM3D.Propagator.Prop5Short
+public import RBM3D.Propagator.Props4
+
+@[expose] public section
 
 /-!
 # Properties 5 and 8 of `lem_propTH` (proved): (2.66) `prop:ThfadC` and (2.70) `prop:ThfadC0`

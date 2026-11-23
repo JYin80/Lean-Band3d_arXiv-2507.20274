@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.EMn2Exp2
-import RBM3D.Induction.Contract
-import RBM3D.BA.FlowPins
-import RBM3D.BA.KSolve
-import RBM3D.BA.KInduct
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.KKernel
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.Ward
+
+module
+
+public import RBM3D.Induction.EMn2Exp2
+public import RBM3D.Induction.Contract
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.KKernel
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.Ward
+
+@[expose] public section
 
 /-!
 # Lemma 3.13 (`lem: EMn2_N`) at block Anderson

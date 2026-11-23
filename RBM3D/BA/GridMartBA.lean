@@ -3,9 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistStep
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.KInduct
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistStep
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.TwistGrid
+public import RBM3D.BA.TwistKer
+import all RBM3D.BA.TwistGrid
+import all RBM3D.BA.TwistKer
+
+@[expose] public section
 
 /-!
 # The untwisted BA grid martingale statement from the twisted one
@@ -32,10 +42,13 @@ set_option linter.unusedVariables false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedFintypeInType false
 
-open private TwistGrid_Pb TwistGrid_twL2M_trace TwistGrid_twL3M_trace TwistGrid_LM_two
+open private TwistGrid_twL2M_trace TwistGrid_twL3M_trace TwistGrid_LM_two
   from RBM3D.BA.TwistGrid
-open private TwistKer_loopFine_eq TwistKer_fE TwistKer_fE_apply TwistKer_trace_sandwich TwistKer_Gres_conjTranspose
+open RBM.BA (TwistGrid_Pb)
+open private TwistKer_loopFine_eq TwistKer_fE_apply TwistKer_trace_sandwich
+  TwistKer_Gres_conjTranspose
   from RBM3D.BA.TwistKer
+open RBM.BA (TwistKer_fE)
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Matrix
@@ -331,13 +344,13 @@ private theorem GridMartBA_chg (u : ℝ) {H : Matrix (Idx d (sz.L n) (sz.W n)) (
   · rfl
 
 /-- The two slots of the gradient: `Q₁ = G(σ₀) E_b G(σ₁) E_c G(σ₀)`. -/
-private def GridMartBA_Q1 (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
+def GridMartBA_Q1 (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
     (b c : Zd d (sz.L n)) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0) * TwistKer_fE n b * Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1) *
     TwistKer_fE n c * Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0)
 
 /-- `Q₂ = G(σ₁) E_c G(σ₀) E_b G(σ₁)`. -/
-private def GridMartBA_Q2 (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
+def GridMartBA_Q2 (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
     (b c : Zd d (sz.L n)) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1) * TwistKer_fE n c * Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0) *
     TwistKer_fE n b * Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1)
@@ -367,7 +380,7 @@ private theorem GridMartBA_twDerM_eq (u : ℝ) {H : Matrix (Idx d (sz.L n) (sz.W
   ring
 
 /-- The squared Hilbert-Schmidt weight of a fine matrix `Q`: `Φ(Q) = W^{-d} Σ_{[i]=[j]} |Q_{ij}|²` (real, `≥ 0`). -/
-private def GridMartBA_Phi (Q : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
+def GridMartBA_Phi (Q : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
   (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ∑ i, ∑ j, if (split d (sz.L n) (sz.W n) i).1 = (split d (sz.L n) (sz.W n) j).1 then ‖Q i j‖ ^ 2 else 0
 
 private theorem GridMartBA_Phi_nonneg (Q : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :

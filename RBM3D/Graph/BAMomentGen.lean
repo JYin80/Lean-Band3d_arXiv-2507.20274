@@ -3,18 +3,29 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWMoment
-import RBM3D.Graph.BAEngine
-import RBM3D.Graph.BAShapeO2B
-import RBM3D.Graph.BALocReg1B
-import RBM3D.Graph.BAAtom2
-import RBM3D.Graph.BAAuxGraph2B
-import RBM3D.Graph.BASizeClaim2
-import RBM3D.Graph.BAExp14aB
-import RBM3D.Graph.BAExp14c
-import RBM3D.Graph.BAExp14d
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.GbEXPav
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.LWMoment
+public import RBM3D.Graph.BAEngine
+public import RBM3D.Graph.BAShapeO2B
+public import RBM3D.Graph.BALocReg1B
+public import RBM3D.Graph.BAAtom2
+public import RBM3D.Graph.BAAuxGraph2B
+public import RBM3D.Graph.BASizeClaim2
+public import RBM3D.Graph.BAExp14aB
+public import RBM3D.Graph.BAExp14c
+public import RBM3D.Graph.BAExp14d
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.GbEXPav
+public import RBM3D.Graph.BASizeClaim
+public import RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BASizeClaim
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BASizeClaim2
+
+@[expose] public section
 
 /-!
 # `lem:LW_moment` at BA (part A): the carrier, the statement and the far pairs
@@ -1176,7 +1187,7 @@ theorem BAMomentGen_cont_term {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fin
       simp only [hM]; exact (hG _ _).sub continuous_const
     by_cases hσ : e.σ = true
     · simpa [SEdge.val, hσ] using hg
-    · simpa [SEdge.val, hσ] using hg.star
+    · simp only [SEdge.val, hσ, Bool.false_eq_true, ↓reduceIte]; exact hg.star
   · refine continuous_list_prod _ fun e _ => ?_
     simp only [WEdge.val, hS, hSp]
     exact continuous_const

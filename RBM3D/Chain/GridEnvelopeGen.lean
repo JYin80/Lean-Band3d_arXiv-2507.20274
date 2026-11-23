@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.HierDriftGen
-import RBM3D.Chain.DecayGen
-import RBM3D.Induction.GridEnvelopeN
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.HierDriftGen
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Induction.GridEnvelopeN
+import all RBM3D.Induction.GridEnvelopeN
+
+@[expose] public section
 
 /-!
 # The envelope of the grid drift over a flow carrier

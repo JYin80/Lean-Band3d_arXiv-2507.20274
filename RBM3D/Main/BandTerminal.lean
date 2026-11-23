@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Main.BUnivHolds
-import RBM3D.Main.ZNet
-import RBM3D.Main.FixedZ
-import RBM3D.Main.QUEFromQDiff
-import RBM3D.Induction.MainIndHolds
-import RBM3D.Universality.NormBand
-import RBM3D.Universality.GUELocalSchur
-import RBM3D.Universality.UnivMain
+
+module
+
+public import RBM3D.Main.BUnivHolds
+public import RBM3D.Main.ZNet
+public import RBM3D.Main.FixedZ
+public import RBM3D.Main.QUEFromQDiff
+public import RBM3D.Induction.MainIndHolds
+public import RBM3D.Universality.NormBand
+public import RBM3D.Universality.GUELocalSchur
+public import RBM3D.Universality.UnivMain
+
+@[expose] public section
 
 /-!
 # The band terminal

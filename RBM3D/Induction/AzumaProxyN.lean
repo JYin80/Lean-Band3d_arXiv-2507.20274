@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Induction.GridGoodN
-import RBM3D.Induction.StepDecompN
-import RBM3D.Induction.LoopC2N
-import RBM3D.Path.Markov
-import RBM3D.Gauss.LoopGenerator
-import RBM3D.Loop.KLTreeDeriv
+
+module
+
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Induction.GridGoodN
+public import RBM3D.Induction.StepDecompN
+public import RBM3D.Induction.LoopC2N
+public import RBM3D.Path.Markov
+public import RBM3D.Gauss.LoopGenerator
+public import RBM3D.Loop.KLTreeDeriv
+
+@[expose] public section
 
 /-!
 # The sub-Gaussian proxy of the first-chaos increments (`d ≥ 3`)

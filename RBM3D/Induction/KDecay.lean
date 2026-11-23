@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLTree
-import RBM3D.Loop.KLIndStepA
-import RBM3D.Loop.KLFinal
-import RBM3D.Defs.Tail
-import RBM3D.Defs.RadialSum
-import RBM3D.Defs.Params
-import RBM3D.Induction.Defs
-import RBM3D.Induction.Step34Pins
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Loop.KLTree
+public import RBM3D.Loop.KLIndStepA
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Defs.Tail
+public import RBM3D.Defs.RadialSum
+public import RBM3D.Defs.Params
+public import RBM3D.Induction.Defs
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # Far-label decay of the primitive loop `𝒦` and the lattice sum of the tail `𝒯_t`

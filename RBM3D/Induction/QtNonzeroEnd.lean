@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QtNonzero
-import RBM3D.Induction.NQLin
-import RBM3D.Induction.NQBudget
-import RBM3D.Induction.GridEnvelopeN
-import RBM3D.Induction.AzumaProxyN2
-import RBM3D.Loop.KLFinal
-import RBM3D.Induction.Step34Pins
+
+module
+
+public import RBM3D.Induction.QtNonzero
+public import RBM3D.Induction.NQLin
+public import RBM3D.Induction.NQBudget
+public import RBM3D.Induction.GridEnvelopeN
+public import RBM3D.Induction.AzumaProxyN2
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Induction.Step34Pins
+
+@[expose] public section
 
 /-!
 # The case-(ii) grid endpoint of the zero-mode-removed loops (`d ≥ 3`): `nzGridEndN`

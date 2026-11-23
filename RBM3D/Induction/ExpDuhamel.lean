@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ExpHier
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.QopAlgebra
-import RBM3D.Induction.GridDuhamelN
-import RBM3D.Propagator.Deriv
-import RBM3D.Propagator.Props4
+
+module
+
+public import RBM3D.Induction.ExpHier
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.QopAlgebra
+public import RBM3D.Induction.GridDuhamelN
+public import RBM3D.Propagator.Deriv
+public import RBM3D.Propagator.Props4
+
+@[expose] public section
 
 /-!
 # The two Duhamel formulas of Step 6 (the statements `STExpDuhamelZ`, `STExpDuhamelQ`)

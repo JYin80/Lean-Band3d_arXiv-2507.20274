@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.ScalingOrder
-import Mathlib.Data.Matrix.Basic
-import Mathlib.Data.Fin.VecNotation
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Combinatorics.SimpleGraph.Paths
-import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
-import Mathlib.Analysis.Complex.Basic
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+module
+
+public import RBM3D.Graph.ScalingOrder
+public import Mathlib.Data.Matrix.Basic
+public import Mathlib.Data.Fin.VecNotation
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Combinatorics.SimpleGraph.Paths
+public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+
+@[expose] public section
 
 /-!
 # The graph vocabulary of the light-weight layer

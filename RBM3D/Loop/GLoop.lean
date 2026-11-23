@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.Model
-import RBM3D.Defs.Semicircle
-import RBM3D.Analysis.Resolvent
+
+module
+
+public import RBM3D.Gauss.Model
+public import RBM3D.Defs.Semicircle
+public import RBM3D.Analysis.Resolvent
+
+@[expose] public section
 
 /-!
 # The block observable `E_a` and the flow imaginary part `η_t`

@@ -3,7 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14c
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAExp14c
+public import RBM3D.Graph.BAS3Close
+public import RBM3D.Graph.BAS3CloseB
+public import RBM3D.Graph.BAS3CloseC
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAExpandId
+import all RBM3D.Graph.BAS3Close
+import all RBM3D.Graph.BAS3CloseB
+import all RBM3D.Graph.BAS3CloseC
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAExpandId
+
+@[expose] public section
 
 /-!
 # The `BAExp14bS3` side (part B): the `x ~ y` support, the averaged leaf bound, the assembly
@@ -28,14 +44,19 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 
-open private BAS3Close_pk BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm
-  BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_iso_leaf BAS3Close_leaf_pk BAS3Close_ctxEx_pk BAS3Close_iso_cand BAS3Close_iso_root
-  BAS3Close_out_stuck from RBM3D.Graph.BAS3Close
-open private BAS3Close_RootFacts BAS3Close_tests_M BAS3Close_MCM BAS3Close_vs1 BAS3Close_vs1_mem BAS3Close_vs1_len BAS3Close_invC_of_facts
-  BAS3Close_CatR0 BAS3Close_eI0_0 BAS3Close_iso_pk_perm BAS3Close_keys_eq BAS3Close_cf0_0 from RBM3D.Graph.BAS3CloseB
+open private BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_Iso BAS3Close_iso_symm BAS3Close_iso_trans
+  BAS3Close_iso_val BAS3Close_iso_leaf BAS3Close_leaf_pk BAS3Close_ctxEx_pk BAS3Close_iso_cand
+  BAS3Close_iso_root BAS3Close_out_stuck
+  from RBM3D.Graph.BAS3Close
+open private BAS3Close_RootFacts BAS3Close_tests_M BAS3Close_MCM BAS3Close_vs1 BAS3Close_vs1_mem
+  BAS3Close_vs1_len BAS3Close_invC_of_facts BAS3Close_CatR0 BAS3Close_eI0_0 BAS3Close_iso_pk_perm
+  BAS3Close_keys_eq
+  from RBM3D.Graph.BAS3CloseB
 open private BAS3Close_D BAS3Close_data BAS3Close_hG BAS3Close_rho BAS3Close_kD from RBM3D.Graph.BAS3CloseC
 open private BAVocab_val_of_factor BAVocab_val_of_not BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
 open private BAExpandId_integrable_pval BAExpandId_integrable_val from RBM3D.Graph.BAExpandId
+open RBM.Graph (BAS3Close_pk)
+open RBM.Graph (BAS3Close_cf0_0)
 
 open MeasureTheory Filter
 

@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Proc
-import RBM3D.Universality.GUEPhase.BootstrapAt
-import RBM3D.Universality.GUEPhase.Markov
+
+module
+
+public import RBM3D.Universality.GUEPhase.Proc
+public import RBM3D.Universality.GUEPhase.BootstrapAt
+public import RBM3D.Universality.GUEPhase.Markov
+
+@[expose] public section
 
 /-!
 # The unfreezing of the §7.2 random layer, pathwise at one `n` and one `ω`, `d ≥ 3`

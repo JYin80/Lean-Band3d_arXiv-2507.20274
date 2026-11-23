@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.SEforLn2
-import RBM3D.Induction.DecayLoopB
-import RBM3D.Induction.StepDecompN
-import RBM3D.Path.Walk
-import RBM3D.Path.Stop
+
+module
+
+public import RBM3D.Induction.SEforLn2
+public import RBM3D.Induction.DecayLoopB
+public import RBM3D.Induction.StepDecompN
+public import RBM3D.Path.Walk
+public import RBM3D.Path.Stop
+
+@[expose] public section
 
 /-!
 # The good set of the grid walk at loop length `k`, its exit time, its measurability, and the

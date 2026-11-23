@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.IterationsA
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.KDecayGen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Chain.GridEnvelopeGen
-import RBM3D.Chain.NQGood1Gen
+
+module
+
+public import RBM3D.Induction.IterationsA
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.KDecayGen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Chain.GridEnvelopeGen
+public import RBM3D.Chain.NQGood1Gen
+
+@[expose] public section
 
 /-!
 # `lem:iterations` over the flow carrier, first part

@@ -3,10 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14b
-import RBM3D.BA.TwistFold2
-import RBM3D.BA.KBound
-import RBM3D.BA.TwistAvgB
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAExp14b
+public import RBM3D.BA.TwistFold2
+public import RBM3D.BA.KBound
+public import RBM3D.BA.TwistAvgB
+public import RBM3D.Graph.BAExp14aB
+import all RBM3D.Graph.BAExp14aB
+
+@[expose] public section
 
 /-!
 # The twisted bridges, the sharp average and the families `D1t, D2t, T2a, T2b` (file A)

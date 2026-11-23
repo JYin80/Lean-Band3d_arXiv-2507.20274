@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWSizeClaim
-import RBM3D.Graph.BAVocab
-import RBM3D.Graph.BAExpandW
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.Prop5Short
-import RBM3D.BA.KBase
+
+module
+
+public import RBM3D.Graph.LWSizeClaim
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.Prop5Short
+public import RBM3D.BA.KBase
+
+@[expose] public section
 
 /-!
 # The kernel edges and the molecular forest with atoms (part 1)

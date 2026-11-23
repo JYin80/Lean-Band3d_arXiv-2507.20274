@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLWardIneq
-import RBM3D.Loop.KBound
-import RBM3D.Propagator.Prop6Hold
-import RBM3D.Induction.Step34Pins
-import RBM3D.Defs.StochDomAt
+
+module
+
+public import RBM3D.Loop.KLWardIneq
+public import RBM3D.Loop.KBound
+public import RBM3D.Propagator.Prop6Hold
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Defs.StochDomAt
+
+@[expose] public section
 
 /-!
 # The `K`-loop bounds without the propagator hypothesis, and at the sequence level

@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistPins
-import RBM3D.BA.EKNonzero
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.CombesThomas
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.Prop6Path
+
+module
+
+public import RBM3D.BA.TwistPins
+public import RBM3D.BA.EKNonzero
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.CombesThomas
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.Prop6Path
+
+@[expose] public section
 
 /-!
 # The twisted tree: kernel bounds, the decay of `K̃`, the fine-lattice core
@@ -529,7 +534,7 @@ section Fine
 variable {d : ℕ} {sz : Sizes d} (n : ℕ)
 
 /-- `E_a = W^{-d} 1_{[a]}` on the fine lattice (`Eblk` read through `splitEquiv`). -/
-private def TwistKer_fE (a : Zd d (sz.L n)) :
+def TwistKer_fE (a : Zd d (sz.L n)) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Matrix.diagonal fun x => if (split d (sz.L n) (sz.W n) x).1 = a then (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ else 0
 

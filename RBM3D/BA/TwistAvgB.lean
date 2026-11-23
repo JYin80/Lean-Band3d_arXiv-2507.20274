@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistAvgA2
+
+module
+
+public import RBM3D.BA.TwistAvgA2
+
+@[expose] public section
 
 /-!
 # The twisted averaged law at the block Anderson model, part C: `BATwistAvgProd`

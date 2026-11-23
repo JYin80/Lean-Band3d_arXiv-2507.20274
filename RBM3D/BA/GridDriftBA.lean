@@ -3,16 +3,31 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.HierDriftGen
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.BA.Step2IterBA
-import RBM3D.BA.KInduct
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.TwistGridRem2
-import RBM3D.BA.TwistGridWTail
-import RBM3D.BA.EKPins
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.SEforLnBA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.HierDriftGen
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.BA.Step2IterBA
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.TwistGridRem2
+public import RBM3D.BA.TwistGridWTail
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.Path.LoopStep
+public import RBM3D.Induction.GridDriftN
+public import RBM3D.Path.OneStep
+public import RBM3D.Induction.HierAlgebra
+import all RBM3D.Path.LoopStep
+import all RBM3D.BA.TwistGridRem2
+import all RBM3D.Induction.GridDriftN
+import all RBM3D.Path.OneStep
+import all RBM3D.Induction.HierAlgebra
+
+@[expose] public section
 
 /-!
 # The block Anderson instances of the carrier classes of the step-2 drift

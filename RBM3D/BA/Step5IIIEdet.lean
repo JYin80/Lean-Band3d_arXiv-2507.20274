@@ -3,13 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2Gen
-import RBM3D.BA.Step2BA
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Induction.Step5Pins
-import RBM3D.Path.LemDecCalE
-import RBM3D.Path.LemDecCalEwG
-import RBM3D.Graph.BAAuxGraph2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.BA.Step2BA
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Induction.Step5Pins
+public import RBM3D.Path.LemDecCalE
+public import RBM3D.Path.LemDecCalEwG
+public import RBM3D.Graph.BAAuxGraph2
+import all RBM3D.Path.LemDecCalE
+
+@[expose] public section
 
 /-!
 # The ℰ-bounds of BA case (iii) of Step 5 by Hilbert-Schmidt estimates, first half
@@ -128,7 +135,7 @@ section Legs
 variable {d L W : ℕ} [NeZero L]
 
 /-- `E_a^{1/2} = s · 1_{[a]}` for a real `s` with `s * s = W^{-d}`, so `E_a^{1/2} E_a^{1/2} = E_a` (`Eblk`, `Loop/GLoop`). -/
-private def Step5IIIEdet_Es (d L W : ℕ) (s : ℝ) (a : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
+def Step5IIIEdet_Es (d L W : ℕ) (s : ℝ) (a : Zd d L) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   Matrix.diagonal fun x => if x.1 = a then (s : ℂ) else 0
 
 private theorem Step5IIIEdet_Es_herm (s : ℝ) (a : Zd d L) : (Step5IIIEdet_Es d L W s a)ᴴ = Step5IIIEdet_Es d L W s a := by

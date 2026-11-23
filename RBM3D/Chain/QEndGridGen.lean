@@ -3,11 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QEndGrid
-import RBM3D.Chain.QGridGen2
-import RBM3D.Chain.NQBudgetGen
-import RBM3D.Chain.GridAssemblyGen
-import RBM3D.Chain.NQEndLinGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QEndGrid
+public import RBM3D.Chain.QGridGen2
+public import RBM3D.Chain.NQBudgetGen
+public import RBM3D.Chain.GridAssemblyGen
+public import RBM3D.Chain.NQEndLinGen
+public import RBM3D.Induction.QEndA
+public import RBM3D.Induction.B45
+import all RBM3D.Induction.QEndGrid
+import all RBM3D.Induction.QEndA
+import all RBM3D.Induction.B45
+import all RBM3D.Chain.NQEndLinGen
+
+@[expose] public section
 
 /-!
 # The alternating grid endpoint over the carrier

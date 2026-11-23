@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAAtom
-import RBM3D.Graph.LWPins
-import RBM3D.Graph.AnpKey6
+
+module
+
+public import RBM3D.Graph.BAAtom
+public import RBM3D.Graph.LWPins
+public import RBM3D.Graph.AnpKey6
+
+@[expose] public section
 
 /-!
 # Atoms and the auxiliary graph at block Anderson (part 2): the tail, the main sum, the nested form

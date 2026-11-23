@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Defs.Block
-import RBM3D.Defs.Params
-import Mathlib.Analysis.Normed.Ring.Units
-import Mathlib.Analysis.SpecificLimits.Normed
-import Mathlib.Analysis.Matrix.Normed
+
+module
+
+public import RBM3D.Defs.Block
+public import RBM3D.Defs.Params
+public import Mathlib.Analysis.Normed.Ring.Units
+public import Mathlib.Analysis.SpecificLimits.Normed
+public import Mathlib.Analysis.Matrix.Normed
+
+@[expose] public section
 
 /-!
 # The `Θ`-propagator

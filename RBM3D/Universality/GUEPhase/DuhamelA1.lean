@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Drift
-import RBM3D.Path.StepDecomp
-import RBM3D.Induction.Split
-import RBM3D.Induction.LoopC2N
-import RBM3D.Induction.ConArgDet
+
+module
+
+public import RBM3D.Universality.GUEPhase.Drift
+public import RBM3D.Path.StepDecomp
+public import RBM3D.Induction.Split
+public import RBM3D.Induction.LoopC2N
+public import RBM3D.Induction.ConArgDet
+
+@[expose] public section
 
 /-!
 # The loop Duhamel tail of the GUE phase, part I, first half (`d ≥ 3`)

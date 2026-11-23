@@ -3,8 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.NQBudgetGen
-import RBM3D.Induction.NQLin
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.NQBudgetGen
+public import RBM3D.Induction.NQLin
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Induction.GridGoodN
+import all RBM3D.Chain.GridGoodGen
+import all RBM3D.Induction.GridGoodN
+import all RBM3D.Induction.NQLin
+
+@[expose] public section
 
 /-!
 # The linear good set of the non-alternating endpoint over the carrier

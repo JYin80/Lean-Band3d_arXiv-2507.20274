@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.MainIndChain
-import RBM3D.Induction.Step4
-import RBM3D.Induction.Step3
-import RBM3D.Induction.DuhamelII
-import RBM3D.Induction.IniTermI
-import RBM3D.Induction.LocalAvg2
-import RBM3D.Graph.LWExpTerm6
-import RBM3D.BA.UNPins
+
+module
+
+public import RBM3D.Induction.MainIndChain
+public import RBM3D.Induction.Step4
+public import RBM3D.Induction.Step3
+public import RBM3D.Induction.DuhamelII
+public import RBM3D.Induction.IniTermI
+public import RBM3D.Induction.LocalAvg2
+public import RBM3D.Graph.LWExpTerm6
+public import RBM3D.BA.UNPins
+
+@[expose] public section
 
 /-!
 # From `lem:main_ind` to `UNMLOut` at every `0 ≤ t_n ≤ lemT z_n`

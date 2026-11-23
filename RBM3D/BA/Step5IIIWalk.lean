@@ -3,14 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step5IIIGood2
-import RBM3D.BA.Step5IIIEdet2
-import RBM3D.BA.Step5IIIKer2
-import RBM3D.BA.GridRepTailBA
-import RBM3D.BA.Step2IterBA
-import RBM3D.Chain.Step2CloseGen
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.Induction.PfStep5
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step5IIIGood2
+public import RBM3D.BA.Step5IIIEdet2
+public import RBM3D.BA.Step5IIIKer2
+public import RBM3D.BA.GridRepTailBA
+public import RBM3D.BA.Step2IterBA
+public import RBM3D.Chain.Step2CloseGen
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.Induction.PfStep5
+public import RBM3D.Induction.PfStep5Grid
+import all RBM3D.Induction.PfStep5Grid
+import all RBM3D.Induction.PfStep5
+
+@[expose] public section
 
 /-!
 # Step 5, case `1 - t ≥ λ²`, block Anderson model: the per-time layer of the grid walk

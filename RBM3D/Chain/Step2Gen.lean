@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Carrier
-import RBM3D.Induction.Step2Defs
+
+module
+
+public import RBM3D.Chain.Carrier
+public import RBM3D.Induction.Step2Defs
+
+@[expose] public section
 
 /-!
 # The Step 2 vocabulary over the carrier
@@ -114,7 +119,7 @@ structure Step2Data {d : ℕ} (sz : Sizes d) extends Step2Mat sz where
 
 section BandInst
 
-private theorem Step2Gen_loopFine_swap {d L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ)
+theorem Step2Gen_loopFine_swap {d L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ)
     (z : ℂ) (a b : Zd d L) :
     loopFine d L W H z ![true, false] ![a, b] = loopFine d L W H z ![false, true] ![b, a] := by
   unfold loopFine loopM
@@ -122,7 +127,7 @@ private theorem Step2Gen_loopFine_swap {d L W : ℕ} [NeZero L] [NeZero W] (H : 
     Matrix.cons_val_zero, Matrix.cons_val_succ]
   exact Matrix.trace_mul_comm _ _
 
-private theorem Step2Gen_flow_im_pos {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z)
+theorem Step2Gen_flow_im_pos {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (h : STFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : 0 < (z n).im := by
   have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
   exact lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) (h.2 n).2.1

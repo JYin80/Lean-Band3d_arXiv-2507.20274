@@ -3,14 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistChain
-import RBM3D.BA.Step1Fam
-import RBM3D.BA.CouplingWindow
-import RBM3D.BA.KBound
-import RBM3D.Induction.SizesComp
-import RBM3D.BA.GridGoodBA
-import RBM3D.BA.CltFlowBA
-import RBM3D.BA.UNPins
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistChain
+public import RBM3D.BA.Step1Fam
+public import RBM3D.BA.CouplingWindow
+public import RBM3D.BA.KBound
+public import RBM3D.Induction.SizesComp
+public import RBM3D.BA.GridGoodBA
+public import RBM3D.BA.CltFlowBA
+public import RBM3D.BA.UNPins
+public import RBM3D.BA.Step1Boot
+import all RBM3D.BA.TwistChain
+import all RBM3D.BA.Step1Boot
+import all RBM3D.BA.GridGoodBA
+import all RBM3D.BA.CltFlowBA
+
+@[expose] public section
 
 /-!
 # The terminal of the block Anderson main induction in family form

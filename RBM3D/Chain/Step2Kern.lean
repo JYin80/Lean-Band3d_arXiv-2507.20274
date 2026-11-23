@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2Gen
-import RBM3D.BA.FlowPins
-import RBM3D.BA.KSolve
-import RBM3D.BA.EKPins
-import RBM3D.BA.KTreeRep
+
+module
+
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.KTreeRep
+
+@[expose] public section
 
 /-!
 # The generic drift kernel of Step 2 at the block Anderson carrier

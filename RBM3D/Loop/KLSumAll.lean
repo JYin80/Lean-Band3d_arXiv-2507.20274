@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLSumZero
-import RBM3D.Loop.KLWard
-import RBM3D.Loop.KLUnique
+
+module
+
+public import RBM3D.Loop.KLSumZero
+public import RBM3D.Loop.KLWard
+public import RBM3D.Loop.KLUnique
+
+@[expose] public section
 
 /-!
 # The total-sum bound of `K`-loops with an explicit constant, `d ≥ 3`

@@ -4,10 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 
-import RBM3D.BA.Ward
-import RBM3D.BA.CouplingWindow
-import Mathlib.Algebra.Order.Chebyshev
-import Mathlib.Analysis.Complex.Norm
+module
+
+public import RBM3D.BA.Ward
+public import RBM3D.BA.CouplingWindow
+public import Mathlib.Algebra.Order.Chebyshev
+public import Mathlib.Analysis.Complex.Norm
+
+@[expose] public section
 
 /-!
 # The lower bound on `Im m(E + iη)`, `η ∈ (0, 1]`, in the bulk

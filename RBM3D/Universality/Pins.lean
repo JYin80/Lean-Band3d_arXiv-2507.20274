@@ -3,13 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Defs.Sizes
-import RBM3D.Defs.StochDomAt
-import RBM3D.Gauss.BlockAnderson
-import RBM3D.Induction.Defs
-import RBM3D.Propagator.Gap
-import Mathlib.Analysis.Calculus.BumpFunction.Basic
-import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+
+module
+
+public import Mathlib.Analysis.Matrix.Spectrum
+public import RBM3D.Defs.Sizes
+public import RBM3D.Defs.StochDomAt
+public import RBM3D.Gauss.BlockAnderson
+public import RBM3D.Induction.Defs
+public import RBM3D.Propagator.Gap
+public import Mathlib.Analysis.Calculus.BumpFunction.Basic
+public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+
+@[expose] public section
 
 /-!
 # Statements for bulk universality (Theorem 2.4 `Thm: B_Univ`) at `d ≥ 3`

@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAMomentGenB
-import RBM3D.Graph.BAMomentExpGenB
-import RBM3D.Graph.BAAnpLift
-import RBM3D.Graph.BAExp14bB
-import RBM3D.Graph.BAAuxGraph2B
-import RBM3D.Graph.BAExp14dB
-import RBM3D.Graph.LWTermHolds
-import RBM3D.Graph.LWTermExpN
-import RBM3D.BA.LWPinsBA
+
+module
+
+public import RBM3D.Graph.BAMomentGenB
+public import RBM3D.Graph.BAMomentExpGenB
+public import RBM3D.Graph.BAAnpLift
+public import RBM3D.Graph.BAExp14bB
+public import RBM3D.Graph.BAAuxGraph2B
+public import RBM3D.Graph.BAExp14dB
+public import RBM3D.Graph.LWTermHolds
+public import RBM3D.Graph.LWTermExpN
+public import RBM3D.BA.LWPinsBA
+
+@[expose] public section
 
 /-!
 # `lem:LWterm` at BA and the regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N` (file A)

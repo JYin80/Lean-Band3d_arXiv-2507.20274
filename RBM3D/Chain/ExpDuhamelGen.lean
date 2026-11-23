@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ExpHierGen
-import RBM3D.Induction.ExpDuhamel
-import RBM3D.Chain.GridDuhamelGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.ExpHierGen
+public import RBM3D.Induction.ExpDuhamel
+public import RBM3D.Chain.GridDuhamelGen
+import all RBM3D.Induction.ExpDuhamel
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

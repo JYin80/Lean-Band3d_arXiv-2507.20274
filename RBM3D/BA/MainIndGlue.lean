@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.MainIndOutBA
-import RBM3D.Induction.MainIndRegimes
+
+module
+
+public import RBM3D.BA.MainIndOutBA
+public import RBM3D.Induction.MainIndRegimes
+
+@[expose] public section
 
 /-!
 # The regime glue of `lem:main_ind_BA` in family form with TL2

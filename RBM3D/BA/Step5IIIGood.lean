@@ -3,17 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step5Gen
-import RBM3D.Chain.Step2Gen
-import RBM3D.Chain.Step34Gen
-import RBM3D.BA.Step2BA
-import RBM3D.BA.FlowPins
-import RBM3D.BA.KBound
-import RBM3D.BA.KInduct
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.GreenSchur
-import RBM3D.Graph.BAAuxGraph2
-import RBM3D.Induction.Step5Pins
+
+module
+
+public import RBM3D.Chain.Step5Gen
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.KBound
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.GreenSchur
+public import RBM3D.Graph.BAAuxGraph2
+public import RBM3D.Induction.Step5Pins
+
+@[expose] public section
 
 /-!
 # Step 5, case `1 - t ≥ λ²`, block Anderson model: the realized parameter `J♯` and the good event

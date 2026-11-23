@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.Pins
-import RBM3D.Propagator.Gap
+
+module
+
+public import RBM3D.Propagator.Pins
+public import RBM3D.Propagator.Gap
+
+@[expose] public section
 
 /-!
 # (2.67) `prop:ThfadC_short`: the strong decay of `Θ_t^{(σ,σ)}` (proved)

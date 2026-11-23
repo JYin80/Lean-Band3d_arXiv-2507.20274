@@ -3,16 +3,25 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.IterationsGen
-import RBM3D.Chain.IterationsGen2
-import RBM3D.Chain.NQEndFlowGen
-import RBM3D.Chain.QtXiRoundLiftGen
-import RBM3D.Chain.QtNonzeroBootGen
-import RBM3D.Induction.Step3
-import RBM3D.Induction.Step4
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.MainIndRegimes
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.IterationsGen
+public import RBM3D.Chain.IterationsGen2
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.Chain.QtXiRoundLiftGen
+public import RBM3D.Chain.QtNonzeroBootGen
+public import RBM3D.Induction.Step3
+public import RBM3D.Induction.Step4
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.MainIndRegimes
+import all RBM3D.Induction.Step3
+import all RBM3D.Chain.IterationsGen2
+import all RBM3D.Chain.IterationsGen
+
+@[expose] public section
 
 /-!
 # Steps 3-4 of `lem:main_ind` over a carrier family

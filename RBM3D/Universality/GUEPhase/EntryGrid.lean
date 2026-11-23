@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.EntryTailMain
-import RBM3D.Universality.GUEPhase.Proc
+
+module
+
+public import RBM3D.Universality.GUEPhase.EntryTailMain
+public import RBM3D.Universality.GUEPhase.Proc
+
+@[expose] public section
 
 /-!
 # The grid form of Lemma 4.1: one-time law of the GUE-phase grid path, `d ≥ 3`

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.Primitive
-import RBM3D.Loop.KLTreeDeriv
-import Mathlib.Analysis.ODE.Gronwall
-import Mathlib.Analysis.Calculus.Deriv.Prod
-import Mathlib.Data.Fintype.Vector
+
+module
+
+public import RBM3D.Loop.Primitive
+public import RBM3D.Loop.KLTreeDeriv
+public import Mathlib.Analysis.ODE.Gronwall
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Data.Fintype.Vector
+
+@[expose] public section
 
 /-!
 # Uniqueness for the convolution tree equations

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.HeatTorus1D
-import RBM3D.Propagator.LaplaceGauss
-import RBM3D.Propagator.Basic
-import Mathlib.Algebra.Order.Chebyshev
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.MeasureTheory.Integral.ExpDecay
-import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+
+module
+
+public import RBM3D.Propagator.HeatTorus1D
+public import RBM3D.Propagator.LaplaceGauss
+public import RBM3D.Propagator.Basic
+public import Mathlib.Algebra.Order.Chebyshev
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.MeasureTheory.Integral.ExpDecay
+public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+
+@[expose] public section
 
 /-!
 # The product kernel `K_τ(a) = ∏_j hk(τ, a_j)` and the Laplace representation of `Θ_t`

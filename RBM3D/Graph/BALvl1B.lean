@@ -3,19 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BALvl1A
-import RBM3D.Graph.BASim
-import RBM3D.Graph.BASim2
-import RBM3D.Graph.BASim3
-import RBM3D.Graph.BAAtomic
-import RBM3D.Graph.BASymm1
-import RBM3D.Graph.BAVocab
-import RBM3D.Graph.BAWeightOp
-import RBM3D.Graph.BAGGOp
-import RBM3D.Graph.BAExpandW
-import RBM3D.Graph.BAExpandWOrd
-import RBM3D.Graph.BAScost
-import RBM3D.Graph.LWLvl1
+
+module
+
+public import RBM3D.Graph.BALvl1A
+public import RBM3D.Graph.BASim
+public import RBM3D.Graph.BASim2
+public import RBM3D.Graph.BASim3
+public import RBM3D.Graph.BAAtomic
+public import RBM3D.Graph.BASymm1
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAGGOp
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.Graph.BAExpandWOrd
+public import RBM3D.Graph.BAScost
+public import RBM3D.Graph.LWLvl1
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

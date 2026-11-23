@@ -3,7 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BASim
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BASim
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAAtomic
+public import RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.LWVocab
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAAtomic
+import all RBM3D.Graph.BAWeightOp
+
+@[expose] public section
 
 /-!
 # A BA step matched with a band `LocStep` at the image (part 2)
@@ -29,9 +43,11 @@ set_option linter.unnecessarySimpa false
 
 open private lwExists_mem_dedupPairs lwMem_of_mem_dedupPairs from RBM3D.Graph.LWVocab
 open private BAVocab_vmap_injective BAVocab_vmap_surjective BAVocab_merge_atomAdj BAVocab_merge_dotted_eq from RBM3D.Graph.BAVocab
-open private BAAtomic_solidAt BAAtomic_charge BAAtomic_fm BAAtomic_exists_inr_vmap from RBM3D.Graph.BAAtomic
+open private BAAtomic_solidAt BAAtomic_charge BAAtomic_exists_inr_vmap
+  from RBM3D.Graph.BAAtomic
 open private BAWeightOp_nExt_add_nA BAWeightOp_atom_subset BAWeightOp_nA_le from RBM3D.Graph.BAWeightOp
 open private BAVocab_atom_eq_of_mem BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
+open RBM.Graph (BAAtomic_fm)
 
 noncomputable section
 
@@ -306,7 +322,7 @@ section Edge
 variable {E : Type}
 
 /-- `T'` is a term of `G = Ǧ + M` on `T` with the split `r`, up to the order of the `M`-dotted edges -/
-private structure BASim_IsSplit {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (T : BAGraph E' I')
+structure BASim_IsSplit {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (T : BAGraph E' I')
     (r : List (SEdge (E' ⊕ I')) × List (BAMEdge (E' ⊕ I'))) (T' : BAGraph E' I') : Prop where
   hsolid : T'.solid = r.1
   hwaved : T'.waved = T.waved

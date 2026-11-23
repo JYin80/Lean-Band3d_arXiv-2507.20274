@@ -3,9 +3,22 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step5IIIWalk
-import RBM3D.BA.NetLiftBA
-import RBM3D.Induction.Step1Setup
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step5IIIWalk
+public import RBM3D.BA.NetLiftBA
+public import RBM3D.Induction.Step1Setup
+public import RBM3D.Induction.PfStep5
+public import RBM3D.BA.GridMartBA
+public import RBM3D.Path.NetLift2
+import all RBM3D.Induction.PfStep5
+import all RBM3D.BA.GridMartBA
+import all RBM3D.BA.NetLiftBA
+import all RBM3D.Path.NetLift2
+
+@[expose] public section
 
 /-!
 # Step 5, case `1 - t ≥ λ²`, block Anderson model: the stopped grid walk, closure and lift

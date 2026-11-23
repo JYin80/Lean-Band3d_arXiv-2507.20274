@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWExpTerm3
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWGGExp
-import RBM3D.Graph.LWWeightExp
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWLvl1
-import RBM3D.Graph.ScalingOrder
-import RBM3D.Defs.Semicircle
-import RBM3D.Green.IBPPoly
-import RBM3D.Induction.Defs
+
+module
+
+public import RBM3D.Graph.LWExpTerm3
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWGGExp
+public import RBM3D.Graph.LWWeightExp
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWLvl1
+public import RBM3D.Graph.ScalingOrder
+public import RBM3D.Defs.Semicircle
+public import RBM3D.Green.IBPPoly
+public import RBM3D.Induction.Defs
+
+@[expose] public section
 
 /-!
 # The expansion procedure of `𝒢_xy` and its identity in expectation

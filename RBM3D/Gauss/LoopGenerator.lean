@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.LoopFlowStein
-import RBM3D.Hierarchy.ContractionSecondLoop
+
+module
+
+public import RBM3D.Gauss.LoopFlowStein
+public import RBM3D.Hierarchy.ContractionSecondLoop
+
+@[expose] public section
 
 /-!
 # The loop generator: cut expansion, expectation, initial values

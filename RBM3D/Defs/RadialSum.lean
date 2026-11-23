@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Analysis.Real.Sqrt
-import Mathlib.Data.Nat.Factorial.Basic
-import RBM3D.Defs.Shells
+
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Exp
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
+public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Data.Nat.Factorial.Basic
+public import RBM3D.Defs.Shells
+
+@[expose] public section
 
 /-!
 # Radial lattice sums with a stretched-exponential cutoff

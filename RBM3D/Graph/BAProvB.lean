@@ -3,8 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAProv
-import RBM3D.Graph.BAShapeO2B
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAProv
+public import RBM3D.Graph.BAShapeO2B
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAGGOp
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.Graph.BALvl1A
+public import RBM3D.Graph.BAEngine
+import all RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.BAGGOp
+import all RBM3D.Graph.BAExpandW
+import all RBM3D.Graph.BALvl1A
+import all RBM3D.Graph.BAEngine
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

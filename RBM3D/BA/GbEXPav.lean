@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GreenLocal
-import RBM3D.BA.GreenCond2
+
+module
+
+public import RBM3D.BA.GreenLocal
+public import RBM3D.BA.GreenCond2
+
+@[expose] public section
 
 /-!
 # `lem_GbEXP_BA`, `(GavLGEX)` at block Anderson

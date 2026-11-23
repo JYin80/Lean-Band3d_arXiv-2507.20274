@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.RandomLayerA
-import RBM3D.Universality.GUEPhase.LLTransfer
-import RBM3D.Universality.GUEPhase.PathBounds
-import RBM3D.Universality.GUEPhase.KPrim
-import RBM3D.Universality.OUInterfaceK
-import RBM3D.Universality.ZeroModeProfile
+
+module
+
+public import RBM3D.Universality.GUEPhase.RandomLayerA
+public import RBM3D.Universality.GUEPhase.LLTransfer
+public import RBM3D.Universality.GUEPhase.PathBounds
+public import RBM3D.Universality.GUEPhase.KPrim
+public import RBM3D.Universality.OUInterfaceK
+public import RBM3D.Universality.ZeroModeProfile
+
+@[expose] public section
 
 /-!
 # `RandomLayerB`: `g1Rowk_of_inputs`, `g1Row`, `g1Rowk_band`, `d ≥ 3`

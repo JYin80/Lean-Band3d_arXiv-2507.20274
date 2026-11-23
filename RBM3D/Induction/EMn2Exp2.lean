@@ -3,9 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.EMn2Exp1
-import RBM3D.BA.FlowPins
-import RBM3D.Evolution.PropTInf
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.EMn2Exp1
+public import RBM3D.BA.FlowPins
+public import RBM3D.Evolution.PropTInf
+public import RBM3D.Induction.EMn2Poly
+public import RBM3D.Induction.ContractPt
+public import RBM3D.Loop.KLWard
+import all RBM3D.Induction.EMn2Exp1
+import all RBM3D.Induction.EMn2Poly
+import all RBM3D.Induction.ContractPt
+import all RBM3D.Evolution.PropTInf
+import all RBM3D.Loop.KLWard
+
+@[expose] public section
 
 /-!
 # `lem: EMn2_N`, third estimate (3.35) `eq:MG_conclusion3`, part 2: the far sum `S̃₃`

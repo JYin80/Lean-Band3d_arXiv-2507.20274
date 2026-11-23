@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.CltGood
-import RBM3D.Evolution.CltPath
-import RBM3D.Evolution.CltSwap
-import RBM3D.Induction.Step5Pins
+
+module
+
+public import RBM3D.Evolution.CltGood
+public import RBM3D.Evolution.CltPath
+public import RBM3D.Evolution.CltSwap
+public import RBM3D.Induction.Step5Pins
+
+@[expose] public section
 
 /-!
 # The CLT step and the isolation bound `STCltIso`

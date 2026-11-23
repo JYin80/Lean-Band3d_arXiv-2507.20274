@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.Markov
-import RBM3D.Path.OneStep
+
+module
+
+public import RBM3D.Path.Markov
+public import RBM3D.Path.OneStep
+
+@[expose] public section
 
 /-!
 # The one-step conditional drift on the walk

@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.CltMoments1
-import RBM3D.Gauss.Domination
-import Mathlib.Analysis.Convex.Integral
-import Mathlib.MeasureTheory.Integral.Bochner.SumMeasure
+
+module
+
+public import RBM3D.Evolution.CltMoments1
+public import RBM3D.Gauss.Domination
+public import Mathlib.Analysis.Convex.Integral
+public import Mathlib.MeasureTheory.Integral.Bochner.SumMeasure
+
+@[expose] public section
 
 /-!
 # The probabilistic half of the CLT moment bound

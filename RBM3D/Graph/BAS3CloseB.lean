@@ -3,7 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAS3Close
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAS3Close
+public import RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAS3Close
+
+@[expose] public section
 
 /-!
 # The stuck catalogue and the closure "`BAG5LeafProps` or catalogued" of the trees (part B)
@@ -34,12 +43,14 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 
 open private BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
-open private BAS3Close_Iso BAS3Close_iso_symm BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_rel BAS3Close_pk
-  BAS3Close_InvC BAS3Close_MC BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_CandC BAS3Close_Kids2 BAS3Close_Kids4
-  BAS3Close_root_ge1 BAS3Close_root_ord3 BAS3Close_kids_coeff2 BAS3Close_kids_coeff4 BAS3Close_Even BAS3Close_Conn
-  BAS3Close_CtxG BAS3Close_LeafT BAS3Close_MC
-  BAS3Close_split_mono BAS3Close_even_split BAS3Close_conn_split BAS3Close_Even_dec BAS3Close_Conn_dec
+open private BAS3Close_Iso BAS3Close_iso_symm BAS3Close_iso_trans BAS3Close_iso_val BAS3Close_rel
+  BAS3Close_InvC BAS3Close_MC BAS3Close_LeafC BAS3Close_CtxExD BAS3Close_CandC BAS3Close_Kids2
+  BAS3Close_Kids4 BAS3Close_root_ge1 BAS3Close_root_ord3 BAS3Close_kids_coeff2
+  BAS3Close_kids_coeff4 BAS3Close_Even BAS3Close_Conn BAS3Close_CtxG BAS3Close_LeafT BAS3Close_MC
+  BAS3Close_split_mono BAS3Close_even_split BAS3Close_conn_split BAS3Close_Even_dec
+  BAS3Close_Conn_dec
   from RBM3D.Graph.BAS3Close
+open RBM.Graph (BAS3Close_pk)
 
 open MeasureTheory ProbabilityTheory Filter Matrix
 
@@ -58,7 +69,7 @@ output with its internal vertices renamed in the order of their roles (core-firs
 `M`-partner), `2 = u₂` (the end of the middle edge `Ǧ(u₁, u₂)`), `3 = u₃` (the `M`-partner of `u₂`, the start of `Ǧ(u₃, y)`), then the
 vertices of the tie chain between `u₀` and `u₂`, then those of the chain between `u₁` and `u₃`; `BAS3Close_eI{k}_{j}` is the renaming. -/
 
-private def BAS3Close_cf0_0 (s : Bool) : BAGraph (Fin 2) (Fin 4) where
+def BAS3Close_cf0_0 (s : Bool) : BAGraph (Fin 2) (Fin 4) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1))]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 3), WEdge.mk false false (Sum.inr 0) (Sum.inr 2)]
   dotted := []
@@ -66,7 +77,7 @@ private def BAS3Close_cf0_0 (s : Bool) : BAGraph (Fin 2) (Fin 4) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_1 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
+def BAS3Close_cf0_1 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 1) (Sum.inr 2), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 4), WEdge.mk false false (Sum.inr 0) (Sum.inr 2), WEdge.mk true true (Sum.inr 5) (Sum.inr 3)]
   dotted := []
@@ -74,7 +85,7 @@ private def BAS3Close_cf0_1 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_2 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
+def BAS3Close_cf0_2 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 3), WEdge.mk false false (Sum.inr 0) (Sum.inr 4), WEdge.mk true true (Sum.inr 5) (Sum.inr 2)]
   dotted := []
@@ -82,7 +93,7 @@ private def BAS3Close_cf0_2 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_3 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
+def BAS3Close_cf0_3 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 4) (Sum.inr 5), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 5) (Sum.inr 4), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 4), WEdge.mk false false (Sum.inr 0) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 5)]
   dotted := []
@@ -90,7 +101,7 @@ private def BAS3Close_cf0_3 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_4 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
+def BAS3Close_cf0_4 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 4), WEdge.mk false false (Sum.inr 0) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 5)]
   dotted := []
@@ -98,7 +109,7 @@ private def BAS3Close_cf0_4 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_5 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf0_5 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 6) (Sum.inr 7), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 7) (Sum.inr 6), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 6), WEdge.mk false false (Sum.inr 0) (Sum.inr 4), WEdge.mk true true (Sum.inr 5) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 7)]
   dotted := []
@@ -106,7 +117,7 @@ private def BAS3Close_cf0_5 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf0_6 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf0_6 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk false false (Sum.inr 1) (Sum.inr 6), WEdge.mk false false (Sum.inr 0) (Sum.inr 4), WEdge.mk true true (Sum.inr 5) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 7)]
   dotted := []
@@ -114,7 +125,7 @@ private def BAS3Close_cf0_6 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 6) (Sum.inr 7), BAMEdge.mk true (Sum.inr 7) (Sum.inr 6), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_0 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
+def BAS3Close_cf1_0 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1))]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 3), WEdge.mk false false (Sum.inr 5) (Sum.inr 2)]
   dotted := []
@@ -122,7 +133,7 @@ private def BAS3Close_cf1_0 (s : Bool) : BAGraph (Fin 2) (Fin 6) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_1 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf1_1 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 1) (Sum.inr 2), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 6), WEdge.mk false false (Sum.inr 5) (Sum.inr 2), WEdge.mk true true (Sum.inr 7) (Sum.inr 3)]
   dotted := []
@@ -130,7 +141,7 @@ private def BAS3Close_cf1_1 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 6) (Sum.inr 7), BAMEdge.mk true (Sum.inr 7) (Sum.inr 6), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_2 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf1_2 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 3), WEdge.mk false false (Sum.inr 5) (Sum.inr 6), WEdge.mk true true (Sum.inr 7) (Sum.inr 2)]
   dotted := []
@@ -138,7 +149,7 @@ private def BAS3Close_cf1_2 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 6) (Sum.inr 7), BAMEdge.mk true (Sum.inr 7) (Sum.inr 6), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_3 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf1_3 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 6) (Sum.inr 7), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 7) (Sum.inr 6), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 6), WEdge.mk false false (Sum.inr 5) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 7)]
   dotted := []
@@ -146,7 +157,7 @@ private def BAS3Close_cf1_3 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_4 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
+def BAS3Close_cf1_4 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 6), WEdge.mk false false (Sum.inr 5) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 7)]
   dotted := []
@@ -154,7 +165,7 @@ private def BAS3Close_cf1_4 (s : Bool) : BAGraph (Fin 2) (Fin 8) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 6) (Sum.inr 7), BAMEdge.mk true (Sum.inr 7) (Sum.inr 6), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_5 (s : Bool) : BAGraph (Fin 2) (Fin 10) where
+def BAS3Close_cf1_5 (s : Bool) : BAGraph (Fin 2) (Fin 10) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 8) (Sum.inr 9), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 9) (Sum.inr 8), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 8), WEdge.mk false false (Sum.inr 5) (Sum.inr 6), WEdge.mk true true (Sum.inr 7) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 9)]
   dotted := []
@@ -162,7 +173,7 @@ private def BAS3Close_cf1_5 (s : Bool) : BAGraph (Fin 2) (Fin 10) where
   psi := []
   mdot := [BAMEdge.mk true (Sum.inr 6) (Sum.inr 7), BAMEdge.mk true (Sum.inr 7) (Sum.inr 6), BAMEdge.mk true (Sum.inr 2) (Sum.inr 3), BAMEdge.mk true (Sum.inr 5) (Sum.inr 4), BAMEdge.mk true (Sum.inr 4) (Sum.inr 5), BAMEdge.mk true (Sum.inr 0) (Sum.inr 1)]
 
-private def BAS3Close_cf1_6 (s : Bool) : BAGraph (Fin 2) (Fin 10) where
+def BAS3Close_cf1_6 (s : Bool) : BAGraph (Fin 2) (Fin 10) where
   solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), (if s then SEdge.mk true true (Sum.inl 1) (Sum.inl 0) else SEdge.mk false true (Sum.inl 0) (Sum.inl 1)), SEdge.mk true true (Sum.inr 3) (Sum.inl 1), SEdge.mk true true (Sum.inr 1) (Sum.inr 2)]
   waved := [WEdge.mk true true (Sum.inr 4) (Sum.inr 0), WEdge.mk false false (Sum.inr 1) (Sum.inr 8), WEdge.mk false false (Sum.inr 5) (Sum.inr 6), WEdge.mk true true (Sum.inr 7) (Sum.inr 2), WEdge.mk false true (Sum.inr 3) (Sum.inr 9)]
   dotted := []

@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Step1Good
-import Mathlib.Analysis.Matrix.PosDef
-import Mathlib.Analysis.Matrix.Spectrum
+
+module
+
+public import RBM3D.Universality.Step1Good
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Matrix.Spectrum
+
+@[expose] public section
 
 /-!
 # The mean bound and the free-convolution step for the centred model

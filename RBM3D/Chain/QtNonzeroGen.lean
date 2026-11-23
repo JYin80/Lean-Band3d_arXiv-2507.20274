@@ -3,12 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.NQLinGen
-import RBM3D.Chain.GridAssemblyGen
-import RBM3D.Chain.AzumaProxyGen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Induction.QtNonzero
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.NQLinGen
+public import RBM3D.Chain.GridAssemblyGen
+public import RBM3D.Chain.AzumaProxyGen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Induction.QtNonzero
+import all RBM3D.Induction.QtNonzero
+
+@[expose] public section
 
 /-!
 # The grid ingredients of the zero-mode-removed evolution `Q^{(A)}(𝓛 − 𝒦)^{(k)}` over a carrier

@@ -3,13 +3,28 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistStep
-import RBM3D.BA.TwistKer
-import RBM3D.BA.TwistChain
-import RBM3D.BA.TwistAvgB
-import RBM3D.BA.Step1Fam
-import RBM3D.BA.GreenSchur
-import RBM3D.Induction.Step34Pins
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistStep
+public import RBM3D.BA.TwistKer
+public import RBM3D.BA.TwistChain
+public import RBM3D.BA.TwistAvgB
+public import RBM3D.BA.Step1Fam
+public import RBM3D.BA.GreenSchur
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.BA.TwistKer2
+public import RBM3D.BA.TwistGridTail
+public import RBM3D.BA.TwistPins
+import all RBM3D.BA.TwistKer2
+import all RBM3D.BA.TwistStep
+import all RBM3D.BA.TwistGridTail
+import all RBM3D.BA.TwistKer
+import all RBM3D.BA.TwistPins
+import all RBM3D.BA.TwistChain
+
+@[expose] public section
 
 /-!
 # The per-time bound for the twisted 2-loop, part 2: the assembly, the charge cases, the regimes
@@ -52,7 +67,8 @@ open RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 /-! ## 1. Eventual arithmetic facts along the scale `N = size n` -/
 
 open private TwistKer2_Bctl_ge_inv TwistKer2_Wd_Ld_le from RBM3D.BA.TwistKer2
-open private TwistStep_Good from RBM3D.BA.TwistStep
+-- (the names formerly opened from RBM3D.BA.TwistStep are public)
+open RBM.BA (TwistStep_Good)
 
 section FA
 

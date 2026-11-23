@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWLvl1
-import RBM3D.Graph.LWSymm
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWWeightExp
-import RBM3D.Graph.LWEdgeExp
-import RBM3D.Graph.LWGGExp
-import RBM3D.Graph.ScalingOrder
-import Mathlib.Combinatorics.SimpleGraph.Acyclic
+
+module
+
+public import RBM3D.Graph.LWLvl1
+public import RBM3D.Graph.LWSymm
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWWeightExp
+public import RBM3D.Graph.LWEdgeExp
+public import RBM3D.Graph.LWGGExp
+public import RBM3D.Graph.ScalingOrder
+public import Mathlib.Combinatorics.SimpleGraph.Acyclic
+
+@[expose] public section
 
 /-!
 # `lem:localregular`: the starting graph, the predicates and `(eq:MolVW)`
@@ -223,8 +228,6 @@ theorem localReg_stepEdges_strip (l : List (N × N)) : localReg_stepEdges (local
   unfold localReg_stepEdges localReg_stepStrip localReg_offDiag
   rw [Multiset.filter_coe, List.filter_map]
   congr 1
-  refine congrArg _ (List.filter_congr fun st _ => ?_)
-  simp [Sym2.mk_isDiag_iff]
 
 end Walks
 

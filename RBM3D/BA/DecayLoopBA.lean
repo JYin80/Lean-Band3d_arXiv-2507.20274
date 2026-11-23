@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.DecayGenTw
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.BA.KDecayBA
-import RBM3D.BA.Step2CloseBA
-import RBM3D.BA.NetLiftBA
-import RBM3D.BA.SEforLnBA
+
+module
+
+public import RBM3D.Chain.DecayGenTw
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.BA.KDecayBA
+public import RBM3D.BA.Step2CloseBA
+public import RBM3D.BA.NetLiftBA
+public import RBM3D.BA.SEforLnBA
+
+@[expose] public section
 
 /-!
 # The block Anderson reading of the loop decay `lem_decayLoop`

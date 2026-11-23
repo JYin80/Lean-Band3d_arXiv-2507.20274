@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Carrier
-import RBM3D.Graph.LWPins
-import RBM3D.BA.FlowPins
-import RBM3D.BA.GreenLDE
-import RBM3D.BA.Ward
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Induction.DecayLoopB
+
+module
+
+public import RBM3D.Chain.Carrier
+public import RBM3D.Graph.LWPins
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.GreenLDE
+public import RBM3D.BA.Ward
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Induction.DecayLoopB
+
+@[expose] public section
 
 /-!
 # The edge variables `ζ` on the block Anderson carrier `baFMz` (part 1)

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
-import Mathlib.MeasureTheory.Integral.Gamma
-import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
-import RBM3D.Defs.Params
+
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+public import Mathlib.MeasureTheory.Integral.Gamma
+public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+public import RBM3D.Defs.Params
+
+@[expose] public section
 
 /-!
 # The Θ-free Laplace–Gauss integrals

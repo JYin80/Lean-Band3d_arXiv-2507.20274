@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14a2
-import RBM3D.Graph.BAExp14b2B
+
+module
+
+public import RBM3D.Graph.BAExp14a2
+public import RBM3D.Graph.BAExp14b2B
+
+@[expose] public section
 
 /-!
 # The light-weight expectation bound at the block Anderson data (`lem:LWterm_EXP`)

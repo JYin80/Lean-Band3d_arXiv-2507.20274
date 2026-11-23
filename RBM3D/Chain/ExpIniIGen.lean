@@ -3,10 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.ExpIniI
-import RBM3D.Induction.QopNorm
-import RBM3D.Chain.CltFarUGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.ExpIniI
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Chain.CltFarUGen
+public import RBM3D.Chain.Step5CasesGen
+import all RBM3D.Induction.ExpIniI
+import all RBM3D.Chain.Step5CasesGen
+
+@[expose] public section
 
 /-!
 # The initial term of regime (i) over the carrier

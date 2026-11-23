@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.EntryCore
-import RBM3D.Green.Stability
-import RBM3D.Green.Pins
-import RBM3D.Induction.PerTimeCalc
+
+module
+
+public import RBM3D.Green.EntryCore
+public import RBM3D.Green.Stability
+public import RBM3D.Green.Pins
+public import RBM3D.Induction.PerTimeCalc
+
+@[expose] public section
 
 /-!
 # Block-average error (3.5) `GavLGEX` and the `≺` layer of `lem_GbEXP`, `d ≥ 3`

@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BASizeClaim
+
+module
+
+public import RBM3D.Graph.BASizeClaim
+
+@[expose] public section
 
 /-!
 # The claim `Γ ≺ size(Γ)` at BA, the model forms and the confinement tails (part 2)

@@ -3,8 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.CltMoments2
-import RBM3D.Chain.CltGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Evolution.CltMoments2
+public import RBM3D.Chain.CltGen
+public import RBM3D.Evolution.CltMoments1
+import all RBM3D.Evolution.CltMoments1
+import all RBM3D.Evolution.CltMoments2
+
+@[expose] public section
 
 /-!
 # The CLT moment layer of Step 5 case (i) over the carrier

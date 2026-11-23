@@ -3,11 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BASymm1
-import RBM3D.Graph.BAExpandWOrd
-import RBM3D.Graph.BAWeightOp
-import RBM3D.Graph.BAGGOp
-import RBM3D.BA.CouplingWindow
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BASymm1
+public import RBM3D.Graph.BAExpandWOrd
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAGGOp
+public import RBM3D.BA.CouplingWindow
+import all RBM3D.Graph.BAWeightOp
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.setOption false

@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.ExpAvg
-import RBM3D.Induction.ExpEtermsA
-import RBM3D.Induction.ExpDuhamel
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.ExpAvg
+public import RBM3D.Induction.ExpEtermsA
+public import RBM3D.Induction.ExpDuhamel
+
+@[expose] public section
 
 /-!
 # The integrated estimate of regime (ii) of Step 6

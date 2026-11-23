@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.Primitive
-import RBM3D.Loop.GLoop
+
+module
+
+public import RBM3D.Loop.Primitive
+public import RBM3D.Loop.GLoop
+
+@[expose] public section
 
 /-!
 # The tree-sum definition of `𝒦^{(n)}`, `d ≥ 3`

@@ -3,7 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BASim2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BASim2
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.BAAtomic
+public import RBM3D.Graph.BAWeightOp
+public import RBM3D.Graph.BAExpandWOrd
+import all RBM3D.Graph.LWVocab
+import all RBM3D.Graph.BAVocab
+import all RBM3D.Graph.BAAtomic
+import all RBM3D.Graph.BAWeightOp
+import all RBM3D.Graph.BAExpandWOrd
+import all RBM3D.Graph.BASim2
+
+@[expose] public section
 
 /-!
 # A BA step matched with a band `LocStep` at the image (part 3)
@@ -28,7 +45,8 @@ set_option linter.unnecessarySimpa false
 
 open private lwExists_mem_dedupPairs lwMem_of_mem_dedupPairs from RBM3D.Graph.LWVocab
 open private BAVocab_vmap_injective BAVocab_vmap_surjective BAVocab_merge_atomAdj BAVocab_merge_dotted_eq from RBM3D.Graph.BAVocab
-open private BAAtomic_solidAt BAAtomic_charge BAAtomic_fm BAAtomic_exists_inr_vmap from RBM3D.Graph.BAAtomic
+open private BAAtomic_solidAt BAAtomic_charge BAAtomic_exists_inr_vmap
+  from RBM3D.Graph.BAAtomic
 open private BAWeightOp_packMerge_counters BAWeightOp_nExt_add_nA BAWeightOp_atom_subset BAWeightOp_nA_le from RBM3D.Graph.BAWeightOp
 open private BAVocab_atom_eq_of_mem BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
 open private lwVmap_isRight from RBM3D.Graph.LWVocab
@@ -38,6 +56,7 @@ open private BAWeightOp_ext_atomAdj BAWeightOp_ext_normal BAWeightOp_splitG_of_c
 open private BAExpandWOrd_ext_counters from RBM3D.Graph.BAExpandWOrd
 open private BAAtomic_pairs_eq BAAtomic_share_eq from RBM3D.Graph.BAAtomic
 open private BASim_rtg_sub from RBM3D.Graph.BASim2
+open RBM.Graph (BAAtomic_fm)
 
 noncomputable section
 

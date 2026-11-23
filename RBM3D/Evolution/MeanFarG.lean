@@ -3,8 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.MeanFar
-import RBM3D.Chain.CltGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Evolution.MeanFar
+public import RBM3D.Chain.CltGen
+import all RBM3D.Evolution.MeanFar
+
+@[expose] public section
 
 /-!
 # The mean part `𝔼 f^{far}` of the CLT step of case (i) over the carrier

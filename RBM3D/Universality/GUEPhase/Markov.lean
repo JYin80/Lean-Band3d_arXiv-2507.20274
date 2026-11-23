@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Grid
-import RBM3D.Path.Markov
-import Mathlib.Probability.Moments.SubGaussian
+
+module
+
+public import RBM3D.Universality.GUEPhase.Grid
+public import RBM3D.Path.Markov
+public import Mathlib.Probability.Moments.SubGaussian
+
+@[expose] public section
 
 /-!
 # The `Pgue` Markov toolkit, `d ≥ 3`

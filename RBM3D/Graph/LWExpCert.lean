@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWWeightExp
-import RBM3D.Graph.LWGGExp
-import RBM3D.Graph.LWExpTerm3
+
+module
+
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWWeightExp
+public import RBM3D.Graph.LWGGExp
+public import RBM3D.Graph.LWExpTerm3
+
+@[expose] public section
 
 /-!
 # A computable model of the dotted partition and the AND-tree certificate

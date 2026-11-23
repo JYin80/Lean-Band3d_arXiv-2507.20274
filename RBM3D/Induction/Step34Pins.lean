@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Defs
-import RBM3D.Evolution.Pins
-import RBM3D.Evolution.SumDecay
-import RBM3D.Propagator.Prop6Hold
-import RBM3D.Loop.KLWard
+
+module
+
+public import RBM3D.Induction.Defs
+public import RBM3D.Evolution.Pins
+public import RBM3D.Evolution.SumDecay
+public import RBM3D.Propagator.Prop6Hold
+public import RBM3D.Loop.KLWard
+
+@[expose] public section
 
 /-!
 # The statements of Steps 3 and 4 of `lem:main_ind` and their ingredients

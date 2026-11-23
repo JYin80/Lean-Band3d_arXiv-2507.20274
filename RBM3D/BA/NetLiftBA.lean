@@ -3,17 +3,29 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2Gen
-import RBM3D.BA.TwistLoop
-import RBM3D.BA.Step1Setup
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.KInduct
-import RBM3D.BA.EKPins
-import RBM3D.BA.KBase
-import RBM3D.BA.GreenSchur
-import RBM3D.Path.NetLift1
-import RBM3D.Path.NetLift2
-import RBM3D.Induction.ContinuityNet
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step2Gen
+public import RBM3D.BA.TwistLoop
+public import RBM3D.BA.Step1Setup
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.EKPins
+public import RBM3D.BA.KBase
+public import RBM3D.BA.GreenSchur
+public import RBM3D.Path.NetLift1
+public import RBM3D.Path.NetLift2
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.BA.TwistKer2
+import all RBM3D.BA.Step1Setup
+import all RBM3D.BA.KBase
+import all RBM3D.BA.TwistKer2
+import all RBM3D.Path.NetLift2
+import all RBM3D.Path.NetLift1
+
+@[expose] public section
 
 /-!
 # The net lift of Step 2 at the block Anderson carrier

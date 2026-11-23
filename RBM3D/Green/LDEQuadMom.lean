@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
-import RBM3D.Green.EntryCore
-import RBM3D.Green.LDEQuad
+
+module
+
+public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+public import RBM3D.Green.EntryCore
+public import RBM3D.Green.LDEQuad
+
+@[expose] public section
 
 /-!
 # The Hanson–Wright layer, second half: master identity, moment recursion, moment bound

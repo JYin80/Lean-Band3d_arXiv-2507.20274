@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.FlowPins
-import RBM3D.BA.KKernel
-import RBM3D.Propagator.Deriv
+
+module
+
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.KKernel
+public import RBM3D.Propagator.Deriv
+
+@[expose] public section
 
 /-!
 # The `M`-loop carrier `BAMLoop` and the `Θ_BA` calculus

@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Step1Good
-import RBM3D.Universality.FreeConvStability
-import Mathlib.Order.Filter.AtTopBot.Archimedean
-import Mathlib.Probability.Moments.SubGaussian
-import Mathlib.Probability.Distributions.Gaussian.Real
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+module
+
+public import RBM3D.Universality.Step1Good
+public import RBM3D.Universality.FreeConvStability
+public import Mathlib.Order.Filter.AtTopBot.Archimedean
+public import Mathlib.Probability.Moments.SubGaussian
+public import Mathlib.Probability.Distributions.Gaussian.Real
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+@[expose] public section
 
 /-!
 # The GUE side of the free-convolution regularity event

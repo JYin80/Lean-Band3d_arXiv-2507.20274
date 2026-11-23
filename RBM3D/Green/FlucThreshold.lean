@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.MinorDiffCond
-import RBM3D.Green.LocalLaw
-import RBM3D.Green.FlucIterGain
+
+module
+
+public import RBM3D.Green.MinorDiffCond
+public import RBM3D.Green.LocalLaw
+public import RBM3D.Green.FlucIterGain
+
+@[expose] public section
 
 /-!
 # The smallness of the bad-event tower, and the fluctuation gain from the local law

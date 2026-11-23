@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NQGood2
-import RBM3D.Induction.GridEnvelopeN
-import RBM3D.Induction.ContinuityNet
+
+module
+
+public import RBM3D.Induction.NQGood2
+public import RBM3D.Induction.GridEnvelopeN
+public import RBM3D.Induction.ContinuityNet
+
+@[expose] public section
 
 /-!
 # The term budgets of the non-alternating assembled bound at the `d ≥ 3` data of `NQGood2`

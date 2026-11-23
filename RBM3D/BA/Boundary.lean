@@ -3,14 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.CouplingWindow
-import RBM3D.BA.FlowPins
-import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
-import Mathlib.Analysis.Calculus.Deriv.Inv
-import Mathlib.Analysis.Calculus.Deriv.Comp
-import Mathlib.Analysis.Calculus.Deriv.Add
-import Mathlib.Order.Filter.AtTopBot.CountablyGenerated
-import Mathlib.Topology.MetricSpace.Sequences
+
+module
+
+public import RBM3D.BA.CouplingWindow
+public import RBM3D.BA.FlowPins
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
+public import Mathlib.Analysis.Calculus.Deriv.Inv
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Order.Filter.AtTopBot.CountablyGenerated
+public import Mathlib.Topology.MetricSpace.Sequences
+
+@[expose] public section
 
 /-!
 # Closedness of the self-consistent equation `(self_m)` along real-axis limits

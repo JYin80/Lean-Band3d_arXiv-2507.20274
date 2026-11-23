@@ -3,15 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.MAPins
-import RBM3D.BA.MainIndTermBA
-import RBM3D.BA.RandomLayerBGBA
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.Ward
-import RBM3D.Main.FixedZ
-import RBM3D.Main.ZTransfer
-import RBM3D.Main.ZNet
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.MAPins
+public import RBM3D.BA.MainIndTermBA
+public import RBM3D.BA.RandomLayerBGBA
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.Ward
+public import RBM3D.Main.FixedZ
+public import RBM3D.Main.ZTransfer
+public import RBM3D.Main.ZNet
+public import RBM3D.BA.FlowPins
+import all RBM3D.BA.FlowPins
+import all RBM3D.Main.ZNet
+
+@[expose] public section
 
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.GridEnvelopeN
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.Split
-import RBM3D.Loop.KLFinal
-import RBM3D.Green.CondDom
+
+module
+
+public import RBM3D.Induction.GridEnvelopeN
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.Split
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Green.CondDom
+
+@[expose] public section
 
 /-!
 # `STGridRepN`, part 1: the canonical split, the remainder bound, the assembly (`d ≥ 3`)

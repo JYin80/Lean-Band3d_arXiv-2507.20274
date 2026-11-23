@@ -3,19 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.CltFarUGen
-import RBM3D.Chain.Step2Kern
-import RBM3D.Evolution.ExpInv
-import RBM3D.Evolution.MeanFar
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.Step2CloseBA
-import RBM3D.BA.Ward
-import RBM3D.BA.KSolve
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.KInduct
-import RBM3D.BA.Prop6Path
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.CombesThomas
+
+module
+
+public import RBM3D.Chain.CltFarUGen
+public import RBM3D.Chain.Step2Kern
+public import RBM3D.Evolution.ExpInv
+public import RBM3D.Evolution.MeanFar
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.Step2CloseBA
+public import RBM3D.BA.Ward
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.Prop6Path
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.CombesThomas
+
+@[expose] public section
 
 /-!
 # The class `IniTermGen_CltFlow` at the block Anderson tuple

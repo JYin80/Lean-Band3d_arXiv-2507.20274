@@ -3,9 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.NQLinGen
-import RBM3D.Chain.HierDriftGen
-import RBM3D.Induction.NQEndLin
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.NQLinGen
+public import RBM3D.Chain.HierDriftGen
+public import RBM3D.Induction.NQEndLin
+public import RBM3D.Induction.GridEnvelopeN
+import all RBM3D.Induction.GridEnvelopeN
+import all RBM3D.Induction.NQEndLin
+
+@[expose] public section
 
 /-!
 # The non-alternating grid endpoint with the linear right side over the carrier

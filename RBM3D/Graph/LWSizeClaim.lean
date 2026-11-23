@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWPins
-import RBM3D.Propagator.Prop5Short
-import RBM3D.Defs.RadialSum
-import RBM3D.Defs.Sizes
+
+module
+
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWPins
+public import RBM3D.Propagator.Prop5Short
+public import RBM3D.Defs.RadialSum
+public import RBM3D.Defs.Sizes
+
+@[expose] public section
 
 /-!
 # The claim `Γ ≺ size(Γ)` (after (7.18)): the size bound of a normal graph and the decay of `S^±`

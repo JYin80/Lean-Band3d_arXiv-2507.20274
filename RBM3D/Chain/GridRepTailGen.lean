@@ -3,8 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.GridDuhamelGen
-import RBM3D.Path.DifREP3
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.GridDuhamelGen
+public import RBM3D.Path.DifREP3
+import all RBM3D.Path.DifREP3
+
+@[expose] public section
 
 /-!
 # The two-slot weighted martingale tail over a carrier, part 1
@@ -32,10 +39,13 @@ set_option linter.unusedVariables false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-open private difRep3_sum_norm_prod_le difRep3_norm_double_sum_le difRep3_sum_prod_sub_prod difRep3_tensorKer_one
-  difRep3_gridTime_nonneg difRep3_gridTime_le difRep3_gridTime_succ difRep3_gridTime_mono difRep3_K_mul_step
-  difRep3_card_label_le difRep3_vc difRep3_vc_ge difRep3_vc_le difRep3_coarse difRep3_memLp_two_of_pow4
-  difRep3_doob_tail difRep3_Mee difRep3_VQ difRep3_c3 from RBM3D.Path.DifREP3
+open private difRep3_sum_norm_prod_le difRep3_norm_double_sum_le difRep3_sum_prod_sub_prod
+  difRep3_tensorKer_one difRep3_gridTime_nonneg difRep3_gridTime_le difRep3_gridTime_succ
+  difRep3_gridTime_mono difRep3_K_mul_step difRep3_card_label_le difRep3_vc_ge difRep3_vc_le
+  difRep3_coarse difRep3_memLp_two_of_pow4 difRep3_doob_tail
+  from RBM3D.Path.DifREP3
+open RBM.Ind (difRep3_vc)
+open RBM.Ind (difRep3_Mee difRep3_VQ difRep3_c3)
 
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal

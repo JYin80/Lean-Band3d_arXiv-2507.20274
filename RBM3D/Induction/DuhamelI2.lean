@@ -3,9 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.DuhamelI
-import RBM3D.Induction.PfStep5Grid
-import RBM3D.Chain.GridRepTailGen2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.DuhamelI
+public import RBM3D.Induction.PfStep5Grid
+public import RBM3D.Chain.GridRepTailGen2
+public import RBM3D.Chain.Step5KerGen
+import all RBM3D.Induction.DuhamelI
+import all RBM3D.Chain.Step5KerGen
+import all RBM3D.Induction.PfStep5Grid
+
+@[expose] public section
 
 /-!
 # The integrated hierarchy at `n = 2`, case (i), over the flow carrier

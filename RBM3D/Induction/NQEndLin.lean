@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NQLin
-import RBM3D.Induction.GridAssemblyN
-import RBM3D.Induction.AzumaProxyN2
-import RBM3D.Loop.KLFinal
+
+module
+
+public import RBM3D.Induction.NQLin
+public import RBM3D.Induction.GridAssemblyN
+public import RBM3D.Induction.AzumaProxyN2
+public import RBM3D.Loop.KLFinal
+
+@[expose] public section
 
 /-!
 # The non-alternating grid endpoint with the linear right side (`d ≥ 3`): `nqGridEndLinN`

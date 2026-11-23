@@ -3,19 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ExpIntI
-import RBM3D.Induction.QopDecay
-import RBM3D.Induction.QopAlgebra
-import RBM3D.Induction.QopNorm
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.Step6Pins
-import RBM3D.Induction.ExpWardI
-import RBM3D.Induction.ExpIntII
-import RBM3D.Induction.ExpDuhamel
-import RBM3D.Induction.LemDecCalELip
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Kernel.PropT
-import RBM3D.Evolution.Prec
+
+module
+
+public import RBM3D.Induction.ExpIntI
+public import RBM3D.Induction.QopDecay
+public import RBM3D.Induction.QopAlgebra
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.Step6Pins
+public import RBM3D.Induction.ExpWardI
+public import RBM3D.Induction.ExpIntII
+public import RBM3D.Induction.ExpDuhamel
+public import RBM3D.Induction.LemDecCalELip
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Kernel.PropT
+public import RBM3D.Evolution.Prec
+
+@[expose] public section
 
 /-!
 # The `𝒬` conjunct of the integrated estimate of regime (i), by transfer from `ϑ*`

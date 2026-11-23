@@ -3,19 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.NQEndFlow
-import RBM3D.Induction.ContinuityNet
-import RBM3D.Induction.LemDecCalELip
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.Step2Events
-import RBM3D.Green.Pins
-import RBM3D.Gauss.Domination
-import RBM3D.Loop.KLFinal
-import RBM3D.Loop.KLTreeDeriv
-import RBM3D.Loop.KBound
-import RBM3D.Loop.TreeRep
-import RBM3D.Loop.Unique
-import Mathlib.Analysis.Calculus.MeanValue
+
+module
+
+public import RBM3D.Induction.NQEndFlow
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.Induction.LemDecCalELip
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Green.Pins
+public import RBM3D.Gauss.Domination
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Loop.KLTreeDeriv
+public import RBM3D.Loop.KBound
+public import RBM3D.Loop.TreeRep
+public import RBM3D.Loop.Unique
+public import Mathlib.Analysis.Calculus.MeanValue
+
+@[expose] public section
 
 /-!
 # The monotone envelope of a bound and the time modulus of `𝒦^{(k)}` (`d ≥ 3`)

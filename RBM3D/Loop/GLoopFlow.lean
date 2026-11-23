@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.GLoop
-import RBM3D.Loop.TreeRep
-import RBM3D.Gauss.FineModel
+
+module
+
+public import RBM3D.Loop.GLoop
+public import RBM3D.Loop.TreeRep
+public import RBM3D.Gauss.FineModel
+
+@[expose] public section
 
 /-!
 # Flow data, resolvents and `G`-loops along the flow

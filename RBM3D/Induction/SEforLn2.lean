@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.SEforLn1
-import RBM3D.Induction.ScaleFacts
+
+module
+
+public import RBM3D.Induction.SEforLn1
+public import RBM3D.Induction.ScaleFacts
+
+@[expose] public section
 
 /-!
 # `lem:SEforLn`, parts (3) and (4), and the statement `STSEforLn`

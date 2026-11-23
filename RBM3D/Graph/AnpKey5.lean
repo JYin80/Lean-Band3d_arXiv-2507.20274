@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AnpKey3
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import Mathlib.Algebra.Order.BigOperators.Ring.Finset
-import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.Data.Finset.Card
+
+module
+
+public import RBM3D.Graph.AnpKey3
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+public import Mathlib.Algebra.BigOperators.Fin
+public import Mathlib.Data.Finset.Card
+
+@[expose] public section
 
 /-!
 # `lem:Anp_key_gh`, Case (IV), first part: the nested order of summation

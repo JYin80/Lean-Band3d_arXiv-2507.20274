@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QLevelsA
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.Step2Core
-import RBM3D.Induction.Step2Events
-import RBM3D.Induction.AzumaProxyN
+
+module
+
+public import RBM3D.Induction.QLevelsA
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.Step2Core
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Induction.AzumaProxyN
+
+@[expose] public section
 
 /-!
 # The decay clause of `GoodSetN` in the shape of `altB45N_levelM`

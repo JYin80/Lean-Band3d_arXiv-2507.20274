@@ -3,11 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.QtNonzeroFlowGen
-import RBM3D.Chain.QtBootGen
-import RBM3D.Chain.ZeroModeGen
-import RBM3D.Chain.Step6KitGen
-import RBM3D.Induction.QtNonzeroBoot
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.QtNonzeroFlowGen
+public import RBM3D.Chain.QtBootGen
+public import RBM3D.Chain.ZeroModeGen
+public import RBM3D.Chain.Step6KitGen
+public import RBM3D.Induction.QtNonzeroBoot
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.Chain.QtXiRoundLiftGen
+import all RBM3D.Induction.QtNonzeroBoot
+import all RBM3D.Chain.NQEndFlowGen
+import all RBM3D.Chain.QtXiRoundLiftGen
+import all RBM3D.Chain.QtBootGen
+
+@[expose] public section
 
 /-!
 # The case-(ii) round and the bootstrap over the carrier family: `stOeqQtNZgL'_of`

@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Calculus.FDeriv.Mul
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Green.EntryCore
-import RBM3D.Green.EntryDom
-import RBM3D.Green.LDEQuad
-import RBM3D.Green.RowIndep
-import RBM3D.Hierarchy.ContractionBasic
+
+module
+
+public import Mathlib.Analysis.Calculus.FDeriv.Mul
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Green.EntryCore
+public import RBM3D.Green.EntryDom
+public import RBM3D.Green.LDEQuad
+public import RBM3D.Green.RowIndep
+public import RBM3D.Hierarchy.ContractionBasic
+
+@[expose] public section
 
 /-!
 # Row conditioning, differentiability of the resolvent, and the base layer of fluctuation

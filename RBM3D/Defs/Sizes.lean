@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.Model
-import RBM3D.Defs.Params
+
+module
+
+public import RBM3D.Gauss.Model
+public import RBM3D.Defs.Params
+
+@[expose] public section
 
 /-!
 # The fine lattice `Z_{WL}^d` and the size data of an admissible sequence

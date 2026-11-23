@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Green.EntryCore
-import RBM3D.Propagator.Prop5Short
-import RBM3D.Defs.RadialSum
-import RBM3D.Gauss.FineModel
-import RBM3D.Defs.Semicircle
+
+module
+
+public import RBM3D.Green.EntryCore
+public import RBM3D.Propagator.Prop5Short
+public import RBM3D.Defs.RadialSum
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Defs.Semicircle
+
+@[expose] public section
 
 /-!
 # Stability of `1 - t m² S` on the band profile, `d ≥ 3`
@@ -172,14 +177,14 @@ section Constant
 
 /-- The constant `C_s` of `prop5Short_holds` at `(d, Λ, κ)`: its first constant
 (chosen); `1` outside `3 ≤ d`, `0 < Λ`, `0 < κ`. -/
-private noncomputable def pin5sC (d : ℕ) (Λ κ : ℝ) : ℝ :=
+noncomputable def pin5sC (d : ℕ) (Λ κ : ℝ) : ℝ :=
   if h : 3 ≤ d ∧ 0 < Λ ∧ 0 < κ then
     Classical.choose (prop5Short_holds d Λ κ h.1 h.2.1 h.2.2)
   else 1
 
 /-- The decay rate `c_s` of `prop5Short_holds` at `(d, Λ, κ)`: its second constant
 (chosen); `1` outside `3 ≤ d`, `0 < Λ`, `0 < κ`. -/
-private noncomputable def pin5sc (d : ℕ) (Λ κ : ℝ) : ℝ :=
+noncomputable def pin5sc (d : ℕ) (Λ κ : ℝ) : ℝ :=
   if h : 3 ≤ d ∧ 0 < Λ ∧ 0 < κ then
     Classical.choose (Classical.choose_spec (prop5Short_holds d Λ κ h.1 h.2.1 h.2.2)).2
   else 1

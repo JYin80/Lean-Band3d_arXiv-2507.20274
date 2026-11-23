@@ -3,17 +3,24 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QGridA
-import RBM3D.Induction.QopNorm
-import RBM3D.Induction.AzumaProxyN2
-import RBM3D.Induction.NQGood2
-import RBM3D.Evolution.SumDecayZero
-import RBM3D.Chain.QGridGen
-import RBM3D.Chain.AzumaProxyGen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.GridRepTailGen2
-import RBM3D.Chain.GridGoodGen
-import RBM3D.Chain.NQGood1Gen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.QGridA
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Induction.AzumaProxyN2
+public import RBM3D.Induction.NQGood2
+public import RBM3D.Evolution.SumDecayZero
+public import RBM3D.Chain.QGridGen
+public import RBM3D.Chain.AzumaProxyGen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.GridRepTailGen2
+public import RBM3D.Chain.GridGoodGen
+public import RBM3D.Chain.NQGood1Gen
+import all RBM3D.Chain.NQGood1Gen
+
+@[expose] public section
 
 /-!
 # The martingale part of the `𝒬`-process at `d ≥ 3`

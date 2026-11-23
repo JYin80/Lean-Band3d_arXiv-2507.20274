@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.CltSwap
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Green.EntryCore
+
+module
+
+public import RBM3D.Evolution.CltSwap
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Green.EntryCore
+
+@[expose] public section
 
 /-!
 # Deterministic resolvent bounds for the replacement step

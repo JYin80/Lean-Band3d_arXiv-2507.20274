@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14e
-import RBM3D.Graph.BAExp14bB
-import RBM3D.BA.TwistAvgB
+
+module
+
+public import RBM3D.Graph.BAExp14e
+public import RBM3D.Graph.BAExp14bB
+public import RBM3D.BA.TwistAvgB
+
+@[expose] public section
 
 /-!
 # `lem:LWterm_EXP` at BA: the reduction `LWE → LWcut` and the assembly of the families

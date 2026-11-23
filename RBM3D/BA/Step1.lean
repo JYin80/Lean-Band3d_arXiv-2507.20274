@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step1Setup
-import RBM3D.BA.Step1Boot
-import RBM3D.Induction.Continuity
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Induction.Step1Setup
+
+module
+
+public import RBM3D.BA.Step1Setup
+public import RBM3D.BA.Step1Boot
+public import RBM3D.Induction.Continuity
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Induction.Step1Setup
+
+@[expose] public section
 
 /-!
 # Block Anderson Step 1: the vocabulary `gmMax` and the helpers

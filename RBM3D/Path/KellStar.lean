@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.UBounds
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Green.Pins
-import RBM3D.Defs.Sizes
+
+module
+
+public import RBM3D.Path.UBounds
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Green.Pins
+public import RBM3D.Defs.Sizes
+
+@[expose] public section
 
 /-!
 # The far field estimate `KellStarEv`: `Θ_u` and the `𝒰`-kernel beyond `δ ℓ*_u`

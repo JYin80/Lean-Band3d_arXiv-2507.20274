@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWSymm
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.ScalingOrder
-import RBM3D.Graph.LWWeightExp
+
+module
+
+public import RBM3D.Graph.LWSymm
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.ScalingOrder
+public import RBM3D.Graph.LWWeightExp
+
+@[expose] public section
 
 /-!
 # Locally standard graphs, `strat_local`, the `lvl1 lemma`

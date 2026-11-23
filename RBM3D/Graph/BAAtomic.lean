@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAVocab
-import RBM3D.Graph.LWLvl1
-import RBM3D.Graph.LocalRegular6a
+
+module
+
+public import RBM3D.Graph.BAVocab
+public import RBM3D.Graph.LWLvl1
+public import RBM3D.Graph.LocalRegular6a
+
+@[expose] public section
 
 /-!
 # The atomic image of a block Anderson graph
@@ -533,7 +538,7 @@ section LoopsPairs
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
 /-- An edge of the image: the end vertices are merged, the circle stays iff the ends lie in one atom. -/
-private def BAAtomic_fm (Γ : BAGraph E I) (e : SEdge (E ⊕ I)) : SEdge ((promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls) :=
+def BAAtomic_fm (Γ : BAGraph E I) (e : SEdge (E ⊕ I)) : SEdge ((promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls) :=
   ⟨e.σ, e.circ && Γ.sameAtom e.src e.dst, (promoteC Γ).vmap e.src, (promoteC Γ).vmap e.dst⟩
 
 theorem BAAtomic_merge_solid (Γ : BAGraph E I) : (promoteC Γ).merge.solid = Γ.solid.map (BAAtomic_fm Γ) := Γ.BAAtomic_img_solid

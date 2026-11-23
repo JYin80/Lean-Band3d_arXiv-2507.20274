@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.LoopStep
-import RBM3D.Universality.GUEPhase.Generator
-import RBM3D.Universality.GUEPhase.Markov
+
+module
+
+public import RBM3D.Path.LoopStep
+public import RBM3D.Universality.GUEPhase.Generator
+public import RBM3D.Universality.GUEPhase.Markov
+
+@[expose] public section
 
 /-!
 # The one-step drift of the GUE-phase grid

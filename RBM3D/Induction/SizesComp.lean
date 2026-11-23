@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Defs
-import Mathlib.Probability.Independence.InfinitePi
-import Mathlib.MeasureTheory.Integral.Prod
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.MeasurableSpace.Embedding
-import Mathlib.Data.Nat.Nth
-import Mathlib.Order.Filter.AtTopBot.Tendsto
+
+module
+
+public import RBM3D.Induction.Defs
+public import Mathlib.Probability.Independence.InfinitePi
+public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.MeasurableSpace.Embedding
+public import Mathlib.Data.Nat.Nth
+public import Mathlib.Order.Filter.AtTopBot.Tendsto
+
+@[expose] public section
 
 /-!
 # The generic subsequence transfer: `Sizes.comp`, `Sizes.reindex`, the exact image law

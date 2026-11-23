@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistGridRem
-import RBM3D.BA.TwistGrid2
-import RBM3D.Path.LoopStep
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistGridRem
+public import RBM3D.BA.TwistGrid2
+public import RBM3D.Path.LoopStep
+import all RBM3D.Path.LoopStep
+
+@[expose] public section
 
 /-!
 # The twisted grid remainder bound `‖twRem‖ ≤ N^{C₀} √Δ`

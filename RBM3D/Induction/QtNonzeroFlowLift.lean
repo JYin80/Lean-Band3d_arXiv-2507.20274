@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.QtNonzeroFlow
-import RBM3D.Induction.NQEndFlowLift
-import RBM3D.Induction.ContinuityNet
-import RBM3D.Induction.LemDecCalELip
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.Step2Events
-import RBM3D.Green.Pins
-import RBM3D.Gauss.Domination
+
+module
+
+public import RBM3D.Induction.QtNonzeroFlow
+public import RBM3D.Induction.NQEndFlowLift
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.Induction.LemDecCalELip
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.Step2Events
+public import RBM3D.Green.Pins
+public import RBM3D.Gauss.Domination
+
+@[expose] public section
 
 /-!
 # The uniform case-(ii) endpoint at the flow (`d ≥ 3`): `stOeqNZ''_holds`

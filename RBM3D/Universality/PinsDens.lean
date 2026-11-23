@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.PinsK
-import RBM3D.Universality.FreeConvRegular
+
+module
+
+public import RBM3D.Universality.PinsK
+public import RBM3D.Universality.FreeConvRegular
+
+@[expose] public section
 
 /-!
 # The density-regular forms of the free-convolution statements

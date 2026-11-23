@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Kit
-import RBM3D.Induction.ExpEtermsB
-import RBM3D.Induction.ExpDuhamel
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
-import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
-import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import Mathlib.Analysis.Normed.Group.Constructions
-import Mathlib.Order.Filter.Finite
+
+module
+
+public import RBM3D.Induction.Step6Kit
+public import RBM3D.Induction.ExpEtermsB
+public import RBM3D.Induction.ExpDuhamel
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.Analysis.Normed.Group.Constructions
+public import Mathlib.Order.Filter.Finite
+
+@[expose] public section
 
 /-!
 # The integrated estimates of regimes (iii) and (iv), and `STStep6IV`

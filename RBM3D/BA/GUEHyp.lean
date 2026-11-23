@@ -3,11 +3,26 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUELLBA
-import RBM3D.BA.GUEEq729BA
-import RBM3D.BA.GUEPathBoundsBA
-import RBM3D.BA.GUETwistBA2
-import RBM3D.Universality.GUEPhase.Eq729B
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUELLBA
+public import RBM3D.BA.GUEEq729BA
+public import RBM3D.BA.GUEPathBoundsBA
+public import RBM3D.BA.GUETwistBA2
+public import RBM3D.Universality.GUEPhase.Eq729B
+public import RBM3D.Universality.GUEPhase.PathBounds
+public import RBM3D.Universality.GUEPhase.Grid
+public import RBM3D.BA.GUEKPrim
+import all RBM3D.BA.GUEPathBoundsBA
+import all RBM3D.Universality.GUEPhase.PathBounds
+import all RBM3D.BA.GUEEq729BA
+import all RBM3D.BA.GUELLBA
+import all RBM3D.Universality.GUEPhase.Grid
+import all RBM3D.BA.GUEKPrim
+
+@[expose] public section
 
 /-!
 # The (7.29) recursion, the (7.47) step and the block Anderson producers of the random layer

@@ -3,15 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step5Pins
-import RBM3D.Path.NetLift2
-import RBM3D.Propagator.Deriv
-import RBM3D.Propagator.Props4
-import RBM3D.Chain.Step5Gen
-import RBM3D.Chain.Step34Gen
-import RBM3D.Chain.StepDecompGen
-import RBM3D.Chain.NQGood1Gen
-import RBM3D.Chain.Step2EventsGen
+
+module
+
+public import RBM3D.Induction.Step5Pins
+public import RBM3D.Path.NetLift2
+public import RBM3D.Propagator.Deriv
+public import RBM3D.Propagator.Props4
+public import RBM3D.Chain.Step5Gen
+public import RBM3D.Chain.Step34Gen
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Chain.NQGood1Gen
+public import RBM3D.Chain.Step2EventsGen
+
+@[expose] public section
 
 /-!
 # Hölder-1/2 continuity in `u`, relative continuity and the realized bound `J♯`

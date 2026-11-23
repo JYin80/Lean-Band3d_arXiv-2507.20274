@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.FlowPins
-import RBM3D.Green.EntryDom
-import RBM3D.Green.LDE
-import RBM3D.Green.IBPPoly
+
+module
+
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.FlowPins
+public import RBM3D.Green.EntryDom
+public import RBM3D.Green.LDE
+public import RBM3D.Green.IBPPoly
+
+@[expose] public section
 
 /-!
 # The large deviation inputs of the block Anderson resolvent

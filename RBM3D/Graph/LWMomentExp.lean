@@ -3,15 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWProv
-import RBM3D.Graph.LWMomentExpA
-import RBM3D.Graph.LWMomExpInf
-import RBM3D.Graph.LWXiExp
-import RBM3D.Graph.LWMomExpFar
-import RBM3D.Graph.AuxGraph
-import RBM3D.Graph.LWMoment
-import RBM3D.Graph.AuxGraphRooted
-import RBM3D.Graph.LWMomExpD
+
+module
+
+public import RBM3D.Graph.LWProv
+public import RBM3D.Graph.LWMomentExpA
+public import RBM3D.Graph.LWMomExpInf
+public import RBM3D.Graph.LWXiExp
+public import RBM3D.Graph.LWMomExpFar
+public import RBM3D.Graph.AuxGraph
+public import RBM3D.Graph.LWMoment
+public import RBM3D.Graph.AuxGraphRooted
+public import RBM3D.Graph.LWMomExpD
+
+@[expose] public section
+
 /-!
 # `lem:LW_moment_exp`: the assembly
 

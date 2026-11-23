@@ -3,9 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GUEEq729BA
-import RBM3D.Universality.GUEPhase.DuhamelC
-import RBM3D.Chain.StepDecompGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GUEEq729BA
+public import RBM3D.Universality.GUEPhase.DuhamelC
+public import RBM3D.Chain.StepDecompGen
+public import RBM3D.Universality.GUEPhase.DuhamelB
+public import RBM3D.Universality.GUEPhase.DuhamelA2
+import all RBM3D.Universality.GUEPhase.DuhamelB
+import all RBM3D.Universality.GUEPhase.DuhamelA2
+
+@[expose] public section
 
 /-!
 # The loop Duhamel tail of the GUE phase on the block Anderson grid

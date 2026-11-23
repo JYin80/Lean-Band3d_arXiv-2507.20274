@@ -3,17 +3,28 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2CloseGen
-import RBM3D.Chain.Step2EventsGenTw
-import RBM3D.Chain.NewKLKGen
-import RBM3D.BA.Step2BA
-import RBM3D.BA.NewKLKBA
-import RBM3D.BA.KInduct
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.GreenSchur
-import RBM3D.BA.TwistStep2
-import RBM3D.BA.NetLiftBA
-import RBM3D.Induction.Step2Scale
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step2CloseGen
+public import RBM3D.Chain.Step2EventsGenTw
+public import RBM3D.Chain.NewKLKGen
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.NewKLKBA
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.GreenSchur
+public import RBM3D.BA.TwistStep2
+public import RBM3D.BA.NetLiftBA
+public import RBM3D.Induction.Step2Scale
+public import RBM3D.Induction.NewKLK
+import all RBM3D.BA.NewKLKBA
+import all RBM3D.Induction.NewKLK
+import all RBM3D.Chain.NewKLKGen
+import all RBM3D.Induction.Step2Scale
+
+@[expose] public section
 
 /-!
 # The Step 2 iteration at the block Anderson carrier, first half

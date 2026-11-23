@@ -3,12 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.OneLoop
-import RBM3D.Universality.GUEPhase.Drift
-import RBM3D.BA.GreenStab
-import RBM3D.BA.EKNonzero
-import RBM3D.BA.EMn2BA
-import RBM3D.Chain.ExpAvgGen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Universality.GUEPhase.OneLoop
+public import RBM3D.Universality.GUEPhase.Drift
+public import RBM3D.BA.GreenStab
+public import RBM3D.BA.EKNonzero
+public import RBM3D.BA.EMn2BA
+public import RBM3D.Chain.ExpAvgGen
+import all RBM3D.Chain.ExpAvgGen
+import all RBM3D.Universality.GUEPhase.OneLoop
+import all RBM3D.BA.EKNonzero
+
+@[expose] public section
 
 /-!
 # The expected one-loop bound on the GUE-phase grid at block Anderson

@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GreenOff
-import RBM3D.BA.GreenCore
-import RBM3D.BA.GreenStab
-import RBM3D.BA.Step1Boot
+
+module
+
+public import RBM3D.BA.GreenOff
+public import RBM3D.BA.GreenCore
+public import RBM3D.BA.GreenStab
+public import RBM3D.BA.Step1Boot
+
+@[expose] public section
 
 /-!
 # The block Anderson local law at a deterministic control, per-sequence layer

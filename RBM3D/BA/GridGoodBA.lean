@@ -3,17 +3,27 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GridDriftBA
-import RBM3D.BA.SEforLnBA
-import RBM3D.BA.KDecayBA
-import RBM3D.Chain.AzumaProxyGen
-import RBM3D.Chain.GridEnvelopeGen
-import RBM3D.Chain.DecayGenTw
-import RBM3D.BA.GridRepTailBA
-import RBM3D.BA.GreenLDE
-import RBM3D.BA.CombesThomas
-import RBM3D.BA.Ward
-import RBM3D.BA.KBase
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.GridDriftBA
+public import RBM3D.BA.SEforLnBA
+public import RBM3D.BA.KDecayBA
+public import RBM3D.Chain.AzumaProxyGen
+public import RBM3D.Chain.GridEnvelopeGen
+public import RBM3D.Chain.DecayGenTw
+public import RBM3D.BA.GridRepTailBA
+public import RBM3D.BA.GreenLDE
+public import RBM3D.BA.CombesThomas
+public import RBM3D.BA.Ward
+public import RBM3D.BA.KBase
+public import RBM3D.Induction.GridEnvelopeN
+public import RBM3D.Induction.GridDriftN
+import all RBM3D.Induction.GridEnvelopeN
+import all RBM3D.Induction.GridDriftN
+
+@[expose] public section
 
 /-!
 # The initial loops of the block Anderson flow

@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AuxGraph
-import RBM3D.Graph.LWPins
-import RBM3D.Green.GbEXP
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Induction.DecayLoopB
+
+module
+
+public import RBM3D.Graph.AuxGraph
+public import RBM3D.Graph.LWPins
+public import RBM3D.Green.GbEXP
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Induction.DecayLoopB
+
+@[expose] public section
 
 /-!
 # The edge variables `ξ` of (7.33) `eq:xia1a2` and the bridge (7.32) `eq:Gbyxi`

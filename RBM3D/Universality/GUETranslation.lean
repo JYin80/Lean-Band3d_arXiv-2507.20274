@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.Step1Band
-import RBM3D.Universality.Step1RegularityGUE
-import Mathlib.Order.Filter.AtTopBot.Archimedean
+
+module
+
+public import RBM3D.Universality.Step1Band
+public import RBM3D.Universality.Step1RegularityGUE
+public import Mathlib.Order.Filter.AtTopBot.Archimedean
+
+@[expose] public section
 
 /-!
 # The GUE translation `0 → E'` and the statement `UNInfty1Row'`
@@ -727,6 +732,7 @@ theorem guetranslationRow : UNGUETranslationRow := by
     refine (integral_mono_of_nonneg (Eventually.of_forall fun ω => abs_nonneg _)
       ((integrable_const _).add ((integrable_const _).indicator hTm))
       (Eventually.of_forall hpt)).trans ?_
+    simp only [Pi.add_apply]
     rw [integral_add (integrable_const _) ((integrable_const _).indicator hTm), integral_const,
       integral_indicator_const _ hTm, probReal_univ, one_smul, smul_eq_mul]
   have hTreal : (gueP d (sz.L n) (sz.W n)).real T ≤ N ^ (-((k + 1 : ℕ) : ℝ)) := by

@@ -3,10 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAMomentExpGen
-import RBM3D.Graph.BAZetaExp
-import RBM3D.Graph.BAExp14dB
-import RBM3D.Graph.LWMomentExpA
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Graph.BAMomentExpGen
+public import RBM3D.Graph.BAZetaExp
+public import RBM3D.Graph.BAExp14dB
+public import RBM3D.Graph.LWMomentExpA
+public import RBM3D.Graph.BASizeClaim2
+public import RBM3D.Graph.LWMomentExp
+import all RBM3D.Graph.LWMomentExpA
+import all RBM3D.Graph.BASizeClaim2
+import all RBM3D.Graph.LWMomentExp
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

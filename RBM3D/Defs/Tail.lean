@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import RBM3D.Defs.Params
+
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Exp
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import RBM3D.Defs.Params
+
+@[expose] public section
 
 /-!
 # The tail functions `𝒯_t` and `wT^ℓ_{t,D}`

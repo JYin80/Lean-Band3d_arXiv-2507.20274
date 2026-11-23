@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Carrier
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Graph.BASizeClaim
-import RBM3D.BA.Step1Trivial
-import RBM3D.BA.GreenLDE
-import RBM3D.BA.LWPinsBA
+
+module
+
+public import RBM3D.Chain.Carrier
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Graph.BASizeClaim
+public import RBM3D.BA.Step1Trivial
+public import RBM3D.BA.GreenLDE
+public import RBM3D.BA.LWPinsBA
+
+@[expose] public section
 
 /-!
 # The generic machinery of the crude bound for the six families of `lem:LWterm_EXP` at BA

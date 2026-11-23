@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.EMn2Poly
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Path.KellStar
+
+module
+
+public import RBM3D.Induction.EMn2Poly
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Path.KellStar
+
+@[expose] public section
 
 /-!
 # The martingale estimate `lem: EMn2_N`, third estimate (3.35) `eq:MG_conclusion3`, part 1

@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistAvgA
+
+module
+
+public import RBM3D.BA.TwistAvgA
+
+@[expose] public section
 
 /-!
 # The twisted averaged law at the block Anderson model, part B: the `2p`-moment recursion
@@ -549,7 +554,7 @@ theorem TwistAvgA2_indicator_cs {Ω : Type*} [MeasurableSpace Ω] (μ : Measure 
     have := (memLp_two_iff_integrable_sq hYm.aestronglyMeasurable).2 hY2
     simpa using this
   have h1 : MemLp (S.indicator fun _ => (1 : ℝ)) (ENNReal.ofReal 2) μ := by
-    have := (memLp_const (1 : ℝ) (p := 2) (μ := μ)).indicator hS
+    have := (memLp_const (1 : ℝ) (p := 2) (μ := μ)).indicator hS.nullMeasurableSet
     simpa using this
   have h := integral_mul_le_Lp_mul_Lq_of_nonneg Real.HolderConjugate.two_two (Eventually.of_forall hY0 : 0 ≤ᵐ[μ] Y)
     (Eventually.of_forall fun ω => Set.indicator_nonneg (fun _ _ => zero_le_one) ω) h2 h1

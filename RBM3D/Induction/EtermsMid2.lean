@@ -3,13 +3,20 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.EMn2Exp2
-import RBM3D.Induction.NewKLKL
-import RBM3D.Induction.LemDecCalELip
-import RBM3D.Chain.Step5CasesGen
-import RBM3D.Chain.NewKLKLGen
-import RBM3D.Chain.NewKLKGen
-import RBM3D.Chain.Step2IterGen2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Induction.EMn2Exp2
+public import RBM3D.Induction.NewKLKL
+public import RBM3D.Induction.LemDecCalELip
+public import RBM3D.Chain.Step5CasesGen
+public import RBM3D.Chain.NewKLKLGen
+public import RBM3D.Chain.NewKLKGen
+public import RBM3D.Chain.Step2IterGen2
+import all RBM3D.Induction.LemDecCalELip
+
+@[expose] public section
 
 /-!
 # The three error terms of (5.1) `int_K-LcalE_n=2` at `ℓ = L`, over the flow carrier

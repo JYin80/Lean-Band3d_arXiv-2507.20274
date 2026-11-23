@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Path.DifREP1
-import RBM3D.Induction.NQGood1
-import RBM3D.Induction.QVN
-import RBM3D.Induction.AzumaProxyN2
-import RBM3D.Path.Azuma
-import RBM3D.Path.Markov
-import RBM3D.Induction.OptL2b
+
+module
+
+public import RBM3D.Path.DifREP1
+public import RBM3D.Induction.NQGood1
+public import RBM3D.Induction.QVN
+public import RBM3D.Induction.AzumaProxyN2
+public import RBM3D.Path.Azuma
+public import RBM3D.Path.Markov
+public import RBM3D.Induction.OptL2b
+
+@[expose] public section
 
 /-!
 # `STGridRepN`, part 2: the plain martingale tail by a maximal Azuma bound
@@ -362,7 +367,7 @@ theorem azumaRandProxy_max :
     have hW : ∑ j ∈ Finset.range K, (G' j).indicator (v j) ω ≤ V := by
       refine le_trans ?_ (hsum ω)
       refine Finset.sum_le_sum fun j hj => ?_
-      exact Set.indicator_le_indicator_of_subset (fun ω' h => h.1)
+      exact Set.indicator_le_indicator_of_subset (fun (ω' : Ω') (h : ω' ∈ G' j) => h.1)
         (fun ω' => hv0 j (Finset.mem_range.1 hj) ω') ω
     refine ENNReal.ofReal_le_ofReal (Real.exp_le_exp.2 ?_)
     have h1 : r * x ≤ r * ∑ j ∈ Finset.range K, (G' j).indicator (ζ j) ω :=

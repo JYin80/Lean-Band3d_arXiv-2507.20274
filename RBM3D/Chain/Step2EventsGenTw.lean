@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step2EventsGen
-import RBM3D.BA.LWPinsBA
-import RBM3D.BA.Step2BA
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.FlowPins
+
+module
+
+public import RBM3D.Chain.Step2EventsGen
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.BA.Step2BA
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.FlowPins
+
+@[expose] public section
 
 /-!
 # The Step 2 events at the block Anderson carrier

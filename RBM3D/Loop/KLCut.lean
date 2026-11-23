@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import RBM3D.Loop.KLTree
+
+module
+
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import RBM3D.Loop.KLTree
+
+@[expose] public section
 
 /-!
 # The cut of a tree at an internal edge and the cut bijection, `d ≥ 3`

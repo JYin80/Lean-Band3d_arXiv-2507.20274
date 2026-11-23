@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.NQEndFlowGen
-import RBM3D.BA.KBound
-import RBM3D.BA.KInduct
-import RBM3D.BA.KSolve
-import RBM3D.BA.KTreeRep
-import RBM3D.BA.EMn2BA
-import RBM3D.BA.GreenSchur
+
+module
+
+public import RBM3D.Chain.NQEndFlowGen
+public import RBM3D.BA.KBound
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KSolve
+public import RBM3D.BA.KTreeRep
+public import RBM3D.BA.EMn2BA
+public import RBM3D.BA.GreenSchur
+
+@[expose] public section
 
 /-!
 # The time modulus of `𝒦` at the BA family, every `k ≥ 2`

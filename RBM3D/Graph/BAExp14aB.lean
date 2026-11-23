@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BAExp14a
-import RBM3D.BA.LWPinsBA
-import RBM3D.Graph.BAExpandW
-import RBM3D.Graph.BASizeClaim
-import RBM3D.BA.Step1Trivial
-import RBM3D.BA.GreenLDE
+
+module
+
+public import RBM3D.Graph.BAExp14a
+public import RBM3D.BA.LWPinsBA
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.Graph.BASizeClaim
+public import RBM3D.BA.Step1Trivial
+public import RBM3D.BA.GreenLDE
+
+@[expose] public section
 
 /-!
 # The crude families of `lem:LWterm_EXP` at BA, and their bound

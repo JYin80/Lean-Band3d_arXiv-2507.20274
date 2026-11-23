@@ -3,7 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.TwistGrid
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.TwistGrid
+public import RBM3D.BA.TwistPins
+public import RBM3D.Path.OneStep
+import all RBM3D.BA.TwistGrid
+import all RBM3D.BA.TwistPins
+import all RBM3D.Path.OneStep
+
+@[expose] public section
 
 /-!
 # The twisted one-step envelope at the matrix level
@@ -37,18 +48,23 @@ set_option linter.unusedVariables false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedFintypeInType false
 
-open private TwistGrid_hasDerivAt_Gsig_spec TwistGrid_Pb TwistGrid_twL2M_trace TwistGrid_twK_eq TwistGrid_hasDerivAt_twK
+open private TwistGrid_hasDerivAt_Gsig_spec TwistGrid_twL2M_trace TwistGrid_twK_eq
+  TwistGrid_hasDerivAt_twK
   from RBM3D.BA.TwistGrid
+open RBM.BA (TwistGrid_Pb)
 
 open private TwistPins_M_le_one from RBM3D.BA.TwistPins
 
-open private OneStep_w0 OneStep_w1 OneStep_w2 OneStep_Data OneStep_Diff
-  OneStep_norm_w0_le OneStep_norm_w1_le OneStep_norm_w2_le OneStep_norm_w1_sub_le OneStep_norm_w2_sub_le
-  OneStep_hasDerivAt_w0 OneStep_hasDerivAt_w1 OneStep_hasDerivAt_trace OneStep_hasDerivAt_lineR
-  OneStep_norm_Gsig_sub_le OneStep_continuous_Gsig OneStep_Hs OneStep_Hs_eq OneStep_Hs_herm OneStep_continuous_Hs
-  OneStep_Hs_update OneStep_integrable_coord_mul OneStep_integrable_normX OneStep_integral_normX_le OneStep_sum_gvar_le
-  OneStep_norm_Cb_le OneStep_card_Block OneStep_taylor2 OneStep_closure OneStep_norm_le_sum_entries OneStep_blockMat_add_smul
-  OneStep_norm_Eblk_le_one from RBM3D.Path.OneStep
+open private OneStep_Data OneStep_Diff OneStep_norm_w0_le OneStep_norm_w1_le OneStep_norm_w2_le
+  OneStep_norm_w1_sub_le OneStep_norm_w2_sub_le OneStep_hasDerivAt_w0 OneStep_hasDerivAt_w1
+  OneStep_hasDerivAt_trace OneStep_hasDerivAt_lineR OneStep_norm_Gsig_sub_le
+  OneStep_continuous_Gsig OneStep_Hs OneStep_Hs_eq OneStep_Hs_herm OneStep_continuous_Hs
+  OneStep_Hs_update OneStep_integrable_coord_mul OneStep_integrable_normX
+  OneStep_integral_normX_le OneStep_sum_gvar_le OneStep_norm_Cb_le OneStep_card_Block
+  OneStep_taylor2 OneStep_closure OneStep_norm_le_sum_entries OneStep_blockMat_add_smul
+  OneStep_norm_Eblk_le_one
+  from RBM3D.Path.OneStep
+open RBM.Path (OneStep_w0 OneStep_w1 OneStep_w2)
 
 open MeasureTheory Filter
 open scoped Matrix

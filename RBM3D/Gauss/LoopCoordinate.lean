@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.FlowCalculus
+
+module
+
+public import RBM3D.Gauss.FlowCalculus
+
+@[expose] public section
 
 /-!
 # One-coordinate derivatives of the `G`-loops
@@ -327,16 +332,16 @@ theorem hasDerivAt_deriv_gloop_update (u : ℝ) (ω : Ω d L W)
 /-! ## 3. Sample-uniform bounds for the coordinate derivatives -/
 
 /-- `η⁻¹ W^{-d}`, the bound of one `G E` block. -/
-private noncomputable def coordA (η : ℝ) : ℝ :=
+noncomputable def coordA (η : ℝ) : ℝ :=
   η⁻¹ * ((W : ℝ) ^ d)⁻¹
 
 /-- `η⁻¹ ‖√u B_c‖ η⁻¹ W^{-d}`, the bound of one first-derivative factor `G (√u B_c) G E`. -/
-private noncomputable def coordD (u η : ℝ) (c : CoordF d L W) : ℝ :=
+noncomputable def coordD (u η : ℝ) (c : CoordF d L W) : ℝ :=
   (η⁻¹ * ‖Real.sqrt u • coordinateBlock d L W c‖ * η⁻¹) *
     ((W : ℝ) ^ d)⁻¹
 
 /-- `2 η⁻¹ ‖√u B_c‖ η⁻¹ ‖√u B_c‖ η⁻¹ W^{-d}`, the bound of one second-derivative factor. -/
-private noncomputable def coordS (u η : ℝ) (c : CoordF d L W) : ℝ :=
+noncomputable def coordS (u η : ℝ) (c : CoordF d L W) : ℝ :=
   2 * ((η⁻¹ * ‖Real.sqrt u • coordinateBlock d L W c‖ * η⁻¹ *
       ‖Real.sqrt u • coordinateBlock d L W c‖ * η⁻¹) *
     ((W : ℝ) ^ d)⁻¹)

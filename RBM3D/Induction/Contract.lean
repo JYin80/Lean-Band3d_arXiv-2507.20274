@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step34Pins
-import RBM3D.Hierarchy.ContractionBasic
-import RBM3D.Gauss.FlowCalculus
+
+module
+
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Matrix.Spectrum
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Hierarchy.ContractionBasic
+public import RBM3D.Gauss.FlowCalculus
+
+@[expose] public section
 
 /-!
 # The contraction inequality `STContract`

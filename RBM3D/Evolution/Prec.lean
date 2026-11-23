@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step34Pins
-import RBM3D.Evolution.SumDecay
-import RBM3D.Evolution.SumDecayZero
-import RBM3D.Evolution.Nonzero
-import RBM3D.Propagator.Prop6Hold
+
+module
+
+public import RBM3D.Induction.Step34Pins
+public import RBM3D.Evolution.SumDecay
+public import RBM3D.Evolution.SumDecayZero
+public import RBM3D.Evolution.Nonzero
+public import RBM3D.Propagator.Prop6Hold
+
+@[expose] public section
 
 /-!
 # The evolution-kernel lemmas at scale `N = (WL)^d`, as Steps 3-4 consume them

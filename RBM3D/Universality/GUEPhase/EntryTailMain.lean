@@ -3,7 +3,12 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.EntryTail
+
+module
+
+public import RBM3D.Universality.GUEPhase.EntryTail
+
+@[expose] public section
 
 /-!
 # The probabilistic half of Lemma 4.1 at the mixture profile, second half, `d ≥ 3`

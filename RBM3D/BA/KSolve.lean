@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KBase
-import RBM3D.BA.FlowPins
-import RBM3D.BA.Ward
-import RBM3D.Loop.Unique
-import RBM3D.Loop.KLUnique
+
+module
+
+public import RBM3D.BA.KBase
+public import RBM3D.BA.FlowPins
+public import RBM3D.BA.Ward
+public import RBM3D.Loop.Unique
+public import RBM3D.Loop.KLUnique
+
+@[expose] public section
 
 /-!
 # The block Anderson `K`-loop equation: the statement `BAKsolve`, uniqueness and symmetries

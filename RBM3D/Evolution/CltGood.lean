@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Evolution.FarEntry
-import RBM3D.Chain.CltGen
-import RBM3D.Evolution.CltPath
-import Mathlib.Probability.Moments.SubGaussian
-import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+module
+
+public import RBM3D.Evolution.FarEntry
+public import RBM3D.Chain.CltGen
+public import RBM3D.Evolution.CltPath
+public import Mathlib.Probability.Moments.SubGaussian
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+
+@[expose] public section
 
 /-!
 # The good event of the replacement step on the finite model

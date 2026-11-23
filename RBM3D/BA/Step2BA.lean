@@ -3,8 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.FlowPins
-import RBM3D.Chain.Step2Gen
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.FlowPins
+public import RBM3D.Chain.Step2Gen
+import all RBM3D.Chain.Step2Gen
+
+@[expose] public section
 
 /-!
 # The block Anderson Step 2 carrier
@@ -29,7 +36,8 @@ band; this file writes their block Anderson versions at the carrier `baFM` / `ba
 set_option linter.style.longLine false
 set_option linter.unusedVariables false
 
-open private Step2Gen_loopFine_swap from RBM3D.Chain.Step2Gen
+-- (the names formerly opened from RBM3D.Chain.Step2Gen are public)
+open RBM.BA (Step2Gen_loopFine_swap)
 
 noncomputable section
 
@@ -86,7 +94,7 @@ private theorem Step2BA_flow_im_pos {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : 
   have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
   exact lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) (h.2 n).2.1
 
-private theorem Step2BA_T0_lt_one {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ)
+theorem Step2BA_T0_lt_one {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ)
     (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) : BAflowT0 sz z n < 1 :=
   BAt0_lt_one (Step2BA_flow_im_pos h n) (lt_of_lt_of_le hκ (h.2 n).1)
 

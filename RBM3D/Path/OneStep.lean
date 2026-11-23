@@ -3,16 +3,21 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.GLoopFlow
-import RBM3D.Loop.TreeRep
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Gauss.FineModel
-import RBM3D.Gauss.DominationAt
-import RBM3D.Green.EntryCore
-import RBM3D.Analysis.Resolvent
-import Mathlib.Analysis.Calculus.ParametricIntegral
-import Mathlib.Analysis.Calculus.MeanValue
-import Mathlib.Analysis.CStarAlgebra.Hom
+
+module
+
+public import RBM3D.Loop.GLoopFlow
+public import RBM3D.Loop.TreeRep
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Gauss.DominationAt
+public import RBM3D.Green.EntryCore
+public import RBM3D.Analysis.Resolvent
+public import Mathlib.Analysis.Calculus.ParametricIntegral
+public import Mathlib.Analysis.Calculus.MeanValue
+public import Mathlib.Analysis.CStarAlgebra.Hom
+
+@[expose] public section
 
 /-!
 # The one-step expansion with its envelope, and the resolvent-difference bound
@@ -247,27 +252,27 @@ section Jets
 variable {n ι : Type*} [Fintype n] [DecidableEq n]
 
 /-- The word `∏ R_{σᵢ} E_{aᵢ}` (as in `gloopProd`). -/
-private def OneStep_w0 (R : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ)
+def OneStep_w0 (R : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ)
     (l : List (Bool × ι)) : Matrix n n ℂ :=
   l.foldr (fun p M => R p.1 * Ei p.2 * M) 1
 
 /-- First jet of a resolvent factor. -/
-private def OneStep_r1 (R D : Bool → Matrix n n ℂ) (σ : Bool) : Matrix n n ℂ :=
+def OneStep_r1 (R D : Bool → Matrix n n ℂ) (σ : Bool) : Matrix n n ℂ :=
   -(R σ * D σ * R σ)
 
 /-- Second jet of a resolvent factor. -/
-private def OneStep_r2 (R D : Bool → Matrix n n ℂ) (σ : Bool) : Matrix n n ℂ :=
+def OneStep_r2 (R D : Bool → Matrix n n ℂ) (σ : Bool) : Matrix n n ℂ :=
   R σ * D σ * R σ * D σ * R σ + R σ * D σ * R σ * D σ * R σ
 
 /-- First derivative of the word. -/
-private def OneStep_w1 (R D : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ) :
+def OneStep_w1 (R D : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ) :
     List (Bool × ι) → Matrix n n ℂ
   | [] => 0
   | p :: l => (OneStep_r1 R D p.1 * Ei p.2) * OneStep_w0 R Ei l
       + (R p.1 * Ei p.2) * OneStep_w1 R D Ei l
 
 /-- Second derivative of the word. -/
-private def OneStep_w2 (R D : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ) :
+def OneStep_w2 (R D : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ) :
     List (Bool × ι) → Matrix n n ℂ
   | [] => 0
   | p :: l => (OneStep_r2 R D p.1 * Ei p.2) * OneStep_w0 R Ei l
@@ -588,7 +593,7 @@ section LinCont
 variable {n ι : Type*} [Fintype n] [DecidableEq n]
 variable {R : Bool → Matrix n n ℂ} {Ei : ι → Matrix n n ℂ}
 
-private theorem OneStep_w1_add (D₁ D₂ : Bool → Matrix n n ℂ) (l : List (Bool × ι)) :
+theorem OneStep_w1_add (D₁ D₂ : Bool → Matrix n n ℂ) (l : List (Bool × ι)) :
     OneStep_w1 R (D₁ + D₂) Ei l = OneStep_w1 R D₁ Ei l + OneStep_w1 R D₂ Ei l := by
   induction l with
   | nil => simp [OneStep_w1]
@@ -597,7 +602,7 @@ private theorem OneStep_w1_add (D₁ D₂ : Bool → Matrix n n ℂ) (l : List (
       simp only [OneStep_r1, Pi.add_apply]
       noncomm_ring
 
-private theorem OneStep_w1_smul (c : ℝ) (D : Bool → Matrix n n ℂ) (l : List (Bool × ι)) :
+theorem OneStep_w1_smul (c : ℝ) (D : Bool → Matrix n n ℂ) (l : List (Bool × ι)) :
     OneStep_w1 R (c • D) Ei l = c • OneStep_w1 R D Ei l := by
   induction l with
   | nil => simp [OneStep_w1]

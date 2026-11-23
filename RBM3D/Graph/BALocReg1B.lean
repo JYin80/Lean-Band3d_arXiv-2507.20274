@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.BALocReg1
-import RBM3D.Graph.BAAtom
-import RBM3D.Graph.BALvl1B
-import RBM3D.Graph.BALvl1B2
-import RBM3D.Graph.BAEngine
-import RBM3D.Graph.BAExpandW
-import RBM3D.Gauss.FineModel
+
+module
+
+public import RBM3D.Graph.BALocReg1
+public import RBM3D.Graph.BAAtom
+public import RBM3D.Graph.BALvl1B
+public import RBM3D.Graph.BALvl1B2
+public import RBM3D.Graph.BAEngine
+public import RBM3D.Graph.BAExpandW
+public import RBM3D.Gauss.FineModel
+
+@[expose] public section
 
 set_option linter.style.header false
 set_option linter.style.longLine false

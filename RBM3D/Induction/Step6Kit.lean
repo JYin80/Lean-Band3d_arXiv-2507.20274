@@ -3,18 +3,23 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step6Pins
-import RBM3D.Induction.Step5Kit
-import RBM3D.Induction.ScaleFacts3
-import RBM3D.Induction.Step2Iterate
-import RBM3D.Induction.ZeroModeCalc
-import RBM3D.Induction.QopNorm
-import RBM3D.Induction.GridDuhamelN
-import RBM3D.Induction.DecayLoopB
-import RBM3D.Loop.KLFinal
-import RBM3D.Green.GbEXP
-import RBM3D.Graph.LWPins
-import RBM3D.Evolution.Prec
+
+module
+
+public import RBM3D.Induction.Step6Pins
+public import RBM3D.Induction.Step5Kit
+public import RBM3D.Induction.ScaleFacts3
+public import RBM3D.Induction.Step2Iterate
+public import RBM3D.Induction.ZeroModeCalc
+public import RBM3D.Induction.QopNorm
+public import RBM3D.Induction.GridDuhamelN
+public import RBM3D.Induction.DecayLoopB
+public import RBM3D.Loop.KLFinal
+public import RBM3D.Green.GbEXP
+public import RBM3D.Graph.LWPins
+public import RBM3D.Evolution.Prec
+
+@[expose] public section
 
 /-!
 # The Step 6 kit

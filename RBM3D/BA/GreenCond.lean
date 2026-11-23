@@ -3,9 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.GreenMinor3
-import RBM3D.Green.MinorDiffCond
-import RBM3D.Green.LDE
+
+module
+
+public import Mathlib.Probability.Independence.Integration
+public import RBM3D.BA.GreenMinor3
+public import RBM3D.Green.MinorDiffCond
+public import RBM3D.Green.LDE
+
+@[expose] public section
 
 /-!
 # The block Anderson minors, conditionalised: the minor tower of the carrier, the conditional means

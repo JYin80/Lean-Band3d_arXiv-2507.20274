@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Loop.KLSumZeroWard
-import RBM3D.Loop.PureLoop
-import RBM3D.Propagator.Prop5Short
+
+module
+
+public import RBM3D.Loop.KLSumZeroWard
+public import RBM3D.Loop.PureLoop
+public import RBM3D.Propagator.Prop5Short
+
+@[expose] public section
 
 /-!
 # The molecule decay and the sum-zero estimates (`d ≥ 3`)

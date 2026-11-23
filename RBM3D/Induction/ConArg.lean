@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.ConArgDet
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.Defs
+
+module
+
+public import RBM3D.Induction.ConArgDet
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.Defs
+
+@[expose] public section
 
 /-!
 # Lemma 3.2 (`lem_ConArg`): the continuity argument, probabilistic part

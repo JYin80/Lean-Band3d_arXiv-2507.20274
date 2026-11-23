@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.EKPins
-import RBM3D.Evolution.SumDecay
+
+module
+
+public import RBM3D.BA.EKPins
+public import RBM3D.Evolution.SumDecay
+
+@[expose] public section
 
 /-!
 # The evolution-kernel sums at the block Anderson model: `(sum_res_2_NAL)` and `(sum_res_2)`

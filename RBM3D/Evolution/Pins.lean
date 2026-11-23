@@ -3,8 +3,13 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Kernel.SumDecay
-import RBM3D.Propagator.Prop5Short
+
+module
+
+public import RBM3D.Kernel.SumDecay
+public import RBM3D.Propagator.Prop5Short
+
+@[expose] public section
 
 /-!
 # Evolution-kernel statements (random band model, `d ≥ 3`): vocabulary and five statements

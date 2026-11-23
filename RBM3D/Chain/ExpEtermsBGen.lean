@@ -3,10 +3,19 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.ExpEtermsAGen
-import RBM3D.Induction.ExpEtermsB
-import RBM3D.Chain.DecayGen
-import RBM3D.Chain.SEforLnGen2
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.ExpEtermsAGen
+public import RBM3D.Induction.ExpEtermsB
+public import RBM3D.Chain.DecayGen
+public import RBM3D.Chain.SEforLnGen2
+public import RBM3D.Path.Walk
+import all RBM3D.Induction.ExpEtermsB
+import all RBM3D.Path.Walk
+
+@[expose] public section
 
 /-!
 # (6.4) `eq:Exp(L-K)2`, (6.6) `eq:ExpLWn=2_smalleta`, (4.52) `deccA0` of `D_u` over the carrier
@@ -111,7 +120,7 @@ private def ExpEtermsBGen_EGtLK (n : ℕ) (u : ℝ) (σ : Fin 2 → Bool) (a : F
 
 /-- The deterministic part `W^d Σ_k Σ_{x,y} (𝔼 𝓛^{(1)}_{σ_k,x} - m_{σ_k}) S_{xy} 𝒦^{(3)}(cut_k y)` of `𝔼ℰ^{G̃,(2)}` (private twin of the band `expDrEGtK`;
 `𝔼 avg = 𝔼 𝓛^{(1)} - m` is the carrier reading of the average of `STExpAvgUgL`). -/
-private def ExpEtermsBGen_EGtK (μ : Measure sz.SeqΩ) (n : ℕ) (u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
+def ExpEtermsBGen_EGtK (μ : Measure sz.SeqΩ) (n : ℕ) (u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ x : Zd d (sz.L n), ∑ y : Zd d (sz.L n),
     (((∫ ω, C.L n u (fun _ : Fin 1 => σ 0) (fun _ => x) ω ∂μ) - (if σ 0 then C.m n else (starRingEnd ℂ) (C.m n))) * C.S n x y *
         C.K n u ![σ 0, σ 0, σ 1] ![y, a 0, a 1] +

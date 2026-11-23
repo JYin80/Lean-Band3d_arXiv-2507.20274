@@ -3,7 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.Step5IIIEdet
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.BA.Step5IIIEdet
+public import RBM3D.Path.LemDecCalE
+import all RBM3D.Path.LemDecCalE
+
+@[expose] public section
 
 /-!
 # The ℰ-bounds of BA case (iii) of Step 5 by Hilbert-Schmidt estimates, second half

@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Universality.GUEPhase.Bootstrap
-import RBM3D.Universality.Pins
-import RBM3D.Green.Pins
-import RBM3D.Hierarchy.ContractionSecondLoop
+
+module
+
+public import RBM3D.Universality.GUEPhase.Bootstrap
+public import RBM3D.Universality.Pins
+public import RBM3D.Green.Pins
+public import RBM3D.Hierarchy.ContractionSecondLoop
+
+@[expose] public section
 
 /-!
 # The generator of one GUE-phase increment

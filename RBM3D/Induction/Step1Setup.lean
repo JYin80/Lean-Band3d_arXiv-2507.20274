@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Defs
-import RBM3D.Induction.ScaleFacts
-import RBM3D.Induction.PerTimeCalc
-import RBM3D.Induction.ConArg
-import RBM3D.Induction.ContinuityNet
-import RBM3D.Green.Pins
+
+module
+
+public import RBM3D.Induction.Defs
+public import RBM3D.Induction.ScaleFacts
+public import RBM3D.Induction.PerTimeCalc
+public import RBM3D.Induction.ConArg
+public import RBM3D.Induction.ContinuityNet
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # Step 1 of `lem:main_ind`, first part: elementary facts, scales, per-time lemmas, loops, bridge

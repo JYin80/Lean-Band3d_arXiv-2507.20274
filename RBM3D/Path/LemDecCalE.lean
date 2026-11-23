@@ -3,10 +3,15 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Induction.Step5Pins
-import RBM3D.Green.Pins
-import RBM3D.Path.KellStar
-import Mathlib.Analysis.PSeries
+
+module
+
+public import RBM3D.Induction.Step5Pins
+public import RBM3D.Green.Pins
+public import RBM3D.Path.KellStar
+public import Mathlib.Analysis.PSeries
+
+@[expose] public section
 
 /-!
 # `lem_dec_calE`, first part: the loss, the hypothesis bundle, the `LK×LK` bound

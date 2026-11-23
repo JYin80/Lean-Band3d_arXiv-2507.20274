@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import Mathlib.Analysis.CStarAlgebra.Hom
-import RBM3D.Path.StepDecomp
-import RBM3D.Path.Kernel
-import RBM3D.Gauss.FlowCalculus
-import RBM3D.Green.Pins
+
+module
+
+public import Mathlib.Analysis.CStarAlgebra.Hom
+public import RBM3D.Path.StepDecomp
+public import RBM3D.Path.Kernel
+public import RBM3D.Gauss.FlowCalculus
+public import RBM3D.Green.Pins
+
+@[expose] public section
 
 /-!
 # Jets of the two-loop observable along a Hermitian line

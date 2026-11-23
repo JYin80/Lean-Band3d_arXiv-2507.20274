@@ -3,9 +3,14 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Propagator.Prop5Hold
-import RBM3D.Propagator.PropUnit
-import RBM3D.Propagator.Gap
+
+module
+
+public import RBM3D.Propagator.Prop5Hold
+public import RBM3D.Propagator.PropUnit
+public import RBM3D.Propagator.Gap
+
+@[expose] public section
 
 /-!
 # Properties 6 and 7 of `lem_propTH` from the unit differences; the bundle `Prop5to8`

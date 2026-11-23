@@ -3,13 +3,18 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.LWPins
-import RBM3D.Graph.LWStein
-import RBM3D.Graph.LWVocab
-import RBM3D.Graph.LWWeightExp
-import RBM3D.Gauss.FineModel
-import RBM3D.Green.IBPPoly
-import Mathlib.Algebra.MvPolynomial.Rename
+
+module
+
+public import RBM3D.Graph.LWPins
+public import RBM3D.Graph.LWStein
+public import RBM3D.Graph.LWVocab
+public import RBM3D.Graph.LWWeightExp
+public import RBM3D.Gauss.FineModel
+public import RBM3D.Green.IBPPoly
+public import Mathlib.Algebra.MvPolynomial.Rename
+
+@[expose] public section
 
 /-!
 # The edge expansion `(Oe1x)`

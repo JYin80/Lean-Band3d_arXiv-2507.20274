@@ -3,12 +3,17 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.BA.KInduct
-import RBM3D.BA.KSumZeroB
-import RBM3D.BA.KWardIneq
-import RBM3D.BA.KPure
-import RBM3D.BA.Prop6Path
-import RBM3D.Loop.KLIndStepB
+
+module
+
+public import RBM3D.BA.KInduct
+public import RBM3D.BA.KSumZeroB
+public import RBM3D.BA.KWardIneq
+public import RBM3D.BA.KPure
+public import RBM3D.BA.Prop6Path
+public import RBM3D.Loop.KLIndStepB
+
+@[expose] public section
 
 /-!
 # The induction on molecules at BA, (A.42) `eq:K-pi-bound` for every `n ≥ 3`

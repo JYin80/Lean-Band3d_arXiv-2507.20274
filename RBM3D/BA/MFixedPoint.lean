@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Gauss.BlockAnderson
-import RBM3D.Propagator.Pins
-import RBM3D.Analysis.Resolvent
-import RBM3D.Universality.FreeConv
-import Mathlib.Analysis.InnerProductSpace.PiL2
+
+module
+
+public import RBM3D.Gauss.BlockAnderson
+public import RBM3D.Propagator.Pins
+public import RBM3D.Analysis.Resolvent
+public import RBM3D.Universality.FreeConv
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+
+@[expose] public section
 
 /-!
 # The deterministic layer of the block Anderson model: `(self_m)`

@@ -3,11 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Graph.AuxGraph2
-import RBM3D.Graph.AnpKey
-import RBM3D.Graph.LWTermExpN
-import RBM3D.Graph.LWPsi
-import RBM3D.Kernel.PropT
+
+module
+
+public import RBM3D.Graph.AuxGraph2
+public import RBM3D.Graph.AnpKey
+public import RBM3D.Graph.LWTermExpN
+public import RBM3D.Graph.LWPsi
+public import RBM3D.Kernel.PropT
+
+@[expose] public section
 
 /-!
 # The claim (7.34) for the exp class and the `(log W)^{3/2}` tail

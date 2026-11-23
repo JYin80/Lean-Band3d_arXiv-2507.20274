@@ -3,9 +3,16 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
-import RBM3D.Chain.Step5Gen
-import RBM3D.Induction.Step5Cases
-import RBM3D.Induction.WardII
+
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import RBM3D.Chain.Step5Gen
+public import RBM3D.Induction.Step5Cases
+public import RBM3D.Induction.WardII
+import all RBM3D.Induction.WardII
+
+@[expose] public section
 
 /-!
 # The Step 5 kit over the carrier: flow facts, cases (i)-(iv), assembly, Ward term
