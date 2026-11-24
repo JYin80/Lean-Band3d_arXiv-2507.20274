@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Propagator.Props4
 public import RBM3D.Gauss.SteinMatrix
 public import Mathlib.MeasureTheory.Constructions.Pi
@@ -39,10 +40,6 @@ open scoped NNReal
 variable (d L W : ℕ) (g : ℝ)
 
 /-! ### Vertices and the variance profile -/
-
-/-- A vertex of the fine lattice: the block it lies in, and its position inside that block.
-The paper writes `x ∈ [a]`; here `x.1 = a`. -/
-abbrev Vtx : Type := Zd d L × Fin (W ^ d)
 
 /-- **`(eq:variancematrix)`**: `S_xy = W^{-d} S^(B)_{ab}` for `x ∈ [a]`, `y ∈ [b]`. -/
 noncomputable def svar (x y : Vtx d L W) : ℝ := ((W : ℝ) ^ d)⁻¹ * SBR d L g x.1 y.1

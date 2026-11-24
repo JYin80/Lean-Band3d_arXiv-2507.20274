@@ -12,7 +12,7 @@ arXiv:2503.11382. [64] = C. Xu, F. Yang, H.-T. Yau, J. Yin, *Bulk universality a
 matrices in high dimensions*, Ann. Probab. 52 (2024). [69] = H.-T. Yau, J. Yin, *Delocalization of one-dimensional random band
 matrices*, arXiv:2501.01718. (Numbers in brackets are those of the bibliography of the PDF, pp. 104-106.)
 
-**Lean.** The library is `RBM3D` (Lean 4.34.0, Mathlib v4.34.0); its declarations are in the namespace `RBM`. Every
+**Lean.** The library is `RBM3D` (Lean 4.36.0-rc1, Mathlib v4.36.0-rc1); its declarations are in the namespace `RBM`. Every
 name below that starts with `RBM.` is a declaration of this library. Other names (such as `Matrix.trace`,
 `ProbabilityTheory.gaussianReal`) are from Mathlib. Lean text quoted below is copied from the source files by a
 script, without docstrings.
@@ -75,7 +75,7 @@ def BArho (g E : ℝ) : ℝ := (BAm d L g (E : ℂ)).im / Real.pi
 def BAbulk (g κ E : ℝ) : Prop := κ ≤ BArho d L g E
 ```
 
-**The theorems.** The statements `decol`, `locSC`, `QUE`, `QDiff`, `BUniv` are in `RBM3D/Endpoints.lean` (Appendix A).
+**The theorems.** The statements `decol`, `locSC`, `QUE`, `QDiff` are in `RBM3D/MainDefs.lean` and `BUniv` in `RBM3D/Endpoints.lean` (Appendix A).
 The four theorems without hypothesis are proved in `RBM3D/Main/BandTerminal.lean`, and so is Theorem 2.4 from `UNL32`
 (`BUniv_of_L32`, which applies the assembly `bUniv_holds` of `RBM3D/Main/BUnivHolds.lean` to the proved leaves). Theorem 2.7 at dimension `d` is `RBM.BA.BAThm27L d` (`RBM3D/BA/MAPins.lean`), proved in
 `RBM3D/BA/UNBUniv.lean`; the final theorem is in `RBM3D/Main/FinalShape.lean`.
@@ -509,7 +509,7 @@ The GUE local law is proved from the Schur complement formula (`RBM.Univ.gueSchu
 
 ## Appendix A. The Lean statements
 
-The five band statements and the definitions they use (namespace `RBM.Endpoints`, file `RBM3D/Endpoints.lean`); then the block Anderson end statements (namespace `RBM.BA`, files `RBM3D/BA/MAPins.lean`
+The five band statements and the definitions they use (namespace `RBM.Endpoints`, files `RBM3D/MainDefs.lean` and `RBM3D/Endpoints.lean`); then the block Anderson end statements (namespace `RBM.BA`, files `RBM3D/BA/MAPins.lean`
 and `RBM3D/BA/UNPins.lean`). In the definitions below `d` is an implicit argument and `sz : Sizes d`; `Nsz sz n` is `N = sz.size n` as a real number; `calB`, `distB`, `Mband`, `Gn`, `Theta` are described in §2.7 and §2.8, `kPoint`, `gueP`, `gueVar`, `IsTestFun` in §2.9, `BAGz` and `BAMz` (`G` and `M` of the block Anderson model) in §2.12.
 
 ```lean
@@ -552,7 +552,7 @@ def UNUnivDilAt (sz : Sizes d) (M : UNModel sz) (ρ : ℕ → ℝ) (E E' : ℝ) 
     (∫ ω, kPoint k (fun α => O (ρ n • α)) E (M.herm n ω).eigenvalues ∂M.μ) -
     (∫ ω, kPoint k (fun α => O (rhoSC E' • α)) E' (Xmat_isHermitian d (sz.L n) (sz.W n) ω).eigenvalues
       ∂(gueP d (sz.L n) (sz.W n)))) atTop (𝓝 0)
--- namespace RBM.Endpoints (RBM3D/Endpoints.lean)
+-- namespace RBM.Endpoints (RBM3D/MainDefs.lean, RBM3D/Endpoints.lean)
 def calB (sz : Sizes d) (n : ℕ) (η K : ℝ) : ℝ :=
   (sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) +
     (((sz.size n : ℕ) : ℝ) * η)⁻¹

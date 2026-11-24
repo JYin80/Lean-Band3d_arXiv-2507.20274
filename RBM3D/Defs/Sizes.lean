@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Gauss.Model
 public import RBM3D.Defs.Params
 
@@ -42,25 +43,10 @@ section Lattice
 
 variable (d L W : ℕ)
 
-/-- The fine lattice `Z_{WL}^d` of Section 2. -/
-abbrev Idx : Type := Zd d (W * L)
-
-/-- The block (coordinate in `Z_L`) of a one-dimensional coordinate of `Z_{WL}`
-((2.2) `eq:blockIa`; blocks are numbered from zero). -/
-def blk (i : ZMod (W * L)) : ZMod L := ((i.val / W : ℕ) : ZMod L)
-
 variable [NeZero L] [NeZero W]
-
-/-- The offset inside a one-dimensional block ((2.2) `eq:blockIa`). -/
-def ofs (i : ZMod (W * L)) : Fin W := ⟨i.val % W, Nat.mod_lt _ (NeZero.pos W)⟩
 
 theorem blk_val (i : ZMod (W * L)) : (blk L W i).val = i.val / W :=
   ZMod.val_natCast_of_lt (Nat.div_lt_of_lt_mul (ZMod.val_lt i))
-
-/-- Block label and offset of a lattice point, coordinatewise ((2.2) `eq:blockIa`);
-the offset is stored in `Fin (W^d)` so that the target is the block-product index `Vtx d L W`. -/
-def split (i : Idx d L W) : Vtx d L W :=
-  (fun k => blk L W (i k), finFunctionFinEquiv (fun k => ofs L W (i k)))
 
 theorem split_injective : Function.Injective (split d L W) := by
   intro i j h
@@ -84,10 +70,6 @@ lattice (statements) and the block-product index `Vtx` (loops). -/
 noncomputable def splitEquiv : Idx d L W ≃ Vtx d L W :=
   Equiv.ofBijective _ (split_bijective d L W)
 
-/-- The block `[a] = {x : x ∈ block a}` of (2.2) `eq:blockIa`; it has `W^d` points. -/
-def Iblk (a : Zd d L) : Finset (Idx d L W) :=
-  Finset.univ.filter fun x => (split d L W x).1 = a
-
 theorem card_Iblk (a : Zd d L) : (Iblk d L W a).card = W ^ d := by
   have h : (Iblk d L W a).card =
       (Finset.univ.filter fun p : Vtx d L W => p.1 = a).card := by
@@ -105,11 +87,6 @@ theorem card_Idx : Fintype.card (Idx d L W) = (W * L) ^ d := by
 
 end Lattice
 
-/-- The paper's `|x|` is the periodic `L^∞` norm (Section 2 after (2.3) `representativeL`,
-`|x-y| ≡ ‖[x-y]_{WL}‖_∞`); `zdistD` (`Defs/Lattice.lean`) is the `ℓ¹` norm.  This one is used for
-the stochastic and endpoint statements, `zdistD` for the propagator side. -/
-def zdistInf (d L : ℕ) (x : Zd d L) : ℕ := Finset.univ.sup fun i => zdist L (x i)
-
 theorem zdistInf_le_zdistD (d L : ℕ) (x : Zd d L) : zdistInf d L x ≤ zdistD d L x :=
   Finset.sup_le fun i _ =>
     Finset.single_le_sum (f := fun j => zdist L (x j)) (fun _ _ => Nat.zero_le _)
@@ -123,61 +100,17 @@ theorem zdistD_le_mul_zdistInf (d L : ℕ) (x : Zd d L) : zdistD d L x ≤ d * z
 
 /-! ## 2. The size data: `λ` is a sequence -/
 
-/-- **The size data of an admissible sequence** (Section 2, (2.10) `eq:WO`).
-`L n`, `W n`: the number and the side of the blocks at size index `n`; `lam n`: the coupling
-`g = λ^{-1}` of (2.1) `def:ilambda`, passed as the `g` argument of `SB`, `ellT`, `Bparam`.
-**`lam` is a sequence**; nothing here fixes it (it may tend to `0`); (2.10) `eq:WO` is the
-separate predicate `Sizes.WO`.  The dimension `d` is the parameter of the structure. -/
-structure Sizes (d : ℕ) where
-  /-- number of blocks per side, `L ≥ 3` -/
-  L : ℕ → ℕ
-  /-- block side, `W ≥ 1` -/
-  W : ℕ → ℕ
-  /-- the coupling `g = λ^{-1}` of (2.1) `def:ilambda` -/
-  lam : ℕ → ℝ
-  three_le_L : ∀ n, 3 ≤ L n
-  W_pos : ∀ n, 0 < W n
-
 namespace Sizes
 
 variable {d : ℕ} (sz : Sizes d)
-
-instance neZeroL (n : ℕ) : NeZero (sz.L n) := ⟨by have := sz.three_le_L n; omega⟩
-instance neZeroW (n : ℕ) : NeZero (sz.W n) := ⟨(sz.W_pos n).ne'⟩
-
-/-- **The scale `N = (W L)^d`** (Section 2): the matrix dimension, and the one scale parameter of
-every `≺` in `Defs/StochDomAt`. -/
-def size (n : ℕ) : ℕ := (sz.W n * sz.L n) ^ d
 
 /-- The scale is the matrix dimension: `N = (W L)^d` is the number of lattice points. -/
 theorem card_Idx (n : ℕ) : Fintype.card (Idx d (sz.L n) (sz.W n)) = sz.size n :=
   RBM.Gauss.card_Idx d (sz.L n) (sz.W n)
 
-/-- (2.10) `eq:WO`: `W^{-d/2+𝔡} ≤ g ≤ 𝔡^{-1}`, eventually along the sequence. -/
-def WO (𝔡 : ℝ) : Prop :=
-  ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹
-
-/-- (2.9) `Main_DEL_COND`: `W ≥ N^𝔠`, eventually. -/
-def Bandwidth (𝔠 : ℝ) : Prop :=
-  ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ 𝔠 ≤ (sz.W n : ℝ)
-
-/-- `N → ∞`: the paper's "provided `N` is sufficiently large" (Theorem 2.1, `MR:decol`), made
-explicit. -/
-def SizeTendsto : Prop := Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop
-
-/-- The standing hypotheses of `MR:decol`, `MR:locSC`, ... (Theorem 2.1): constants `𝔠, 𝔡 > 0`
-with `W ≥ N^𝔠` and (2.10) `eq:WO`. -/
-def Admissible (𝔠 𝔡 : ℝ) : Prop :=
-  0 < 𝔠 ∧ 0 < 𝔡 ∧ sz.SizeTendsto ∧ sz.Bandwidth 𝔠 ∧ sz.WO 𝔡
-
 /-- The same blocks with another coupling sequence: the Gaussian potential `V` of the block
 Anderson model has `S^(B)(0) = I` ((2.29) `bandcwV`), i.e. the model of `sz.withLam 0`. -/
 def withLam (g : ℕ → ℝ) : Sizes d := { sz with lam := g }
-
-/-- `𝐃_{κ,ε}` of (2.12) `eq:spectral_domain` at size index `n`; the scale of the lower
-bound on `η` is `N = sz.size n`. -/
-def locDomain (κ ε : ℝ) (n : ℕ) (z : ℂ) : Prop :=
-  |z.re| ≤ 2 - κ ∧ ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ z.im ∧ z.im ≤ 1
 
 /-- `g² W^d ≥ W^{2𝔡}` from (2.10) `eq:WO`, pointwise in `n`.  Hence `(g² W^d)⁻¹ ≤
 W^{-2𝔡}`: the bound on the first term of `W^{-d} B_{t,0}` ((2.62) `eq_B_param`:

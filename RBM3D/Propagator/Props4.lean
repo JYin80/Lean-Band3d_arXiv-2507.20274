@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Propagator.Basic
 
 @[expose] public section
@@ -49,10 +50,6 @@ variable (d L : ℕ) [NeZero L] (g : ℝ)
 
 section Real
 
-/-- `S^(B)(g)` as a real matrix. -/
-noncomputable def SBR : Matrix (Zd d L) (Zd d L) ℝ :=
-  Matrix.of fun a b => sbKernelR d L g (a - b)
-
 omit [NeZero L] in
 theorem SB_eq_map_SBR : SB d L g = (SBR d L g).map (↑) := by
   ext a b
@@ -80,7 +77,6 @@ theorem smul_SB_pow_apply (ξ : ℂ) (k : ℕ) (a b : Zd d L) :
   simp [Matrix.smul_apply]
 
 end Real
-
 
 /-! ### Properties 1–3 and the row sums, without `hS` / `hone` -/
 
@@ -125,7 +121,6 @@ theorem Theta_eq_tsum_of_three_le (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1)
   Theta_eq_tsum d L g (norm_SB d L g hL) hξ
 
 end Unconditional
-
 
 /-! ### The Taylor series entrywise -/
 

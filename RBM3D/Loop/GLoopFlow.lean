@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Loop.GLoop
 public import RBM3D.Loop.TreeRep
 public import RBM3D.Gauss.FineModel
@@ -56,12 +57,6 @@ theorem ztOf_im (m : ℂ) (E t : ℝ) : (ztOf m E t).im = etaOf m t := by
   simp [ztOf, etaOf]
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-
-/-- **`G_t(σ)`** of `Def:G_loop` for a flow matrix `H` and a flow value `z = z_t`:
-`G(+) = (H - z)⁻¹`, `G(-) = (H - z̄)⁻¹ = G(+)^*`.  It is generic in the index type, so it serves
-the fine lattice (entries, `(G_bound)`) and the block-product index (loops). -/
-def Gres (H : Matrix ι ι ℂ) (z : ℂ) (σ : Bool) : Matrix ι ι ℂ :=
-  Ring.inverse (H - (if σ then z else (starRingEnd ℂ) z) • (1 : Matrix ι ι ℂ))
 
 /-- **`M(z) = (H_0 - z - m(z))⁻¹`** (`(def_G0)`) for a deterministic initial matrix `H_0`
 and the value `m = m(z)`: `H_0 = 0` for the random band matrix, where `M = m I`
@@ -137,12 +132,6 @@ the loop of `Gt` with the block insertions `E_a` (`Def:G_loop`). -/
 def Lloop (n : ℕ) (E t : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
     (ω : SeqΩ sz) : ℂ :=
   loopFine d (sz.L n) (sz.W n) (seqHflow sz n t ω) (zt E t) σ a
-
-/-- **`G(z) = (H - z)⁻¹`** of `(def_Green)` for the size-`n` matrix `H` of the model
-measure `seqP sz` (the Green function of the endpoints `MR:locSC`, `MR:QuDiff`). -/
-def Gn (n : ℕ) (z : ℂ) (ω : SeqΩ sz) :
-    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
-  Gres (seqXmat sz n ω) z true
 
 /-- `H_u` is Hermitian: the same statement as `seqHflow_isHermitian`, stated with the file
 stem as prefix. -/

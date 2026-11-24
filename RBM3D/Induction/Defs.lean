@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Gauss.FineModel
 public import RBM3D.Defs.Sizes
 public import RBM3D.Defs.Params
@@ -65,10 +66,6 @@ def STKloop (n : ℕ) (E τ : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k �
 `STWB sz n τ 0 = sz.Bctl n τ`. -/
 def STWB (n : ℕ) (τ : ℝ) (K : ℕ) : ℝ :=
   (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * Bparam d (sz.L n) (sz.lam n) τ K
-
-/-- The block label `[x]` of a lattice point `x ∈ Z_{WL}^d` ((2.2) `eq:blockIa`). -/
-def STblk (n : ℕ) (x : Idx d (sz.L n) (sz.W n)) : Zd d (sz.L n) :=
-  (split d (sz.L n) (sz.W n) x).1
 
 /-- `(G_τ - M)_{xy}` for the random band matrix: `M = m(E) I` ((2.8) `eq:defMzsc`). -/
 def STGM (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=

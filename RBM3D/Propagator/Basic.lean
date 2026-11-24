@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Defs.Block
 public import RBM3D.Defs.Params
 public import Mathlib.Analysis.Normed.Ring.Units
@@ -67,11 +68,6 @@ open scoped NNReal Matrix.Norms.Operator
 variable (d L : ℕ) [NeZero L] (g : ℝ)
 
 section Defs
-
-/-- (2.60) `def_Thxi` for the random band matrix model, with spectral parameter
-`ξ = t · m(σ₁)m(σ₂)`: the propagator `Θ_ξ = (1 - ξ S^(B))⁻¹`. -/
-noncomputable def Theta (ξ : ℂ) : Matrix (Zd d L) (Zd d L) ℂ :=
-  Ring.inverse (1 - ξ • SB d L g)
 
 theorem norm_smul_SB_lt_one (hS : ‖SB d L g‖ = 1) {ξ : ℂ} (hξ : ‖ξ‖ < 1) :
     ‖ξ • SB d L g‖ < 1 := by

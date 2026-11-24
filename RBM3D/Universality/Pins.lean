@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import Mathlib.Analysis.Matrix.Spectrum
 public import RBM3D.Defs.Sizes
 public import RBM3D.Defs.StochDomAt
@@ -52,12 +53,6 @@ namespace RBM.Univ
 /-! ## Vocabulary -/
 
 section Vocab
-
-/-- `(μ, ψ)` is an orthonormal eigenbasis of `H`: the vectors `ψ k` are orthonormal and `H ψ k = μ k ψ k`. -/
-def IsOrthoEigenbasis {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (H : Matrix ι ι ℂ) (μ : ι → ℝ) (ψ : ι → ι → ℂ) : Prop :=
-  (∀ k k', star (ψ k) ⬝ᵥ ψ k' = if k = k' then 1 else 0) ∧
-    ∀ k, H *ᵥ ψ k = (μ k : ℂ) • ψ k
 
 /-- GUE coordinate variances at dimension `N = (W L)^d`: `1/N` on the diagonal and `1/(2N)` for each
 real coordinate off the diagonal, so `E|h_ij|² = 1/N`. -/
@@ -360,31 +355,7 @@ section Pins
 
 variable {d : ℕ}
 
-/-- The one scale `N = (W L)^d = sz.size n` as a real number. -/
-abbrev Nsz (sz : Sizes d) (n : ℕ) : ℝ := ((sz.size n : ℕ) : ℝ)
-
 /-! ### Statements taken from the local law, the density and quantum unique ergodicity -/
-
-/-- `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2} / N)}` of (2.17) `eq:defIE`.  The footnote after
-Theorem 2.1 (`MR:decol`) replaces `ilambda` by `ilambda ∧ 1`; only the lower bound
-`W^{-ε₀}(lam ∧ 1) W^{d/2} ≥ W^{2𝔡/3}` is used here (`un_window_sub`), which holds for both readings. -/
-def queWindow (d L W : ℕ) (lam ε₀ E x : ℝ) : Prop :=
-  |x - E| ≤ (W : ℝ) ^ (-ε₀) * (lam * (W : ℝ) ^ ((d : ℝ) / 2) / (((W * L) ^ d : ℕ) : ℝ))
-
-/-- The probability bound `W^{-(2ε₀)∧(2𝔡/5)+2c+τ}` of (2.18) `Meq:QUE`. -/
-def queBound (W : ℕ) (𝔡 ε₀ c τ : ℝ) : ℝ≥0∞ :=
-  ENNReal.ofReal ((W : ℝ) ^ (-(min (2 * ε₀) (2 * 𝔡 / 5)) + 2 * c + τ))
-
-/-- The failure event of (2.18) `Meq:QUE` at the block `a` for an arbitrary Hermitian
-matrix `M` on the fine lattice: some orthonormal eigenbasis has `i, j` in the window `𝓘_E(ε₀)` with
-`|∑_{x∈[a]} conj ψ_i(x) ψ_j(x) - (W^d/N) δ_ij| ≥ W^{d-c}/N`. -/
-def queBadMat (d L W : ℕ) [NeZero L] [NeZero W] (lam ε₀ c E : ℝ) (a : Zd d L)
-    (M : Matrix (Idx d L W) (Idx d L W) ℂ) : Prop :=
-  ∃ (μ : Idx d L W → ℝ) (ψ : Idx d L W → Idx d L W → ℂ),
-    IsOrthoEigenbasis M μ ψ ∧ ∃ i j, queWindow d L W lam ε₀ E (μ i) ∧ queWindow d L W lam ε₀ E (μ j) ∧
-      (W : ℝ) ^ ((d : ℝ) - c) / (((W * L) ^ d : ℕ) : ℝ) ≤
-        ‖(∑ x ∈ Iblk d L W a, star (ψ i x) * ψ j x) -
-            ((W : ℂ) ^ d / (((W * L) ^ d : ℕ) : ℂ)) * (if i = j then 1 else 0)‖
 
 /-- **`UNQueBand`: (2.18) `Meq:QUE`** (Theorem 2.3 `MR:QUE`), band model, for the parameters
 `ε₀ ∈ (0, 𝔡/2)`, `0 < c < ε₀ ∧ 𝔡/5`, any `τ > 0`, eventually, uniformly in `|E| ≤ 2 - κ` and the block `a`.

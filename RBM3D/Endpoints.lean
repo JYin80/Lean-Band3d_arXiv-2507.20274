@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Universality.Pins
 
 @[expose] public section
@@ -52,161 +53,10 @@ section Endpoints
 
 variable {d : ℕ}
 
-/-- **`𝓑_{η,K}`** of (2.13) `eq:calBetaK`: `(lam² + η)⁻¹ / (W² (K + W)^{d-2}) + 1/(N η)`, `K ≥ 0`
-a distance on the fine lattice, `N = (W L)^d = sz.size n`. -/
-def calB (sz : Sizes d) (n : ℕ) (η K : ℝ) : ℝ :=
-  (sz.lam n ^ 2 + η)⁻¹ / (((sz.W n : ℕ) : ℝ) ^ 2 * (K + ((sz.W n : ℕ) : ℝ)) ^ (d - 2)) +
-    (((sz.size n : ℕ) : ℝ) * η)⁻¹
-
-/-- The paper's `W |a - b|` of (2.22) `eq:diffu1`, (2.23) `eq:diffu2`: `W` times the periodic `L^∞` distance of the
-block lattice (Section 2, (2.3) `representativeL`).  For (2.14) `G_bound` the distance `|x - y|` is read as `distB` of the
-block labels `[x], [y]` (with the paper's `L^∞` metric `zdistInf`, as in `STLocalEntry`); the literal fine-lattice
-distance `K` satisfies `W (k - 1) ≤ K ≤ W (k + 1)`, `k = |[x]-[y]|_∞`, so `𝓑_{η,K} ≍ 𝓑_{η,Wk}` up to `2^{d-2}`. -/
-def distB (sz : Sizes d) (n : ℕ) (a b : Zd d (sz.L n)) : ℝ :=
-  ((sz.W n : ℕ) : ℝ) * ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ)
-
-/-- `M_{xy}(z) = m(z) δ_{xy}` of (2.8) `eq:defMzsc`, `m = msc`. -/
-def Mband (sz : Sizes d) (n : ℕ) (z : ℂ) (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=
-  if x = y then msc z else 0
-
-/-- The block average `W^{-2d} ∑_{x∈[a], y∈[b]} F x y`. -/
-def avg2 (sz : Sizes d) (n : ℕ) (F : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ)
-    (a b : Zd d (sz.L n)) : ℂ :=
-  ((((sz.W n : ℕ) : ℂ) ^ d) ^ 2)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b, F x y
-
-/-- `Θ^{(+,-)}(z) = (1 - |m|² S^{(B)})⁻¹` ((2.21) `def:Theta`); `|m|² S^{(B)}` is `Theta`'s `ξ`. -/
-def ThetaPM (sz : Sizes d) (n : ℕ) (z : ℂ) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
-  Theta d (sz.L n) (sz.lam n) (((‖msc z‖ ^ 2 : ℝ)) : ℂ)
-
-/-- `Θ^{(+,+)}(z) = (1 - m² S^{(B)})⁻¹`. -/
-def ThetaPP (sz : Sizes d) (n : ℕ) (z : ℂ) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
-  Theta d (sz.L n) (sz.lam n) (msc z ^ 2)
-
-/-- The profile of (2.22) `eq:diffu1`: `|m|² Θ^{(+,-)}_{ab} / W^d`. -/
-def profPM (sz : Sizes d) (n : ℕ) (z : ℂ) (a b : Zd d (sz.L n)) : ℂ :=
-  (((‖msc z‖ ^ 2 : ℝ)) : ℂ) * ThetaPM sz n z a b / ((sz.W n : ℕ) : ℂ) ^ d
-
-/-- The profile of (2.23) `eq:diffu2`: `m² Θ^{(+,+)}_{ab} / W^d`. -/
-def profPP (sz : Sizes d) (n : ℕ) (z : ℂ) (a b : Zd d (sz.L n)) : ℂ :=
-  msc z ^ 2 * ThetaPP sz n z a b / ((sz.W n : ℕ) : ℂ) ^ d
-
-/-- The right side of (2.22) `eq:diffu1`, (2.23) `eq:diffu2`: `W^τ [(𝓑_{η,0})^{1/5} 𝓑_{η,W|a-b|} ∧ (𝓑_{η,0})²]`. -/
-def qdBound (sz : Sizes d) (n : ℕ) (τ η : ℝ) (a b : Zd d (sz.L n)) : ℝ :=
-  ((sz.W n : ℕ) : ℝ) ^ τ * min (calB sz n η 0 ^ ((1 : ℝ) / 5) * calB sz n η (distB sz n a b))
-    (calB sz n η 0 ^ 2)
-
-/-- The right side of (2.24) `Meq:QdS1`, (2.25) `Meq:QdS2`: `W^τ (𝓑_{η,0})² ((lam² W^d)^{-1/5} + 𝓑_{η,0})`. -/
-def qdBoundExp (sz : Sizes d) (n : ℕ) (τ η : ℝ) : ℝ :=
-  ((sz.W n : ℕ) : ℝ) ^ τ * calB sz n η 0 ^ 2 *
-    ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 : ℝ) / 5) + calB sz n η 0)
-
-/-- The failure event of (2.11) `eq:psikLinfty`: some orthonormal eigenbasis has a bulk eigenvector with
-`‖ψ_k‖²_∞ > N^{-1+τ}`. -/
-def decolBad (sz : Sizes d) (n : ℕ) (κ τ : ℝ) (ω : sz.SeqΩ) : Prop :=
-  ¬ ∀ (μ : Idx d (sz.L n) (sz.W n) → ℝ) (ψ : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ),
-    IsOrthoEigenbasis (sz.seqXmat n ω) μ ψ → ∀ k, |μ k| ≤ 2 - κ → ∀ x,
-      ‖ψ k x‖ ^ 2 ≤ Nsz sz n ^ (-1 + τ)
-
-/-- The failure event of (2.14) `G_bound` at one `z`: some `x, y` with `|G_xy(z) - M_xy(z)|² > W^τ 𝓑_{η,|x-y|}`,
-`|x-y|` read as `W |[x]-[y]|_∞` (`distB`). -/
-def locBad1z (sz : Sizes d) (τ : ℝ) (n : ℕ) (z : ℂ) (ω : sz.SeqΩ) : Prop :=
-  ∃ x y : Idx d (sz.L n) (sz.W n),
-    ((sz.W n : ℕ) : ℝ) ^ τ * calB sz n z.im (distB sz n (STblk sz n x) (STblk sz n y)) <
-      ‖sz.Gn n z ω x y - Mband sz n z x y‖ ^ 2
-
-/-- The failure event of (2.15) `G_bound_ave` at one `z`. -/
-def locBad2z (sz : Sizes d) (τ : ℝ) (n : ℕ) (z : ℂ) (ω : sz.SeqΩ) : Prop :=
-  ∃ a : Zd d (sz.L n), ((sz.W n : ℕ) : ℝ) ^ τ * calB sz n z.im 0 <
-    ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, sz.Gn n z ω x x - msc z‖
-
-/-- The failure event of (2.22) `eq:diffu1` at one `z`, the blocks `a, b` inside. -/
-def qd1Badz (sz : Sizes d) (τ : ℝ) (n : ℕ) (z : ℂ) (ω : sz.SeqΩ) : Prop :=
-  ∃ a b : Zd d (sz.L n), qdBound sz n τ z.im a b <
-    ‖avg2 sz n (fun x y => ((‖sz.Gn n z ω x y‖ ^ 2 : ℝ) : ℂ)) a b - profPM sz n z a b‖
-
-/-- The failure event of (2.23) `eq:diffu2` at one `z`. -/
-def qd2Badz (sz : Sizes d) (τ : ℝ) (n : ℕ) (z : ℂ) (ω : sz.SeqΩ) : Prop :=
-  ∃ a b : Zd d (sz.L n), qdBound sz n τ z.im a b <
-    ‖avg2 sz n (fun x y => sz.Gn n z ω x y * sz.Gn n z ω y x) a b - profPP sz n z a b‖
-
-/-- The failure event of (2.14) `G_bound`: some `z ∈ 𝐃_{κ,ε}` fails.  The union over `z` is **inside** the
-probability. -/
-def locBad1 (sz : Sizes d) (κ ε τ : ℝ) (n : ℕ) (ω : sz.SeqΩ) : Prop :=
-  ∃ z : ℂ, sz.locDomain κ ε n z ∧ locBad1z sz τ n z ω
-
-/-- The failure event of (2.15) `G_bound_ave`, the union over `z` inside. -/
-def locBad2 (sz : Sizes d) (κ ε τ : ℝ) (n : ℕ) (ω : sz.SeqΩ) : Prop :=
-  ∃ z : ℂ, sz.locDomain κ ε n z ∧ locBad2z sz τ n z ω
-
-/-- The failure event of (2.22) `eq:diffu1`, the union over `z` and the blocks `a, b` inside. -/
-def qd1Bad (sz : Sizes d) (κ ε τ : ℝ) (n : ℕ) (ω : sz.SeqΩ) : Prop :=
-  ∃ z : ℂ, sz.locDomain κ ε n z ∧ qd1Badz sz τ n z ω
-
-/-- The failure event of (2.23) `eq:diffu2`. -/
-def qd2Bad (sz : Sizes d) (κ ε τ : ℝ) (n : ℕ) (ω : sz.SeqΩ) : Prop :=
-  ∃ z : ℂ, sz.locDomain κ ε n z ∧ qd2Badz sz τ n z ω
-
-/-- The failure event of (2.19) `Meq:QUE2` for a set `A` of blocks: some orthonormal eigenbasis
-has a `k` in the window with `|∑_{a∈A}∑_{x∈[a]}|ψ_k(x)|² - W^d|A|/N| ≥ W^{d-c}|A|/N`.  The first half
-(2.18) `Meq:QUE` is `queBadMat`. -/
-def que2BadMat (d L W : ℕ) [NeZero L] [NeZero W] (lam ε₀ c E : ℝ) (A : Finset (Zd d L))
-    (M : Matrix (Idx d L W) (Idx d L W) ℂ) : Prop :=
-  ∃ (μ : Idx d L W → ℝ) (ψ : Idx d L W → Idx d L W → ℂ),
-    IsOrthoEigenbasis M μ ψ ∧ ∃ k, queWindow d L W lam ε₀ E (μ k) ∧
-      (W : ℝ) ^ ((d : ℝ) - c) * (A.card : ℝ) / (((W * L) ^ d : ℕ) : ℝ) ≤
-        |(∑ a ∈ A, ∑ x ∈ Iblk d L W a, ‖ψ k x‖ ^ 2) -
-            (W : ℝ) ^ d / (((W * L) ^ d : ℕ) : ℝ) * (A.card : ℝ)|
-
-/-- **`decol`**: Theorem 2.1 (`MR:decol`) for the band model.  Constants `(d, 𝔠, 𝔡)` before the sequence
-`sz` (whose field `sz.lam` is the coupling parameter of (2.1) `def:ilambda`); `Admissible` is `0 < 𝔠, 𝔡`, `N → ∞`,
-(2.9) `Main_DEL_COND`, (2.10) `eq:WO`; then `(κ, τ, D)`, then `∀ᶠ n`. -/
-def decol : Prop :=
-  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-    ∀ κ τ D : ℝ, 0 < κ → 0 < τ → 0 < D → ∀ᶠ n in atTop,
-      Sizes.seqP sz {ω | decolBad sz n κ τ ω} ≤ ENNReal.ofReal (Nsz sz n ^ (-D))
-
-/-- **`locSC`**: Theorem 2.2 (`MR:locSC`): (2.14) `G_bound` and (2.15) `G_bound_ave`, each with probability
-`≥ 1 - N^{-D}`, the union over `z` inside. -/
-def locSC : Prop :=
-  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-    ∀ κ ε τ D : ℝ, 0 < κ → 0 < ε → 0 < τ → 0 < D → ∀ᶠ n in atTop,
-      Sizes.seqP sz {ω | locBad1 sz κ ε τ n ω} ≤ ENNReal.ofReal (Nsz sz n ^ (-D)) ∧
-      Sizes.seqP sz {ω | locBad2 sz κ ε τ n ω} ≤ ENNReal.ofReal (Nsz sz n ^ (-D))
-
-/-- **`QUE`**: Theorem 2.3 (`MR:QUE`): (2.18) `Meq:QUE` and (2.19) `Meq:QUE2` (`A ≠ ∅`), uniformly
-in `|E| ≤ 2 - κ`, the block `a` and the set `A` (the `N₀` is uniform, the paper's `sup_E max_a`).  The window is
-`𝓘_E(ε₀)` of (2.17) `eq:defIE` with `lam` (the footnote after (2.11) `eq:psikLinfty`: `lam ∧ 1` only beyond (2.10) `eq:WO`). -/
-def QUE : Prop :=
-  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
-    ∀ ε₀ c τ : ℝ, 0 < ε₀ → ε₀ < 𝔡 / 2 → 0 < c → c < ε₀ → c < 𝔡 / 5 → 0 < τ →
-      ∀ᶠ n in atTop, ∀ E : ℝ, |E| ≤ 2 - κ →
-        (∀ a : Zd d (sz.L n),
-          Sizes.seqP sz {ω | queBadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E a (sz.seqXmat n ω)} ≤
-            queBound (sz.W n) 𝔡 ε₀ c τ) ∧
-        (∀ A : Finset (Zd d (sz.L n)), A.Nonempty →
-          Sizes.seqP sz {ω | que2BadMat d (sz.L n) (sz.W n) (sz.lam n) ε₀ c E A (sz.seqXmat n ω)} ≤
-            queBound (sz.W n) 𝔡 ε₀ c τ)
-
-/-- **`QDiff`**: Theorem 2.5 (`MR:QuDiff`): (2.22) `eq:diffu1`, (2.23) `eq:diffu2` with probability `≥ 1 - N^{-D}`
-(the union over `z` inside; the paper's "for all `a, b`" is read with `a, b` inside the probability too: a union bound over
-`L^{2d} ≤ N²` pairs), and (2.24) `Meq:QdS1`, (2.25) `Meq:QdS2` for each `z ∈ 𝐃_{κ,ε}` with `N₀`
-uniform over `𝐃_{κ,ε}`. -/
-def QDiff : Prop :=
-  ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-    ∀ κ ε τ D : ℝ, 0 < κ → 0 < ε → 0 < τ → 0 < D → ∀ᶠ n in atTop,
-      (Sizes.seqP sz {ω | qd1Bad sz κ ε τ n ω} ≤ ENNReal.ofReal (Nsz sz n ^ (-D)) ∧
-       Sizes.seqP sz {ω | qd2Bad sz κ ε τ n ω} ≤ ENNReal.ofReal (Nsz sz n ^ (-D))) ∧
-      ∀ z : ℂ, sz.locDomain κ ε n z → ∀ a b : Zd d (sz.L n),
-        ‖(∫ ω, avg2 sz n (fun x y => ((‖sz.Gn n z ω x y‖ ^ 2 : ℝ) : ℂ)) a b ∂(Sizes.seqP sz)) -
-            profPM sz n z a b‖ ≤ qdBoundExp sz n τ z.im ∧
-        ‖(∫ ω, avg2 sz n (fun x y => sz.Gn n z ω x y * sz.Gn n z ω y x) a b ∂(Sizes.seqP sz)) -
-            profPP sz n z a b‖ ≤ qdBoundExp sz n τ z.im
-
 /-- **`BUniv`**: Theorem 2.4 (`Thm: B_Univ`) is the statement `UNBUniv` of `Universality/Pins`. -/
 abbrev BUniv : Prop := UNBUniv
 
 end Endpoints
-
 
 /-! ## 2. Scalar facts: `𝓑_{η,K}` against `Bctl`, `STWB`, and the lower bound `(Nη)⁻¹` -/
 
@@ -276,7 +126,6 @@ theorem calB_nonneg {η K : ℝ} (hη : 0 < η) (hK : 0 ≤ K) : 0 ≤ calB sz n
   positivity
 
 end Scalars
-
 
 /-! ## 3. The explicit `W^τ`, `N^{-D}` form against the stochastic domination `Prec` -/
 
@@ -357,7 +206,6 @@ theorem det_of_prec (hsz : sz.SizeTendsto) {U : ℕ → Type*} {ξ ζ : ∀ n, U
 
 end Form
 
-
 /-! ## 4. The domain lemmas for `𝐃_{κ,ε}` and the positivity of `𝓑` -/
 
 section Domain
@@ -403,7 +251,6 @@ theorem locDomain_empty_eps (sz : Sizes d) {κ ε : ℝ} (hε : 1 < ε) {n : ℕ
 
 end Domain
 
-
 /-! ## 5. The bridges to the universality statements (`locSC → UNLocAvgBand`, `QUE → UNQueBand`) -/
 
 section Bridges
@@ -427,7 +274,6 @@ theorem QUE_to_UNQueBand : QUE → UNQueBand := by
   exact (h d hd 𝔠 𝔡 sz hA κ hκ ε₀ c τ h1 h2 h3 h4 h5 h6).mono fun n hn E hE a => (hn E hE).1 a
 
 end Bridges
-
 
 /-! ## 6. Compiled nonempty instances at `d = 3` on `SizesInst.sz0` and extreme inputs
 
@@ -506,7 +352,6 @@ theorem inst_bridge_que (h : QUE) :
         queBound (sz0.W n) (1 / 10) (1 / 30) (1 / 60) (1 / 10) :=
   QUE_to_UNQueBand (h) 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_admissible (1 / 10) (by norm_num) (1 / 30) (1 / 60) (1 / 10)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
 
 /-! ### The edges of (2.10) `eq:WO`: `lam = W^{-d/2+𝔡}` and `lam = 𝔡⁻¹` -/
 

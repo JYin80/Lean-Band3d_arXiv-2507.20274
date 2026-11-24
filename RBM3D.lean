@@ -1,5 +1,6 @@
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Basic
 public import RBM3D.Defs.Lattice
 public import RBM3D.Analysis.Resolvent

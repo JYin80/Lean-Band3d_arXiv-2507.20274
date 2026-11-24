@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import Mathlib.Data.ZMod.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -26,9 +27,6 @@ distance built from them.
 -/
 
 namespace RBM
-
-/-- Graph distance from `u` to `0` on the cycle `ZMod L`. -/
-def zdist (L : ℕ) (u : ZMod L) : ℕ := min u.val (L - u.val)
 
 @[simp] theorem zdist_zero (L : ℕ) : zdist L 0 = 0 := by
   simp [zdist]
@@ -64,18 +62,10 @@ theorem zdist_neg (L : ℕ) [NeZero L] (u : ZMod L) : zdist L (-u) = zdist L u :
     simp only [zdist, hval]
     omega
 
-/-- The lattice `Z_L^d` of the paper.  `abbrev` so that the `Pi` instances --
-`AddCommGroup`, `Fintype`, `DecidableEq` -- are found by instance search. -/
-abbrev Zd (d L : ℕ) : Type := Fin d → ZMod L
-
 /-- The torus has `L^d` points.  The paper writes this as `|Z_L^d| = L^d` and uses it
 whenever a sum over the lattice is compared with its largest term. -/
 theorem card_Zd (d L : ℕ) [NeZero L] : Fintype.card (Zd d L) = L ^ d := by
   simp [Zd, ZMod.card]
-
-/-- The periodic `ℓ¹` distance to the origin on `Z_L^d`; it dominates the paper's `L^∞` distance
-`zdistInf` of `Defs/Sizes.lean`. -/
-def zdistD (d L : ℕ) (x : Zd d L) : ℕ := ∑ i, zdist L (x i)
 
 @[simp] theorem zdistD_zero (d L : ℕ) : zdistD d L 0 = 0 := by
   simp [zdistD]

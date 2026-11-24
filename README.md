@@ -17,7 +17,8 @@ Sister projects: [RBM1D](https://github.com/JYin80/Lean-RBM1d_arxiv-2501.01718),
 ## Main results
 
 All six results are proved for every dimension `d ≥ 3`, as stated in the paper. The statements for the random band
-matrix model are closed propositions in [`RBM3D/Endpoints.lean`](RBM3D/Endpoints.lean); Theorem 2.7, for the block
+matrix model are closed propositions: `decol`, `locSC`, `QUE`, `QDiff` in [`RBM3D/MainDefs.lean`](RBM3D/MainDefs.lean)
+and `BUniv` in [`RBM3D/Endpoints.lean`](RBM3D/Endpoints.lean); Theorem 2.7, for the block
 Anderson model, is `RBM.Endpoints.Thm27 := ∀ d, 3 ≤ d → RBM.BA.BAThm27L d`
 ([`RBM3D/Main/FinalShape.lean`](RBM3D/Main/FinalShape.lean); `RBM.BA.BAThm27L` is stated in
 [`RBM3D/BA/MAPins.lean`](RBM3D/BA/MAPins.lean)). The final theorem is
@@ -69,7 +70,7 @@ otherwise.
 
 ## Build
 
-The toolchain is `leanprover/lean4:v4.34.0` (file `lean-toolchain`) with Mathlib `v4.34.0`.
+The toolchain is `leanprover/lean4:v4.36.0-rc1` (file `lean-toolchain`) with Mathlib `v4.36.0-rc1`.
 
 ```
 lake exe cache get
@@ -105,7 +106,7 @@ Section numbers refer to the paper in `paper/`.
 - `RBM3D/Graph/`: the light-weight term (§7, Appendix B).
 - `RBM3D/BA/`: the block Anderson model (§8, Appendix B.3) and Theorem 2.7 for every `d ≥ 3`.
 - `RBM3D/Universality/`: bulk universality (Theorem 2.4) and the statement of the external input `UNL32`.
-- `RBM3D/Main/`, `RBM3D/Endpoints.lean`: the statements of the main theorems and their assembly (§2.5), with the
+- `RBM3D/Main/`, `RBM3D/MainDefs.lean`, `RBM3D/Endpoints.lean`: the statements of the main theorems and their assembly (§2.5), with the
   compiled examples.
 - `RBM3D/Test/Axioms.lean`: the axiom check.
 
@@ -120,3 +121,16 @@ the Lean proof takes a different route from the paper.
 The code is released under the Apache License 2.0; see [`LICENSE`](LICENSE).
 
 Paper: Sofiia Dubova, Fan Yang, Horng-Tzer Yau and Jun Yin. Lean formalization: Jun Yin.
+
+## Palomar
+
+The repository is laid out for the [Palomar registry](https://palomar-registry.org/) of Lean-verified mathematics.
+All source files use Lean's module system. [`RBM3D/MainDefs.lean`](RBM3D/MainDefs.lean) holds every definition used
+by the statements of Theorems 2.1, 2.2, 2.3 and 2.5; [`Challenge.lean`](Challenge.lean) is the statement to audit (it
+imports Mathlib only, repeats the definitions of `RBM3D/MainDefs.lean` and states the four theorems; Theorems 2.4 and
+2.7, which have an external input as a hypothesis, are not in it), [`Solution.lean`](Solution.lean) proves the four
+statements from the library, [`comparator.json`](comparator.json) names the compared theorems and
+[`formalization.yaml`](formalization.yaml) holds the metadata. `lake build` also builds `Challenge.lean` (four
+`sorry` warnings, by design) and `Solution.lean`. `python3 scripts/check-lean-sources.py` and
+`./scripts/verify-comparator.sh` (Linux, needs `bwrap`) run the checks locally; submissions go to
+<https://submit.palomar-registry.org/>.

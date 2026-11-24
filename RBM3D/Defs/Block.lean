@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import Mathlib.Basic.Complex.Basic
 public import Mathlib.LinearAlgebra.Matrix.Circulant
 public import Mathlib.Analysis.Complex.Basic
@@ -38,15 +39,6 @@ open Matrix
 
 variable (d L : ℕ) (g : ℝ)
 
-/-- The generating kernel of `S^(B)(g)`. -/
-noncomputable def sbKernel : Zd d L → ℂ := fun x =>
-  if x = 0 then ((1 + 2 * (d : ℝ) * g ^ 2)⁻¹ : ℝ)
-  else if zdistD d L x = 1 then ((g ^ 2 * (1 + 2 * (d : ℝ) * g ^ 2)⁻¹ : ℝ) : ℂ)
-  else 0
-
-/-- The block variance matrix `S^(B)(g)` of `(eq:variancematrix)`. -/
-noncomputable def SB : Matrix (Zd d L) (Zd d L) ℂ := circulant (sbKernel d L g)
-
 theorem SB_apply (a b : Zd d L) : SB d L g a b = sbKernel d L g (a - b) := rfl
 
 variable [NeZero L]
@@ -74,11 +66,6 @@ Both come from the same computation: the kernel is the real, non-negative functi
 
 section Stochastic
 
-/-- The kernel of `S^(B)(g)` as a real function, split into its two pieces. -/
-noncomputable def sbKernelR (x : Zd d L) : ℝ :=
-  (if x = 0 then (1 + 2 * (d : ℝ) * g ^ 2)⁻¹ else 0) +
-    (if zdistD d L x = 1 then g ^ 2 * (1 + 2 * (d : ℝ) * g ^ 2)⁻¹ else 0)
-
 omit [NeZero L] in
 theorem sbKernel_eq_ofReal (x : Zd d L) : sbKernel d L g x = (sbKernelR d L g x : ℂ) := by
   by_cases h0 : x = 0
@@ -87,12 +74,6 @@ theorem sbKernel_eq_ofReal (x : Zd d L) : sbKernel d L g x = (sbKernelR d L g x 
 
 theorem sbKernelR_neg (x : Zd d L) : sbKernelR d L g (-x) = sbKernelR d L g x := by
   simp only [sbKernelR, neg_eq_zero, zdistD_neg]
-
-omit [NeZero L] in
-theorem sbKernelR_nonneg (x : Zd d L) : 0 ≤ sbKernelR d L g x := by
-  unfold sbKernelR
-  have : 0 < 1 + 2 * (d : ℝ) * g ^ 2 := by positivity
-  split_ifs <;> positivity
 
 theorem sum_sbKernelR (hL : 3 ≤ L) : ∑ x, sbKernelR d L g x = 1 := by
   have hpos : 0 < 1 + 2 * (d : ℝ) * g ^ 2 := by positivity

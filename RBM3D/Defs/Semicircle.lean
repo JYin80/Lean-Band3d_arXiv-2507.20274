@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
@@ -104,22 +105,9 @@ end mE
 
 section msc
 
-/-- A square root of `z² - 4`. -/
-noncomputable def mscDisc (z : ℂ) : ℂ :=
-  Classical.choose (IsAlgClosed.exists_pow_nat_eq (k := ℂ) (z ^ 2 - 4) (n := 2) (by norm_num))
-
 theorem mscDisc_sq (z : ℂ) : mscDisc z ^ 2 = z ^ 2 - 4 :=
   Classical.choose_spec
     (IsAlgClosed.exists_pow_nat_eq (k := ℂ) (z ^ 2 - 4) (n := 2) (by norm_num))
-
-/-- The two roots of `m² + z m + 1 = 0`. -/
-noncomputable def mscRoot₁ (z : ℂ) : ℂ := (-z + mscDisc z) / 2
-
-noncomputable def mscRoot₂ (z : ℂ) : ℂ := (-z - mscDisc z) / 2
-
-/-- The Stieltjes transform of the semicircle law: the root of `m² + z m + 1 = 0` with
-positive imaginary part (for `Im z > 0`). -/
-noncomputable def msc (z : ℂ) : ℂ := if 0 < (mscRoot₁ z).im then mscRoot₁ z else mscRoot₂ z
 
 theorem msc_mul (z : ℂ) : msc z * (msc z + z) = -1 := by
   have hd := mscDisc_sq z

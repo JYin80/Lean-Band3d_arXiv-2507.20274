@@ -6,6 +6,7 @@ Authors: Jun Yin
 
 module
 
+public import RBM3D.MainDefs
 public import RBM3D.Defs.Sizes
 public import Mathlib.Probability.ProductMeasure
 public import Mathlib.Probability.Distributions.Gaussian.Real
@@ -43,16 +44,6 @@ section Model
 
 variable (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W]
 
-/-- **`(eq:variancematrix)`** on the fine lattice: `S_xy = W^{-d} S^(B)_{ab}(g)` for `x ∈ [a]`,
-`y ∈ [b]`.  The function `svar` of `RBM3D/Gauss/Model.lean` is the same function on `Vtx`; this
-one is on `Z_{WL}^d`. -/
-def svarF (i j : Idx d L W) : ℝ :=
-  ((W : ℝ) ^ d)⁻¹ * SBR d L g (split d L W i).1 (split d L W j).1
-
-omit [NeZero L] in
-theorem svarF_nonneg (i j : Idx d L W) : 0 ≤ svarF d L W g i j :=
-  mul_nonneg (by positivity) (sbKernelR_nonneg d L g _)
-
 theorem svarF_comm (i j : Idx d L W) : svarF d L W g i j = svarF d L W g j i := by
   simp only [svarF, SBR, Matrix.of_apply]
   rw [show (split d L W j).1 - (split d L W i).1 = -((split d L W i).1 - (split d L W j).1) by
@@ -70,26 +61,8 @@ the fine-lattice model and the block-product model carry the same `(eq:variancem
 theorem svarF_eq_svar (i j : Idx d L W) :
     svarF d L W g i j = svar d L W g (split d L W i) (split d L W j) := rfl
 
-/-- A finite injective key, used only to orient independent off-diagonal entries (independence up to
-`H_xy = conj H_yx`, `(bandcw0)`). -/
-def idxKey (i : Idx d L W) : ℕ := (Fintype.equivFin (Idx d L W) i).val
-
 theorem idxKey_injective : Function.Injective (idxKey d L W) := fun _ _ h =>
   (Fintype.equivFin (Idx d L W)).injective (Fin.val_injective h)
-
-/-- Two real coordinates per oriented pair of lattice points (`(bandcw0)`). -/
-abbrev CoordF : Type := Idx d L W × Idx d L W × Bool
-
-/-- The finite product sample space of one size (`(bandcw0)`). -/
-abbrev Ω : Type := CoordF d L W → ℝ
-
-/-- Variance of one real coordinate: `S_ii` on the diagonal (one real Gaussian), `S_ij/2` off it
-(two real Gaussians), so that `E|X_ij|² = S_ij` (`(bandcw0)`). -/
-def gvarF (c : CoordF d L W) : ℝ≥0 :=
-  ⟨if c.1 = c.2.1 then svarF d L W g c.1 c.2.1 else svarF d L W g c.1 c.2.1 / 2, by
-    split_ifs
-    · exact svarF_nonneg d L W g _ _
-    · exact div_nonneg (svarF_nonneg d L W g _ _) (by norm_num)⟩
 
 /-- **The one-size Gaussian law** (`(bandcw0)`): independent centred real Gaussians,
 one per coordinate. -/
@@ -98,19 +71,6 @@ def PF : Measure (Ω d L W) :=
 
 instance isProbabilityMeasure_PF : IsProbabilityMeasure (PF d L W g) := by
   unfold PF; infer_instance
-
-/-- The entry `X_ij` of the Hermitian matrix, oriented by `idxKey`; real on the diagonal
-(`(bandcw0)`: `N_ℝ` on the diagonal, `N_ℂ` off it). -/
-def Xentry (ω : Ω d L W) (i j : Idx d L W) : ℂ :=
-  if idxKey d L W i < idxKey d L W j then
-    (ω (i, j, true) : ℂ) + Complex.I * (ω (i, j, false) : ℂ)
-  else if idxKey d L W j < idxKey d L W i then
-    (ω (j, i, true) : ℂ) - Complex.I * (ω (j, i, false) : ℂ)
-  else (ω (i, j, true) : ℂ)
-
-/-- **`H` of `(bandcw0)`** at one size. -/
-def Xmat (ω : Ω d L W) : Matrix (Idx d L W) (Idx d L W) ℂ :=
-  Matrix.of fun i j => Xentry d L W ω i j
 
 theorem idxKey_lt_or_eq_or_lt (i j : Idx d L W) :
     idxKey d L W i < idxKey d L W j ∨ i = j ∨ idxKey d L W j < idxKey d L W i := by
@@ -150,27 +110,8 @@ namespace Sizes
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- A coordinate records its size index as well as the entry and the real/imaginary tag
-(`(bandcw0)`). -/
-abbrev SeqCoord : Type := Σ n : ℕ, CoordF d (sz.L n) (sz.W n)
-
-/-- One common sample space for all sizes (`(bandcw0)`; the `≺` of `(stoch_domination)` along
-the sequence is one statement on one space). -/
-abbrev SeqΩ : Type := SeqCoord sz → ℝ
-
-/-- Coordinate variance at size `n`, with the coupling `sz.lam n` (`(eq:variancematrix)`). -/
-def seqGvar (c : SeqCoord sz) : ℝ≥0 := gvarF d (sz.L c.1) (sz.W c.1) (sz.lam c.1) c.2
-
-/-- **The model measure** (`(bandcw0)`, `(eq:variancematrix)`): independent
-Gaussian coordinates for every size in one countable product.
-Every size projection has the one-size law `PF` (`seqP_map_slice`). -/
-def seqP : Measure (SeqΩ sz) := Measure.infinitePi fun c => gaussianReal 0 (seqGvar sz c)
-
 instance isProbabilityMeasure_seqP : IsProbabilityMeasure (seqP sz) := by
   unfold seqP; infer_instance
-
-/-- The coordinate vector at size `n`, extracted from the common product (`(bandcw0)`). -/
-def slice (n : ℕ) (ω : SeqΩ sz) : Ω d (sz.L n) (sz.W n) := fun c => ω ⟨n, c⟩
 
 theorem measurable_slice (n : ℕ) : Measurable (slice sz n) :=
   Measurable.of_eval fun (c : CoordF d (sz.L n) (sz.W n)) =>
@@ -208,10 +149,6 @@ theorem seqP_map_slice (n : ℕ) :
   apply Finset.prod_congr rfl
   intro a ha
   simp [t', e, seqGvar]
-
-/-- **`H` of `(bandcw0)` on the common probability space** at size index `n`. -/
-def seqXmat (n : ℕ) (ω : SeqΩ sz) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
-  Xmat d (sz.L n) (sz.W n) (slice sz n ω)
 
 /-- **The single-time flow** `H_u = √u X` (`(MBM)`, at one time): it has the law of the
 matrix Brownian motion at time `u`, and is a deterministic coupling across times, not a matrix
